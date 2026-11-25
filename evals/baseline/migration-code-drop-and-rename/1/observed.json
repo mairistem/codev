@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 820
+          "compagnon review": 820
         }
       },
       {
@@ -78,7 +78,7 @@
         "output": 7,
         "toolCalls": 0,
         "sources": {
-          "codev review": 571
+          "compagnon review": 571
         }
       }
     ]
@@ -162,7 +162,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/drop-legacy-email/review.md",
+    "path": "_compagnon/changes/drop-legacy-email/review.md",
     "status": [],
     "steps": [
       {

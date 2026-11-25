@@ -1,6 +1,6 @@
 # Review record: add-api-tokens
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## plan.challenge
 

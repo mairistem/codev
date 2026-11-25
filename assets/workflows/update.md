@@ -1,11 +1,11 @@
-Revise an already written planning artifact of an active codev change —
+Revise an already written planning artifact of an active compagnon change —
 proposal, specs, design or tasks — while keeping it consistent with the
 other artifacts.
 
 **Strict boundary.** This skill reads and writes **only** files under
-`_codev/changes/<name>/`. It does **not modify** project code — that is
-`/codev-apply`'s job after the revision. It does **not create** a missing
-artifact — that is `/codev-propose`'s job. It does **not touch** an
+`_compagnon/changes/<name>/`. It does **not modify** project code — that is
+`/compagnon-apply`'s job after the revision. It does **not create** a missing
+artifact — that is `/compagnon-propose`'s job. It does **not touch** an
 already archived change — an archived change is history.
 
 ---
@@ -26,21 +26,21 @@ Optional: `--change <name>` if several changes are active.
 ### 1. Resolve the change and check its state
 
 ```bash
-codev list
+compagnon list
 ```
 
 - A single active change → use it.
 - Several → if the user did not name one, ask.
 - None → say so and stop.
 
-If the given name does not appear in `codev list` — because it is archived,
+If the given name does not appear in `compagnon list` — because it is archived,
 or does not exist — **refuse**. Remind the user that an archived change is
 frozen; correcting it requires un-archiving it by hand.
 
 Then:
 
 ```bash
-codev status --change "<name>" --json
+compagnon status --change "<name>" --json
 ```
 
 {{fragment:version-check}}
@@ -49,8 +49,8 @@ Find the requested artifact in `artifacts[]`:
 
 - status `done` → OK, it can be revised.
 - status `ready` or `blocked` → the artifact does not exist yet.
-  **Refuse** and explicitly point to `/codev-propose` (or
-  `/codev-continue` in the extended profile) to create it.
+  **Refuse** and explicitly point to `/compagnon-propose` (or
+  `/compagnon-continue` in the extended profile) to create it.
 - status `skipped` → **refuse** and explain that this artifact is
   disabled by `skip_specs` in `change.yaml`.
 
@@ -76,13 +76,13 @@ Two forms, depending on the scope:
 Stay within the artifact's contract — expected sections, scenario format,
 checkboxes. The change is about **content**, not structure.
 
-Write in the language set by the `language:` key of `_codev/config.yaml`
+Write in the language set by the `language:` key of `_compagnon/config.yaml`
 (`en` when absent), whatever language the conversation is in. Structural
 keywords — headings, delta sections, requirement and scenario headings,
 the scenario lines, the normative words — keep the language the artifact
 you revise already writes them in, so that a change stays in one
 language; a file you create writes them in `keywordLanguage`, exactly as
-`codev instructions <artifact> --change "<name>" --json` gives them in
+`compagnon instructions <artifact> --change "<name>" --json` gives them in
 `template` and `keywords`. Never translate a keyword yourself.
 
 ### 4. Detect and report the ripple
@@ -102,22 +102,22 @@ After writing, compare the state of the change with what changed:
     flagged.
 - **`design` revised**:
   - a cited decision that disappears on one side and a constraint on the
-    other → flag it, but let the user decide (`codev decision list` can
+    other → flag it, but let the user decide (`compagnon decision list` can
     help).
 - **`tasks` revised**:
   - a task that contradicts a requirement in `specs/` → name the
     requirement at stake.
 
 **Report**, **suggest** the next action (often: "run
-`/codev-update specs …`" or "delete `_codev/changes/<name>/specs/<capability>/spec.md`"),
+`/compagnon-update specs …`" or "delete `_compagnon/changes/<name>/specs/<capability>/spec.md`"),
 but **do not act** without explicit confirmation.
 
-### 5. Final guardrail — `codev validate`
+### 5. Final guardrail — `compagnon validate`
 
 Whatever the ripple, at the end, run:
 
 ```bash
-codev validate "<name>"
+compagnon validate "<name>"
 ```
 
 Relay the report as is. If `validate` reports errors, cite the stable
@@ -128,9 +128,9 @@ codes; do not rewrite the human messages.
 One or two sentences:
 
 - the file or files touched;
-- the `codev validate` verdict;
-- the recommended next action — often `/codev-apply` (if the revision
-  affects the implementation) or `/codev-archive` (if the acknowledged gap
+- the `compagnon validate` verdict;
+- the recommended next action — often `/compagnon-apply` (if the revision
+  affects the implementation) or `/compagnon-archive` (if the acknowledged gap
   is closed).
 
 {{fragment:memory-capture}}
@@ -139,15 +139,15 @@ One or two sentences:
 
 The step 6 summary, preceded by the ripple report if there is one and its
 status (accepted by the user, declined, deferred to a separate
-`/codev-update`).
+`/compagnon-update`).
 
 ## Guardrails
 
 - **No code** — every path written by this skill lives under
-  `_codev/changes/<name>/`. Refuse if the user asks to adjust code: that is
-  `/codev-apply`'s job after the revision.
+  `_compagnon/changes/<name>/`. Refuse if the user asks to adjust code: that is
+  `/compagnon-apply`'s job after the revision.
 - **No creation** — if the requested artifact does not exist, refuse and
-  point to `/codev-propose`. Never create a `proposal.md`, `design.md` or
+  point to `/compagnon-propose`. Never create a `proposal.md`, `design.md` or
   `tasks.md` from scratch in this skill.
 - **Nothing archived** — a change living under `changes/archive/` is
   history. Refuse and remind the user that correcting it requires

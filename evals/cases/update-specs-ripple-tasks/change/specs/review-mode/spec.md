@@ -9,7 +9,7 @@ mode is in effect and how much material the reviewers would read.
 
 ### Requirement: The project and a change set the review mode
 
-`_codev/config.yaml` SHALL accept a `review:` mapping whose `mode` is
+`_compagnon/config.yaml` SHALL accept a `review:` mapping whose `mode` is
 `inline` or `isolated`. A change's `change.yaml` SHALL accept the same
 `review:` mapping. The effective mode of a change SHALL be the change's
 `review.mode` when set, otherwise the project's, otherwise `inline`; its
@@ -29,28 +29,28 @@ any unknown key of that file does.
 
 - **GIVEN** a project whose configuration has no `review:` key and a
   change `add-auth` whose `change.yaml` has none either
-- **WHEN** the user runs `codev roles --at code.review --change add-auth
+- **WHEN** the user runs `compagnon roles --at code.review --change add-auth
   --json`
 - **THEN** `review.mode` is `inline` and `review.origin` is `default`
 
 #### Scenario: The project sets isolated
 
 - **GIVEN** a configuration with `review: { mode: isolated }`
-- **WHEN** the user runs `codev roles --at plan.challenge --json`
+- **WHEN** the user runs `compagnon roles --at plan.challenge --json`
 - **THEN** `review.mode` is `isolated` and `review.origin` is `project`
 
 #### Scenario: A change overrides the project
 
 - **GIVEN** a configuration with `review: { mode: isolated }` and a change
   `fix-typo` whose `change.yaml` sets `review: { mode: inline }`
-- **WHEN** the user runs `codev roles --at code.review --change fix-typo
+- **WHEN** the user runs `compagnon roles --at code.review --change fix-typo
   --json`
 - **THEN** `review.mode` is `inline` and `review.origin` is `change`
 
 #### Scenario: An unknown mode in the configuration
 
 - **GIVEN** a configuration with `review: { mode: parallel }`
-- **WHEN** the user runs `codev status --json`
+- **WHEN** the user runs `compagnon status --json`
 - **THEN** the exit code is 1 and `status[0].code` is
   `invalid_review_mode`
 - **AND** the message names `parallel`, `inline` and `isolated`
@@ -58,7 +58,7 @@ any unknown key of that file does.
 #### Scenario: An unknown mode in a change
 
 - **GIVEN** a change whose `change.yaml` sets `review: { mode: alone }`
-- **WHEN** the user runs `codev roles --at code.review --change <name>
+- **WHEN** the user runs `compagnon roles --at code.review --change <name>
   --json`
 - **THEN** the exit code is 1 and `status[0].code` is
   `invalid_review_mode`, naming `change.yaml`
@@ -67,12 +67,12 @@ any unknown key of that file does.
 
 - **GIVEN** a project inheriting a source whose configuration sets
   `review: { mode: isolated }`, and no `review:` key of its own
-- **WHEN** the user runs `codev roles --at code.review --json`
+- **WHEN** the user runs `compagnon roles --at code.review --json`
 - **THEN** `review.mode` is `inline` and `review.origin` is `default`
 
-### Requirement: `codev roles` measures the material of a reviewing step
+### Requirement: `compagnon roles` measures the material of a reviewing step
 
-`codev roles --json` SHALL carry a `review` object with `mode`, `origin`
+`compagnon roles --json` SHALL carry a `review` object with `mode`, `origin`
 and `material`; in a failure's document, `review` is `null`. `material` SHALL be `null` unless both `--change` and an
 `--at` among `plan.trace`, `plan.challenge` and `code.review` are given.
 Then it SHALL list what the reviewers of that step read, each file once,
@@ -101,7 +101,7 @@ sizes, never their content, and writes nothing.
 
 - **GIVEN** a change `add-auth` whose diff modifies two source files of
   1200 and 800 bytes
-- **WHEN** the user runs `codev roles --at code.review --change add-auth
+- **WHEN** the user runs `compagnon roles --at code.review --change add-auth
   --json`
 - **THEN** `review.material.files` lists both with `treatment: "full"`,
   `totalBytes` is 2000 and `summarized` is `false`
@@ -110,7 +110,7 @@ sizes, never their content, and writes nothing.
 
 - **GIVEN** a change whose diff modifies files of 100000, 60000 and 10000
   bytes
-- **WHEN** the user runs `codev roles --at code.review --change <name>
+- **WHEN** the user runs `compagnon roles --at code.review --change <name>
   --json`
 - **THEN** the 10000- and 60000-byte files are `full`, the 100000-byte
   file is `summarize`, and `summarized` is `true`
@@ -119,21 +119,21 @@ sizes, never their content, and writes nothing.
 
 - **GIVEN** a change with `proposal.md`, `design.md`, `tasks.md`, one
   spec delta, a `change.yaml` and a `review.md`
-- **WHEN** the user runs `codev roles --at plan.challenge --change <name>
+- **WHEN** the user runs `compagnon roles --at plan.challenge --change <name>
   --json`
 - **THEN** `review.material.files` lists the four planning files and
   neither `change.yaml` nor `review.md`
 
 #### Scenario: No material without a reviewing step
 
-- **WHEN** the user runs `codev roles --at code.implement --change <name>
-  --json`, or `codev roles --json`
+- **WHEN** the user runs `compagnon roles --at code.implement --change <name>
+  --json`, or `compagnon roles --json`
 - **THEN** `review.material` is `null` and `review.mode` is given
 
 #### Scenario: No diff, no material
 
 - **GIVEN** a project outside a git repository
-- **WHEN** the user runs `codev roles --at code.review --change <name>
+- **WHEN** the user runs `compagnon roles --at code.review --change <name>
   --json`
 - **THEN** `review.material` is `null`
 
@@ -141,11 +141,11 @@ sizes, never their content, and writes nothing.
 
 - **GIVEN** a change whose diff modifies `Cargo.lock`, a binary image, a
   symbolic link `docs/notes.md` and `src/lib.rs`
-- **WHEN** the user runs `codev roles --at code.review --change <name>
+- **WHEN** the user runs `compagnon roles --at code.review --change <name>
   --json`
 - **THEN** `review.material.files` lists only `src/lib.rs`
 
 #### Scenario: A failure carries no review
 
-- **WHEN** the user runs `codev roles --at plan.review --json`
+- **WHEN** the user runs `compagnon roles --at plan.review --json`
 - **THEN** the exit code is 1 and `review` is `null`

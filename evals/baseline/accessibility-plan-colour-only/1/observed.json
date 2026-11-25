@@ -99,7 +99,7 @@
         "output": 142,
         "toolCalls": 0,
         "sources": {
-          "codev review": 654,
+          "compagnon review": 654,
           "edit": 193
         }
       }
@@ -180,7 +180,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/inline-form-validation/review.md",
+    "path": "_compagnon/changes/inline-form-validation/review.md",
     "status": [],
     "steps": [
       {

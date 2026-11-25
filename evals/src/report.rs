@@ -84,11 +84,11 @@ pub fn markdown(score: &SuiteScore) -> String {
     let _ = writeln!(out, "# Role evaluation report\n");
     let _ = writeln!(
         out,
-        "- Date: {}\n- Model: {}\n- Claude Code: {}\n- codev: {}\n- Cases: {}\n- Repetitions: {}\n- Cost: {:.2} USD for one run of the suite (sum of the cases' medians), {:.2} USD in all",
+        "- Date: {}\n- Model: {}\n- Claude Code: {}\n- compagnon: {}\n- Cases: {}\n- Repetitions: {}\n- Cost: {:.2} USD for one run of the suite (sum of the cases' medians), {:.2} USD in all",
         run.date,
         run.model.as_deref().unwrap_or("Claude Code's default"),
         run.claude_version.as_deref().unwrap_or("unknown"),
-        run.codev_version.as_deref().unwrap_or("unknown"),
+        run.compagnon_version.as_deref().unwrap_or("unknown"),
         distinct,
         score.repetitions,
         score.cost_usd,
@@ -186,7 +186,7 @@ pub fn markdown(score: &SuiteScore) -> String {
         let _ = writeln!(
             out,
             "\n## `plan.write`\n\nPer repetition, every planning run pooled; then the median over the repetitions, \
-             with its range. No threshold: `codev-evals compare` judges these against the baseline.\n"
+             with its range. No threshold: `compagnon-evals compare` judges these against the baseline.\n"
         );
         let _ = writeln!(
             out,
@@ -222,7 +222,7 @@ pub fn markdown(score: &SuiteScore) -> String {
             out,
             "\n## `plan.update`\n\nPer repetition, every update run pooled: the share of runs whose every check \
              passes, the share of checks that pass, the runs that modified a file outside the change's folder; \
-             then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges \
+             then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges \
              these against the baseline.\n"
         );
         let _ = writeln!(
@@ -251,7 +251,7 @@ pub fn markdown(score: &SuiteScore) -> String {
             "\n## `code.implement`\n\nPer repetition, every implementation run pooled, the refusing cases apart: \
              the share of runs whose every check passes, the share of checks that pass, the share of acceptance \
              assertions that pass, the share of refusing runs that pass, the runs that modified a file outside \
-             the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` \
+             the step; then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` \
              judges these against the baseline.\n"
         );
         let _ = writeln!(
@@ -281,7 +281,7 @@ pub fn markdown(score: &SuiteScore) -> String {
             out,
             "\n## `{}`\n\nPer repetition, every {} run pooled: the share of runs whose every check \
              passes, the share of checks that pass, the runs that modified a file outside the step; then \
-             the median over the repetitions, with its range. No threshold: `codev-evals compare` judges \
+             the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges \
              these against the baseline, step by step and case by case.\n",
             step.as_str(),
             checked_noun(step)
@@ -642,7 +642,7 @@ mod tests {
         let mut o = observed("findings", &[], serde_json::json!([]));
         o.review = None;
         o.files.insert(
-            "_codev/changes/c/proposal.md".into(),
+            "_compagnon/changes/c/proposal.md".into(),
             Some("# Proposal\n".into()),
         );
         o.consumption = Some(crate::observed::Consumption {
@@ -703,11 +703,11 @@ mod tests {
         o.review = None;
         o.files = BTreeMap::from([
             (
-                "_codev/changes/c/proposal.md".to_string(),
+                "_compagnon/changes/c/proposal.md".to_string(),
                 Some("# P, revised\n".to_string()),
             ),
             (
-                "_codev/changes/c/specs/doctor/spec.md".to_string(),
+                "_compagnon/changes/c/specs/doctor/spec.md".to_string(),
                 Some("# D\n".to_string()),
             ),
         ]);
@@ -793,11 +793,11 @@ mod tests {
         o.review = Some(json!({"steps": [{"step": "code.review", "recorded": true}]}));
         o.files = BTreeMap::from([
             (
-                "_codev/changes/c/tasks.md".to_string(),
+                "_compagnon/changes/c/tasks.md".to_string(),
                 Some("- [x] 1.1 A\n".to_string()),
             ),
             (
-                "_codev/changes/c/proposal.md".to_string(),
+                "_compagnon/changes/c/proposal.md".to_string(),
                 Some("# P\n".to_string()),
             ),
         ]);
@@ -857,7 +857,7 @@ mod tests {
         let mut o = observed("findings", &[], serde_json::json!([]));
         o.review = None;
         o.files.insert(
-            "_codev/changes/c/proposal.md".into(),
+            "_compagnon/changes/c/proposal.md".into(),
             Some("# Proposition : X\n\n## What Changes\n\n- x\n".into()),
         );
         let s = suite(
@@ -882,7 +882,7 @@ mod tests {
 
     fn archive_suite() -> SuiteScore {
         use crate::case::Step;
-        use crate::merge::tests::{done_case, run_merged_by_hand, run_through_codev};
+        use crate::merge::tests::{done_case, run_merged_by_hand, run_through_compagnon};
         let c = done_case(
             "archive-merges-and-moves",
             Step::ChangeArchive,
@@ -897,7 +897,7 @@ mod tests {
             run(),
             vec![
                 case(&review, &observed("no-finding", &[], json!([]))),
-                crate::score::merge_case(&c, &run_through_codev(&c.id, &["Moved to: `x`"])),
+                crate::score::merge_case(&c, &run_through_compagnon(&c.id, &["Moved to: `x`"])),
                 crate::score::merge_case(&c, &run_merged_by_hand(&c.id, &["Done."])).at(2),
             ],
             Thresholds::default(),
@@ -911,7 +911,9 @@ mod tests {
         assert!(md.contains("## `change.archive`"), "{md}");
         assert!(md.contains("| 1 | 0.50 (0.00–1.00) |"), "{md}");
         assert!(
-            md.contains("- Check files under `_codev/` as `codev archive` leaves them: **failed**"),
+            md.contains(
+                "- Check files under `_compagnon/` as `compagnon archive` leaves them: **failed**"
+            ),
             "{md}"
         );
         assert!(md.contains("- Check says \"Moved to\": passed"), "{md}");

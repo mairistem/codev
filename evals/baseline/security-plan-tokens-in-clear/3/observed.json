@@ -58,7 +58,7 @@
         "output": 52,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 3123,
+          "compagnon roles": 3123,
           "skill": 4887
         }
       },
@@ -69,7 +69,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 102,
+          "compagnon review": 102,
           "output": 165
         }
       },
@@ -80,7 +80,7 @@
         "output": 5,
         "toolCalls": 1,
         "sources": {
-          "codev review": 4007
+          "compagnon review": 4007
         }
       },
       {
@@ -211,7 +211,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-api-tokens/review.md",
+    "path": "_compagnon/changes/add-api-tokens/review.md",
     "status": [],
     "steps": [
       {

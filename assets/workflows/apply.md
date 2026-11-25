@@ -1,8 +1,8 @@
-Implement the tasks of a codev change — work through each `- [ ]` box in
+Implement the tasks of a compagnon change — work through each `- [ ]` box in
 `tasks.md` in order, check them off as you go, stop at the first blocker.
 
 **Implementation boundary.** This workflow **writes project code**: it is
-the only codev workflow that touches anything outside the `_codev/` folder.
+the only Compagnon workflow that touches anything outside the `_compagnon/` folder.
 In return, it is strictly confined to the named change: it modifies no other
 change, it does not archive, it does not sync. Those are explicit next
 steps, for the user to request.
@@ -19,7 +19,7 @@ implicitly if there is only one active change).
 Steps 3 and 5 belong to a role. At each one, run:
 
 ```bash
-codev roles --at <step> --change "<name>" --json
+compagnon roles --at <step> --change "<name>" --json
 ```
 
 Apply every criterion of every role returned (`roles[].doneWhen`), the
@@ -35,30 +35,30 @@ configuration: skip the step, and say so in the summary.
 If the user named a change, use that one. Otherwise, run:
 
 ```bash
-codev list
+compagnon list
 ```
 
 - A single active change → use it.
 - Several active changes → ask the user which one, listing the names. Do
   not guess.
-- No active change → say so, and suggest `/codev-propose` to create one.
+- No active change → say so, and suggest `/compagnon-propose` to create one.
 
 Then check the planning:
 
 ```bash
-codev status --change "<name>" --json
+compagnon status --change "<name>" --json
 ```
 
 {{fragment:version-check}}
 
 If `isPlanningComplete` is `false`, stop: planning is not ready. Say which
-artifacts are missing and suggest `/codev-propose` or editing by hand.
+artifacts are missing and suggest `/compagnon-propose` or editing by hand.
 Implement nothing.
 
 ### 2. Read the tasks
 
 ```
-Read _codev/changes/<name>/tasks.md
+Read _compagnon/changes/<name>/tasks.md
 ```
 
 The expected format is strict:
@@ -75,10 +75,10 @@ it before continuing.
 
 Ask for the roles of this step once, before the first task: the
 developer's criteria apply to every task. The project's `rules` and
-`context` come from `codev instructions tasks --change "<name>" --json`.
+`context` come from `compagnon instructions tasks --change "<name>" --json`.
 
 **When the `developer` has a model** — `model` is not `null` in
-`codev roles --at code.implement --change "<name>" --json` — do not
+`compagnon roles --at code.implement --change "<name>" --json` — do not
 implement the tasks yourself: hand them to one sub-agent started with
 the `Agent` tool on that model. Its brief holds the change's name; the
 path of this skill, whose steps 2 to 4 it follows and no other; the
@@ -189,9 +189,9 @@ Otherwise, summarize:
   step 5, write "The review is disabled by configuration" instead,
 - **To decide** — from step 5: what only the user can decide, the
   suggested domains still `unticked` included, or "Nothing to decide".
-  `codev archive` refuses while a `high` finding is `open` or `disputed`,
-- "The change is ready to be archived. Run `/codev-archive` or
-  `codev archive` as the next step."
+  `compagnon archive` refuses while a `high` finding is `open` or `disputed`,
+- "The change is ready to be archived. Run `/compagnon-archive` or
+  `compagnon archive` as the next step."
 
 **Do not archive yourself.** The user must review first.
 

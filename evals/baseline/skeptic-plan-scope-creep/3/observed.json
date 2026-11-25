@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 3014,
+          "compagnon roles": 3014,
           "skill": 11398
         }
       },
@@ -49,7 +49,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 402
+          "compagnon review": 402
         }
       },
       {
@@ -59,7 +59,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 3475
+          "compagnon review": 3475
         }
       },
       {
@@ -69,7 +69,7 @@
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "codev review": 2201
+          "compagnon review": 2201
         }
       },
       {
@@ -100,7 +100,7 @@
         "output": 143,
         "toolCalls": 0,
         "sources": {
-          "codev review": 494
+          "compagnon review": 494
         }
       }
     ]
@@ -203,7 +203,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-csv-export/review.md",
+    "path": "_compagnon/changes/add-csv-export/review.md",
     "status": [],
     "steps": [
       {

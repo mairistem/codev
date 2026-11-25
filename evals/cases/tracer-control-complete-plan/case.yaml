@@ -7,4 +7,4 @@ planned: [an_active_session_is_served, an_idle_session_is_refused]
 summary: "Every capability, scenario, test and document is traced; nothing to fix."
 checks:
   fixed: []
-  unchanged: ["_codev/changes/add-session-timeout/tasks.md", "_codev/changes/add-session-timeout/specs/session-timeout/spec.md", "_codev/changes/add-session-timeout/proposal.md"]
+  unchanged: ["_compagnon/changes/add-session-timeout/tasks.md", "_compagnon/changes/add-session-timeout/specs/session-timeout/spec.md", "_compagnon/changes/add-session-timeout/proposal.md"]

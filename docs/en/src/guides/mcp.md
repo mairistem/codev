@@ -1,14 +1,14 @@
 # Jira and other MCP servers
 
-codev's skills can pull context from external systems through the MCP servers
+Compagnon's skills can pull context from external systems through the MCP servers
 connected to your Claude Code session. The CLI itself never talks to them: the
 skills detect what they need in your request and call the MCP tool directly.
 
-Today, one integration is available: `/codev-propose` reads a Jira ticket.
+Today, one integration is available: `/compagnon-propose` reads a Jira ticket.
 
 ## Jira
 
-When your request to `/codev-propose` contains a ticket identifier — anything
+When your request to `/compagnon-propose` contains a ticket identifier — anything
 matching `[A-Z]{2,}-\d+`, such as `PROJ-123` — and a Jira MCP tool is
 configured, the skill:
 
@@ -40,12 +40,12 @@ The name of the Jira tool depends on how the MCP server is registered in your
 Claude Code setup, so it is configured per project:
 
 ```yaml
-# _codev/config.yaml
+# _compagnon/config.yaml
 mcp:
   jira_tool: mcp__atlassian__getJiraIssue
 ```
 
-`codev init` fills it in for you when it finds a server whose name, command or
+`compagnon init` fills it in for you when it finds a server whose name, command or
 URL mentions Jira or Atlassian in `.mcp.json`, `.claude/settings.json` or
 `~/.claude.json`:
 
@@ -61,12 +61,12 @@ replaced by underscores — for example, a connector named
 `mcp__claude_ai_Atlassian_Rovo__getJiraIssue`. If yours differs, look for the
 exact name in the tool list of a Claude Code session and set it by hand.
 
-At install time, codev adds the tool to the `allowed-tools` of
-`codev-propose`, so the skill may call it and nothing else from that server.
+At install time, Compagnon adds the tool to the `allowed-tools` of
+`compagnon-propose`, so the skill may call it and nothing else from that server.
 After changing `mcp:`, regenerate the skills:
 
 ```bash
-codev update --force
+compagnon update --force
 ```
 
 Without `mcp.jira_tool`, ticket detection is inert: the skill behaves exactly
@@ -79,20 +79,20 @@ as it does in a project without any MCP integration.
 
 ## Adding another MCP integration
 
-MCP integrations are part of codev itself: each one is a configuration key and
+MCP integrations are part of Compagnon itself: each one is a configuration key and
 a placeholder in a workflow, so adding one — for example a Confluence page or
-a design tool — is a contribution to codev rather than a setting. The pattern
+a design tool — is a contribution to Compagnon rather than a setting. The pattern
 is the same as for Jira:
 
 1. Add a key under `mcp:` in the project configuration
-   (`crates/codev-engine/src/config.rs`).
+   (`crates/compagnon-engine/src/config.rs`).
 2. Carry it into the skill render context and substitute a placeholder such as
    `{{JIRA_MCP_TOOL}}` in both the `allowed-tools` and the body of the
-   workflow that uses it (`crates/codev-agents/src/claude.rs`).
+   workflow that uses it (`crates/compagnon-agents/src/claude.rs`).
 3. Describe the detection and the call in the workflow file under
    `assets/workflows/`, with a clean fallback when the key is absent.
 
 The existing skill is extended rather than duplicated: there is one
-`/codev-propose`, whatever the source of the request. See
-[CONTRIBUTING.md](https://github.com/mairistem/codev/blob/main/CONTRIBUTING.md)
+`/compagnon-propose`, whatever the source of the request. See
+[CONTRIBUTING.md](https://github.com/mairistem/compagnon/blob/main/CONTRIBUTING.md)
 to propose one.

@@ -1,3 +1,0 @@
-schema: spec-driven
-created: 2026-09-28
-goal: 'codev init becomes interactive: automatically detects the stack + configured MCPs (Jira in particular), asks two targeted questions (workflows, context), generates config.yaml with provenance comments. Default = 7 workflows instead of 3.'

@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-09-24
+goal: Add a 5-minute end-to-end tutorial to docs/compagnon.md + three Mermaid diagrams (cycle, crates, delta) to make the documentation self-contained and visual.
+skip_specs: true

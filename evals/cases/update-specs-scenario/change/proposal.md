@@ -17,15 +17,15 @@ project's language.
   automation is impossible and with the reason; tests follow the project's
   existing test suite, the conventions of its language, and its `rules`.
 - The `proposal` instruction asks Impact to name the affected documentation.
-- `/codev-propose`'s traceability check also verifies that a documentation
+- `/compagnon-propose`'s traceability check also verifies that a documentation
   task exists when Impact touches documented behavior, and that each
   scenario's covering task names an automated test.
-- `/codev-apply` writes tests following the existing suite first, then the
+- `/compagnon-apply` writes tests following the existing suite first, then the
   language's conventions and the project's `rules`; it finds the test command
   from the project instead of guessing, checks a task off only once its
   verification passes, and runs the full suite once before reporting the
   change as done.
-- `/codev-configure` proposes testing rules for `tasks`, grounded in the
+- `/compagnon-configure` proposes testing rules for `tasks`, grounded in the
   project's existing tests, with a compact reference of mainstream
   conventions (Rust, TypeScript/JavaScript, Python, Go, Java) to fall back on
   when the project has no tests yet.
@@ -51,8 +51,8 @@ None.
 - `assets/schemas/spec-driven/schema.yaml` (`proposal` and `tasks`
   instructions), `assets/workflows/propose.md`, `apply.md` and
   `configure.md`; the regenerated skills under `.claude/skills/`.
-- Tests asserting on instruction and skill text in `codev-engine` and
-  `codev-agents`.
+- Tests asserting on instruction and skill text in `compagnon-engine` and
+  `compagnon-agents`.
 - Documentation, in `docs/en` and `docs/fr`: `skills.md` (propose, apply,
   configure), `workflow.md` (apply step), `reference/configuration.md`
   (testing rules example); CHANGELOG.

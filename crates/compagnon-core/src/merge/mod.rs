@@ -1,0 +1,684 @@
+//! Semantic merge of a delta into a main spec, without any I/O.
+//!
+//! Two public entry points:
+//!
+//! - [`merge_into_existing`] for a capability that already has a main spec;
+//! - [`build_new_spec`] for a new capability (creates the file from the
+//!   delta's `## Purpose` and its `ADDED` requirements).
+//!
+//! Neither function touches the disk: the first produces a [`MergePlan`]
+//! (a list of edits on the existing source), the second returns the full
+//! content of the file to create. The shell (`compagnon-engine::sync`) takes
+//! care of executing it.
+
+pub mod edits;
+pub mod render;
+
+pub use edits::{Edit, apply_edits};
+
+use std::collections::BTreeMap;
+
+use crate::keywords::{self, Key};
+use crate::parser::ast::{Delta, DeltaSection, Spec};
+
+/// The merge plan for **one** existing main spec.
+///
+/// Once computed, the caller applies the edits to the spec source; the
+/// result is the new content to write (or to compare for idempotence).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MergePlan {
+    pub edits: Vec<Edit>,
+    /// Must the whole spec be deleted from disk?
+    ///
+    /// `true` when the change carries `retire_capabilities: true` and,
+    /// after applying the REMOVED entries, the main spec has no
+    /// requirement left. The shell routes this information: the core
+    /// does not know the absolute path of the file.
+    pub should_delete_spec: bool,
+}
+
+impl MergePlan {
+    pub fn is_empty(&self) -> bool {
+        self.edits.is_empty() && !self.should_delete_spec
+    }
+}
+
+/// What can go wrong during the merge.
+///
+/// The variants carry a stable `code` that can be exposed in the JSON
+/// contract, with the same rules as in the validator.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MergeError {
+    /// A `MODIFIED` targets a requirement that does not exist in the main spec.
+    ModifiedTargetMissing { name: String },
+    /// A `RENAMED.FROM` names no requirement of the main spec, and the
+    /// rename has not been applied already (`TO` is absent too).
+    RenameSourceMissing { name: String },
+    /// A `REMOVED` would leave the spec without any requirement.
+    ///
+    /// This requires `retire_capabilities: true` in `change.yaml`, and
+    /// deleting the spec file — two things this batch does not deliver
+    /// yet. We refuse rather than write a degenerate spec.
+    WouldLeaveSpecWithoutRequirement { name: String },
+    /// A delta targets a capability that has no main spec, but carries no
+    /// `## Purpose` — which is required to create the file.
+    NewCapabilityWithoutPurpose,
+    /// The existing main spec has no `## Requirements` section in which to
+    /// insert an `ADDED`. A rare case — it indicates a malformed spec that
+    /// must be fixed by hand before syncing.
+    NoRequirementsSection,
+}
+
+impl MergeError {
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::ModifiedTargetMissing { .. } => "modified_target_missing",
+            Self::RenameSourceMissing { .. } => "rename_source_missing",
+            Self::WouldLeaveSpecWithoutRequirement { .. } => "would_leave_spec_without_requirement",
+            Self::NewCapabilityWithoutPurpose => "new_capability_without_purpose",
+            Self::NoRequirementsSection => "no_requirements_section",
+        }
+    }
+
+    pub fn message(&self) -> String {
+        match self {
+            Self::ModifiedTargetMissing { name } => format!(
+                "MODIFIED: requirement `{name}` does not exist in the main spec — \
+                 use ADDED if it is new, or fix the name"
+            ),
+            Self::RenameSourceMissing { name } => format!(
+                "RENAMED: requirement `{name}` does not exist in the main spec — \
+                 use the exact name of an existing requirement"
+            ),
+            Self::WouldLeaveSpecWithoutRequirement { name } => format!(
+                "REMOVED: removing `{name}` would leave the spec without any requirement; \
+                 use `retire_capabilities: true` in `change.yaml` to retire the capability"
+            ),
+            Self::NewCapabilityWithoutPurpose => {
+                "new capability: the delta must carry `## Purpose` to create the main spec".into()
+            }
+            Self::NoRequirementsSection => {
+                "the main spec has no `## Requirements` section in which to insert an ADDED".into()
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for MergeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.message())
+    }
+}
+
+impl std::error::Error for MergeError {}
+
+/// Builds the plan for merging a delta into an existing main spec.
+///
+/// Does not touch the disk. No write happens if the function returns
+/// `Err` — the atomicity promised in `_compagnon/decisions/0001` depends on it.
+pub fn merge_into_existing(
+    spec_source: &str,
+    spec: &Spec,
+    delta: &Delta,
+    retire_capabilities: bool,
+) -> Result<MergePlan, MergeError> {
+    let _ = spec_source; // kept for future use (cross-section validation); the AST already carries the spans
+    let mut edits = Vec::new();
+
+    // Index the spec's requirements by name, to find MODIFIED and REMOVED
+    // targets in O(log n).
+    let by_name: BTreeMap<&str, usize> = spec
+        .requirements
+        .iter()
+        .enumerate()
+        .map(|(idx, r)| (r.name.as_str(), idx))
+        .collect();
+
+    // A `MODIFIED` carries the NEW name of a requirement renamed by the same
+    // delta (`modified_uses_old_name` enforces it), while the main spec still
+    // has the old one: resolve it through the rename.
+    let renamed_from: BTreeMap<&str, &str> = delta
+        .sections
+        .iter()
+        .filter_map(|s| match s {
+            DeltaSection::Renamed { renames, .. } => Some(renames),
+            _ => None,
+        })
+        .flatten()
+        .map(|r| (r.to.as_str(), r.from.as_str()))
+        .collect();
+    let find_modified = |name: &str| {
+        by_name
+            .get(name)
+            .or_else(|| renamed_from.get(name).and_then(|from| by_name.get(from)))
+            .copied()
+    };
+    // The requirements a MODIFIED rewrites whole, new heading included: their
+    // rename must not also edit the heading line — two overlapping edits.
+    let modified_targets: std::collections::BTreeSet<usize> = delta
+        .sections
+        .iter()
+        .filter_map(|s| match s {
+            DeltaSection::Modified { requirements, .. } => Some(requirements),
+            _ => None,
+        })
+        .flatten()
+        .filter_map(|r| find_modified(&r.name))
+        .collect();
+
+    // Count the REMOVED entries to detect a full emptying before writing.
+    let mut removed_count = 0usize;
+
+    for section in &delta.sections {
+        match section {
+            DeltaSection::Modified { requirements, .. } => {
+                for new_req in requirements {
+                    let Some(idx) = find_modified(&new_req.name) else {
+                        return Err(MergeError::ModifiedTargetMissing {
+                            name: new_req.name.clone(),
+                        });
+                    };
+                    let target = &spec.requirements[idx];
+                    // The target's span runs up to the next heading, so it
+                    // carries the blank line that separates it from the next
+                    // block. The canonical rendering ends on a single `\n`:
+                    // keep the original separation, or the next
+                    // `### Requirement:` ends up glued to this one.
+                    let original = &spec_source[target.span.byte_range.clone()];
+                    let separation = &original[original.trim_end().len()..];
+                    let mut replacement = render::requirement(new_req, spec.lang)
+                        .trim_end()
+                        .to_string();
+                    replacement.push_str(separation);
+                    edits.push(Edit::new(target.span.byte_range.clone(), replacement));
+                }
+            }
+            DeltaSection::Removed { removals, .. } => {
+                for removal in removals {
+                    let Some(&idx) = by_name.get(removal.name.as_str()) else {
+                        return Err(MergeError::ModifiedTargetMissing {
+                            name: removal.name.clone(),
+                        });
+                    };
+                    let target = &spec.requirements[idx];
+                    edits.push(Edit::new(target.span.byte_range.clone(), String::new()));
+                    removed_count += 1;
+                }
+            }
+            DeltaSection::Renamed { renames, .. } => {
+                for rename in renames {
+                    // Find the requirement by its old name; retitle *only* the
+                    // heading line, leaving the body and scenarios intact.
+                    let Some(&idx) = by_name.get(rename.from.as_str()) else {
+                        // Already renamed by an earlier sync: a no-op, for
+                        // idempotence. Otherwise the rename points at nothing
+                        // — the validator reports it, and the merge refuses
+                        // rather than drop it silently.
+                        if by_name.contains_key(rename.to.as_str()) {
+                            continue;
+                        }
+                        return Err(MergeError::RenameSourceMissing {
+                            name: rename.from.clone(),
+                        });
+                    };
+                    if modified_targets.contains(&idx) {
+                        continue;
+                    }
+                    let target = &spec.requirements[idx];
+                    let start = target.span.byte_range.start;
+                    // End of the heading line: first `\n` after `start`.
+                    let header_end = spec_source[start..]
+                        .find('\n')
+                        .map(|off| start + off)
+                        .unwrap_or(target.span.byte_range.end);
+                    let new_header = format!(
+                        "{} {}",
+                        keywords::text(Key::Requirement, spec.lang),
+                        rename.to
+                    );
+                    edits.push(Edit::new(start..header_end, new_header));
+                }
+            }
+            DeltaSection::Added { requirements, .. } => {
+                // Idempotence: an ADDED whose name already exists in the main
+                // spec is treated as a silent no-op.
+                // Re-applying the same sync must change nothing; otherwise a
+                // user who reruns it when in doubt writes a duplicate.
+                // An intended-but-conflicting ADDED is what the validator
+                // reports upstream, with a dedicated
+                // finding — not here.
+                let to_add: Vec<_> = requirements
+                    .iter()
+                    .filter(|r| !by_name.contains_key(r.name.as_str()))
+                    .collect();
+                if to_add.is_empty() {
+                    continue;
+                }
+                let end = spec
+                    .requirements_section_end
+                    .ok_or(MergeError::NoRequirementsSection)?;
+                // Insert before `end`, preceded by a blank line if the
+                // preceding character is not already one — to guarantee the
+                // same spacing as between two neighboring requirements.
+                let mut inserted = String::new();
+                let needs_leading_blank = spec_source[..end]
+                    .chars()
+                    .last()
+                    .map(|c| c != '\n')
+                    .unwrap_or(false);
+                if needs_leading_blank {
+                    inserted.push('\n');
+                }
+                let already_blank_before = spec_source[..end].ends_with("\n\n");
+                if !already_blank_before {
+                    inserted.push('\n');
+                }
+                for (i, new_req) in to_add.iter().enumerate() {
+                    if i > 0 {
+                        inserted.push('\n');
+                    }
+                    inserted.push_str(&render::requirement(new_req, spec.lang));
+                }
+                edits.push(Edit::new(end..end, inserted));
+            }
+        }
+    }
+
+    let would_empty = removed_count > 0 && removed_count >= spec.requirements.len();
+    if would_empty && !retire_capabilities {
+        // Name of the first REMOVED as the hook of the message — the user
+        // then knows where to start.
+        let first = delta
+            .sections
+            .iter()
+            .find_map(|s| match s {
+                DeltaSection::Removed { removals, .. } => removals.first(),
+                _ => None,
+            })
+            .map(|r| r.name.clone())
+            .unwrap_or_default();
+        return Err(MergeError::WouldLeaveSpecWithoutRequirement { name: first });
+    }
+
+    Ok(MergePlan {
+        edits,
+        should_delete_spec: would_empty && retire_capabilities,
+    })
+}
+
+/// Returns the full content of a **new** main spec from a new-capability
+/// delta.
+///
+/// Requires a `## Purpose` — without it, we would refuse to write a file
+/// with a placeholder nobody has approved. The spec is written in the
+/// language of the delta's keywords.
+pub fn build_new_spec(capability_path: &str, delta: &Delta) -> Result<String, MergeError> {
+    let purpose = delta
+        .purpose
+        .as_ref()
+        .ok_or(MergeError::NewCapabilityWithoutPurpose)?;
+
+    let lang = delta.lang;
+    let title = render::spec_title_from_capability(capability_path);
+    let mut out = String::new();
+    out.push_str(&keywords::text(Key::SpecTitle, lang).replace("{title}", &title));
+    out.push_str("\n\n");
+    out.push_str(keywords::text(Key::SpecPurpose, lang));
+    out.push_str("\n\n");
+    out.push_str(purpose.text.trim());
+    out.push_str("\n\n");
+    out.push_str(keywords::text(Key::SpecRequirements, lang));
+    out.push('\n');
+
+    // The ADDED entries (and only those) make up the initial body: REMOVED,
+    // MODIFIED and RENAMED make no sense for a blank capability, and are
+    // silently ignored — the validator would have reported them.
+    for section in &delta.sections {
+        if let DeltaSection::Added { requirements, .. } = section {
+            for req in requirements {
+                out.push('\n');
+                out.push_str(&render::requirement(req, lang));
+            }
+        }
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::{parse_delta, parse_spec};
+
+    fn parse_pair(spec_source: &str, delta_source: &str) -> (Spec, Delta) {
+        let spec = parse_spec(spec_source);
+        assert!(
+            !spec.has_errors(),
+            "spec source must be valid: {:?}",
+            spec.findings
+        );
+        let delta = parse_delta(delta_source);
+        assert!(
+            !delta.has_errors(),
+            "delta source must be valid: {:?}",
+            delta.findings
+        );
+        (spec.value, delta.value)
+    }
+
+    fn merged(spec_source: &str, delta_source: &str) -> String {
+        let (spec, delta) = parse_pair(spec_source, delta_source);
+        let plan = merge_into_existing(spec_source, &spec, &delta, false).unwrap();
+        apply_edits(spec_source, &plan.edits)
+    }
+
+    // ─────────────── MODIFIED ───────────────
+
+    #[test]
+    fn modified_replaces_the_block() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL emit a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Login\nThe system MUST emit a JWT token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** JWT\n";
+        let out = merged(spec_source, delta_source);
+        assert!(out.contains("The system MUST emit a JWT token"));
+        assert!(!out.contains("SHALL emit a token"));
+        // Purpose intact.
+        assert!(out.contains("## Purpose\n\nx.\n"));
+    }
+
+    #[test]
+    fn modified_keeps_the_blank_line_before_the_next_requirement() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: Logout\nThe system SHALL y.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Login\nThe system MUST x twice.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let out = merged(spec_source, delta_source);
+        assert!(
+            out.contains("- **THEN** b\n\n### Requirement: Logout"),
+            "the separation must survive the merge:\n{out}"
+        );
+    }
+
+    #[test]
+    fn modified_without_target_fails() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Ghost\nThe system SHALL y.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let (spec, delta) = parse_pair(spec_source, delta_source);
+        let err = merge_into_existing(spec_source, &spec, &delta, false).unwrap_err();
+        assert_eq!(err.code(), "modified_target_missing");
+        assert!(err.to_string().contains("Ghost"));
+    }
+
+    // ─────────────── REMOVED ───────────────
+
+    #[test]
+    fn removed_deletes_the_block_and_its_spacing() {
+        // Two requirements: the first is removed, the second stays identical
+        // to the character since the first one's span includes the spacing
+        // separating it from the second.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: Session\nThe system SHALL y.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n";
+        let delta_source = "## REMOVED Requirements\n\n### Requirement: Login\n**Reason**: obsolete\n**Migration**: none\n";
+        let out = merged(spec_source, delta_source);
+        assert!(!out.contains("Login"));
+        assert!(out.contains("### Requirement: Session"));
+    }
+
+    #[test]
+    fn removing_last_requirement_fails_without_flag() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Solo\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## REMOVED Requirements\n\n### Requirement: Solo\n**Reason**: retire\n**Migration**: none\n";
+        let (spec, delta) = parse_pair(spec_source, delta_source);
+        let err = merge_into_existing(spec_source, &spec, &delta, false).unwrap_err();
+        assert_eq!(err.code(), "would_leave_spec_without_requirement");
+        // Updated message — points to retire_capabilities.
+        assert!(err.to_string().contains("retire_capabilities"));
+    }
+
+    #[test]
+    fn full_removal_with_flag_retires_the_capability() {
+        // Same context as the refusal, but with `retire_capabilities: true`
+        // → plan `should_delete_spec` set to `true`, edits applied.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Solo\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## REMOVED Requirements\n\n### Requirement: Solo\n**Reason**: retire\n**Migration**: none\n";
+        let (spec, delta) = parse_pair(spec_source, delta_source);
+        let plan = merge_into_existing(spec_source, &spec, &delta, true).unwrap();
+        assert!(plan.should_delete_spec);
+    }
+
+    #[test]
+    fn partial_removal_with_flag_does_not_delete() {
+        // One requirement removed out of two: the flag is a silent no-op.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: Logout\nThe system SHALL y.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n";
+        let delta_source = "## REMOVED Requirements\n\n### Requirement: Login\n**Reason**: obsolete\n**Migration**: none\n";
+        let (spec, delta) = parse_pair(spec_source, delta_source);
+        let plan = merge_into_existing(spec_source, &spec, &delta, true).unwrap();
+        assert!(
+            !plan.should_delete_spec,
+            "Logout remains, the capability is not retired"
+        );
+        assert!(!plan.edits.is_empty(), "the REMOVED Login is applied");
+    }
+
+    // ─────────────── RENAMED ───────────────
+
+    #[test]
+    fn renamed_only_touches_the_heading() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Session Expiration\nThe system MUST expire.\n\n#### Scenario: Idle\n- **WHEN** idle\n- **THEN** expire\n";
+        let delta_source =
+            "## RENAMED Requirements\n\n- FROM: Session Expiration\n- TO: Session Timeout\n";
+        let out = merged(spec_source, delta_source);
+        assert!(out.contains("### Requirement: Session Timeout"));
+        assert!(!out.contains("### Requirement: Session Expiration"));
+        // The body is intact.
+        assert!(out.contains("The system MUST expire."));
+        assert!(out.contains("#### Scenario: Idle"));
+    }
+
+    #[test]
+    fn renamed_accepts_the_backticked_heading_form() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Session Expiration\nThe system MUST expire.\n\n#### Scenario: Idle\n- **WHEN** idle\n- **THEN** expire\n";
+        let delta_source = "## RENAMED Requirements\n\n- FROM: `### Requirement: Session Expiration`\n- TO: `### Requirement: Session Timeout`\n";
+        let out = merged(spec_source, delta_source);
+        assert!(out.contains("### Requirement: Session Timeout\n"), "{out}");
+        assert!(!out.contains("Session Expiration"));
+        // Applied once, the rename is a no-op the second time.
+        assert_eq!(merged(&out, delta_source), out);
+    }
+
+    #[test]
+    fn renamed_and_modified_together_apply_both() {
+        // MODIFIED uses the new name, as `modified_uses_old_name` requires.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Session Expiration\nThe system MUST expire.\n\n#### Scenario: Idle\n- **WHEN** idle\n- **THEN** expire\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Session Timeout\nThe system MUST expire after 15 minutes.\n\n#### Scenario: Idle\n- **WHEN** idle\n- **THEN** expire\n\n## RENAMED Requirements\n\n- FROM: Session Expiration\n- TO: Session Timeout\n";
+        let out = merged(spec_source, delta_source);
+        assert!(
+            out.contains(
+                "### Requirement: Session Timeout\n\nThe system MUST expire after 15 minutes."
+            ),
+            "{out}"
+        );
+        assert!(!out.contains("Session Expiration"), "{out}");
+        assert!(
+            out.contains("- **THEN** expire\n\n### Requirement: Login"),
+            "{out}"
+        );
+        assert_eq!(merged(&out, delta_source), out, "idempotent");
+    }
+
+    #[test]
+    fn renamed_from_an_unknown_requirement_fails() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## RENAMED Requirements\n\n- FROM: Log in\n- TO: Sign in\n";
+        let (spec, delta) = parse_pair(spec_source, delta_source);
+        let err = merge_into_existing(spec_source, &spec, &delta, false).unwrap_err();
+        assert_eq!(err.code(), "rename_source_missing");
+        assert!(err.to_string().contains("Log in"));
+    }
+
+    // ─────────────── ADDED ───────────────
+
+    #[test]
+    fn added_is_inserted_after_the_last_requirement() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## ADDED Requirements\n\n### Requirement: Session\nThe system SHALL y.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n";
+        let out = merged(spec_source, delta_source);
+        let login_pos = out.find("### Requirement: Login").unwrap();
+        let session_pos = out.find("### Requirement: Session").unwrap();
+        assert!(
+            login_pos < session_pos,
+            "the ADDED comes after the existing one"
+        );
+    }
+
+    #[test]
+    fn modifying_the_last_requirement_and_adding_one_keeps_both_whole() {
+        let spec_source = "# Auth\n\n## Purpose\n\nAuth.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Login\nThe system SHALL x, then y, then z.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b, longer than before\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n\n## ADDED Requirements\n\n### Requirement: Export\nThe system SHALL e.\n\n#### Scenario: U\n- **WHEN** f\n- **THEN** g\n";
+        let out = merged(spec_source, delta_source);
+        let login = out.find("### Requirement: Login").unwrap();
+        let export = out.find("### Requirement: Export").unwrap();
+        assert!(login < export, "{out}");
+        let login_block = &out[login..export];
+        assert!(
+            login_block.contains("- **THEN** b, longer than before")
+                && login_block.contains("#### Scenario: T\n\n- **WHEN** c\n- **THEN** d\n"),
+            "Login is whole before Export: {out}"
+        );
+        assert!(
+            out.ends_with("#### Scenario: U\n\n- **WHEN** f\n- **THEN** g\n"),
+            "Export closes the spec: {out}"
+        );
+        assert_eq!(
+            merged(&out, delta_source),
+            out,
+            "a second merge changes nothing"
+        );
+    }
+
+    #[test]
+    fn added_precedes_a_following_free_section() {
+        // ## Notes after ## Requirements: the ADDED must be inserted BEFORE it.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## Notes\n\nBonus.\n";
+        let delta_source = "## ADDED Requirements\n\n### Requirement: Session\nThe system SHALL y.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n";
+        let out = merged(spec_source, delta_source);
+        let session_pos = out.find("### Requirement: Session").unwrap();
+        let notes_pos = out.find("## Notes").unwrap();
+        assert!(
+            session_pos < notes_pos,
+            "the ADDED is inserted BEFORE the following free section"
+        );
+        // Notes stays intact.
+        assert!(out.contains("## Notes\n\nBonus.\n"));
+    }
+
+    // ─────────────── build_new_spec ───────────────
+
+    #[test]
+    fn build_new_spec_with_purpose_and_added() {
+        let delta_source = "## Purpose\n\nHandles authentication.\n\n## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta = parse_delta(delta_source).value;
+        let content = build_new_spec("user-auth", &delta).unwrap();
+
+        assert!(content.starts_with("# User Auth Specification\n\n"));
+        assert!(content.contains("## Purpose\n\nHandles authentication.\n"));
+        assert!(content.contains("## Requirements\n"));
+        assert!(content.contains("### Requirement: Login"));
+    }
+
+    #[test]
+    fn build_new_spec_without_purpose_fails() {
+        let delta_source = "## ADDED Requirements\n\n### Requirement: X\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta = parse_delta(delta_source).value;
+        let err = build_new_spec("x", &delta).unwrap_err();
+        assert_eq!(err.code(), "new_capability_without_purpose");
+    }
+
+    // ─────────────── invariants ───────────────
+
+    #[test]
+    fn added_with_already_present_name_is_silently_ignored() {
+        // Re-application case: the spec already contains `Login`, the delta
+        // asks for `ADDED: Login`. It is skipped to preserve idempotence.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let out = merged(spec_source, delta_source);
+        assert_eq!(out, spec_source, "already present ADDED = no-op");
+    }
+
+    #[test]
+    fn sync_is_idempotent_after_two_passes() {
+        // Apply the same delta twice — the second pass must return exactly
+        // the same content as the first.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Login\nThe system MUST y.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+
+        let after_one = merged(spec_source, delta_source);
+        let after_two = merged(&after_one, delta_source);
+        assert_eq!(after_one, after_two, "sync must be idempotent");
+    }
+
+    #[test]
+    fn edit_construction_is_stable() {
+        let edit = Edit::new(0..5, "abc");
+        assert_eq!(edit.byte_range, 0..5);
+        assert_eq!(edit.replacement, "abc");
+    }
+
+    // ─────────────── languages ───────────────
+
+    const FR_SPEC: &str = "## Objet\n\nCongés.\n\n## Exigences\n\n### Exigence : Annulation\nLe portail DOIT annuler.\n\n#### Scénario : Dans les temps\n- **WHEN** a\n- **THEN** b\n";
+
+    #[test]
+    fn a_french_requirement_merged_into_a_french_spec_stays_french() {
+        let delta = "## Exigences MODIFIÉES\n\n### Exigence : Annulation\nLe portail DOIT annuler jusqu'à la veille.\n\n#### Scénario : Trop tard\n- **WHEN** c\n- **THEN** d\n";
+        let out = merged(FR_SPEC, delta);
+        assert!(
+            out.contains("### Exigence : Annulation\n\nLe portail DOIT annuler jusqu'à la veille."),
+            "{out}"
+        );
+        assert!(out.contains("#### Scénario : Trop tard\n"), "{out}");
+        assert!(
+            !out.contains("Requirement:") && !out.contains("Scenario:"),
+            "{out}"
+        );
+    }
+
+    #[test]
+    fn a_french_rename_retitles_in_french() {
+        let delta =
+            "## Exigences RENOMMÉES\n\n- DE : Annulation\n- VERS : Annulation d'une demande\n";
+        let out = merged(FR_SPEC, delta);
+        assert!(
+            out.contains("### Exigence : Annulation d'une demande\n"),
+            "{out}"
+        );
+    }
+
+    #[test]
+    fn an_english_delta_merged_into_a_french_spec_is_written_in_french() {
+        let delta = "## ADDED Requirements\n\n### Requirement: Export\nThe system SHALL export.\n\n#### Scenario: Monthly\n- **WHEN** a\n- **THEN** b\n";
+        let out = merged(FR_SPEC, delta);
+        assert!(out.contains("### Exigence : Export\n"), "{out}");
+        assert!(out.contains("#### Scénario : Monthly\n"), "{out}");
+        assert!(!out.contains("### Requirement:"), "{out}");
+    }
+
+    #[test]
+    fn a_new_capability_from_a_french_delta_is_written_in_french() {
+        let delta_source = "## Objet\n\nGérer les congés.\n\n## Exigences AJOUTÉES\n\n### Exigence : Annulation\nLe portail DOIT annuler.\n\n#### Scénario : Dans les temps\n- **WHEN** a\n- **THEN** b\n";
+        let delta = parse_delta(delta_source).value;
+        let content = build_new_spec("conges", &delta).unwrap();
+        assert_eq!(
+            content,
+            "# Spécification Conges\n\n## Objet\n\nGérer les congés.\n\n## Exigences\n\n### Exigence : Annulation\n\nLe portail DOIT annuler.\n\n#### Scénario : Dans les temps\n\n- **WHEN** a\n- **THEN** b\n"
+        );
+        assert!(parse_spec(&content).findings.is_empty());
+    }
+
+    #[test]
+    fn an_english_merge_is_byte_identical() {
+        // Expected output produced by compagnon before the keyword catalog.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: Logout\nThe system SHALL w.\n\n#### Scenario: U\n- **WHEN** e\n- **THEN** f\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Login\nThe system MUST y.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## ADDED Requirements\n\n### Requirement: Export\nThe system SHALL z.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n\n## RENAMED Requirements\n\n- FROM: Logout\n- TO: Sign out\n";
+        assert_eq!(
+            merged(spec_source, delta_source),
+            "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\n\nThe system MUST y.\n\n#### Scenario: S\n\n- **WHEN** a\n- **THEN** b\n\n### Requirement: Sign out\nThe system SHALL w.\n\n#### Scenario: U\n- **WHEN** e\n- **THEN** f\n\n### Requirement: Export\n\nThe system SHALL z.\n\n#### Scenario: T\n\n- **WHEN** c\n- **THEN** d\n"
+        );
+    }
+}

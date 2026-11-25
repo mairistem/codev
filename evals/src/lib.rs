@@ -1,4 +1,4 @@
-//! The evaluation suite of codev's reviewing roles.
+//! The evaluation suite of compagnon's reviewing roles.
 //!
 //! Cases seed defects in small projects (and controls hold none); the
 //! runner has Claude Code review them with one role at a time; the scoring

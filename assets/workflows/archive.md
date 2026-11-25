@@ -1,12 +1,12 @@
-Close a codev change: merge its deltas into the main specs and move the
-folder to `_codev/changes/archive/<date>-<name>/`.
+Close a compagnon change: merge its deltas into the main specs and move the
+folder to `_compagnon/changes/archive/<date>-<name>/`.
 
-**When to use it.** After a successful `codev-apply`, when every task in
+**When to use it.** After a successful `compagnon-apply`, when every task in
 `tasks.md` is checked and the change is ready to be filed away.
 
 **Strict refusal on validation errors.** The CLI runs an internal
 `validate` pre-flight; if it reports an error, the skill does not insist
-and points to `codev validate` for the details.
+and points to `compagnon validate` for the details.
 
 ---
 
@@ -22,7 +22,7 @@ one active change).
 Without an explicit name:
 
 ```bash
-codev list
+compagnon list
 ```
 
 - A single active change → use it.
@@ -32,18 +32,18 @@ codev list
 Then:
 
 ```bash
-codev status --change "<name>" --json
+compagnon status --change "<name>" --json
 ```
 
 {{fragment:version-check}}
 
 If `isPlanningComplete` is `false`, stop: planning is not ready. Name what
-is missing and suggest `/codev-propose`; do not run `archive`.
+is missing and suggest `/compagnon-propose`; do not run `archive`.
 
 ### 2. Run the archive in JSON mode
 
 ```bash
-codev archive --change "<name>" --json
+compagnon archive --change "<name>" --json
 ```
 
 On **success** (exit 0), the JSON received is an `ArchiveReportV1` — a
@@ -59,11 +59,11 @@ public, versioned contract. Fields to use:
 On a **non-zero exit**, read `status[0].code`:
 
 - If `code == "validation_failed"` → reply **exactly**:
-  > The change has errors. Run `codev validate <name>` to see the details.
+  > The change has errors. Run `compagnon validate <name>` to see the details.
   Nothing more. Do not retry. Do not guess. Do not quote the human
   message (it may be reworded).
 - If `code == "review_blocked"` → reply **exactly**:
-  > The review record blocks archiving. Run `codev review --change <name>` to see what is left to decide.
+  > The review record blocks archiving. Run `compagnon review --change <name>` to see what is left to decide.
   Nothing more. Do not retry. Do not edit `review.md`: what blocks is a
   decision for the user, or a review step to run again.
 - For **any other code** → relay `status[0].message` as is, and stop.
@@ -89,13 +89,13 @@ error or a blocked review, or the raw CLI message on any other error.
 
 ## Guardrails
 
-- **Write nothing yourself** — everything goes through `codev archive`. The
+- **Write nothing yourself** — everything goes through `compagnon archive`. The
   skill never modifies specs or folders directly.
 - **Do not work around a review refusal** — a `review_blocked` stops the
   skill; it never writes an accepted risk or a deferral in the user's
   place.
 - **Do not work around a validation refusal** — a `validation_failed`
-  stops the skill. Fixing is the user's job, guided by `codev validate`,
+  stops the skill. Fixing is the user's job, guided by `compagnon validate`,
   not the skill's.
 - **Do not parse any JSON other than `archive`'s** — the skill knows the
   shape of no other contract.

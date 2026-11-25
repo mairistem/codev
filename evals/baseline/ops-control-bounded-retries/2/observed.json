@@ -48,7 +48,7 @@
         "output": 3,
         "toolCalls": 2,
         "sources": {
-          "codev review": 2324
+          "compagnon review": 2324
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 3,
         "toolCalls": 0,
         "sources": {
-          "codev review": 766,
+          "compagnon review": 766,
           "edit": 548
         }
       }
@@ -80,7 +80,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/fetch-exchange-rates/review.md",
+    "path": "_compagnon/changes/fetch-exchange-rates/review.md",
     "status": [],
     "steps": [
       {

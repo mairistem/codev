@@ -88,7 +88,7 @@
         "output": 341,
         "toolCalls": 0,
         "sources": {
-          "codev review": 600,
+          "compagnon review": 600,
           "output": 26
         }
       }
@@ -246,7 +246,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-birthday-greetings/review.md",
+    "path": "_compagnon/changes/add-birthday-greetings/review.md",
     "status": [],
     "steps": [
       {

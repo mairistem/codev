@@ -99,7 +99,7 @@
         "output": 9,
         "toolCalls": 0,
         "sources": {
-          "codev review": 685
+          "compagnon review": 685
         }
       }
     ]
@@ -264,7 +264,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/merge-duplicate-customers/review.md",
+    "path": "_compagnon/changes/merge-duplicate-customers/review.md",
     "status": [],
     "steps": [
       {

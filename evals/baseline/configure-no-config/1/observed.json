@@ -47,7 +47,7 @@
         "output": 16,
         "toolCalls": 2,
         "sources": {
-          "codev status": 199
+          "compagnon status": 199
         }
       },
       {
@@ -57,7 +57,7 @@
         "output": 3,
         "toolCalls": 0,
         "sources": {
-          "codev status": 412,
+          "compagnon status": 412,
           "shell": 44
         }
       }
@@ -67,12 +67,12 @@
   "review": null,
   "files": {},
   "messages": [
-    "I stopped before making any changes. The skill only runs on a project that already has `_codev/config.yaml`, and this one doesn't.\n\nThis project has no `_codev/`. Run `codev init` first, then come back to `/codev-configure`.\n\nI checked with `codev status --json`, which returned `no_codev_root`. The project root contains only `README.md`, `index.js`, `package.json` and `.claude/`. The skill never creates the config itself, so I didn't explore the project, draft a patch or ask for confirmation."
+    "I stopped before making any changes. The skill only runs on a project that already has `_compagnon/config.yaml`, and this one doesn't.\n\nThis project has no `_compagnon/`. Run `compagnon init` first, then come back to `/compagnon-configure`.\n\nI checked with `compagnon status --json`, which returned `no_compagnon_root`. The project root contains only `README.md`, `index.js`, `package.json` and `.claude/`. The skill never creates the config itself, so I didn't explore the project, draft a patch or ask for confirmation."
   ],
   "configure": {
     "before": null,
     "after": null,
-    "codevRoot": false,
-    "statusError": "no_codev_root: no codev project found from /private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1793099175-43364/configure-no-config-1 — run `codev init` at the project root"
+    "compagnonRoot": false,
+    "statusError": "no_compagnon_root: no compagnon project found from /private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/compagnon-evals-1793099175-43364/configure-no-config-1 — run `compagnon init` at the project root"
   }
 }

@@ -1,3 +1,0 @@
-schema: spec-driven
-created: 2026-09-23
-goal: 'Remove hardcoded MCP names from the skills: they are configured in _codev/config.yaml under an mcp: section and injected into the frontmatter at install time via a placeholder.'

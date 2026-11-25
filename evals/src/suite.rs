@@ -99,9 +99,13 @@ impl GitHistory<'_> {
             .then(|| String::from_utf8_lossy(&out.stdout).into_owned())
     }
 
-    /// The text of `path` at `git_ref`.
+    /// The text of `path` at `git_ref`, read through the product's rename:
+    /// a commit that predates it holds the planning root under its former
+    /// name, and its text names the former product.
     pub fn show(&self, git_ref: &str, path: &str) -> Option<String> {
         self.git(&["show", &format!("{git_ref}:{path}")])
+            .or_else(|| self.git(&["show", &format!("{git_ref}:{}", former_path(path)?)]))
+            .map(|text| compagnon_core::legacy::through_rename(&text))
     }
 
     /// The titles of the decisions at `git_ref`, by id.
@@ -112,7 +116,7 @@ impl GitHistory<'_> {
                 continue;
             };
             let title = self
-                .show(git_ref, &format!("_codev/decisions/{file}"))
+                .show(git_ref, &format!("_compagnon/decisions/{file}"))
                 .map(|text| decision_title(&text))
                 .unwrap_or_default();
             titles.insert(id, title);
@@ -121,7 +125,16 @@ impl GitHistory<'_> {
     }
 
     fn decision_files(&self, git_ref: &str) -> Vec<String> {
-        self.git(&["ls-tree", "--name-only", git_ref, "_codev/decisions/"])
+        self.git(&["ls-tree", "--name-only", git_ref, "_compagnon/decisions/"])
+            .filter(|out| !out.trim().is_empty())
+            .or_else(|| {
+                self.git(&[
+                    "ls-tree",
+                    "--name-only",
+                    git_ref,
+                    &former_path("_compagnon/decisions/")?,
+                ])
+            })
             .map(|out| {
                 out.lines()
                     .filter_map(|l| l.rsplit('/').next())
@@ -175,18 +188,27 @@ pub fn at_ref(case: &Case, history: &GitHistory) -> Result<AtRef, String> {
         if !requirements.contains_key(&id.capability) {
             let names = history
                 .requirement_names(&plan.git_ref, &id.capability)
-                .ok_or_else(|| unreadable(&format!("`_codev/specs/{}/spec.md`", id.capability)))?;
+                .ok_or_else(|| {
+                    unreadable(&format!("`_compagnon/specs/{}/spec.md`", id.capability))
+                })?;
             requirements.insert(id.capability.clone(), names);
         }
     }
     let decision_titles = history.decision_titles(&plan.git_ref);
     if !plan.decisions.is_empty() && decision_titles.is_empty() {
-        return Err(unreadable("`_codev/decisions/`"));
+        return Err(unreadable("`_compagnon/decisions/`"));
     }
     Ok(AtRef {
         requirements,
         decision_titles,
     })
+}
+
+/// `path` under the former planning root, when it lies under the current
+/// one.
+fn former_path(path: &str) -> Option<String> {
+    let rest = path.strip_prefix(compagnon_core::layout::PLANNING_DIR)?;
+    Some(format!("{}{rest}", compagnon_core::legacy::PLANNING_DIR))
 }
 
 /// `0007` from `0007-the-skills-dispatch.md`.
@@ -202,8 +224,8 @@ impl case::History for GitHistory<'_> {
     }
 
     fn requirement_names(&self, git_ref: &str, capability: &str) -> Option<Vec<String>> {
-        let text = self.show(git_ref, &format!("_codev/specs/{capability}/spec.md"))?;
-        let spec = codev_core::parser::parse_spec(&text);
+        let text = self.show(git_ref, &format!("_compagnon/specs/{capability}/spec.md"))?;
+        let spec = compagnon_core::parser::parse_spec(&text);
         Some(
             spec.value
                 .requirements
@@ -389,7 +411,7 @@ expected:\n  modified: [\"decisions::Creating a decision through the CLI\"]\n";
         };
         let plan = case::load("plan-x", yaml, &Fixture::default(), &catalog).unwrap();
         let nowhere =
-            std::env::temp_dir().join(format!("codev-evals-no-repo-{}", std::process::id()));
+            std::env::temp_dir().join(format!("compagnon-evals-no-repo-{}", std::process::id()));
         fs::create_dir_all(&nowhere).unwrap();
         let err = at_ref(&plan, &GitHistory { repo: &nowhere }).unwrap_err();
         assert!(
@@ -397,7 +419,7 @@ expected:\n  modified: [\"decisions::Creating a decision through the CLI\"]\n";
             "{err}"
         );
         assert!(
-            err.contains("_codev/specs/decisions/spec.md") && err.contains("--repo"),
+            err.contains("_compagnon/specs/decisions/spec.md") && err.contains("--repo"),
             "{err}"
         );
         let _ = fs::remove_dir_all(&nowhere);
@@ -405,7 +427,8 @@ expected:\n  modified: [\"decisions::Creating a decision through the CLI\"]\n";
 
     #[test]
     fn the_earlier_layout_is_one_repetition() {
-        let dir = std::env::temp_dir().join(format!("codev-evals-layout-{}", std::process::id()));
+        let dir =
+            std::env::temp_dir().join(format!("compagnon-evals-layout-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         let observation = |case: &str, error: Option<&str>| {
             serde_json::json!({"format": 1, "case": case, "error": error,

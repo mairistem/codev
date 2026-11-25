@@ -7,12 +7,12 @@
 
 ### Requirement: The `apply` skill guides the implementation of a change
 
-The codev catalog SHALL expose an `apply` workflow — installed under
-`.claude/skills/codev-apply/SKILL.md`, invocable as `/codev-apply` — whose
+The compagnon catalog SHALL expose an `apply` workflow — installed under
+`.claude/skills/compagnon-apply/SKILL.md`, invocable as `/compagnon-apply` — whose
 role is to process the unchecked tasks of a change's `tasks.md`, in file
 order, checking each box as it goes.
 
-When `codev roles --at code.implement` gives the `developer` a model, the
+When `compagnon roles --at code.implement` gives the `developer` a model, the
 skill SHALL hand the tasks to one sub-agent started on that model, with
 the change's name, the developer's criteria, the project's `rules` and
 `context` for the tasks, and any instruction the session itself runs
@@ -41,7 +41,7 @@ and says so in its summary.
 
 - **GIVEN** a project with a single active change whose `tasks.md` carries
   two unchecked tasks
-- **WHEN** the user types `/codev-apply`
+- **WHEN** the user types `/compagnon-apply`
 - **THEN** the skill implicitly resolves the active change
 - **AND** implements the first task, then checks it
 - **AND** implements the second task, then checks it
@@ -50,21 +50,21 @@ and says so in its summary.
 
 - **GIVEN** a `tasks.md` in which the first task is already checked `- [x]`
   and the second is not
-- **WHEN** the user types `/codev-apply`
+- **WHEN** the user types `/compagnon-apply`
 - **THEN** the skill skips the already checked task
 - **AND** starts with the first unchecked task
 
 #### Scenario: Ambiguity requires an explicit choice
 
 - **GIVEN** two active changes
-- **WHEN** the user types `/codev-apply` without a name
+- **WHEN** the user types `/compagnon-apply` without a name
 - **THEN** the skill asks which one to apply, listing both names
 
 #### Scenario: The developer's model implements the tasks
 
 - **GIVEN** a project with `roles: { developer: { model: sonnet } }` and a
   change with three unchecked tasks
-- **WHEN** the user types `/codev-apply`
+- **WHEN** the user types `/compagnon-apply`
 - **THEN** the skill starts one sub-agent on `sonnet` that implements and
   checks the three tasks
 - **AND** the session reviews the change's code and writes the summary
@@ -81,14 +81,14 @@ and says so in its summary.
 
 - **GIVEN** a project whose `developer` has a model, and a platform that
   fails to start the sub-agent twice
-- **WHEN** the user types `/codev-apply`
+- **WHEN** the user types `/compagnon-apply`
 - **THEN** the session implements the remaining tasks itself and its
   summary says the developer's model could not be used
 
 #### Scenario: Without a model, nothing changes
 
 - **GIVEN** a project whose `developer` has no model
-- **WHEN** the user types `/codev-apply`
+- **WHEN** the user types `/compagnon-apply`
 - **THEN** the skill implements the tasks in the session, without a
   sub-agent
 
@@ -105,15 +105,15 @@ is reviewed as it asks.
 #### Scenario: Isolated mode adds the sub-agent tool
 
 - **GIVEN** a configuration with `review: { mode: isolated }`
-- **WHEN** the user runs `codev update`
-- **THEN** the `allowed-tools` of `codev-propose` and `codev-apply` end
+- **WHEN** the user runs `compagnon update`
+- **THEN** the `allowed-tools` of `compagnon-propose` and `compagnon-apply` end
   with `Agent`
 - **AND** no other skill lists `Agent`
 
 #### Scenario: Inline mode leaves the tools as they were
 
 - **GIVEN** a configuration without `review:`
-- **WHEN** the user runs `codev update`
+- **WHEN** the user runs `compagnon update`
 - **THEN** no skill lists `Agent` in its `allowed-tools`
 - **AND** the `propose` and `apply` bodies still describe the isolated
   review
@@ -122,6 +122,6 @@ is reviewed as it asks.
 
 - **GIVEN** a configuration without `review:` and with `roles: {
   developer: { model: sonnet } }`
-- **WHEN** the user runs `codev update`
-- **THEN** the `allowed-tools` of `codev-apply` end with `Agent`
-- **AND** `codev-propose` does not list it
+- **WHEN** the user runs `compagnon update`
+- **THEN** the `allowed-tools` of `compagnon-apply` end with `Agent`
+- **AND** `compagnon-propose` does not list it

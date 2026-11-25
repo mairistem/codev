@@ -48,7 +48,7 @@
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "codev review": 2836
+          "compagnon review": 2836
         }
       },
       {
@@ -158,7 +158,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-invoices-api/review.md",
+    "path": "_compagnon/changes/add-invoices-api/review.md",
     "status": [],
     "steps": [
       {

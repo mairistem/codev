@@ -8,6 +8,6 @@ summary: "Replays the change 2026-10-12-forward-compatible-config in a project w
 expected:
   keyword_language: fr
   modified:
-    - "doctor::`codev doctor` runs a fixed list of read-only checks"
+    - "doctor::`compagnon doctor` runs a fixed list of read-only checks"
   collateral: []
   decisions: []

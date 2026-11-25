@@ -47,7 +47,7 @@
         "output": 16,
         "toolCalls": 2,
         "sources": {
-          "codev status": 5167
+          "compagnon status": 5167
         }
       },
       {
@@ -57,7 +57,7 @@
         "output": 6,
         "toolCalls": 0,
         "sources": {
-          "codev status": 466,
+          "compagnon status": 466,
           "shell": 50
         }
       }
@@ -67,12 +67,12 @@
   "review": null,
   "files": {},
   "messages": [
-    "I stopped at the skill's first step. This project has no `_codev/` folder: `codev status --json` returned `no_codev_root`, and the root holds only `README.md`, `index.js`, `package.json` and `.claude/`.\n\nThe skill won't create `_codev/config.yaml` itself, so I didn't get as far as reading the project, drafting a proposal or asking the confirmation question. Nothing was written.\n\nRun `codev init` first, then come back to `/codev-configure`.\n\nSeparately, the claude.ai Gmail, Google Calendar and Google Drive connectors need authorizing in your claude.ai connector settings before they can be used. This task didn't need them."
+    "I stopped at the skill's first step. This project has no `_compagnon/` folder: `compagnon status --json` returned `no_compagnon_root`, and the root holds only `README.md`, `index.js`, `package.json` and `.claude/`.\n\nThe skill won't create `_compagnon/config.yaml` itself, so I didn't get as far as reading the project, drafting a proposal or asking the confirmation question. Nothing was written.\n\nRun `compagnon init` first, then come back to `/compagnon-configure`.\n\nSeparately, the claude.ai Gmail, Google Calendar and Google Drive connectors need authorizing in your claude.ai connector settings before they can be used. This task didn't need them."
   ],
   "configure": {
     "before": null,
     "after": null,
-    "codevRoot": false,
-    "statusError": "no_codev_root: no codev project found from /private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1793099175-43364/configure-no-config-3 — run `codev init` at the project root"
+    "compagnonRoot": false,
+    "statusError": "no_compagnon_root: no compagnon project found from /private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/compagnon-evals-1793099175-43364/configure-no-config-3 — run `compagnon init` at the project root"
   }
 }

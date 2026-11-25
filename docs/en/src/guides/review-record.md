@@ -2,10 +2,10 @@
 
 When the skeptic and the experts challenge a plan, or the newcomer and the
 experts review the code, what they find is not left in the conversation.
-It goes to the change's review record, `_codev/changes/<name>/review.md`:
+It goes to the change's review record, `_compagnon/changes/<name>/review.md`:
 each finding with its severity, the evidence it rests on, and every answer
 it received — who fixed it, who disputed it and why, who accepted the risk.
-codev checks what can be checked, and `codev archive` will not close a
+Compagnon checks what can be checked, and `compagnon archive` will not close a
 change whose review is not settled.
 
 ## What a finding holds
@@ -89,14 +89,14 @@ No finding.
   finding is written once, under the role that rated it most severe, and
   lists every role that raised it, its own first. That role re-checks
   the answers. A role whose findings were all merged says `No finding.`;
-  `codev review` shows it as credited on the shared finding.
+  `compagnon review` shows it as credited on the shared finding.
 - **`Fallback:`** — the role's sub-agent failed twice and it reviewed
   inline, in the conversation.
 
-`codev validate` reports a `Mode:` other than `inline` or `isolated`, a
+`compagnon validate` reports a `Mode:` other than `inline` or `isolated`, a
 second `Mode:` or `Fallback:` line, and a `raised_by` that is not a list
 of distinct role ids starting with the finding's own role
-(`review_invalid`). A codev that predates these lines ignores them, and
+(`review_invalid`). A Compagnon that predates these lines ignores them, and
 warns about `raised_by` as an unknown field (`review_unknown_field`).
 
 ## The answer loop
@@ -130,9 +130,9 @@ A finding starts `open`. Then:
 `accepted-risk`, `deferred` and `rejected` are final: to revisit one, raise
 a new finding.
 
-## What codev checks
+## What Compagnon checks
 
-`codev validate` reads the record of every active change. It never judges
+`compagnon validate` reads the record of every active change. It never judges
 a finding — an `open` finding is the normal state of a review — but it
 checks everything that needs no judgement:
 
@@ -158,10 +158,10 @@ checks everything that needs no judgement:
 
 No check uses git or the network: they read the working tree.
 
-## codev review
+## compagnon review
 
 ```bash
-codev review --change add-sessions
+compagnon review --change add-sessions
 ```
 
 Shows the record step by step — each role, each finding with its severity,
@@ -174,22 +174,22 @@ an error.
 
 ## Archiving
 
-`codev archive` checks the review after validation. It refuses, with the
+`compagnon archive` checks the review after validation. It refuses, with the
 code `review_blocked`, when:
 
 - roles were active at `plan.challenge` or `code.review` and the record
   does not exist (`review_record_missing`), or has no section for that
   step (`review_step_missing`);
 - a `high` finding is still `open` or `disputed` (`review_unresolved`);
-- the record comes from a newer codev (`review_format_unsupported`).
+- the record comes from a newer Compagnon (`review_format_unsupported`).
 
-A step with no active role needs no section. `codev sync` does not look
+A step with no active role needs no section. `compagnon sync` does not look
 at the record.
 
 ## Changes started before the record
 
-A change planned with an earlier codev has no record, so archiving it is
-refused. Either run the review steps again — `/codev-apply` reviews the
+A change planned with an earlier Compagnon has no record, so archiving it is
+refused. Either run the review steps again — `/compagnon-apply` reviews the
 code and writes the record — or say explicitly that the change was not
 reviewed by turning its review roles off in its `change.yaml`:
 
@@ -200,9 +200,9 @@ roles:
 ```
 
 A team that does not use the skills at all sets the same in
-`_codev/config.yaml`. To keep everyone on a codev that enforces the gate,
-raise [`codev_version`](../reference/configuration.md) to the release that
-ships it: an older codev ignores `review.md` and archives anyway.
+`_compagnon/config.yaml`. To keep everyone on a Compagnon that enforces the gate,
+raise [`compagnon_version`](../reference/configuration.md) to the release that
+ships it: an older Compagnon ignores `review.md` and archives anyway.
 
 ## Edge cases
 
@@ -216,5 +216,5 @@ ships it: an older codev ignores `review.md` and archives anyway.
   large files are not compared.
 - **Windows**: `\` in a location reads as `/`, and `\r\n` line endings are
   ignored in the record and in the cited files.
-- **Monorepos**: paths are relative to the codev project root; a file
+- **Monorepos**: paths are relative to the Compagnon project root; a file
   outside it cannot be cited.

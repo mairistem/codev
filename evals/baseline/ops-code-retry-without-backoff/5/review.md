@@ -1,6 +1,6 @@
 # Review record: add-merchant-webhooks
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 

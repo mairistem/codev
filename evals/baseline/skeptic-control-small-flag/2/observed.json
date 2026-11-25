@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 292
+          "compagnon review": 292
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 16,
         "toolCalls": 5,
         "sources": {
-          "codev review": 301
+          "compagnon review": 301
         }
       },
       {
@@ -68,7 +68,7 @@
         "output": 30,
         "toolCalls": 1,
         "sources": {
-          "codev review": 192,
+          "compagnon review": 192,
           "file": 1878
         }
       },
@@ -110,7 +110,7 @@
         "output": 4,
         "toolCalls": 0,
         "sources": {
-          "codev review": 540
+          "compagnon review": 540
         }
       }
     ]
@@ -240,7 +240,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-quiet-flag/review.md",
+    "path": "_compagnon/changes/add-quiet-flag/review.md",
     "status": [],
     "steps": [
       {

@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 3850,
+          "compagnon roles": 3850,
           "skill": 11574
         }
       },
@@ -49,7 +49,7 @@
         "output": 3,
         "toolCalls": 2,
         "sources": {
-          "codev review": 1832
+          "compagnon review": 1832
         }
       },
       {
@@ -59,7 +59,7 @@
         "output": 8,
         "toolCalls": 0,
         "sources": {
-          "codev review": 625,
+          "compagnon review": 625,
           "edit": 447
         }
       }
@@ -81,7 +81,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-ticket-filters/review.md",
+    "path": "_compagnon/changes/add-ticket-filters/review.md",
     "status": [],
     "steps": [
       {

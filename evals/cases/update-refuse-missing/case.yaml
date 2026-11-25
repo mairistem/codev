@@ -6,7 +6,7 @@ ref: 8fb72d7f5c8876a123876122c9690468e956ed4d
 change: specify-core-commands
 artifact: design
 request: "Dans le design de ce change, ajoute une décision qui explique pourquoi ces specs décrivent le comportement actuel des commandes sans rien y changer."
-summary: "A design the change does not have: refused, pointing to /codev-propose."
+summary: "A design the change does not have: refused, pointing to /compagnon-propose."
 expected:
   kept: [proposal.md, tasks.md]
   refuse: true

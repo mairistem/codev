@@ -16,21 +16,21 @@ and Java.
 
 - **GIVEN** a TypeScript project whose `package.json` runs Jest and whose
   tests sit in `__tests__/` directories
-- **WHEN** the user runs `/codev-configure`
+- **WHEN** the user runs `/compagnon-configure`
 - **THEN** the proposed `tasks` rules name Jest and `__tests__/`
 - **AND** they do not recommend another runner
 
 #### Scenario: A project without tests gets the language's conventions
 
 - **GIVEN** a Go project with no `_test.go` file
-- **WHEN** the user runs `/codev-configure`
+- **WHEN** the user runs `/compagnon-configure`
 - **THEN** the proposed `tasks` rules describe table-driven `_test.go`
   tests in the same package, run with `go test ./...` and checked with
   `go vet`
 
 #### Scenario: The skill carries the conventions reference
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the compagnon workflow catalog
 - **WHEN** the `configure` workflow is resolved
 - **THEN** its `body` states that the project's existing practice wins
 - **AND** it carries conventions for Rust, TypeScript/JavaScript, Python, Go

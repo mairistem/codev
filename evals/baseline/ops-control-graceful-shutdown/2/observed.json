@@ -48,7 +48,7 @@
         "output": 7,
         "toolCalls": 1,
         "sources": {
-          "codev review": 3527
+          "compagnon review": 3527
         }
       },
       {
@@ -78,7 +78,7 @@
         "output": 47,
         "toolCalls": 3,
         "sources": {
-          "codev review": 491
+          "compagnon review": 491
         }
       },
       {
@@ -88,7 +88,7 @@
         "output": 10,
         "toolCalls": 0,
         "sources": {
-          "codev review": 631,
+          "compagnon review": 631,
           "edit": 438,
           "output": 57
         }
@@ -166,7 +166,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-mail-worker/review.md",
+    "path": "_compagnon/changes/add-mail-worker/review.md",
     "status": [],
     "steps": [
       {

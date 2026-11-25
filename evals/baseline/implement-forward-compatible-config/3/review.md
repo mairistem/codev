@@ -1,6 +1,6 @@
 # Review record: forward-compatible-config
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
@@ -13,7 +13,7 @@ Mode: inline.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/config.rs:282-305"
+location: "crates/compagnon-engine/src/config.rs:282-305"
 evidence: |
   fn key_line(lines: &[&str], key: &str, parent: Option<u32>) -> Option<u32> {
               .take_while(|(_, line)| !top_level(line) || line.starts_with('#'))
@@ -28,7 +28,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/config.rs (top_level_key_line, nested_key_line)"
+    ref: "crates/compagnon-engine/src/config.rs (top_level_key_line, nested_key_line)"
   - status: fixed
     by: newcomer
 ```
@@ -38,10 +38,10 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/doctor.rs:232-238"
+location: "crates/compagnon-core/src/doctor.rs:232-238"
 evidence: |
           let fix = if requirement_unsatisfied {
-              "codev self-update".to_string()
+              "compagnon self-update".to_string()
 recommendation: >-
   Keep both branches as `&str`: `not_ok` already takes
   `impl Into<String>`, so the two `.to_string()` calls are noise.
@@ -50,7 +50,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-core/src/doctor.rs (config.keys fix as &str)"
+    ref: "crates/compagnon-core/src/doctor.rs (config.keys fix as &str)"
   - status: fixed
     by: newcomer
 ```
@@ -60,7 +60,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-cli/src/commands.rs:3949"
+location: "crates/compagnon-cli/src/commands.rs:3949"
 evidence: |
                   "message": item["findings"][0]["message"],
 recommendation: >-
@@ -72,7 +72,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-cli/src/commands.rs (validate_reports_an_unknown_config_key_as_a_warning)"
+    ref: "crates/compagnon-cli/src/commands.rs (validate_reports_an_unknown_config_key_as_a_warning)"
   - status: fixed
     by: newcomer
 ```
@@ -82,7 +82,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/validate/mod.rs:156-161"
+location: "crates/compagnon-engine/src/validate/mod.rs:156-161"
 evidence: |
       let file = layout.config_file();
       let relative = file
@@ -90,14 +90,14 @@ evidence: |
 recommendation: >-
   `config::resolve` builds the same project-relative, slash-separated path
   for its warnings: share one helper in `config` so that the warning of
-  `codev status` and the finding of `codev validate` cannot name the file
+  `compagnon status` and the finding of `compagnon validate` cannot name the file
   differently.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/config.rs (relative_config_file, shown_path), crates/codev-engine/src/validate/mod.rs"
+    ref: "crates/compagnon-engine/src/config.rs (relative_config_file, shown_path), crates/compagnon-engine/src/validate/mod.rs"
   - status: fixed
     by: newcomer
 ```

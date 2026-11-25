@@ -1,6 +1,6 @@
 # Review record: role-models
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## plan.challenge
 
@@ -15,7 +15,7 @@ severity: high
 confidence: high
 location: "tasks.md#4. Measure (decision 0008)"
 evidence: |
-  - [ ] 4.1 Paste in the pull request the per-role comparison on Sonnet of the design, then run `codev-evals run --step review --repeat 3 --jobs 4` with this branch's binary and compare with `codev-evals compare evals/baseline <out> --quality-only`; verified by both pasted in the pull request
+  - [ ] 4.1 Paste in the pull request the per-role comparison on Sonnet of the design, then run `compagnon-evals run --step review --repeat 3 --jobs 4` with this branch's binary and compare with `compagnon-evals compare evals/baseline <out> --quality-only`; verified by both pasted in the pull request
 recommendation: "Cover the isolated review in the suite first, by its own change, then measure this change on that path with cost deciding; or propose a deviation from 0008 and drop the cost claim. (performance) The release note promises about half the cost for the isolated mode, but the only figure comes from single-session runs: word it as measured, or measure the isolated path with per-call token tracing."
 raised_by: [skeptic, performance]
 history:
@@ -36,7 +36,7 @@ severity: medium
 confidence: high
 location: "design.md#Decision: Measured by the per-role results above, and a run of the change"
 evidence: |
-  measures the role on a model through `CODEV_EVAL_MODEL`, not through the
+  measures the role on a model through `COMPAGNON_EVAL_MODEL`, not through the
 recommendation: "Measure the isolated path, or state the assumption as unverified and restate the saving as a single-session one."
 history:
   - status: open
@@ -56,7 +56,7 @@ severity: low
 confidence: high
 location: "specs/roles/spec.md#Requirement: A role may carry the model its sub-agent runs on"
 evidence: |
-  A role's mapping under `roles:` in `_codev/config.yaml` MAY set `model:`
+  A role's mapping under `roles:` in `_compagnon/config.yaml` MAY set `model:`
 recommendation: "Report a model on a role that serves no review step, or say it is ignored, with a scenario and a test."
 history:
   - status: open
@@ -75,21 +75,21 @@ No finding.
 
 ### migration
 
-#### R-migration-1 A shared source that sets `model:` silently drops its context and rules in consumer projects still on an older codev
+#### R-migration-1 A shared source that sets `model:` silently drops its context and rules in consumer projects still on an older compagnon
 
 ```yaml
 severity: high
 confidence: high
 location: "design.md#Risks / Trade-offs"
 evidence: |
-  - [An older codev reads a configuration with `model:`] → The `roles:`
+  - [An older compagnon reads a configuration with `model:`] → The `roles:`
 recommendation: "Say in the release note and the configuration reference that a shared source must not set model: until its consumers run this release, and stop parsing an inherited source's roles: strictly, with an engine test."
 history:
   - status: open
     by: migration
   - status: fixed
     by: architect
-    note: "The release note and task 3.1 say so; an inherited source's roles: is skipped, not parsed; scenario \"A source's role setting from a newer codev\" and the engine test a_source_s_unknown_role_key_keeps_its_rules."
+    note: "The release note and task 3.1 say so; an inherited source's roles: is skipped, not parsed; scenario \"A source's role setting from a newer compagnon\" and the engine test a_source_s_unknown_role_key_keeps_its_rules."
     ref: "design.md#Decision: A source's `roles:` is not parsed, and a model off the review steps is flagged"
   - status: fixed
     by: migration
@@ -136,7 +136,7 @@ No finding.
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-core/src/roles.rs:383-389"
+location: "crates/compagnon-core/src/roles.rs:383-389"
 evidence: |
   fn parse_project_model(text: &str) -> Option<Option<Model>> {
 recommendation: "Return a named type such as ProjectModel { Inherit, Use(Model) }."
@@ -146,7 +146,7 @@ history:
   - status: fixed
     by: developer
     note: "A ProjectModel enum with parse and model(); the callers read it by name."
-    ref: "crates/codev-core/src/roles.rs"
+    ref: "crates/compagnon-core/src/roles.rs"
   - status: fixed
     by: newcomer
 ```
@@ -156,7 +156,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/roles.rs:574-580"
+location: "crates/compagnon-core/src/roles.rs:574-580"
 evidence: |
   "{file}: role `{id}` has the model `{model}`; use `opus`, `sonnet`, `haiku` or `inherit`"
 recommendation: "Build the message from constants."
@@ -166,7 +166,7 @@ history:
   - status: fixed
     by: developer
     note: "ProjectModel::ALLOWED feeds the message, next to Model::ALLOWED, with a comment that only a project may write inherit."
-    ref: "crates/codev-core/src/roles.rs"
+    ref: "crates/compagnon-core/src/roles.rs"
   - status: fixed
     by: newcomer
 ```
@@ -176,7 +176,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/roles.rs:1276-1286"
+location: "crates/compagnon-core/src/roles.rs:1276-1286"
 evidence: |
   fn the_default_models_follow_the_measure() {
 recommendation: "Rename the test and point the comment to the docs."
@@ -186,7 +186,7 @@ history:
   - status: fixed
     by: developer
     note: "Renamed no_built_in_role_carries_a_model; the comment points to the roles chapter."
-    ref: "crates/codev-core/src/roles.rs"
+    ref: "crates/compagnon-core/src/roles.rs"
   - status: fixed
     by: newcomer
 ```
@@ -196,7 +196,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-cli/src/docs.rs:536-546"
+location: "crates/compagnon-cli/src/docs.rs:536-546"
 evidence: |
   "73",
 recommendation: "Use a more specific needle, with a comment."
@@ -206,7 +206,7 @@ history:
   - status: fixed
     by: developer
     note: "A comment says it checks the measured cost of the isolated mode in both editions; the needle stays bare because the French edition writes a non-breaking space before %."
-    ref: "crates/codev-cli/src/docs.rs"
+    ref: "crates/compagnon-cli/src/docs.rs"
   - status: fixed
     by: newcomer
 ```

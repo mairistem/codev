@@ -48,7 +48,7 @@
         "output": 8,
         "toolCalls": 2,
         "sources": {
-          "codev review": 2605
+          "compagnon review": 2605
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 108,
         "toolCalls": 0,
         "sources": {
-          "codev review": 357,
+          "compagnon review": 357,
           "edit": 279,
           "output": 124
         }
@@ -81,7 +81,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-invoice-due-dates/review.md",
+    "path": "_compagnon/changes/add-invoice-due-dates/review.md",
     "status": [],
     "steps": [
       {

@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 2,
         "sources": {
-          "codev roles": 7625,
+          "compagnon roles": 7625,
           "skill": 68
         }
       },
@@ -81,7 +81,7 @@
         "output": 3,
         "toolCalls": 0,
         "sources": {
-          "codev review": 604,
+          "compagnon review": 604,
           "edit": 481,
           "output": 451
         }
@@ -104,7 +104,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-quiet-flag/review.md",
+    "path": "_compagnon/changes/add-quiet-flag/review.md",
     "status": [],
     "steps": [
       {

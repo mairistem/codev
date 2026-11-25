@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Questions and discussions
-    url: https://github.com/mairistem/codev/discussions
+    url: https://github.com/mairistem/compagnon/discussions
     about: For anything that is not a bug report or a feature request.
   - name: Contributing guide
-    url: https://github.com/mairistem/codev/blob/main/CONTRIBUTING.md
-    about: How to propose a change to codev.
+    url: https://github.com/mairistem/compagnon/blob/main/CONTRIBUTING.md
+    about: How to propose a change to compagnon.
   - name: Report a security vulnerability
-    url: https://github.com/mairistem/codev/security/advisories/new
+    url: https://github.com/mairistem/compagnon/security/advisories/new
     about: Please report vulnerabilities privately, never in a public issue.

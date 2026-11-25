@@ -48,7 +48,7 @@
         "output": 4,
         "toolCalls": 2,
         "sources": {
-          "codev review": 1321
+          "compagnon review": 1321
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 4,
         "toolCalls": 0,
         "sources": {
-          "codev review": 569,
+          "compagnon review": 569,
           "edit": 409
         }
       }
@@ -80,7 +80,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-newsletter-form/review.md",
+    "path": "_compagnon/changes/add-newsletter-form/review.md",
     "status": [],
     "steps": [
       {

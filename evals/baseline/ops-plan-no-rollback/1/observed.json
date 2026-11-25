@@ -88,7 +88,7 @@
         "output": 143,
         "toolCalls": 0,
         "sources": {
-          "codev review": 491,
+          "compagnon review": 491,
           "output": 31
         }
       }
@@ -173,7 +173,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/switch-payment-provider/review.md",
+    "path": "_compagnon/changes/switch-payment-provider/review.md",
     "status": [],
     "steps": [
       {

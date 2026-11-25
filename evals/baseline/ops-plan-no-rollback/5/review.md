@@ -1,6 +1,6 @@
 # Review record: switch-payment-provider
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## plan.challenge
 

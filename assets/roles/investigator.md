@@ -6,7 +6,7 @@ question: What does the project already do?
 done_when:
   - Read `context` and `rules`, then inspect the relevant
     implementation, nearby tests, configuration and documentation
-    outside `_codev/`. Stay read-only, and keep it proportionate to the
+    outside `_compagnon/`. Stay read-only, and keep it proportionate to the
     change
   - Ground the scope, the approach and the tasks in what you find
   - Distinguish observed behavior, your assumptions, and what you

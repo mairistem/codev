@@ -88,7 +88,7 @@
         "output": 131,
         "toolCalls": 0,
         "sources": {
-          "codev review": 452,
+          "compagnon review": 452,
           "output": 28
         }
       }
@@ -169,7 +169,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/inline-form-validation/review.md",
+    "path": "_compagnon/changes/inline-form-validation/review.md",
     "status": [],
     "steps": [
       {

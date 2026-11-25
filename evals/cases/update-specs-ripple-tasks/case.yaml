@@ -5,7 +5,7 @@ kind: seeded
 ref: 4b59a2c20cee1baf7456e08c0e7180b7cea9d010
 change: isolated-review
 artifact: specs
-request: "Finalement, ce change ne modifie plus l'exigence « The `propose` and `apply` skills take their roles from `codev roles` » : retire-la du delta `specs/skills/spec.md`, avec sa section MODIFIED et ses scénarios. Les exigences ajoutées du même delta restent telles quelles."
+request: "Finalement, ce change ne modifie plus l'exigence « The `propose` and `apply` skills take their roles from `compagnon roles` » : retire-la du delta `specs/skills/spec.md`, avec sa section MODIFIED et ses scénarios. Les exigences ajoutées du même delta restent telles quelles."
 summary: "A requirement removed from a delta whose tasks cite it: the tasks are named, not edited."
 expected:
   revised: [specs/skills/spec.md]

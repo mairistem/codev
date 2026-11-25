@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 4180,
+          "compagnon roles": 4180,
           "skill": 11536
         }
       },
@@ -49,7 +49,7 @@
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "codev review": 3606
+          "compagnon review": 3606
         }
       },
       {
@@ -149,7 +149,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-sort-menu/review.md",
+    "path": "_compagnon/changes/add-sort-menu/review.md",
     "status": [],
     "steps": [
       {

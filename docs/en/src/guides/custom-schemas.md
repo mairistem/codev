@@ -2,16 +2,16 @@
 
 A schema defines the planning workflow of a change: which artifacts it has,
 which ones depend on which, and the instruction and template the agent
-follows for each. codev embeds one schema, `spec-driven` — proposal, specs,
+follows for each. Compagnon embeds one schema, `spec-driven` — proposal, specs,
 design, tasks — which suits most projects. When it does not, you can define
 your own, as plain data files: no code, no rebuild.
 
 ## Where schemas live
 
-A project schema is a folder under `_codev/schemas/`:
+A project schema is a folder under `_compagnon/schemas/`:
 
 ```text
-_codev/schemas/
+_compagnon/schemas/
 └── lite/
     ├── schema.yaml
     └── templates/
@@ -20,7 +20,7 @@ _codev/schemas/
         └── tasks.md
 ```
 
-`codev schemas` lists what is available:
+`compagnon schemas` lists what is available:
 
 ```text
 Available schemas:
@@ -34,14 +34,14 @@ A project schema named `spec-driven` replaces the built-in one, without
 changing anything else.
 
 A schema's name is its folder: `--schema lite`, `schema: lite` and
-`change.yaml` all refer to `_codev/schemas/lite/`. Keep the `name:` inside
-`schema.yaml` equal to the folder; when it differs, codev still uses the
-folder name and `codev schemas` reports a warning `schema_name_mismatch`.
+`change.yaml` all refer to `_compagnon/schemas/lite/`. Keep the `name:` inside
+`schema.yaml` equal to the folder; when it differs, Compagnon still uses the
+folder name and `compagnon schemas` reports a warning `schema_name_mismatch`.
 
 ## Writing a schema
 
 ```yaml
-# _codev/schemas/lite/schema.yaml
+# _compagnon/schemas/lite/schema.yaml
 name: lite
 description: Small changes — a short brief, spec deltas and a task list
 artifacts:
@@ -67,7 +67,7 @@ apply:
 
 | Key | Required | Meaning |
 |---|---|---|
-| `name` | yes | Schema name, in kebab-case — the name of the schema's folder, which is what codev uses |
+| `name` | yes | Schema name, in kebab-case — the name of the schema's folder, which is what Compagnon uses |
 | `version` | no | Schema format version, `1` by default |
 | `description` | no | One-line description |
 | `artifacts` | yes | The artifacts of a change, at least one |
@@ -85,13 +85,13 @@ apply:
 An unknown key — at the top level, in an artifact, in `apply` or in an
 artifact's `role:` — is not rejected: it is ignored with a
 `schema_unknown_key` warning that names the key and its line, in every command
-that uses the schema, and `codev validate --strict` fails on it. The schema
-may have been written for a newer codev (run `codev self-update`), or the key
+that uses the schema, and `compagnon validate --strict` fails on it. The schema
+may have been written for a newer Compagnon (run `compagnon self-update`), or the key
 is a typo that would otherwise produce a workflow that behaves differently
-from what you wrote: correct it. codev 0.6.1 and earlier reject the schema
-instead. codev rejects a schema whose
+from what you wrote: correct it. Compagnon 0.6.1 and earlier reject the schema
+instead. Compagnon rejects a schema whose
 dependencies reference a missing artifact or form a cycle, and names the
-artifacts involved. `codev schemas` still lists the other schemas, and
+artifacts involved. `compagnon schemas` still lists the other schemas, and
 reports the refused one as a warning `schema_unusable` with the reason.
 
 An artifact is **done** when its file exists — or, for a glob, when at least
@@ -100,8 +100,8 @@ one file matches. It is **ready** when all the artifacts it requires are done.
 ## Declaring artifact roles
 
 An artifact may declare the [role](../roles.md) that owns it. The agent
-receives it in the `role` field of `codev instructions` and checks its
-criteria before moving on; `codev roles --at plan.write` lists it.
+receives it in the `role` field of `compagnon instructions` and checks its
+criteria before moving on; `compagnon roles --at plan.write` lists it.
 
 ```yaml
   - id: brief
@@ -131,10 +131,10 @@ with the role's id; an artifact role cannot be disabled. An artifact without
 Choose a schema per change:
 
 ```bash
-codev new change quick-fix --schema lite
+compagnon new change quick-fix --schema lite
 ```
 
-or make it the project default in `_codev/config.yaml`:
+or make it the project default in `_compagnon/config.yaml`:
 
 ```yaml
 schema: lite
@@ -143,8 +143,8 @@ schema: lite
 The schema is recorded in each change's `change.yaml`, under its folder
 name, so changing the default does not affect changes already in progress.
 
-The skills work with any schema: `/codev-propose` writes whatever artifacts
-are ready, in dependency order, using `codev instructions`. Per-artifact
+The skills work with any schema: `/compagnon-propose` writes whatever artifacts
+are ready, in dependency order, using `compagnon instructions`. Per-artifact
 `rules:` in the configuration are keyed by artifact id, so rules written for
 `brief` apply to the `brief` artifact of the `lite` schema.
 

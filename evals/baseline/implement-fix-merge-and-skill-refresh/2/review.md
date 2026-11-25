@@ -1,11 +1,11 @@
 # Review record: fix-merge-and-skill-refresh
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — 38650 bytes, over the material limit.
+Summarized: crates/compagnon-agents/src/claude.rs — 38650 bytes, over the material limit.
 Summarized: docs/en/src/reference/cli.md — 43620 bytes, over the material limit.
 Summarized: docs/fr/src/reference/cli.md — 46882 bytes, over the material limit.
 
@@ -20,7 +20,7 @@ No finding.
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-agents/src/claude.rs:235-250"
+location: "crates/compagnon-agents/src/claude.rs:235-250"
 evidence: |
   None => [&self.ctx, &self.ctx.other_review_mode()]
       .into_iter()
@@ -40,7 +40,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — the decision moved to ClaudeCode::is_hand_edited, early returns, legacy case written as !any(rendering == current)"
+    ref: "crates/compagnon-agents/src/claude.rs — the decision moved to ClaudeCode::is_hand_edited, early returns, legacy case written as !any(rendering == current)"
   - status: fixed
     by: newcomer
 ```
@@ -50,7 +50,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:195-197"
+location: "crates/compagnon-agents/src/claude.rs:195-197"
 evidence: |
   let tail = format!("---\n\n{}", body.trim_end());
   let checksum = sha256_hex(format!("{head}{tail}").as_bytes());
@@ -66,7 +66,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — checksum_line() shared by render and the tests, why-comment in render, CHECKSUM_KEY doc corrected"
+    ref: "crates/compagnon-agents/src/claude.rs — checksum_line() shared by render and the tests, why-comment in render, CHECKSUM_KEY doc corrected"
   - status: fixed
     by: newcomer
 ```

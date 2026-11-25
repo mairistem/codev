@@ -1,6 +1,6 @@
 # Review record: decision-accept-command
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
@@ -13,7 +13,7 @@ Mode: inline.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/decisions_actions.rs:137-140"
+location: "crates/compagnon-engine/src/decisions_actions.rs:137-140"
 evidence: |
             Self::DecisionNotProposed {
                 qualified_id,
@@ -25,7 +25,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/decisions_actions.rs — `DecisionNotProposed.status` is a `DecisionStatus`, matched on `DecisionStatus::Accepted`"
+    ref: "crates/compagnon-engine/src/decisions_actions.rs — `DecisionNotProposed.status` is a `DecisionStatus`, matched on `DecisionStatus::Accepted`"
   - status: fixed
     by: newcomer
 ```
@@ -35,7 +35,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/decisions_actions.rs:598"
+location: "crates/compagnon-engine/src/decisions_actions.rs:598"
 evidence: |
         Some(existing_entry) if existing_entry.body_sha256 == body_sha256 => {}
 recommendation: Add a one-line comment in the arm saying the existing entry already seals this body, so there is nothing to write.
@@ -44,7 +44,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/decisions_actions.rs — comment in the matching-seal arm"
+    ref: "crates/compagnon-engine/src/decisions_actions.rs — comment in the matching-seal arm"
   - status: fixed
     by: newcomer
 ```
@@ -54,16 +54,16 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-cli/src/commands.rs:1737"
+location: "crates/compagnon-cli/src/commands.rs:1737"
 evidence: |
-    const PROPOSED_PATH: &str = "/p/_codev/decisions/0001-a-first-choice.md";
+    const PROPOSED_PATH: &str = "/p/_compagnon/decisions/0001-a-first-choice.md";
 recommendation: Rename it `ADR_0001_PATH`; `decision_accept_refuses_an_accepted_decision` reads an accepted decision through it, which a reader would misread as a proposed one.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-cli/src/commands.rs — constant renamed `ADR_0001_PATH`"
+    ref: "crates/compagnon-cli/src/commands.rs — constant renamed `ADR_0001_PATH`"
   - status: fixed
     by: newcomer
 ```

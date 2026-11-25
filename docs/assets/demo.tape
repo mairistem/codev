@@ -5,13 +5,13 @@
 # it and then stamps the Mairistem logo on the frame (vhs cannot draw images).
 #
 # The plan of the demo change (proposal, spec delta, design, tasks) lives in
-# docs/assets/demo/add-dark-mode/: it stands for what `/codev-propose` writes
+# docs/assets/demo/add-dark-mode/: it stands for what `/compagnon-propose` writes
 # in Claude Code, so the recording needs no model and is reproducible.
 
 Output docs/assets/demo-raw.gif
 
 Require git
-Require codev
+Require compagnon
 
 Set Shell "bash"
 Set FontSize 16
@@ -34,7 +34,7 @@ Type `export PS1='$ ' LANG=en_US.UTF-8 DEMO_PLAN="$PWD/docs/assets/demo/add-dark
 Enter
 Show
 
-Type "codev init --yes"
+Type "compagnon init --yes"
 Sleep 300ms
 Enter
 Sleep 3s
@@ -44,22 +44,22 @@ Type "clear"
 Enter
 Show
 
-Type "codev new change add-dark-mode"
+Type "compagnon new change add-dark-mode"
 Sleep 300ms
 Enter
 Sleep 1500ms
 
-Type "# In Claude Code, /codev-propose now writes the plan: proposal, spec delta, design, tasks."
+Type "# In Claude Code, /compagnon-propose now writes the plan: proposal, spec delta, design, tasks."
 Sleep 300ms
 Enter
 Sleep 1500ms
 
 Hide
-Type `cp -R "$DEMO_PLAN/." _codev/changes/add-dark-mode/`
+Type `cp -R "$DEMO_PLAN/." _compagnon/changes/add-dark-mode/`
 Enter
 Show
 
-Type "codev status"
+Type "compagnon status"
 Sleep 300ms
 Enter
 Sleep 2500ms
@@ -69,12 +69,12 @@ Type "clear"
 Enter
 Show
 
-Type "codev validate"
+Type "compagnon validate"
 Sleep 300ms
 Enter
 Sleep 2500ms
 
-Type "codev archive --change add-dark-mode"
+Type "compagnon archive --change add-dark-mode"
 Sleep 300ms
 Enter
 Sleep 3s
@@ -85,7 +85,7 @@ Enter
 Show
 
 # The delta is now part of the living spec.
-Type "cat _codev/specs/ui/theme/spec.md"
+Type "cat _compagnon/specs/ui/theme/spec.md"
 Sleep 300ms
 Enter
 Sleep 5s

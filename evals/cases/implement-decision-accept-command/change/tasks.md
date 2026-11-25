@@ -8,8 +8,8 @@
 ## 2. CLI
 
 - [ ] 2.1 `decision new` defaults to `proposed`, verified by `decision_new_status_defaults_to_proposed`, `decision_new_proposed_neither_seals_nor_exposes_a_hash` and `decision_new_accepted_seals_the_entry_and_exposes_the_hash`
-- [ ] 2.2 `codev decision accept <id> [--json]` with human and JSON output, verified by `decision_accept_seals_a_proposed_decision`, `decision_accept_then_validate_is_clean`, `decision_accept_refuses_an_accepted_decision`, `decision_accept_refuses_an_inherited_decision`, `decision_accept_writes_nothing_when_the_seal_file_is_invalid` and `accepted_report_exposes_the_expected_fields_in_camel_case`
-- [ ] 2.3 Help of `decision new --status` and `codev decision --help` list the default and `accept`, verified by reading `cargo run -q -p codev-cli -- decision --help`
+- [ ] 2.2 `compagnon decision accept <id> [--json]` with human and JSON output, verified by `decision_accept_seals_a_proposed_decision`, `decision_accept_then_validate_is_clean`, `decision_accept_refuses_an_accepted_decision`, `decision_accept_refuses_an_inherited_decision`, `decision_accept_writes_nothing_when_the_seal_file_is_invalid` and `accepted_report_exposes_the_expected_fields_in_camel_case`
+- [ ] 2.3 Help of `decision new --status` and `compagnon decision --help` list the default and `accept`, verified by reading `cargo run -q -p compagnon-cli -- decision --help`
 
 ## 3. Skills and documentation
 
@@ -19,4 +19,4 @@
 
 ## 4. Verification
 
-- [ ] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace` and `cargo run -q -p codev-cli -- validate --strict`
+- [ ] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace` and `cargo run -q -p compagnon-cli -- validate --strict`

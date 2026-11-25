@@ -47,7 +47,7 @@
         "output": 51,
         "toolCalls": 1,
         "sources": {
-          "codev status": 5570
+          "compagnon status": 5570
         }
       },
       {
@@ -57,7 +57,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev archive": 104,
+          "compagnon archive": 104,
           "output": 104
         }
       },
@@ -68,7 +68,7 @@
         "output": 3,
         "toolCalls": 0,
         "sources": {
-          "codev archive": 496
+          "compagnon archive": 496
         }
       }
     ]
@@ -78,26 +78,26 @@
   "files": {},
   "messages": [
     "Version requirement unsatisfied (>=99); answer is Later → run nothing for a requirement, continue.",
-    "This project requires codev `>=99`, but the installed version doesn't meet that. The update answer for this run was **Later**, so I didn't run anything for it and went ahead with the archive.\n\n✓ Archived \"`role-models`\": 0 specs created, 2 updated, 0 unchanged.\n\n**Updated:**\n- `_codev/specs/roles/spec.md`\n- `_codev/specs/skills/spec.md`\n\nMoved to: `_codev/changes/archive/2026-10-27-role-models`"
+    "This project requires compagnon `>=99`, but the installed version doesn't meet that. The update answer for this run was **Later**, so I didn't run anything for it and went ahead with the archive.\n\n✓ Archived \"`role-models`\": 0 specs created, 2 updated, 0 unchanged.\n\n**Updated:**\n- `_compagnon/specs/roles/spec.md`\n- `_compagnon/specs/skills/spec.md`\n\nMoved to: `_compagnon/changes/archive/2026-10-27-role-models`"
   ],
   "merge": {
     "changed": {
-      "_codev/changes/archive/2026-10-27-role-models/change.yaml": "ff4326f8b42dcf8851877f4f3989c7fecb8f97d8154686d7d74b7281b70e6b9b",
-      "_codev/changes/archive/2026-10-27-role-models/design.md": "77911b02cc7a5a7e4ecd886d4bed1f5d826702302c028d03e6387fb25e3f4206",
-      "_codev/changes/archive/2026-10-27-role-models/proposal.md": "3ad995f407742a585a53d3f8eb3b52327a856043b8e494f5d2c885b6e1d543c2",
-      "_codev/changes/archive/2026-10-27-role-models/review.md": "fb7de58dd1c0100915c3434f0f71a992ff8e0e8ffe52fb1951f70ab4fc367f16",
-      "_codev/changes/archive/2026-10-27-role-models/specs/roles/spec.md": "b3fbaca51fc74ebcdf6a52a73232c5020d6ee318218e88f3b99a372743c54782",
-      "_codev/changes/archive/2026-10-27-role-models/specs/skills/spec.md": "746e8abd4bb8af3bbf30214f05082b690cd080f43bd8f9f41f4c0a9af8f17fef",
-      "_codev/changes/archive/2026-10-27-role-models/tasks.md": "566dff4b8ce04df77e8e964954d3f59327c65b252bb668046b0e2dc7e516d48c",
-      "_codev/changes/role-models/change.yaml": null,
-      "_codev/changes/role-models/design.md": null,
-      "_codev/changes/role-models/proposal.md": null,
-      "_codev/changes/role-models/review.md": null,
-      "_codev/changes/role-models/specs/roles/spec.md": null,
-      "_codev/changes/role-models/specs/skills/spec.md": null,
-      "_codev/changes/role-models/tasks.md": null,
-      "_codev/specs/roles/spec.md": "02a55be9d21af73c46271656e195dac83c7a03cb378b32e0b7eeb09dfc10f2de",
-      "_codev/specs/skills/spec.md": "311be701711c42770e177f086ecc87ec5c37ef9df34f52ccac1ce81a6d3b658d"
+      "_compagnon/changes/archive/2026-10-27-role-models/change.yaml": "ff4326f8b42dcf8851877f4f3989c7fecb8f97d8154686d7d74b7281b70e6b9b",
+      "_compagnon/changes/archive/2026-10-27-role-models/design.md": "77911b02cc7a5a7e4ecd886d4bed1f5d826702302c028d03e6387fb25e3f4206",
+      "_compagnon/changes/archive/2026-10-27-role-models/proposal.md": "3ad995f407742a585a53d3f8eb3b52327a856043b8e494f5d2c885b6e1d543c2",
+      "_compagnon/changes/archive/2026-10-27-role-models/review.md": "fb7de58dd1c0100915c3434f0f71a992ff8e0e8ffe52fb1951f70ab4fc367f16",
+      "_compagnon/changes/archive/2026-10-27-role-models/specs/roles/spec.md": "b3fbaca51fc74ebcdf6a52a73232c5020d6ee318218e88f3b99a372743c54782",
+      "_compagnon/changes/archive/2026-10-27-role-models/specs/skills/spec.md": "746e8abd4bb8af3bbf30214f05082b690cd080f43bd8f9f41f4c0a9af8f17fef",
+      "_compagnon/changes/archive/2026-10-27-role-models/tasks.md": "566dff4b8ce04df77e8e964954d3f59327c65b252bb668046b0e2dc7e516d48c",
+      "_compagnon/changes/role-models/change.yaml": null,
+      "_compagnon/changes/role-models/design.md": null,
+      "_compagnon/changes/role-models/proposal.md": null,
+      "_compagnon/changes/role-models/review.md": null,
+      "_compagnon/changes/role-models/specs/roles/spec.md": null,
+      "_compagnon/changes/role-models/specs/skills/spec.md": null,
+      "_compagnon/changes/role-models/tasks.md": null,
+      "_compagnon/specs/roles/spec.md": "02a55be9d21af73c46271656e195dac83c7a03cb378b32e0b7eeb09dfc10f2de",
+      "_compagnon/specs/skills/spec.md": "311be701711c42770e177f086ecc87ec5c37ef9df34f52ccac1ce81a6d3b658d"
     },
     "reference": {
       "exitCode": 0,
@@ -105,31 +105,31 @@
         "changeName": "role-models",
         "created": [],
         "deleted": [],
-        "movedTo": "_codev/changes/archive/2026-10-27-role-models",
+        "movedTo": "_compagnon/changes/archive/2026-10-27-role-models",
         "status": [],
         "unchanged": [],
         "updated": [
-          "_codev/specs/roles/spec.md",
-          "_codev/specs/skills/spec.md"
+          "_compagnon/specs/roles/spec.md",
+          "_compagnon/specs/skills/spec.md"
         ]
       },
       "changed": {
-        "_codev/changes/archive/2026-10-27-role-models/change.yaml": "ff4326f8b42dcf8851877f4f3989c7fecb8f97d8154686d7d74b7281b70e6b9b",
-        "_codev/changes/archive/2026-10-27-role-models/design.md": "77911b02cc7a5a7e4ecd886d4bed1f5d826702302c028d03e6387fb25e3f4206",
-        "_codev/changes/archive/2026-10-27-role-models/proposal.md": "3ad995f407742a585a53d3f8eb3b52327a856043b8e494f5d2c885b6e1d543c2",
-        "_codev/changes/archive/2026-10-27-role-models/review.md": "fb7de58dd1c0100915c3434f0f71a992ff8e0e8ffe52fb1951f70ab4fc367f16",
-        "_codev/changes/archive/2026-10-27-role-models/specs/roles/spec.md": "b3fbaca51fc74ebcdf6a52a73232c5020d6ee318218e88f3b99a372743c54782",
-        "_codev/changes/archive/2026-10-27-role-models/specs/skills/spec.md": "746e8abd4bb8af3bbf30214f05082b690cd080f43bd8f9f41f4c0a9af8f17fef",
-        "_codev/changes/archive/2026-10-27-role-models/tasks.md": "566dff4b8ce04df77e8e964954d3f59327c65b252bb668046b0e2dc7e516d48c",
-        "_codev/changes/role-models/change.yaml": null,
-        "_codev/changes/role-models/design.md": null,
-        "_codev/changes/role-models/proposal.md": null,
-        "_codev/changes/role-models/review.md": null,
-        "_codev/changes/role-models/specs/roles/spec.md": null,
-        "_codev/changes/role-models/specs/skills/spec.md": null,
-        "_codev/changes/role-models/tasks.md": null,
-        "_codev/specs/roles/spec.md": "02a55be9d21af73c46271656e195dac83c7a03cb378b32e0b7eeb09dfc10f2de",
-        "_codev/specs/skills/spec.md": "311be701711c42770e177f086ecc87ec5c37ef9df34f52ccac1ce81a6d3b658d"
+        "_compagnon/changes/archive/2026-10-27-role-models/change.yaml": "ff4326f8b42dcf8851877f4f3989c7fecb8f97d8154686d7d74b7281b70e6b9b",
+        "_compagnon/changes/archive/2026-10-27-role-models/design.md": "77911b02cc7a5a7e4ecd886d4bed1f5d826702302c028d03e6387fb25e3f4206",
+        "_compagnon/changes/archive/2026-10-27-role-models/proposal.md": "3ad995f407742a585a53d3f8eb3b52327a856043b8e494f5d2c885b6e1d543c2",
+        "_compagnon/changes/archive/2026-10-27-role-models/review.md": "fb7de58dd1c0100915c3434f0f71a992ff8e0e8ffe52fb1951f70ab4fc367f16",
+        "_compagnon/changes/archive/2026-10-27-role-models/specs/roles/spec.md": "b3fbaca51fc74ebcdf6a52a73232c5020d6ee318218e88f3b99a372743c54782",
+        "_compagnon/changes/archive/2026-10-27-role-models/specs/skills/spec.md": "746e8abd4bb8af3bbf30214f05082b690cd080f43bd8f9f41f4c0a9af8f17fef",
+        "_compagnon/changes/archive/2026-10-27-role-models/tasks.md": "566dff4b8ce04df77e8e964954d3f59327c65b252bb668046b0e2dc7e516d48c",
+        "_compagnon/changes/role-models/change.yaml": null,
+        "_compagnon/changes/role-models/design.md": null,
+        "_compagnon/changes/role-models/proposal.md": null,
+        "_compagnon/changes/role-models/review.md": null,
+        "_compagnon/changes/role-models/specs/roles/spec.md": null,
+        "_compagnon/changes/role-models/specs/skills/spec.md": null,
+        "_compagnon/changes/role-models/tasks.md": null,
+        "_compagnon/specs/roles/spec.md": "02a55be9d21af73c46271656e195dac83c7a03cb378b32e0b7eeb09dfc10f2de",
+        "_compagnon/specs/skills/spec.md": "311be701711c42770e177f086ecc87ec5c37ef9df34f52ccac1ce81a6d3b658d"
       }
     }
   }

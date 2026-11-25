@@ -14,7 +14,7 @@
 ### Decision: <the choice>
 
 <!-- What was chosen, and why this option over the others.
-     Cite the decision(s) in `_codev/decisions/` that constrain this choice.
+     Cite the decision(s) in `_compagnon/decisions/` that constrain this choice.
      If you propose to deviate from one of them, say so explicitly. -->
 
 **Alternatives considered**:

@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 287
+          "compagnon review": 287
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 300
+          "compagnon review": 300
         }
       },
       {
@@ -68,7 +68,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 275
+          "compagnon review": 275
         }
       },
       {
@@ -78,7 +78,7 @@
         "output": 39,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1934
+          "compagnon review": 1934
         }
       },
       {
@@ -119,7 +119,7 @@
         "output": 275,
         "toolCalls": 0,
         "sources": {
-          "codev review": 516
+          "compagnon review": 516
         }
       }
     ]
@@ -226,7 +226,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-account-deletion/review.md",
+    "path": "_compagnon/changes/add-account-deletion/review.md",
     "status": [],
     "steps": [
       {

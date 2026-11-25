@@ -284,7 +284,7 @@ fn resolves(reference: &Reference, texts: &BTreeMap<&str, String>, change_dir: &
                 || texts.contains_key(format!("{change_dir}/{path}").as_str())
         }
         Reference::Test(name) => texts.iter().any(|(path, text)| {
-            let is_test_file = !path.starts_with("_codev/")
+            let is_test_file = !path.starts_with("_compagnon/")
                 && (path.contains("test")
                     || path.contains("spec")
                     || (path.ends_with(".rs") && text.contains("#[test]")));
@@ -301,14 +301,14 @@ mod tests {
         files.iter().map(|(p, t)| (*p, t.as_bytes())).collect()
     }
 
-    const DIR: &str = "_codev/changes/add-quiet-flag";
+    const DIR: &str = "_compagnon/changes/add-quiet-flag";
 
     #[test]
     fn a_cited_file_the_fixture_lacks_is_named_with_its_artifact() {
         let files = fixture(&[
             ("src/lib.rs", ""),
             (
-                "_codev/changes/add-quiet-flag/proposal.md",
+                "_compagnon/changes/add-quiet-flag/proposal.md",
                 "## Impact\n\n- `src/cli/progress.rs`, `src/lib.rs`.\n",
             ),
         ]);
@@ -323,9 +323,9 @@ mod tests {
         let files = fixture(&[
             ("web/src/settings/Page.tsx", ""),
             ("README.md", ""),
-            ("_codev/changes/add-quiet-flag/design.md", "# D\n"),
+            ("_compagnon/changes/add-quiet-flag/design.md", "# D\n"),
             (
-                "_codev/changes/add-quiet-flag/proposal.md",
+                "_compagnon/changes/add-quiet-flag/proposal.md",
                 "See `web/src/settings/`, `README.md`, `design.md#D`, `web/src/settings/Page.tsx:3-4`.\n",
             ),
         ]);
@@ -335,7 +335,7 @@ mod tests {
     #[test]
     fn what_is_not_a_path_is_not_checked() {
         let files = fixture(&[(
-            "_codev/changes/add-quiet-flag/proposal.md",
+            "_compagnon/changes/add-quiet-flag/proposal.md",
             "`text/csv`, `GET /users/{id}`, `https://x.io/a.md`, `--out`, `src/*.rs`, \
              `Progress::new(quiet)`, `ledger import --quiet data.csv`, `v1.2.3`\n\
              ```\nsrc/missing.rs `src/fenced.rs`\n```\n",
@@ -346,7 +346,7 @@ mod tests {
     #[test]
     fn a_path_inside_a_command_is_checked() {
         let files = fixture(&[(
-            "_codev/changes/add-quiet-flag/tasks.md",
+            "_compagnon/changes/add-quiet-flag/tasks.md",
             "- [ ] 1.1 Run `pytest tests/test_signup.py`\n",
         )]);
         assert_eq!(
@@ -365,7 +365,7 @@ mod tests {
                 "#[test]\nfn a_quiet_import_prints_nothing() {}\n",
             ),
             ("src/pricing.ts", "export const pricing = 1;\n"),
-            ("_codev/changes/add-quiet-flag/tasks.md", tasks),
+            ("_compagnon/changes/add-quiet-flag/tasks.md", tasks),
         ]);
         assert_eq!(
             lint(DIR, &files, &[]),
@@ -381,7 +381,7 @@ mod tests {
             ),
             ("tests/docs.rs", "fn docs_mention_every_flag() {}\n"),
             ("src/pricing.test.ts", "describe('pricing', () => {});\n"),
-            ("_codev/changes/add-quiet-flag/tasks.md", tasks),
+            ("_compagnon/changes/add-quiet-flag/tasks.md", tasks),
         ]);
         assert_eq!(lint(DIR, &files, &[]), Vec::<String>::new());
     }
@@ -390,13 +390,13 @@ mod tests {
     fn a_snake_case_span_is_a_test_only_when_introduced_as_one_in_tasks() {
         let files = fixture(&[
             (
-                "_codev/changes/add-quiet-flag/tasks.md",
+                "_compagnon/changes/add-quiet-flag/tasks.md",
                 "- [ ] 1.1 Rename `customer_id` in the payload, verified by `cargo test -p orders-api --test api`\n\
                  - [ ] 1.2 `fetch_rates`, verified by tests `a_b` (\"A b\") and `c_d`, then `e_f`\n",
             ),
             ("tests/api.rs", "#[test]\nfn a_b() {}\nfn c_d() {}\n"),
             (
-                "_codev/changes/add-quiet-flag/design.md",
+                "_compagnon/changes/add-quiet-flag/design.md",
                 "Verified by the test `some_test_name`.\n",
             ),
         ]);
@@ -408,7 +408,7 @@ mod tests {
         let files = fixture(&[
             ("src/lib.rs", ""),
             (
-                "_codev/changes/add-quiet-flag/tasks.md",
+                "_compagnon/changes/add-quiet-flag/tasks.md",
                 "- [ ] 1.1 `src/export/csv.rs`, verified by the test `exports_one_line_per_invoice`\n",
             ),
         ]);
@@ -435,7 +435,7 @@ mod tests {
         let files = fixture(&[
             ("src/db/orders.rs", ""),
             (
-                "_codev/changes/add-quiet-flag/proposal.md",
+                "_compagnon/changes/add-quiet-flag/proposal.md",
                 "## Impact\r\n\r\n- `src\\db\\orders.rs`\r\n- `.\\src\\db\\missing.rs`\r\n",
             ),
         ]);

@@ -1,8 +1,8 @@
-# codev
+# Compagnon
 
 **Le développement piloté par les specs pour Claude Code.**
 
-codev ajoute une fine couche de spécifications à un dépôt, pour que vous et
+Compagnon ajoute une fine couche de spécifications à un dépôt, pour que vous et
 votre agent de code vous accordiez sur ce qu'il faut construire avant d'écrire
 la moindre ligne — et pour que les décisions d'architecture, une fois prises,
 cessent d'être remises en débat à chaque change.
@@ -11,38 +11,38 @@ L'outil se compose de deux moitiés :
 
 | Où | Quoi | Exemples |
 |---|---|---|
-| Votre terminal | Le binaire `codev` : le moteur | `codev init`, `codev status`, `codev archive` |
-| Le chat Claude Code | Les skills générées : le volant | `/codev-propose`, `/codev-apply` |
+| Votre terminal | Le binaire `compagnon` : le moteur | `compagnon init`, `compagnon status`, `compagnon archive` |
+| Le chat Claude Code | Les skills générées : le volant | `/compagnon-propose`, `/compagnon-apply` |
 
-`codev init` installe les skills dans `.claude/skills/`. Dès lors, vous
+`compagnon init` installe les skills dans `.claude/skills/`. Dès lors, vous
 travaillez surtout dans le chat, et les skills pilotent la CLI à votre place.
 
-codev n'appelle jamais de modèle de langage. Il gère des fichiers Markdown, le
+Compagnon n'appelle jamais de modèle de langage. Il gère des fichiers Markdown, le
 graphe de dépendances entre les artefacts de planification, la validation et la
-fusion des modifications de specs. Votre agent rédige ; codev lui indique quoi
+fusion des modifications de specs. Votre agent rédige ; Compagnon lui indique quoi
 écrire, où, et sous quelles contraintes.
 
-## Pourquoi codev
+## Pourquoi Compagnon
 
 Dans un dépôt sans specs, l'intention n'existe que dans la tête des gens. Le
 code s'écrit d'un côté, se relit de l'autre, et six mois plus tard quelqu'un
 fouille l'historique des commits pour retrouver pourquoi un comportement existe.
-codev inverse la démarche : pour chaque change significatif, vous commencez par
+Compagnon inverse la démarche : pour chaque change significatif, vous commencez par
 écrire ce que vous voulez, vous le relisez, puis vous l'implémentez.
 
-Ce que codev vous apporte :
+Ce que Compagnon vous apporte :
 
 - **Un cycle explicite.** Chaque change passe par quatre étapes : propose,
   apply, sync et archive. Chaque étape a son artefact et sa skill Claude Code
   dédiée. Voir [Le workflow](workflow.md).
 - **Des deltas de specs, fusionnés avec précision.** Un change ne réécrit
   jamais une spec en entier. Il déclare des exigences `ADDED`, `MODIFIED`,
-  `REMOVED` ou `RENAMED`, que codev fusionne dans les specs principales à
+  `REMOVED` ou `RENAMED`, que Compagnon fusionne dans les specs principales à
   l'archivage du change, sans toucher au reste du fichier. C'est ce qui rend
-  codev utilisable sur du code existant, et pas seulement sur des projets
+  Compagnon utilisable sur du code existant, et pas seulement sur des projets
   neufs.
 - **Des décisions d'architecture immuables.** Les décisions acceptées (ADR)
-  sont scellées par une empreinte de leur contenu. `codev validate` signale
+  sont scellées par une empreinte de leur contenu. `compagnon validate` signale
   toute réécriture silencieuse. On ne modifie pas une décision : on la
   remplace par une nouvelle.
 - **Des conventions partagées entre dépôts.** Un projet peut hériter du
@@ -57,12 +57,12 @@ Ce que codev vous apporte :
 
 ## Origines
 
-codev s'inspire d'[OpenSpec](https://github.com/Fission-AI/OpenSpec) (MIT),
+Compagnon s'inspire d'[OpenSpec](https://github.com/Fission-AI/OpenSpec) (MIT),
 l'outil TypeScript qui a popularisé un cycle de développement piloté par les
-specs pour les agents de code. codev en reprend l'ossature, la reconstruit en
+specs pour les agents de code. Compagnon en reprend l'ossature, la reconstruit en
 Rust et fait ses propres choix par-dessus.
 
-**Ce que codev doit à OpenSpec :**
+**Ce que Compagnon doit à OpenSpec :**
 
 - Le cycle propose → apply → archive, et l'idée que le *change* est l'unité de
   travail.
@@ -73,51 +73,57 @@ Rust et fait ses propres choix par-dessus.
 - Des workflows et des templates traités comme des données, et non comme du
   code.
 
-**Ce que codev fait autrement :**
+**Ce que Compagnon fait autrement :**
 
 - **Un binaire Rust plutôt qu'un paquet Node.js.** Un exécutable précompilé,
   sans environnement d'exécution.
-- **Un dossier `_codev/` visible.** Les artefacts de planification sont des
+- **Un dossier `_compagnon/` visible.** Les artefacts de planification sont des
   fichiers sources à part entière : vous les lisez, les comparez et les
   relisez. Le tiret bas initial laisse le dossier visible pour des outils comme
   ripgrep et fd, qui ignorent par défaut les répertoires cachés.
 - **Un cœur pur et une coquille impérative.** La bibliothèque centrale
   n'effectue aucune entrée-sortie ; chacune de ses décisions se teste sans
   disque. Voir [Architecture](architecture.md).
-- **Une seule cible, bien servie.** codev cible uniquement Claude Code, là où
+- **Une seule cible, bien servie.** Compagnon cible uniquement Claude Code, là où
   OpenSpec prend en charge de nombreux outils.
 
-**Ce qui est propre à codev :**
+**Ce qui est propre à Compagnon :**
 
 - Des décisions d'architecture scellées, avec remplacement, écarts locaux par
   rapport aux décisions héritées, et promotion d'une décision de design en ADR.
 - Des sources héritées en lecture seule, épinglées par commit git dans
-  `_codev/codev.lock`.
-- Une intégration MCP côté skills : `/codev-propose` détecte un identifiant de
+  `_compagnon/compagnon.lock`.
+- Une intégration MCP côté skills : `/compagnon-propose` détecte un identifiant de
   ticket comme `PROJ-123` et récupère le ticket via le serveur MCP Jira
   configuré pour le projet.
 - Un contrat JSON versionné sur chaque commande, pour que les skills puissent
   s'appuyer sur un format de sortie stable.
-- Une documentation embarquée dans le binaire (`codev docs`), consultable hors
+- Une documentation embarquée dans le binaire (`compagnon docs`), consultable hors
   ligne.
 
-## Développé avec codev
+**Le nom.** Compagnon vient du compagnonnage : un maître mène l'ouvrage, les
+compagnons le réalisent, et chacun suit des plans arrêtés à l'avance. Ici,
+vous êtes le maître et les agents Claude sont vos compagnons. Jusqu'à la 0.6,
+le produit s'appelait codev ; [Migrer depuis codev](guides/moving-from-codev.md)
+explique comment convertir un projet créé à cette époque.
 
-codev est développé avec codev : chaque évolution de son dépôt est planifiée,
-relue et archivée avec l'outil lui-même. Son dossier `_codev/` est un exemple
+## Développé avec Compagnon
+
+Compagnon est développé avec Compagnon : chaque évolution de son dépôt est planifiée,
+relue et archivée avec l'outil lui-même. Son dossier `_compagnon/` est un exemple
 réel que vous pouvez parcourir :
 
-- [les specs vivantes](https://github.com/mairistem/codev/tree/main/_codev/specs), qui décrivent ce que fait codev
+- [les specs vivantes](https://github.com/mairistem/compagnon/tree/main/_compagnon/specs), qui décrivent ce que fait Compagnon
   aujourd'hui ;
-- [les changes archivés](https://github.com/mairistem/codev/tree/main/_codev/changes/archive), chacun avec son proposal,
+- [les changes archivés](https://github.com/mairistem/compagnon/tree/main/_compagnon/changes/archive), chacun avec son proposal,
   ses deltas de spec, son design et ses tâches ;
-- [un compte rendu de revue](https://github.com/mairistem/codev/blob/main/_codev/changes/archive/2026-10-13-review-record/review.md), avec les remarques, leurs preuves, les
+- [un compte rendu de revue](https://github.com/mairistem/compagnon/blob/main/_compagnon/changes/archive/2026-10-13-review-record/review.md), avec les remarques, leurs preuves, les
   réponses de l'auteur et la façon dont chacune a été tranchée ;
-- [les décisions d'architecture](https://github.com/mairistem/codev/tree/main/_codev/decisions), scellées.
+- [les décisions d'architecture](https://github.com/mairistem/compagnon/tree/main/_compagnon/decisions), scellées.
 
 ## Pour aller plus loin
 
-- Vous découvrez codev ? Commencez par l'[Installation](installation.md), puis
+- Vous découvrez Compagnon ? Commencez par l'[Installation](installation.md), puis
   le [Démarrage rapide](quickstart.md).
 - Vous voulez comprendre le modèle ? Lisez [Le workflow](workflow.md) et
   [Concepts](concepts.md).

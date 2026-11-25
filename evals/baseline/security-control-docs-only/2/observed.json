@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 3362,
+          "compagnon roles": 3362,
           "skill": 10562
         }
       },
@@ -49,7 +49,7 @@
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1152
+          "compagnon review": 1152
         }
       },
       {
@@ -79,7 +79,7 @@
         "output": 197,
         "toolCalls": 0,
         "sources": {
-          "codev review": 976,
+          "compagnon review": 976,
           "edit": 451
         }
       }
@@ -129,7 +129,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/document-token-rotation/review.md",
+    "path": "_compagnon/changes/document-token-rotation/review.md",
     "status": [],
     "steps": [
       {

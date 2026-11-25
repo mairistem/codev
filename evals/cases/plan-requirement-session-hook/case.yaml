@@ -5,7 +5,7 @@ request: "À l'init, installe aussi un hook Claude Code de démarrage de session
 summary: "A request written against existing requirements."
 expected:
   modified:
-    - "init::`codev init` integrates codev into the repository"
-    - "init::codev's text lives in managed sections that never touch user content"
+    - "init::`compagnon init` integrates compagnon into the repository"
+    - "init::compagnon's text lives in managed sections that never touch user content"
   collateral: []
   decisions: []

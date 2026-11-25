@@ -1,0 +1,3 @@
+schema: spec-driven
+created: 2026-09-28
+goal: Add the /compagnon-configure skill that lets Claude enrich _compagnon/config.yaml by analyzing the project, and prompt users to run it from compagnon init, compagnon status and /compagnon-onboard when the config is thin.

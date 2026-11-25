@@ -1,11 +1,11 @@
 # Review record: fix-merge-and-skill-refresh
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — beyond the material's size limit.
+Summarized: crates/compagnon-agents/src/claude.rs — beyond the material's size limit.
 Summarized: docs/en/src/reference/cli.md — beyond the material's size limit.
 Summarized: docs/fr/src/reference/cli.md — beyond the material's size limit.
 
@@ -20,9 +20,9 @@ No finding.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:421-433"
+location: "crates/compagnon-agents/src/claude.rs:421-433"
 evidence: |
-  /// the version stamp, replacing any earlier one. `codev update` tells a
+  /// the version stamp, replacing any earlier one. `compagnon update` tells a
   /// skill it rendered from a hand edit by it, whatever build rendered it.
   fn stamp_checksum(skill: &str) -> String {
       let unsigned = without_checksum(skill);
@@ -33,13 +33,13 @@ evidence: |
       let insert_at = unsigned[version_at + 1..]
           .find('\n')
           .map_or(unsigned.len(), |end| version_at + 1 + end + 1);
-recommendation: Rewrite the doc sentence as the reason ("the checksum lets `codev update` tell a skill codev rendered from one edited by hand, whatever build rendered it"); replace the `version_at + 1 + end + 1` arithmetic by building the output line by line, as `without_checksum` does, pushing the checksum line right after the `version:` line; say when a skill without a version stamp comes back without a checksum (never for `render`'s output).
+recommendation: Rewrite the doc sentence as the reason ("the checksum lets `compagnon update` tell a skill compagnon rendered from one edited by hand, whatever build rendered it"); replace the `version_at + 1 + end + 1` arithmetic by building the output line by line, as `without_checksum` does, pushing the checksum line right after the `version:` line; say when a skill without a version stamp comes back without a checksum (never for `render`'s output).
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs"
+    ref: "crates/compagnon-agents/src/claude.rs"
   - status: fixed
     by: newcomer
 ```
@@ -49,15 +49,15 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:201-216"
+location: "crates/compagnon-agents/src/claude.rs:201-216"
 evidence: |
   /// another version is never asked: it is rewritten, so that no hand edit
   /// survives an upgrade.
   ///
-  /// Its checksum decides: a match means codev rendered it — an earlier
+  /// Its checksum decides: a match means compagnon rendered it — an earlier
   /// build of this version, as every build from source is — so it is
   /// rewritten. Without a checksum, the skill predates checksums and keeps
-  /// the rule of that time: codev's own only if it is this version's
+  /// the rule of that time: compagnon's own only if it is this version's
   /// rendering, for this review mode or the other one (the mode changed),
   /// compared without the checksum line the old rendering lacks.
   fn edited_within_version(&self, workflow: &Workflow, version: &str, current: &str) -> bool {
@@ -72,7 +72,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs"
+    ref: "crates/compagnon-agents/src/claude.rs"
   - status: fixed
     by: newcomer
 ```
@@ -82,7 +82,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:404-410"
+location: "crates/compagnon-agents/src/claude.rs:404-410"
 evidence: |
       for (i, line) in contents.split_inclusive('\n').enumerate() {
           if i > 0 && line.trim_end_matches(['\n', '\r']) == "---" {
@@ -95,7 +95,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs"
+    ref: "crates/compagnon-agents/src/claude.rs"
   - status: fixed
     by: newcomer
 ```

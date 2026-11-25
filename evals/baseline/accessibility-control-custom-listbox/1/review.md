@@ -1,6 +1,6 @@
 # Review record: add-size-picker
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 

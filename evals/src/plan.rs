@@ -6,12 +6,12 @@
 
 use std::collections::BTreeMap;
 
-use codev_core::parser::{DeltaSection, parse_delta};
+use compagnon_core::parser::{DeltaSection, parse_delta};
 use serde::Serialize;
 
 use crate::case::{DecisionExpect, PlanCase, RequirementId, normalize_heading};
 
-const CHANGES_DIR: &str = "_codev/changes/";
+const CHANGES_DIR: &str = "_compagnon/changes/";
 
 /// The repository at a planning case's `ref`, as far as scoring needs it.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -44,7 +44,7 @@ pub struct PlanScore {
     pub duplicates: Vec<String>,
     /// The ids of the expected decisions the plan ignores.
     pub decisions_ignored: Vec<String>,
-    /// `codev validate` reports no error on any change the run created.
+    /// `compagnon validate` reports no error on any change the run created.
     pub valid: bool,
     /// For a case with `keyword_language`: the structural keyword lines
     /// written in another language, as `<file>: <line>`; `None` when the
@@ -86,7 +86,7 @@ struct Touched {
 }
 
 /// Scores the plan made of `files` (the observation's files, by path) and
-/// `validate` (`codev validate --json` on each change created).
+/// `validate` (`compagnon validate --json` on each change created).
 pub fn score_plan(
     case: &PlanCase,
     files: &BTreeMap<String, Option<String>>,
@@ -204,8 +204,8 @@ fn keyword_lines_off(plan: &[(&str, &str)], code: &str) -> Vec<String> {
 }
 
 /// keyword catalog recognizes it; `None` for any other line.
-pub fn keyword_language_of(line: &str) -> Option<codev_core::keywords::Lang> {
-    codev_core::keywords::heading_language(line)
+pub fn keyword_language_of(line: &str) -> Option<compagnon_core::keywords::Lang> {
+    compagnon_core::keywords::heading_language(line)
 }
 
 fn read_delta(capability: &str, text: &str, touched: &mut Touched) {
@@ -277,7 +277,7 @@ fn cites_id(text: &str, id: &str) -> bool {
     })
 }
 
-/// The errors in one `codev validate --json` report.
+/// The errors in one `compagnon validate --json` report.
 fn errors(report: &serde_json::Value) -> usize {
     report["items"]
         .as_array()
@@ -340,7 +340,7 @@ mod tests {
     fn plan(files: &[(&str, &str)]) -> BTreeMap<String, Option<String>> {
         files
             .iter()
-            .map(|(p, t)| (format!("_codev/changes/c/{p}"), Some(t.to_string())))
+            .map(|(p, t)| (format!("_compagnon/changes/c/{p}"), Some(t.to_string())))
             .collect()
     }
 

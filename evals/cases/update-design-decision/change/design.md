@@ -1,11 +1,11 @@
-# Design: Newcomer readability review in /codev-apply
+# Design: Newcomer readability review in /compagnon-apply
 
 ## Context
 
 `assets/workflows/apply.md` is a prompt rendered into
-`.claude/skills/codev-apply/SKILL.md` by `codev update`. Its steps are: 1
+`.claude/skills/compagnon-apply/SKILL.md` by `compagnon update`. Its steps are: 1
 resolve the change, 2 read the tasks, 3 work through each task (3c already
-fetches `context` and `rules` with `codev instructions tasks`), 4 stop on
+fetches `context` and `rules` with `compagnon instructions tasks`), 4 stop on
 ambiguity, 5 finish — run the full suite once, then summarize. The
 architect's role block opens the `design` instruction in
 `assets/schemas/spec-driven/schema.yaml`. Every line of either text costs
@@ -21,13 +21,13 @@ tokens on every run.
 
 **Non-Goals:**
 
-- A machine check (complexity metrics, lint) in `codev validate`.
+- A machine check (complexity metrics, lint) in `compagnon validate`.
 - Built-in size thresholds: a project states them in its `rules`.
 - Refactoring code the change did not write.
 
 ## Decisions
 
-No decision in `_codev/decisions/` constrains this change: it edits two
+No decision in `_compagnon/decisions/` constrains this change: it edits two
 embedded texts and adds no code path, crate or dependency.
 
 ### Decision: A numbered step between the tasks and the finish
@@ -53,7 +53,7 @@ review burden, against the `apply` boundary).
 
 The "Readability notes" block goes into the final summary, which still
 offers archiving. The user decides at review time, like the Points to
-challenge of `/codev-propose`, whose cap-and-never-invent form it reuses
+challenge of `/compagnon-propose`, whose cap-and-never-invent form it reuses
 (three items rather than five: the review covers one diff, not a plan).
 
 **Alternatives considered**: stopping on a note (turns taste into a

@@ -1,6 +1,6 @@
 # Review record: merge-duplicate-customers
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## plan.challenge
 

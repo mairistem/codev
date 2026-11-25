@@ -3,8 +3,8 @@ step: change.archive
 kind: seeded
 ref: 3e294dd5e44d986eb37e9a7647c9da1694c37ceb
 change: delegated-implementation
-summary: "A change whose planning is incomplete: the skill stops before `codev archive`, names the missing tasks and points to `/codev-propose`."
+summary: "A change whose planning is incomplete: the skill stops before `compagnon archive`, names the missing tasks and points to `/compagnon-propose`."
 expected:
   outcome: refused
-  contains: ["/codev-propose"]
+  contains: ["/compagnon-propose"]
   absent: ["Moved to"]

@@ -7,8 +7,8 @@ expected:
   modified:
     - "decisions::Supersession resolved as a chain"
     - "decisions::Superseding a decision through the CLI"
-    - "decisions::The `codev decision deviate` command creates a deviation ADR"
-    - "decisions::The `codev decision promote` command extracts a design block into an ADR"
+    - "decisions::The `compagnon decision deviate` command creates a deviation ADR"
+    - "decisions::The `compagnon decision promote` command extracts a design block into an ADR"
     - "decisions::`decision accept` accepts and seals a proposed decision"
   collateral: []
   decisions: []

@@ -78,7 +78,7 @@
         "output": 212,
         "toolCalls": 0,
         "sources": {
-          "codev review": 522,
+          "compagnon review": 522,
           "edit": 381
         }
       }
@@ -100,7 +100,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-order-note/review.md",
+    "path": "_compagnon/changes/add-order-note/review.md",
     "status": [],
     "steps": [
       {

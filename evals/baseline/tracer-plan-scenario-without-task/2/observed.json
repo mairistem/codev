@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 4,
         "sources": {
-          "codev roles": 1442,
+          "compagnon roles": 1442,
           "skill": 12437
         }
       },
@@ -77,6 +77,6 @@
   "strayed": [],
   "review": null,
   "files": {
-    "_codev/changes/add-magic-links/tasks.md": "# Tasks\n\n## 1. Links\n\n- [ ] 1.1 Link creation and e-mail, verified by test `a_link_is_emailed`\n- [ ] 1.2 Sign-in from a link, verified by test `a_valid_link_signs_in` (\"A valid link\")\n- [ ] 1.3 Reject an expired link and ask for a new one, verified by test `an_expired_link_is_refused` (\"An expired link\")\n- [ ] 1.4 Reject a link already used (its row is deleted on first use), verified by test `a_used_link_is_refused` (\"A link already used\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe magic links in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
+    "_compagnon/changes/add-magic-links/tasks.md": "# Tasks\n\n## 1. Links\n\n- [ ] 1.1 Link creation and e-mail, verified by test `a_link_is_emailed`\n- [ ] 1.2 Sign-in from a link, verified by test `a_valid_link_signs_in` (\"A valid link\")\n- [ ] 1.3 Reject an expired link and ask for a new one, verified by test `an_expired_link_is_refused` (\"An expired link\")\n- [ ] 1.4 Reject a link already used (its row is deleted on first use), verified by test `a_used_link_is_refused` (\"A link already used\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe magic links in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
   }
 }

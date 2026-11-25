@@ -1,0 +1,329 @@
+use std::collections::BTreeSet;
+
+use compagnon_core::outputs::pattern_matches_any;
+use compagnon_core::{ChangeId, ChangeStatus, Layout, status};
+
+use crate::config::ResolvedConfig;
+use crate::config::UnknownKey;
+use crate::error::{EngineError, Result, Warning};
+use crate::metadata::{self, ChangeMetadata};
+use crate::ports::FileSystem;
+use crate::schemas::{self, ResolvedSchema};
+
+/// Everything needed to act on a change: its identity, its metadata, and the
+/// schema that governs it.
+#[derive(Debug)]
+pub struct ChangeContext {
+    pub change: ChangeId,
+    pub metadata: ChangeMetadata,
+    pub schema: ResolvedSchema,
+    /// The keys of `change.yaml` this compagnon ignored, in file order.
+    pub unknown_keys: Vec<UnknownKey>,
+}
+
+impl ChangeContext {
+    /// The warnings of the files this change is read from: one
+    /// `change_unknown_key` per key of `change.yaml` this compagnon ignored,
+    /// then the `schema_unknown_key` warnings of its schema.
+    pub fn warnings(&self, layout: &Layout, compagnon_version: Option<&str>) -> Vec<Warning> {
+        let file = layout.change_metadata(&self.change);
+        let file = relative_text(layout, &file);
+        self.unknown_keys
+            .iter()
+            .map(|u| {
+                Warning::new(
+                    metadata::CHANGE_UNKNOWN_KEY,
+                    crate::config::unknown_key_message(&file, &u.key, compagnon_version),
+                )
+            })
+            .chain(self.schema.warnings(layout, compagnon_version))
+            .collect()
+    }
+}
+
+/// `path` relative to the project root, with `/` separators: how a
+/// message names a file, whatever the OS.
+pub(crate) fn relative_text(layout: &Layout, path: &std::path::Path) -> String {
+    compagnon_core::layout::slashed(path.strip_prefix(layout.project_root()).unwrap_or(path))
+}
+
+/// Loads an existing change.
+///
+/// A missing `change.yaml` is not fatal: a hand-made change then inherits
+/// the schema from the project config. Refusing would have made the tool the
+/// owner of directories that the user is entitled to create themselves.
+pub fn load(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    config: &ResolvedConfig,
+    change: ChangeId,
+) -> Result<ChangeContext> {
+    if !fs.exists(&layout.change_dir(&change)) {
+        return Err(EngineError::UnknownChange {
+            change: change.to_string(),
+        });
+    }
+
+    let (metadata, unknown_keys) = metadata::load(fs, &layout.change_metadata(&change))?
+        .unwrap_or_else(|| {
+            (
+                ChangeMetadata {
+                    schema: config.schema.clone(),
+                    created: None,
+                    goal: None,
+                    skip_specs: false,
+                    retire_capabilities: false,
+                    roles: Default::default(),
+                    review: None,
+                },
+                Vec::new(),
+            )
+        });
+
+    let schema = schemas::resolve(fs, layout, &metadata.schema)?;
+    Ok(ChangeContext {
+        change,
+        metadata,
+        schema,
+        unknown_keys,
+    })
+}
+
+/// The change's status, derived from what exists on disk.
+pub fn status(fs: &dyn FileSystem, layout: &Layout, ctx: &ChangeContext) -> Result<ChangeStatus> {
+    let dir = layout.change_dir(&ctx.change);
+    // A single walk of the directory for all artifacts: the patterns are then
+    // tested in memory, in the pure core.
+    let files = fs.walk_files(&dir).map_err(|e| EngineError::Unreadable {
+        path: dir.clone(),
+        reason: e.to_string(),
+    })?;
+
+    let mut existing = BTreeSet::new();
+    for artifact in ctx.schema.graph.artifacts() {
+        let present = if artifact.is_pattern() {
+            pattern_matches_any(&artifact.generates, &files)?
+        } else {
+            files.iter().any(|f| f == &artifact.generates)
+        };
+        if present {
+            existing.insert(artifact.id.clone());
+        }
+    }
+
+    let skipped = ctx.metadata.skipped_artifacts(&ctx.schema.graph);
+    let mut status = status::compute(&ctx.schema.graph, &ctx.change, &existing, &skipped);
+    // The core only knows the parsed graph, whose `name:` may differ from
+    // the folder the schema was resolved by; the latter is the schema's name.
+    status.schema_name = ctx.schema.name().to_string();
+    Ok(status)
+}
+
+/// The active changes, in alphabetical order.
+///
+/// `archive/` is excluded — it holds the finished changes — and any directory
+/// whose name is not a valid identifier is silently ignored: the user is
+/// entitled to keep directories of their own in there.
+pub fn list(fs: &dyn FileSystem, layout: &Layout) -> Vec<ChangeId> {
+    let changes_dir = layout.changes_dir();
+    let Ok(names) = fs.list_dir(&changes_dir) else {
+        return Vec::new();
+    };
+    names
+        .into_iter()
+        .filter(|name| name != "archive")
+        .filter_map(|name| ChangeId::parse(&name).ok())
+        .filter(|change| fs.exists(&layout.change_dir(change)))
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::DEFAULT_SCHEMA;
+    use crate::ports::{FixedEnv, MemoryFileSystem};
+    use compagnon_core::ArtifactState;
+
+    fn config(fs: &dyn FileSystem, layout: &Layout) -> ResolvedConfig {
+        let mut env = FixedEnv::at("/p");
+        env.vars.insert("HOME".into(), "/home".into());
+        crate::config::resolve(fs, &env, layout).unwrap()
+    }
+
+    fn context(fs: &MemoryFileSystem, name: &str) -> ChangeContext {
+        let layout = Layout::new("/p");
+        let cfg = config(fs, &layout);
+        load(fs, &layout, &cfg, ChangeId::parse(name).unwrap()).unwrap()
+    }
+
+    #[test]
+    fn an_unknown_change_is_an_error_that_guides() {
+        let fs = MemoryFileSystem::new().with_file("/p/_compagnon/config.yaml", "");
+        let layout = Layout::new("/p");
+        let cfg = config(&fs, &layout);
+        let err = load(&fs, &layout, &cfg, ChangeId::parse("ghost").unwrap()).unwrap_err();
+        assert_eq!(err.code(), "unknown_change");
+        assert!(err.to_string().contains("compagnon list"), "{err}");
+    }
+
+    #[test]
+    fn a_change_without_metadata_inherits_the_project_schema() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file("/p/_compagnon/changes/hand-made/proposal.md", "# Proposal");
+        let ctx = context(&fs, "hand-made");
+        assert_eq!(ctx.metadata.schema, DEFAULT_SCHEMA);
+        assert_eq!(ctx.metadata.created, None);
+    }
+
+    #[test]
+    fn derives_artifact_states_from_disk() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file(
+                "/p/_compagnon/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            )
+            .with_file("/p/_compagnon/changes/add-auth/proposal.md", "# Proposal");
+
+        let ctx = context(&fs, "add-auth");
+        let status = status(&fs, &Layout::new("/p"), &ctx).unwrap();
+
+        let state = |id: &str| status.artifacts.iter().find(|a| a.id == id).unwrap().state;
+        assert_eq!(state("proposal"), ArtifactState::Done);
+        assert_eq!(state("specs"), ArtifactState::Ready);
+        assert_eq!(state("tasks"), ArtifactState::Blocked);
+    }
+
+    #[test]
+    fn status_ignores_the_corrections() {
+        let without = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file(
+                "/p/_compagnon/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            );
+        let with = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file(
+                "/p/_compagnon/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            )
+            .with_file("/p/_compagnon/changes/add-auth/corrections.md", "<!-- compagnon-corrections: 1 -->\n\n### C-1 Typed errors\n\n```yaml\nstep: apply\nwhere: src/a.rs\ndid: Returned anyhow.\nasked: Use thiserror.\n```\n");
+        let layout = Layout::new("/p");
+        let states = |fs: &MemoryFileSystem| {
+            status(fs, &layout, &context(fs, "add-auth"))
+                .unwrap()
+                .artifacts
+                .iter()
+                .map(|a| (a.id.clone(), a.state))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(states(&with), states(&without));
+    }
+
+    #[test]
+    fn status_ignores_the_review_record() {
+        let without = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file(
+                "/p/_compagnon/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            );
+        let with = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file(
+                "/p/_compagnon/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            )
+            .with_file(
+                "/p/_compagnon/changes/add-auth/review.md",
+                "## plan.challenge\n\n### skeptic\n\nNo finding.\n",
+            );
+        let layout = Layout::new("/p");
+        let states = |fs: &MemoryFileSystem| {
+            status(fs, &layout, &context(fs, "add-auth"))
+                .unwrap()
+                .artifacts
+                .iter()
+                .map(|a| (a.id.clone(), a.state))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(states(&with), states(&without));
+    }
+
+    #[test]
+    fn a_nested_spec_satisfies_the_artifact_pattern() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file(
+                "/p/_compagnon/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            )
+            .with_file("/p/_compagnon/changes/add-auth/proposal.md", "x")
+            .with_file(
+                "/p/_compagnon/changes/add-auth/specs/identity/user-auth/spec.md",
+                "y",
+            );
+
+        let ctx = context(&fs, "add-auth");
+        let status = status(&fs, &Layout::new("/p"), &ctx).unwrap();
+        let specs = status.artifacts.iter().find(|a| a.id == "specs").unwrap();
+        assert_eq!(specs.state, ArtifactState::Done);
+    }
+
+    #[test]
+    fn skip_specs_makes_tasks_writable_without_specs() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file(
+                "/p/_compagnon/changes/refactor/change.yaml",
+                "schema: spec-driven\nskip_specs: true\n",
+            )
+            .with_file("/p/_compagnon/changes/refactor/proposal.md", "x")
+            .with_file("/p/_compagnon/changes/refactor/design.md", "y");
+
+        let ctx = context(&fs, "refactor");
+        let status = status(&fs, &Layout::new("/p"), &ctx).unwrap();
+        let state = |id: &str| status.artifacts.iter().find(|a| a.id == id).unwrap().state;
+        assert_eq!(state("specs"), ArtifactState::Skipped);
+        assert_eq!(state("tasks"), ArtifactState::Ready);
+    }
+
+    #[test]
+    fn lists_active_changes_without_the_archive() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file("/p/_compagnon/changes/add-auth/proposal.md", "x")
+            .with_file("/p/_compagnon/changes/fix-bug/proposal.md", "x")
+            .with_file(
+                "/p/_compagnon/changes/archive/2026-01-01-old/proposal.md",
+                "x",
+            );
+
+        let names: Vec<String> = list(&fs, &Layout::new("/p"))
+            .iter()
+            .map(ToString::to_string)
+            .collect();
+        assert_eq!(names, ["add-auth", "fix-bug"]);
+    }
+
+    #[test]
+    fn list_ignores_folders_that_are_not_change_names() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_compagnon/config.yaml", "")
+            .with_file("/p/_compagnon/changes/fix-bug/proposal.md", "x")
+            .with_file("/p/_compagnon/changes/add-auth/proposal.md", "x")
+            .with_file("/p/_compagnon/changes/Notes_2026/todo.md", "x")
+            .with_file(
+                "/p/_compagnon/changes/archive/2026-01-01-old/proposal.md",
+                "x",
+            );
+
+        let names: Vec<String> = list(&fs, &Layout::new("/p"))
+            .iter()
+            .map(ToString::to_string)
+            .collect();
+        assert_eq!(names, ["add-auth", "fix-bug"]);
+    }
+}

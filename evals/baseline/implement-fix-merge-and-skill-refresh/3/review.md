@@ -1,11 +1,11 @@
 # Review record: fix-merge-and-skill-refresh
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — beyond the material size limit.
+Summarized: crates/compagnon-agents/src/claude.rs — beyond the material size limit.
 Summarized: docs/en/src/reference/cli.md — beyond the material size limit.
 Summarized: docs/fr/src/reference/cli.md — beyond the material size limit.
 
@@ -20,7 +20,7 @@ No finding.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:232-243"
+location: "crates/compagnon-agents/src/claude.rs:232-243"
 evidence: |
   let edited_by_hand = !force
       && fs.exists(&path)
@@ -31,7 +31,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — `ClaudeCode::is_hand_edit`, early returns, called from `plan_skills`"
+    ref: "crates/compagnon-agents/src/claude.rs — `ClaudeCode::is_hand_edit`, early returns, called from `plan_skills`"
   - status: fixed
     by: newcomer
 ```
@@ -41,7 +41,7 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-agents/src/claude.rs:264-269"
+location: "crates/compagnon-agents/src/claude.rs:264-269"
 evidence: |
   [self.ctx.clone(), self.ctx.other_review_mode()]
       .iter()
@@ -49,13 +49,13 @@ evidence: |
       .all(|rendered| {
           split_checksum(&rendered).is_none_or(|(unstamped, _)| unstamped != current)
       })
-recommendation: State the rule positively — codev rendered it if it equals either unstamped rendering — and negate once; render the skill without its checksum through a helper that cannot fail, so the `Option` disappears.
+recommendation: State the rule positively — compagnon rendered it if it equals either unstamped rendering — and negate once; render the skill without its checksum through a helper that cannot fail, so the `Option` disappears.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — `edited_before_checksums` computes `rendered_by_codev` with `any` over `render_unstamped`, then returns its negation"
+    ref: "crates/compagnon-agents/src/claude.rs — `edited_before_checksums` computes `rendered_by_compagnon` with `any` over `render_unstamped`, then returns its negation"
   - status: fixed
     by: newcomer
 ```
@@ -65,7 +65,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:387-396"
+location: "crates/compagnon-agents/src/claude.rs:387-396"
 evidence: |
   let mut start = contents.find('\n')? + 1;
   for line in contents[start..].split_inclusive('\n') {
@@ -75,7 +75,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — `split_checksum` iterates from `after_opening` and tracks `line_offset`, cutting `before` and `after`"
+    ref: "crates/compagnon-agents/src/claude.rs — `split_checksum` iterates from `after_opening` and tracks `line_offset`, cutting `before` and `after`"
   - status: fixed
     by: newcomer
 ```
@@ -85,7 +85,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:616-620"
+location: "crates/compagnon-agents/src/claude.rs:616-620"
 evidence: |
   let earlier = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
   let unstamped = without_checksum(&earlier).replace("Planning boundary", "Plan boundary");
@@ -98,7 +98,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — `stamp_checksum` and `render_unstamped`, used by `render` and by the test, which binds `current` then `earlier_build`"
+    ref: "crates/compagnon-agents/src/claude.rs — `stamp_checksum` and `render_unstamped`, used by `render` and by the test, which binds `current` then `earlier_build`"
   - status: fixed
     by: newcomer
 ```

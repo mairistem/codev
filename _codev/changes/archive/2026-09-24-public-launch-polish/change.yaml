@@ -1,3 +1,0 @@
-schema: spec-driven
-created: 2026-09-24
-goal: 'Polish codev for a public launch: credit OpenSpec, richer README with badges + TOC, CONTRIBUTING/CHANGELOG/CODE_OF_CONDUCT/SECURITY, issue/PR templates. Also fixes the scenario-less requirement in the distribution spec (debt from the Windows change).'

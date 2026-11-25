@@ -1,9 +1,9 @@
-Merge a codev change's deltas into the main specs, **without moving the
+Merge a Compagnon change's deltas into the main specs, **without moving the
 change**. The change stays active where it is.
 
 **When to use it.** When a new capability must appear in the specs before
 another change builds on it, or when you want to review the merge before
-archiving. In the normal case, `codev-archive` already runs the sync as a
+archiving. In the normal case, `compagnon-archive` already runs the sync as a
 pre-flight step — there is no need to `sync` then `archive` separately.
 
 ---
@@ -20,7 +20,7 @@ implicitly if there is only one active change).
 Without an explicit name:
 
 ```bash
-codev list
+compagnon list
 ```
 
 - A single active change → use it.
@@ -30,19 +30,19 @@ codev list
 Then:
 
 ```bash
-codev status --change "<name>" --json
+compagnon status --change "<name>" --json
 ```
 
 {{fragment:version-check}}
 
 If `isPlanningComplete` is `false`, stop: planning is not ready. Name the
-missing artifacts and suggest `/codev-propose` or `/codev-continue`
+missing artifacts and suggest `/compagnon-propose` or `/compagnon-continue`
 (depending on what already exists). Do not run `sync`.
 
 ### 2. Run the merge in JSON mode
 
 ```bash
-codev sync --change "<name>" --json
+compagnon sync --change "<name>" --json
 ```
 
 The JSON received is a `SyncReportV1` — a public, versioned contract.
@@ -57,7 +57,7 @@ Fields to use:
 On a **non-zero exit**, read `status[0].code`:
 
 - If `code == "validation_failed"` → reply **exactly**:
-  > The change has errors. Run `codev validate <name>` to see the details.
+  > The change has errors. Run `compagnon validate <name>` to see the details.
   Nothing more. Do not retry, and do not try to fix the change yourself.
 - For **any other code** → relay `status[0].message` as is, and stop.
 
@@ -96,10 +96,10 @@ archive, or something else).
 
 ## Guardrails
 
-- **Never move the change** — the power of `codev sync` ends at the
-  merge. Moving is the job of `codev-archive`.
+- **Never move the change** — the power of `compagnon sync` ends at the
+  merge. Moving is the job of `compagnon-archive`.
 - **Do not archive** — if the user wanted to archive, they would have
-  typed `/codev-archive`.
+  typed `/compagnon-archive`.
 - **Do not parse any JSON other than `sync`'s** — the skill knows the
   shape of no other contract.
 - **Do not hide an error** — if the CLI returns a non-zero exit, relay

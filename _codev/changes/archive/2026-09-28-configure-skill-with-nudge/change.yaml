@@ -1,3 +1,0 @@
-schema: spec-driven
-created: 2026-09-28
-goal: Add the /codev-configure skill that lets Claude enrich _codev/config.yaml by analyzing the project, and prompt users to run it from codev init, codev status and /codev-onboard when the config is thin.

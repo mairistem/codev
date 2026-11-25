@@ -1,13 +1,13 @@
-<!-- codev:begin — managed by codev; `codev update` rewrites this block, edit outside it -->
-## Spec-driven development with codev
+<!-- compagnon:begin — managed by compagnon; `compagnon update` rewrites this block, edit outside it -->
+## Spec-driven development with compagnon
 
-This repository follows spec-driven development with codev.
+This repository follows spec-driven development with compagnon.
 
-- `_codev/specs/` describes the current behavior and is authoritative.
-- `_codev/decisions/` holds accepted architecture decisions: follow them, do not re-debate them.
-- For any change of behavior, start with `/codev-propose`, then implement it with `/codev-apply`. Do not modify behavior without a codev change.
+- `_compagnon/specs/` describes the current behavior and is authoritative.
+- `_compagnon/decisions/` holds accepted architecture decisions: follow them, do not re-debate them.
+- For any change of behavior, start with `/compagnon-propose`, then implement it with `/compagnon-apply`. Do not modify behavior without a compagnon change.
 - Trivial fixes (typos, documentation wording) are exempt.
-- Run `codev validate` before committing.
+- Run `compagnon validate` before committing.
 
-Installed skills: `/codev-propose`, `/codev-explore`, `/codev-apply`, `/codev-sync`, `/codev-archive`, `/codev-update`, `/codev-onboard`, `/codev-configure`.
-<!-- codev:end -->
+Installed skills: `/compagnon-propose`, `/compagnon-explore`, `/compagnon-apply`, `/compagnon-sync`, `/compagnon-archive`, `/compagnon-update`, `/compagnon-onboard`, `/compagnon-configure`.
+<!-- compagnon:end -->

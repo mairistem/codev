@@ -1,6 +1,6 @@
 # Review record: group-prices
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 

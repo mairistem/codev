@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 3431,
+          "compagnon roles": 3431,
           "skill": 11627
         }
       },
@@ -49,7 +49,7 @@
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1944
+          "compagnon review": 1944
         }
       },
       {
@@ -69,7 +69,7 @@
         "output": 2,
         "toolCalls": 0,
         "sources": {
-          "codev review": 622,
+          "compagnon review": 622,
           "edit": 400
         }
       }
@@ -91,7 +91,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-monthly-report/review.md",
+    "path": "_compagnon/changes/add-monthly-report/review.md",
     "status": [],
     "steps": [
       {

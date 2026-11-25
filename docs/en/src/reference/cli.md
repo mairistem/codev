@@ -1,25 +1,25 @@
 # Command-line interface
 
-This chapter documents every `codev` command. The help text of each command is
-reproduced exactly as `codev <command> --help` prints it; run that command to
+This chapter documents every `compagnon` command. The help text of each command is
+reproduced exactly as `compagnon <command> --help` prints it; run that command to
 see the help of the version you have installed.
 
 ```bash
-codev --help
+compagnon --help
 ```
 
 ```text
-codev adds a thin layer of specs to a repository so that you and your agent agree on what must be built before a single line of code is written.
+compagnon adds a thin layer of specs to a repository so that you and your agent agree on what must be built before a single line of code is written.
 
-The commands below run in your terminal. The workflows are invoked in the Claude Code chat: /codev-propose, /codev-explore.
+The commands below run in your terminal. The workflows are invoked in the Claude Code chat: /compagnon-propose, /compagnon-explore.
 
-Usage: codev <COMMAND>
+Usage: compagnon <COMMAND>
 
 Commands:
-  init          Initialize codev in a project and install the Claude Code skills
-  update        Regenerate the skills, and refresh codev's managed sections, after a codev upgrade
-  self-update   Download and install the latest codev release, verified
-  doctor        Check what the project's codev setup still lacks, and how to fix it
+  init          Initialize compagnon in a project and install the Claude Code skills
+  update        Regenerate the skills, and refresh compagnon's managed sections, after a compagnon upgrade
+  self-update   Download and install the latest compagnon release, verified
+  doctor        Check what the project's compagnon setup still lacks, and how to fix it
   new           Create a new item
   list          List active changes, or specified capabilities with --specs
   search        Search the requirements and decisions that match a query
@@ -34,7 +34,7 @@ Commands:
   review        Show a change's review record and what is left to decide
   archive       Merge, then move a change to the dated archive
   changelog     Generate release notes from the archived changes
-  docs          Open the codev documentation in the browser
+  docs          Open the compagnon documentation in the browser
   completions   Generate a shell completion script for local installation
   validate      Check changes and specs for structural errors and consistency
   help          Print this message or the help of the given subcommand(s)
@@ -52,14 +52,14 @@ Options:
 These rules hold for every command except `docs` and `completions`, which do
 not read the project:
 
-- **Project discovery.** codev looks for `_codev/` in the current directory,
+- **Project discovery.** Compagnon looks for `_compagnon/` in the current directory,
   then in each parent directory. Run commands from anywhere inside the
-  project. Outside a project, commands fail with `no_codev_root`.
+  project. Outside a project, commands fail with `no_compagnon_root`.
 - **`--json`.** Every command that reads or writes the project accepts
   `--json`. stdout then carries exactly one JSON document — on failure too —
   and human messages are not printed. See [JSON output](json-output.md).
-- **Exit status.** `0` on success, `1` on failure. For `codev validate`, see
-  [its section](#codev-validate).
+- **Exit status.** `0` on success, `1` on failure. For `compagnon validate`, see
+  [its section](#compagnon-validate).
 - **Errors.** In human mode, errors go to stderr as `error: …`, often followed
   by a `help: …` line with the fix.
 - **Choosing a change.** Commands that take `--change <CHANGE>` infer it when
@@ -68,12 +68,12 @@ not read the project:
 
 ## Project
 
-### codev init
+### compagnon init
 
 ```text
-Initialize codev in a project and install the Claude Code skills
+Initialize compagnon in a project and install the Claude Code skills
 
-Usage: codev init [OPTIONS] [PATH]
+Usage: compagnon init [OPTIONS] [PATH]
 
 Arguments:
   [PATH]
@@ -98,19 +98,19 @@ Options:
           - custom:  Pick the workflows one by one
 
       --language <CODE>
-          Language skills write artifacts in — their prose, and their structural keywords when codev ships the language — as an ISO 639 code (`en`, `fr`, `pt-BR`…). Default: detected from the locale, otherwise `en`
+          Language skills write artifacts in — their prose, and their structural keywords when compagnon ships the language — as an ISO 639 code (`en`, `fr`, `pt-BR`…). Default: detected from the locale, otherwise `en`
 
       --inherit <SOURCE>
-          Inherit conventions from a source, written under `inherits:` (repeatable). A git URL (`git@…`, `https://…`, `ssh://…`, `file://…`, or ending in `.git`), optionally suffixed with `@<ref>` (default `main`), or a local folder. Git sources are pinned in `_codev/codev.lock` right away
+          Inherit conventions from a source, written under `inherits:` (repeatable). A git URL (`git@…`, `https://…`, `ssh://…`, `file://…`, or ending in `.git`), optionally suffixed with `@<ref>` (default `main`), or a local folder. Git sources are pinned in `_compagnon/compagnon.lock` right away
 
       --no-claude-md
-          Do not write codev's section in `CLAUDE.md`
+          Do not write compagnon's section in `CLAUDE.md`
 
       --no-ci
-          Do not write `.github/workflows/codev.yml`
+          Do not write `.github/workflows/compagnon.yml`
 
       --no-pr-template
-          Do not write codev's section in the pull request template
+          Do not write compagnon's section in the pull request template
 
       --no-integration
           Skip all repository integration: same as `--no-claude-md --no-ci --no-pr-template`
@@ -122,9 +122,9 @@ Options:
           Print help (see a summary with '-h')
 ```
 
-Initializes codev in `PATH` (the current folder by default): creates the
-`_codev/` tree, writes `_codev/config.yaml`, and installs the skills into
-`.claude/skills/`. See [What `codev init` does](../quickstart.md#what-codev-init-does)
+Initializes Compagnon in `PATH` (the current folder by default): creates the
+`_compagnon/` tree, writes `_compagnon/config.yaml`, and installs the skills into
+`.claude/skills/`. See [What `compagnon init` does](../quickstart.md#what-compagnon-init-does)
 for the probe and the questions.
 
 - `--yes` skips every question and applies the defaults and detected values.
@@ -142,35 +142,35 @@ for the probe and the questions.
   `ssh://` or `file://`, or ending in `.git`, is a git source; an `@<ref>`
   suffix picks the branch or tag (`…/conventions.git@v2`), `main` otherwise.
   Anything else is a local folder, which must exist; a relative path is
-  written as an absolute one. Git sources are pinned in `_codev/codev.lock`
-  right away, as `codev sources update` would; if that fails (network,
+  written as an absolute one. Git sources are pinned in `_compagnon/compagnon.lock`
+  right away, as `compagnon sources update` would; if that fails (network,
   credentials, unknown ref), init still succeeds, warns with
-  `inherit_pin_failed` and prints `help: run codev sources update`. An
+  `inherit_pin_failed` and prints `help: run compagnon sources update`. An
   invalid value fails with `invalid_inherit` before anything is written. See
   [Inherited sources](../guides/inherited-sources.md).
 - `--no-claude-md`, `--no-ci` and `--no-pr-template` skip one integration
   file each; `--no-integration` skips all three. See
-  [Repository integration and codev doctor](../guides/repository-integration.md).
+  [Repository integration and compagnon doctor](../guides/repository-integration.md).
 
-Unless you opt out, `codev init` also writes codev's section in `CLAUDE.md`
-and, on GitHub, `.github/workflows/codev.yml` and a section in the pull
+Unless you opt out, `compagnon init` also writes Compagnon's section in `CLAUDE.md`
+and, on GitHub, `.github/workflows/compagnon.yml` and a section in the pull
 request template. The summary lists each file as created, appended,
 refreshed, up to date or skipped, with the reason; for a GitLab repository it
-prints a job to paste into `.gitlab-ci.yml`, which codev never edits. The last
-line suggests `codev doctor` when something is still missing.
+prints a job to paste into `.gitlab-ci.yml`, which Compagnon never edits. The last
+line suggests `compagnon doctor` when something is still missing.
 
-When `_codev/config.yaml` already exists, it is left untouched: `codev init`
+When `_compagnon/config.yaml` already exists, it is left untouched: `compagnon init`
 only creates missing folders, installs or refreshes the skills, and adds or
 refreshes the integration files. `--inherit` sources are then not written;
 the `inherit_not_written` warning names them so you can add them by hand.
 Skills you edited by hand are preserved unless you pass `--force`.
 
-### codev update
+### compagnon update
 
 ```text
-Regenerate the skills, and refresh codev's managed sections, after a codev upgrade
+Regenerate the skills, and refresh compagnon's managed sections, after a compagnon upgrade
 
-Usage: codev update [OPTIONS]
+Usage: compagnon update [OPTIONS]
 
 Options:
       --force  Rewrite skills even if they were edited by hand
@@ -179,35 +179,75 @@ Options:
 ```
 
 Regenerates the skills listed by `workflows:` in the configuration (all eight
-when the key is absent), for example after upgrading codev or changing the
-`mcp:` configuration. `codev update` rewrites a skill stamped with another
+when the key is absent), for example after upgrading Compagnon or changing the
+`mcp:` configuration. `compagnon update` rewrites a skill stamped with another
 version; among the skills stamped with its own version, it rewrites one whose
-content still hashes to its `checksum` — codev's rendering, from an earlier
+content still hashes to its `checksum` — Compagnon's rendering, from an earlier
 build or for the other review mode — and preserves one that no longer does,
 edited by hand, unless you pass `--force`. A skill without a checksum,
 rendered before checksums existed, is preserved when it carries this version's
-stamp and differs from the rendering by more than the review mode: run `codev
+stamp and differs from the rendering by more than the review mode: run `compagnon
 update --force` once to bring such skills under the checksum — it also
 overwrites a skill you really edited, so check `git diff` first and apply your
 edits again after. A preserved skill is reported. Skills removed from
 `workflows:` are not deleted. An unknown workflow name is ignored with a
-warning `unknown_workflow`. Missing `_codev/` folders and a missing
-`_codev/config.yaml` are recreated; existing files are never overwritten.
+warning `unknown_workflow`. Missing `_compagnon/` folders and a missing
+`_compagnon/config.yaml` are recreated; existing files are never overwritten.
 
-`codev update` also refreshes codev's managed sections in `CLAUDE.md` and the
-pull request template, and `.github/workflows/codev.yml` when its first line
-is `# codev:managed` — which moves its pinned version to the running one. It
+`compagnon update` also refreshes Compagnon's managed sections in `CLAUDE.md` and the
+pull request template, and `.github/workflows/compagnon.yml` when its first line
+is `# compagnon:managed` — which moves its pinned version to the running one. It
 only refreshes what exists: it never creates these files nor adds a section,
 so a project initialized with `--no-integration` stays as it is.
 
-### codev self-update
+### compagnon migrate
 
 ```text
-Download and install the latest codev release, verified
+Convert a project set up before the rename to Compagnon
 
-Downloads the release archive for this platform from GitHub, verifies its SHA-256 against the release's `SHA256SUMS`, replaces this binary atomically, then runs the new binary's `codev update` in the current project, if any. Never downgrades unless `--version` asks for it. A binary installed by cargo, a cargo build or a package manager is left alone: the command that upgrades it is printed instead.
+Usage: compagnon migrate [OPTIONS]
 
-Usage: codev self-update [OPTIONS]
+Options:
+      --dry-run  Print the operations without performing them
+      --json
+  -h, --help     Print help (see more with '--help')
+```
+
+Converts a project set up with codev, the product's name before 0.7.0, in
+place. It finds the project from the current directory like any other
+command, under `_codev/` or `_compagnon/`, then:
+
+- moves `_codev/` to `_compagnon/`, and `codev.lock` to `compagnon.lock`;
+- renames the `codev_version` key to `compagnon_version` in
+  `_compagnon/config.yaml`, keeping its value, its comments and every other
+  byte;
+- rewrites the format markers of `review.md` and `corrections.md`, and the
+  markers of the managed sections of `CLAUDE.md` and of the pull request
+  template;
+- replaces the generated `codev-*` skills and `.github/workflows/codev.yml`
+  with their Compagnon versions, then refreshes everything as
+  `compagnon update` does.
+
+A `codev-*` skill or a `codev.yml` edited by hand is kept and reported. The
+prose of specs, decisions and changes is never rewritten. `--dry-run` prints
+the operations and writes nothing. A run that stops on an error
+(`migration_incomplete`) names the failing path and what was already done:
+fix the cause and run it again to complete it. A project already migrated is
+left as it is. The command refuses, without writing, a directory holding
+both `_codev/` and `_compagnon/` (`migration_conflict`) and a version
+requirement the running Compagnon does not satisfy
+(`migration_version_unsatisfied`). When the project declares git sources, it
+reminds you to run `compagnon sources update`. See
+[Moving from codev](../guides/moving-from-codev.md).
+
+### compagnon self-update
+
+```text
+Download and install the latest compagnon release, verified
+
+Downloads the release archive for this platform from GitHub, verifies its SHA-256 against the release's `SHA256SUMS`, replaces this binary atomically, then runs the new binary's `compagnon update` in the current project, if any. Never downgrades unless `--version` asks for it. A binary installed by cargo, a cargo build or a package manager is left alone: the command that upgrades it is printed instead.
+
+Usage: compagnon self-update [OPTIONS]
 
 Options:
       --version <X.Y.Z>
@@ -229,17 +269,17 @@ Options:
           Print help (see a summary with '-h')
 ```
 
-Installs a newer codev in place of the running one, in one command and never
+Installs a newer Compagnon in place of the running one, in one command and never
 behind your back:
 
 1. resolves the target — `--version`, or the latest release, asked to
-   GitHub now whatever the cache, `CI` or `CODEV_NO_UPDATE_CHECK`;
+   GitHub now whatever the cache, `CI` or `COMPAGNON_NO_UPDATE_CHECK`;
 2. on a terminal, asks for confirmation unless `--yes` is given;
-3. downloads `codev-<version>-<target>.tar.gz` (`.zip` on Windows) and
+3. downloads `compagnon-<version>-<target>.tar.gz` (`.zip` on Windows) and
    `SHA256SUMS` from the GitHub release, and verifies the archive's SHA-256;
 4. writes the new binary next to the running one, then renames it into place,
    so the binary's path always holds a complete binary;
-5. inside a codev project, runs the new binary's `codev update`.
+5. inside a Compagnon project, runs the new binary's `compagnon update`.
 
 A binary installed by `cargo install`, built in a cargo `target/` folder, or
 installed by a package manager (Homebrew, Nix, Scoop, `/usr/bin`) is left
@@ -249,7 +289,7 @@ The latest release older than the running binary is refused
 
 `--check` prints the running and latest versions, refreshes the update cache
 and exits with `0` whether or not an update is available. `--snooze` silences
-the update notice of `codev status` and of the skills for the latest known
+the update notice of `compagnon status` and of the skills for the latest known
 version, for 7 days; a newer release is announced again.
 
 | Code | Meaning |
@@ -258,24 +298,24 @@ version, for 7 days; a newer release is announced again.
 | `update_unsupported_platform` | No published binary for this platform; build from source |
 | `update_download_failed` | The archive or `SHA256SUMS` cannot be downloaded |
 | `update_checksum_mismatch` | `SHA256SUMS` has no entry for the archive, or its SHA-256 differs |
-| `update_extract_failed` | The archive cannot be extracted, or holds no codev binary |
+| `update_extract_failed` | The archive cannot be extracted, or holds no Compagnon binary |
 | `update_not_writable` | The binary's folder cannot be written |
 | `update_downgrade_refused` | The target is older than the running version, without `--version` |
 | `invalid_version` | `--version` is not `X.Y.Z` |
 
-Every failure leaves the installed binary untouched. When `codev update`
+Every failure leaves the installed binary untouched. When `compagnon update`
 fails in the project after a successful update, the command warns
-`update_project_refresh_failed` and still exits with `0`: run `codev update`
+`update_project_refresh_failed` and still exits with `0`: run `compagnon update`
 there. For `--json`, see [JSON output](json-output.md#self-update).
 
-### codev doctor
+### compagnon doctor
 
 ```text
-Check what the project's codev setup still lacks, and how to fix it
+Check what the project's compagnon setup still lacks, and how to fix it
 
-Read-only and offline: configuration, skills, inherited sources, the running codev version against `codev_version` and the cached update check, specs, decisions, `CLAUDE.md`, CI and pull request template, `codev validate`, and whether `CHANGELOG.md` matches the archived changes. Each check is ok, missing or a warning, with the command or skill that fixes it.
+Read-only and offline: configuration, skills, inherited sources, the running compagnon version against `compagnon_version` and the cached update check, specs, decisions, `CLAUDE.md`, CI and pull request template, `compagnon validate`, and whether `CHANGELOG.md` matches the archived changes. Each check is ok, missing or a warning, with the command or skill that fixes it.
 
-Usage: codev doctor [OPTIONS]
+Usage: compagnon doctor [OPTIONS]
 
 Options:
       --strict
@@ -288,47 +328,47 @@ Options:
           Print help (see a summary with '-h')
 ```
 
-Lists what the project's codev setup still lacks, grouped under
+Lists what the project's Compagnon setup still lacks, grouped under
 Configuration, Planning and Repository, with the command or skill that fixes
 each item. It writes nothing and needs no network; the `changelog` check runs
 local, read-only `git` queries.
 
 | Check | Passes when | Fix |
 |---|---|---|
-| `config.rules` | `rules:` has at least one entry, inherited ones included | `/codev-configure` |
+| `config.rules` | `rules:` has at least one entry, inherited ones included | `/compagnon-configure` |
 | `config.language` | `language:` is set | add `language: <code>` |
-| `config.keys` | `_codev/config.yaml` has no key this codev ignores — a warning only | correct or remove the key, or `codev self-update` |
-| `config.roles` | every entry of `roles:` is valid — informational, it lists the active roles, the roles active on domain with their domains, and the disabled ones; a warning `roles_invalid` otherwise | `codev validate` |
-| `skills` | every configured skill is installed and generated by this codev version | `codev update` |
-| `sources` | every git source is pinned in `codev.lock` and cached | `codev sources update` |
-| `codev_version` | the running codev satisfies `codev_version`, and the cached update check knows no newer release — a warning only for the latter | `codev self-update`, or `codev self-update --version <X.Y.Z>` when the running codev is above the requirement |
-| `specs` | at least one main spec exists | `/codev-propose` |
-| `decisions` | at least one decision is accepted — a warning only | `codev decision new` |
-| `validate` | `codev validate` reports nothing | `codev validate` |
-| `claude_md` | `CLAUDE.md` has the codev section | `codev init` |
-| `ci` | a GitHub workflow or `.gitlab-ci.yml` runs `codev validate` | `codev init` on GitHub |
-| `pr_template` | the pull request template has the codev section — GitHub only | `codev init` |
-| `changelog` | `CHANGELOG.md` matches what `codev changelog` generates — a warning only | `codev changelog --write` |
+| `config.keys` | `_compagnon/config.yaml` has no key this Compagnon ignores — a warning only | correct or remove the key, or `compagnon self-update` |
+| `config.roles` | every entry of `roles:` is valid — informational, it lists the active roles, the roles active on domain with their domains, and the disabled ones; a warning `roles_invalid` otherwise | `compagnon validate` |
+| `skills` | every configured skill is installed and generated by this compagnon version | `compagnon update` |
+| `sources` | every git source is pinned in `compagnon.lock` and cached | `compagnon sources update` |
+| `compagnon_version` | the running Compagnon satisfies `compagnon_version`, and the cached update check knows no newer release — a warning only for the latter | `compagnon self-update`, or `compagnon self-update --version <X.Y.Z>` when the running Compagnon is above the requirement |
+| `specs` | at least one main spec exists | `/compagnon-propose` |
+| `decisions` | at least one decision is accepted — a warning only | `compagnon decision new` |
+| `validate` | `compagnon validate` reports nothing | `compagnon validate` |
+| `claude_md` | `CLAUDE.md` has the Compagnon section | `compagnon init` |
+| `ci` | a GitHub workflow or `.gitlab-ci.yml` runs `compagnon validate` | `compagnon init` on GitHub |
+| `pr_template` | the pull request template has the Compagnon section — GitHub only | `compagnon init` |
+| `changelog` | `CHANGELOG.md` matches what `compagnon changelog` generates — a warning only | `compagnon changelog --write` |
 
-The `codev_version` check reads the update cache that `codev status` keeps;
+The `compagnon_version` check reads the update cache that `compagnon status` keeps;
 it never contacts the network.
 
 Each line shows `✓` (ok), `✗` (missing) or `!` (warning); the last line
 counts the checks and those left to fix. The exit status is `0`, unless
 `--strict` is given and a check is missing: warnings never fail. See
-[Repository integration and codev doctor](../guides/repository-integration.md)
+[Repository integration and compagnon doctor](../guides/repository-integration.md)
 and, for `--json`, [JSON output](json-output.md#doctor).
 
-### codev docs
+### compagnon docs
 
 ```text
-Open the codev documentation in the browser
+Open the compagnon documentation in the browser
 
 Three forms:
 
-- default: writes `codev-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM).
+- default: writes `compagnon-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM).
 
-Usage: codev docs [OPTIONS]
+Usage: compagnon docs [OPTIONS]
 
 Options:
       --print
@@ -352,32 +392,32 @@ Options:
 
 Renders this documentation as one self-contained HTML page — inline CSS, no
 network access — and opens it in your browser. The page is written to
-`codev-docs-<version>.html` in the system temporary folder. `--write` writes
+`compagnon-docs-<version>.html` in the system temporary folder. `--write` writes
 it elsewhere without opening it, for sharing; `--print` prints the Markdown
 source. `--lang` selects the English (`en`, the default) or French (`fr`)
-edition. `codev docs` works anywhere, including outside a codev project.
+edition. `compagnon docs` works anywhere, including outside a Compagnon project.
 
 `--print` is meant to be piped: when the reader stops early, as in
-`codev docs --print | head`, the command stops silently and exits with code 0.
+`compagnon docs --print | head`, the command stops silently and exits with code 0.
 On the page, notes and warnings keep their meaning: a note has a green rule, a
 warning a coral one.
 
 ```bash
-codev docs --lang fr --write ~/Downloads/codev-manual-fr.html
+compagnon docs --lang fr --write ~/Downloads/compagnon-manual-fr.html
 ```
 
-### codev completions
+### compagnon completions
 
 ```text
 Generate a shell completion script for local installation
 
 The output goes to stdout — redirect it to your shell's completions folder. Typical setups:
 
-- bash: `codev completions bash > ~/.local/share/bash-completion/completions/codev` - zsh: `codev completions zsh > "${fpath[1]}/_codev"`, then `compinit` - fish: `codev completions fish > ~/.config/fish/completions/codev.fish` - powershell: `codev completions powershell | Out-String | Invoke-Expression`
+- bash: `compagnon completions bash > ~/.local/share/bash-completion/completions/compagnon` - zsh: `compagnon completions zsh > "${fpath[1]}/_compagnon"`, then `compinit` - fish: `compagnon completions fish > ~/.config/fish/completions/compagnon.fish` - powershell: `compagnon completions powershell | Out-String | Invoke-Expression`
 
-The command touches no file; it does not read `_codev/` either and works in any directory.
+The command touches no file; it does not read `_compagnon/` either and works in any directory.
 
-Usage: codev completions <SHELL>
+Usage: compagnon completions <SHELL>
 
 Arguments:
   <SHELL>
@@ -394,12 +434,12 @@ See [Shell completions](../installation.md#shell-completions).
 
 ## Changes
 
-### codev new change
+### compagnon new change
 
 ```text
 Create a change
 
-Usage: codev new change [OPTIONS] <NAME>
+Usage: compagnon new change [OPTIONS] <NAME>
 
 Arguments:
   <NAME>  Name in kebab-case (`add-user-auth`)
@@ -411,7 +451,7 @@ Options:
   -h, --help             Print help
 ```
 
-Creates `_codev/changes/<NAME>/` with a `change.yaml` recording the schema,
+Creates `_compagnon/changes/<NAME>/` with a `change.yaml` recording the schema,
 the creation date and the goal, when one is given. The name must be
 kebab-case: lowercase letters, digits and single hyphens, neither leading
 nor trailing; it may start with a digit. `archive` is reserved for the
@@ -424,15 +464,15 @@ the name breaks — with
 if the schema does not exist.
 
 ```bash
-codev new change add-dark-mode --goal "Let users switch the UI to a dark theme"
+compagnon new change add-dark-mode --goal "Let users switch the UI to a dark theme"
 ```
 
-### codev list
+### compagnon list
 
 ```text
 List active changes, or specified capabilities with --specs
 
-Usage: codev list [OPTIONS]
+Usage: compagnon list [OPTIONS]
 
 Options:
       --specs
@@ -441,17 +481,17 @@ Options:
 ```
 
 Lists the active changes, or with `--specs` the capabilities that have a main
-spec: each folder under `_codev/specs/` holding a file named exactly
+spec: each folder under `_compagnon/specs/` holding a file named exactly
 `spec.md`, nested folders included. Other files, such as a `README.md` or
-`notes/myspec.md`, are not specs and are ignored, by `codev validate` as
+`notes/myspec.md`, are not specs and are ignored, by `compagnon validate` as
 well.
 
-### codev search
+### compagnon search
 
 ```text
 Search the requirements and decisions that match a query
 
-Usage: codev search [OPTIONS] <QUERY>...
+Usage: compagnon search [OPTIONS] <QUERY>...
 
 Arguments:
   <QUERY>...  Words naming the behavior, in the language the specs are written in
@@ -478,16 +518,16 @@ query of common words only fails with `search_query_empty`, and a
 `--limit` out of range with `search_limit_invalid`. The command only reads.
 
 ```bash
-codev search create a decision from the command line
-codev search "decision seal" --archive
+compagnon search create a decision from the command line
+compagnon search "decision seal" --archive
 ```
 
-### codev show
+### compagnon show
 
 ```text
 Print one requirement, or the requirement names of a capability
 
-Usage: codev show [OPTIONS] <TARGET>
+Usage: compagnon show [OPTIONS] <TARGET>
 
 Arguments:
   <TARGET>  `<capability>::<requirement name>`, or `<capability>` for its index
@@ -497,26 +537,26 @@ Options:
   -h, --help  Print help
 ```
 
-`codev show <capability>::<requirement name>` prints that requirement as its
+`compagnon show <capability>::<requirement name>` prints that requirement as its
 main spec holds it — heading, description and scenarios, verbatim — and
 nothing else of the spec; the name is compared ignoring case and spacing.
-`codev show <capability>` prints the capability's purpose and its
+`compagnon show <capability>` prints the capability's purpose and its
 requirement names, in the `<capability>::<name>` form the command accepts.
-The capability must be one of those `codev list --specs` names: anything
+The capability must be one of those `compagnon list --specs` names: anything
 else fails with `unknown_capability`, and a requirement the capability
 does not hold with `unknown_requirement`, which lists the ones it does.
 
 ```bash
-codev show decisions
-codev show "decisions::Creating a decision through the CLI"
+compagnon show decisions
+compagnon show "decisions::Creating a decision through the CLI"
 ```
 
-### codev status
+### compagnon status
 
 ```text
 Show the state of a change's artifacts
 
-Usage: codev status [OPTIONS]
+Usage: compagnon status [OPTIONS]
 
 Options:
       --change <CHANGE>  Change name (inferred when there is only one)
@@ -528,27 +568,27 @@ Shows the state of each artifact of a change — done `[x]`, ready `[ ]`,
 blocked `[-]` with the artifacts it waits on, or skipped `[~]` — then
 `Planning: <n>/<total> artifacts` and the next artifact to write, or
 `Planning is complete.`. Fails with `no_active_change` when the project has
-no active change. In both cases, when `codev doctor` would report a missing
+no active change. In both cases, when `compagnon doctor` would report a missing
 check, a last `hint:` line on stderr suggests running it. A `--change` naming
 a change that does not exist fails with `unknown_change`; `--change archive`
 fails with `invalid_change_id`, since that name is reserved for the archived
 changes.
 
-When a newer codev release is known and you have not snoozed it, stderr also
-carries ``codev X.Y.Z is available (you have A.B.C) — run `codev self-update` ``.
-To know, `codev status` asks GitHub for the latest release at most once every
+When a newer Compagnon release is known and you have not snoozed it, stderr also
+carries ``Compagnon X.Y.Z is available (you have A.B.C) — run `compagnon self-update` ``.
+To know, `compagnon status` asks GitHub for the latest release at most once every
 24 hours, with a 2-second timeout, and caches the answer in
-`~/.cache/codev/update-check.json`. It never checks when `CI` is set or with
-`CODEV_NO_UPDATE_CHECK=1`, and a failed check is silent. No other command
+`~/.cache/compagnon/update-check.json`. It never checks when `CI` is set or with
+`COMPAGNON_NO_UPDATE_CHECK=1`, and a failed check is silent. No other command
 checks. With `--json`, the same information is in the `update` object — see
 [JSON output](json-output.md#status).
 
-### codev instructions
+### compagnon instructions
 
 ```text
 Print everything needed to write an artifact
 
-Usage: codev instructions [OPTIONS] [ARTIFACT]
+Usage: compagnon instructions [OPTIONS] [ARTIFACT]
 
 Arguments:
   [ARTIFACT]  Artifact identifier (default: the next one to write)
@@ -571,7 +611,7 @@ Once the change's proposal is written, the instructions of the artifacts
 that require it directly — `specs` and `design` — also list the existing
 requirements the change likely touches, ranked against the proposal's
 `Why` and `What Changes`, at most 10, each with an excerpt, and say that
-one is read with `codev show <capability>::<requirement>` and that a
+one is read with `compagnon show <capability>::<requirement>` and that a
 requirement the change alters is modified rather than added again. A spec
 that cannot be read is left out with a warning `spec_unreadable`.
 
@@ -582,17 +622,17 @@ when `ARTIFACT` is not an artifact of the change's schema, with
 `template_not_found` when a project schema declares a template file it does
 not hold, and with `unknown_role`, `invalid_role_activation` or
 `role_not_disableable` when a role setting is invalid — as does
-`codev status`.
+`compagnon status`.
 
 The skills call it with `--json`; see
-[`codev instructions`](json-output.md#instructions).
+[`compagnon instructions`](json-output.md#instructions).
 
-### codev sync
+### compagnon sync
 
 ```text
 Merge a change's deltas into the main specs without archiving
 
-Usage: codev sync [OPTIONS]
+Usage: compagnon sync [OPTIONS]
 
 Options:
       --change <CHANGE>  Change name (inferred when there is only one)
@@ -604,14 +644,14 @@ Validates the change, refuses if validation reports an error, then merges its
 deltas into the main specs, without moving the change. Running it again
 reports the specs as unchanged. See [Sync](../workflow.md#sync).
 
-### codev review
+### compagnon review
 
 ```text
 Show a change's review record and what is left to decide
 
-Reads `_codev/changes/<name>/review.md`: per step and per role, the findings with their severity, status and location, and who must act next (author, reviewer or human). Lists the record's defects, as `codev validate` does, and whether the review lets the change be archived. Exits with 1 when the record has an error. Also lists the author's corrections from `corrections.md`, apart from the record.
+Reads `_compagnon/changes/<name>/review.md`: per step and per role, the findings with their severity, status and location, and who must act next (author, reviewer or human). Lists the record's defects, as `compagnon validate` does, and whether the review lets the change be archived. Exits with 1 when the record has an error. Also lists the author's corrections from `corrections.md`, apart from the record.
 
-Usage: codev review [OPTIONS]
+Usage: compagnon review [OPTIONS]
 
 Options:
       --change <CHANGE>
@@ -627,19 +667,19 @@ Options:
 Reads the change's [review record](../guides/review-record.md) and prints
 it per step and per role, with who must act next on each finding, the
 record's defects (the `review_*` codes of
-[`codev validate`](#codev-validate)) and whether the review lets the change
+[`compagnon validate`](#compagnon-validate)) and whether the review lets the change
 be archived. Without a record, it says so and succeeds. The archive gate
-does not change the exit status: `codev archive` enforces it. It then
+does not change the exit status: `compagnon archive` enforces it. It then
 lists the author's [corrections](file-formats.md#correctionsmd) under
 `Corrections`, with the defects of their file: they never decide the
 archive nor the exit status. JSON: [`review`](json-output.md#review).
 
-### codev archive
+### compagnon archive
 
 ```text
 Merge, then move a change to the dated archive
 
-Usage: codev archive [OPTIONS]
+Usage: compagnon archive [OPTIONS]
 
 Options:
       --change <CHANGE>  Change name (inferred when there is only one)
@@ -652,17 +692,17 @@ its [review record](../guides/review-record.md) and refuses with
 `review_blocked` if the record is missing for a step where review roles
 were active or a high-severity finding is still open or disputed; then
 merges its deltas into the main specs and moves it, record included, to
-`_codev/changes/archive/<YYYY-MM-DD>-<name>/`. See
+`_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`. See
 [Archive](../workflow.md#archive).
 
-### codev changelog
+### compagnon changelog
 
 ```text
 Generate release notes from the archived changes
 
 Lists the release-note items of the changes archived after `--since` (default: the highest `v*` tag) and up to `--until` (default: the working tree), by category, breaking items first. A change archived without a release note falls back on its What Changes bullets, with a warning. `--write` keeps the `[Unreleased]` section of `CHANGELOG.md` up to date, in a managed section; with `--release`, it becomes a dated version block.
 
-Usage: codev changelog [OPTIONS]
+Usage: compagnon changelog [OPTIONS]
 
 Options:
       --since <REF>
@@ -688,14 +728,14 @@ Options:
           Release date, `YYYY-MM-DD` (default: today)
 
       --write
-          Update `CHANGELOG.md` (created if missing); text outside codev's managed section is kept
+          Update `CHANGELOG.md` (created if missing); text outside compagnon's managed section is kept
 
   -h, --help
           Print help (see a summary with '-h')
 ```
 
 Lists the release-note items of the changes archived in a git range. A change
-is in range when its folder is in `_codev/changes/archive/` at `--until` and
+is in range when its folder is in `_compagnon/changes/archive/` at `--until` and
 was not at `--since`: git decides, not dates. The default `--since` is the
 highest `v*` tag by version order — below `--until` when `--until` is a
 version tag — and, without any tag, every archived change is listed.
@@ -711,17 +751,17 @@ the exit status. Changes listed under
 [`changelog.exclude`](configuration.md#changelog) are left out.
 
 ```bash
-codev changelog --since v1.3.0 --format markdown
+compagnon changelog --since v1.3.0 --format markdown
 ```
 
 ```text
 ### Added
 
-- `--format json` on `codev export`.
+- `--format json` on `compagnon export`.
 
 ### Fixed
 
-- `codev export` no longer drops the last line.
+- `compagnon export` no longer drops the last line.
 ```
 
 `--write` updates `CHANGELOG.md` instead of printing the text: the
@@ -731,12 +771,12 @@ becomes `## [X.Y.Z] - <date>` below a new empty `[Unreleased]`. `--write` is
 refused with `--format markdown`. See
 [Release notes and CHANGELOG](../guides/release-notes.md).
 
-### codev validate
+### compagnon validate
 
 ```text
 Check changes and specs for structural errors and consistency
 
-Usage: codev validate [OPTIONS] [ITEM]
+Usage: compagnon validate [OPTIONS] [ITEM]
 
 Arguments:
   [ITEM]  Name of a specific change or spec capability
@@ -754,12 +794,12 @@ Without `ITEM` or a flag, validates everything: every active change, every
 main spec, and the decision seals. `ITEM` is the name of an active change or
 the path of a capability (`ui/theme`).
 
-When the running codev does not satisfy the project's
-[`codev_version`](configuration.md#codev_version), `codev validate`,
-`codev sync` and `codev archive` refuse to run: they check and write nothing
-and fail with `codev_version_unsatisfied`, naming the requirement, the
-running version and the fix `codev doctor` gives. Raise a CI pin
-(`CODEV_VERSION=`) together with `codev_version`.
+When the running Compagnon does not satisfy the project's
+[`compagnon_version`](configuration.md#compagnon_version), `compagnon validate`,
+`compagnon sync` and `compagnon archive` refuse to run: they check and write nothing
+and fail with `compagnon_version_unsatisfied`, naming the requirement, the
+running version and the fix `compagnon doctor` gives. Raise a CI pin
+(`COMPAGNON_VERSION=`) together with `compagnon_version`.
 
 Exit status:
 
@@ -770,10 +810,10 @@ Exit status:
 | At least one error | 1 | 1 |
 
 ```text
-change add-dark-mode — _codev/changes/add-dark-mode
-  error   _codev/changes/add-dark-mode/change.yaml:1: zero_delta_without_marker — no delta file under `specs/` and `skip_specs: true` is not declared; add a delta or set `skip_specs: true` in change.yaml
+change add-dark-mode — _compagnon/changes/add-dark-mode
+  error   _compagnon/changes/add-dark-mode/change.yaml:1: zero_delta_without_marker — no delta file under `specs/` and `skip_specs: true` is not declared; add a delta or set `skip_specs: true` in change.yaml
 
-decisions decisions — _codev/decisions
+decisions decisions — _compagnon/decisions
   ✓ no issues
 
 2 item(s) validated, 1 finding(s) including 1 error(s).
@@ -782,14 +822,14 @@ decisions decisions — _codev/decisions
 Each finding has a stable code. See
 [Validation codes](file-formats.md#validation-codes).
 
-### codev roles
+### compagnon roles
 
 ```text
 List the roles active at a workflow step, with their criteria
 
-With `--at`, the roles active at that step and their "done when" criteria, each with its origin (`built-in`, `schema:<name>`, `project`). Without it, every role with its activation. The roles come from codev's built-in catalog and the schema in use, with the project's `roles:` applied, and, with `--change`, the change's `change.yaml` and the domains its proposal ticks, which activate the experts. With `--change`, also the change's diff since the default branch and the domains its experts' triggers suggest. The `By stack` part of the knowledge keeps the languages detected in the project.
+With `--at`, the roles active at that step and their "done when" criteria, each with its origin (`built-in`, `schema:<name>`, `project`). Without it, every role with its activation. The roles come from compagnon's built-in catalog and the schema in use, with the project's `roles:` applied, and, with `--change`, the change's `change.yaml` and the domains its proposal ticks, which activate the experts. With `--change`, also the change's diff since the default branch and the domains its experts' triggers suggest. The `By stack` part of the knowledge keeps the languages detected in the project.
 
-Usage: codev roles [OPTIONS]
+Usage: compagnon roles [OPTIONS]
 
 Options:
       --at <STEP>
@@ -846,21 +886,21 @@ role setting is invalid — see [Configuring roles](../roles.md#configuring-role
 With `--at`, a last line names the roles of the step that the
 configuration turned off, each with the file whose setting did it
 (`project` or `change`). The skills call it with `--json`; see
-[`codev roles`](json-output.md#roles).
+[`compagnon roles`](json-output.md#roles).
 
-### codev schemas
+### compagnon schemas
 
 ```text
 List the available workflow schemas
 
-Usage: codev schemas [OPTIONS]
+Usage: compagnon schemas [OPTIONS]
 
 Options:
       --json
   -h, --help  Print help
 ```
 
-Lists the project's schemas from `_codev/schemas/` and the built-in
+Lists the project's schemas from `_compagnon/schemas/` and the built-in
 `spec-driven`, with the order of their artifacts. A project schema named
 `spec-driven` replaces the built-in one. A project schema that cannot be used
 is left out of the list with a warning `schema_unusable` giving the reason;
@@ -871,12 +911,12 @@ whose `name:` says otherwise is listed under its folder name, with a warning
 
 ## Decisions
 
-### codev decision
+### compagnon decision
 
 ```text
 Create, accept, inspect and supersede architecture decisions
 
-Usage: codev decision <COMMAND>
+Usage: compagnon decision <COMMAND>
 
 Commands:
   list       List local and inherited decisions
@@ -898,12 +938,12 @@ Decisions are identified by their short id (`0007`) or their qualified id
 `git:git@github.com:acme/shared.git/0100`). See
 [Decision](../concepts.md#decision).
 
-### codev decision list
+### compagnon decision list
 
 ```text
 List local and inherited decisions
 
-Usage: codev decision list [OPTIONS]
+Usage: compagnon decision list [OPTIONS]
 
 Options:
       --json
@@ -914,12 +954,12 @@ Lists local and inherited decisions with their status. Decisions in effect
 are marked `•`, the others `–`; a superseded decision names the one that
 replaced it.
 
-### codev decision show
+### compagnon decision show
 
 ```text
 Show a specific decision
 
-Usage: codev decision show [OPTIONS] <ID>
+Usage: compagnon decision show [OPTIONS] <ID>
 
 Arguments:
   <ID>  Short (`0007`) or qualified (`path:~/shared/0100`) identifier
@@ -936,14 +976,14 @@ followed by the file's content. Fails with `unknown_decision_id` when no
 decision matches, and with `ambiguous_decision_id`, listing the candidates,
 when a short id matches several: use the qualified id then.
 
-### codev decision new
+### compagnon decision new
 
 ```text
 Create a new local decision
 
-The decision is created `proposed` and unsealed, so its body can be written freely; `codev decision accept` then accepts and seals it.
+The decision is created `proposed` and unsealed, so its body can be written freely; `compagnon decision accept` then accepts and seals it.
 
-Usage: codev decision new [OPTIONS] <TITLE>
+Usage: compagnon decision new [OPTIONS] <TITLE>
 
 Arguments:
   <TITLE>
@@ -951,7 +991,7 @@ Arguments:
 
 Options:
       --status <STATUS>
-          Initial status; `accepted` seals the body right away, `proposed` leaves it editable until `codev decision accept`
+          Initial status; `accepted` seals the body right away, `proposed` leaves it editable until `compagnon decision accept`
 
           [default: proposed]
 
@@ -962,20 +1002,20 @@ Options:
           Print help (see a summary with '-h')
 ```
 
-Creates `_codev/decisions/NNNN-<slug>.md` from the ADR template, with the next
+Creates `_compagnon/decisions/NNNN-<slug>.md` from the ADR template, with the next
 free number. With the default `proposed` status, the decision is not sealed:
-write its body, then run `codev decision accept` to accept and seal it.
+write its body, then run `compagnon decision accept` to accept and seal it.
 `--status accepted` seals it immediately, for a decision whose text is already
 final.
 
-### codev decision accept
+### compagnon decision accept
 
 ```text
 Accept a proposed decision: set its status to `accepted` and seal it
 
 Rewrites the frontmatter status of a local `proposed` decision and records the hash of its body in `seal.yaml`, in the same plan — all writes happen or none does. The body is left untouched. The decisions listed in its `supersedes` are marked `superseded` in the same plan; each must still be `accepted`. This is how a decision created by `new`, `supersede`, `deviate` or `promote` takes effect. Inherited decisions and decisions that are not `proposed` are refused.
 
-Usage: codev decision accept [OPTIONS] <ID>
+Usage: compagnon decision accept [OPTIONS] <ID>
 
 Arguments:
   <ID>
@@ -990,38 +1030,38 @@ Options:
 ```
 
 Sets the status of a local `proposed` decision to `accepted` and records the
-SHA-256 of its body in `_codev/decisions/seal.yaml`, in the same plan: both are
+SHA-256 of its body in `_compagnon/decisions/seal.yaml`, in the same plan: both are
 written or neither is. Only the frontmatter changes. An inherited decision is
 refused with `cannot_accept_inherited`, a decision that is not `proposed` with
 `decision_not_proposed`; to replace an accepted decision, use
-`codev decision supersede`.
+`compagnon decision supersede`.
 
 This is the only command that makes a decision take effect, whichever command
 created it. When the decision lists predecessors in `supersedes` — as one
-created by `codev decision supersede` does — the same plan sets each of them to
+created by `compagnon decision supersede` does — the same plan sets each of them to
 `superseded`; their body, and therefore their seal, is not touched. A
 predecessor that is no longer `accepted`, for example because another decision
 superseded it in the meantime, is refused with `predecessor_not_accepted`, and
 nothing is written.
 
 ```bash
-codev decision accept 0002
+compagnon decision accept 0002
 ```
 
 ```text
 ✓ Accepted 0002 — sealed (sha256:c8873b83c178dbf8434045f43a722911b9d9913ee9f13915ccda893539b788c1)
-  File: /home/you/acme-app/_codev/decisions/0002-use-sqlite.md
+  File: /home/you/acme-app/_compagnon/decisions/0002-use-sqlite.md
   Superseded: project/0001 (status: superseded)
 ```
 
-### codev decision supersede
+### compagnon decision supersede
 
 ```text
 Create a proposed decision that will supersede an accepted one
 
-The new decision is created `proposed` and unsealed, with the old one in its `supersedes`. The old decision is not modified and stays in effect until `codev decision accept` accepts the new one, which marks the old one `superseded` in the same step.
+The new decision is created `proposed` and unsealed, with the old one in its `supersedes`. The old decision is not modified and stays in effect until `compagnon decision accept` accepts the new one, which marks the old one `superseded` in the same step.
 
-Usage: codev decision supersede [OPTIONS] <OLD_ID> <NEW_TITLE>
+Usage: compagnon decision supersede [OPTIONS] <OLD_ID> <NEW_TITLE>
 
 Arguments:
   <OLD_ID>
@@ -1040,33 +1080,33 @@ Options:
 
 Creates a new `proposed` decision, unsealed, with `supersedes` pointing at
 `OLD_ID`. The old decision is not modified: it stays `accepted`, and in effect,
-until you accept the new one with `codev decision accept`, which sets it to
+until you accept the new one with `compagnon decision accept`, which sets it to
 `superseded` in the same step. `OLD_ID` must be an `accepted` local decision;
 otherwise the command refuses with `predecessor_not_accepted`. To depart from
-an inherited decision, use `codev decision deviate`.
+an inherited decision, use `compagnon decision deviate`.
 
 ```bash
-codev decision supersede 0001 "Use SQLite"
+compagnon decision supersede 0001 "Use SQLite"
 ```
 
 ```text
 ✓ Decision `0002 Use SQLite` created (proposed), to supersede `project/0001`
-  New ADR:     /home/you/acme-app/_codev/decisions/0002-use-sqlite.md
-  Old ADR:     /home/you/acme-app/_codev/decisions/0001-use-postgresql.md (unchanged, still in effect)
+  New ADR:     /home/you/acme-app/_compagnon/decisions/0002-use-sqlite.md
+  Old ADR:     /home/you/acme-app/_compagnon/decisions/0001-use-postgresql.md (unchanged, still in effect)
 
 Open the new file to write the Context, Decision and Consequences sections,
-then run `codev decision accept 0002` to accept and seal it.
+then run `compagnon decision accept 0002` to accept and seal it.
 Accepting it marks `project/0001` superseded; until then it stays in effect.
 ```
 
-### codev decision seal
+### compagnon decision seal
 
 ```text
 Add or rewrite the seal of a local decision
 
 Without `--force`: refuses if a seal exists and the body has changed. With `--force`: rewrites the seal (use after a deliberate edit of the body).
 
-Usage: codev decision seal [OPTIONS] <ID>
+Usage: compagnon decision seal [OPTIONS] <ID>
 
 Arguments:
   <ID>
@@ -1083,17 +1123,17 @@ Options:
           Print help (see a summary with '-h')
 ```
 
-Records the SHA-256 of the decision's body in `_codev/decisions/seal.yaml`.
+Records the SHA-256 of the decision's body in `_compagnon/decisions/seal.yaml`.
 Sealing an already sealed, unchanged decision does nothing.
 
-### codev decision deviate
+### compagnon decision deviate
 
 ```text
 Record a local deviation from an inherited decision
 
-Creates a local `proposed` ADR, unsealed, that explicitly references the inherited decision being departed from. The deviation takes effect once `codev decision accept` accepts it: the inherited decision then stays visible in `codev decision list`, but disappears from the instructions injected into the `design` artifact. To deviate from a local decision, use `codev decision supersede`.
+Creates a local `proposed` ADR, unsealed, that explicitly references the inherited decision being departed from. The deviation takes effect once `compagnon decision accept` accepts it: the inherited decision then stays visible in `compagnon decision list`, but disappears from the instructions injected into the `design` artifact. To deviate from a local decision, use `compagnon decision supersede`.
 
-Usage: codev decision deviate [OPTIONS] <TARGET> <NEW_TITLE>
+Usage: compagnon decision deviate [OPTIONS] <TARGET> <NEW_TITLE>
 
 Arguments:
   <TARGET>
@@ -1113,17 +1153,17 @@ Options:
 ```
 
 The deviation is created `proposed`: the inherited decision stays in effect
-until you accept the deviation with `codev decision accept`. See
+until you accept the deviation with `compagnon decision accept`. See
 [Inherited decisions](../guides/inherited-sources.md#inherited-decisions).
 
-### codev decision promote
+### compagnon decision promote
 
 ```text
 Promote a `### Decision: <title>` block of a `design.md` to an ADR
 
-Extracts the block's content into a `proposed` local ADR, unsealed, and replaces the block's body with a textual reference to the new ADR. Review and rework the ADR, then accept and seal it with `codev decision accept`. Refuses an archived change.
+Extracts the block's content into a `proposed` local ADR, unsealed, and replaces the block's body with a textual reference to the new ADR. Review and rework the ADR, then accept and seal it with `compagnon decision accept`. Refuses an archived change.
 
-Usage: codev decision promote [OPTIONS] <CHANGE> <TITLE>
+Usage: compagnon decision promote [OPTIONS] <CHANGE> <TITLE>
 
 Arguments:
   <CHANGE>
@@ -1142,34 +1182,34 @@ Options:
 
 The ADR is created `proposed`, with the block's text verbatim under
 `## Decision` and placeholders for the other sections. Rework it, then accept
-and seal it with `codev decision accept`:
+and seal it with `compagnon decision accept`:
 
 ```bash
-codev decision promote add-audit-log "Append-only audit table"
+compagnon decision promote add-audit-log "Append-only audit table"
 ```
 
 ```text
 ✓ Decision `Append-only audit table` promoted to proposed ADR 0004
-  File:    /home/you/acme-app/_codev/decisions/0004-append-only-audit-table.md
-  Source:  /home/you/acme-app/_codev/changes/add-audit-log/design.md
+  File:    /home/you/acme-app/_compagnon/decisions/0004-append-only-audit-table.md
+  Source:  /home/you/acme-app/_compagnon/changes/add-audit-log/design.md
 
 Review the ADR promoted from change `add-audit-log`: split its body into Context,
 Decision, Consequences and Alternatives considered,
-then run `codev decision accept 0004` to accept and seal it.
+then run `compagnon decision accept 0004` to accept and seal it.
 ```
 
 ## Inherited sources
 
-### codev sources
+### compagnon sources
 
 ```text
 Manage inherited sources (local paths and remote git repositories)
 
-Usage: codev sources <COMMAND>
+Usage: compagnon sources <COMMAND>
 
 Commands:
   list    List all declared sources with their state
-  update  Resolve refs, download, and update `_codev/codev.lock`
+  update  Resolve refs, download, and update `_compagnon/compagnon.lock`
   show    Show the details of a specific source
   help    Print this message or the help of the given subcommand(s)
 
@@ -1179,24 +1219,24 @@ Options:
 
 See [Inherited sources](../guides/inherited-sources.md).
 
-### codev sources list
+### compagnon sources list
 
 ```text
 List all declared sources with their state
 
-Usage: codev sources list [OPTIONS]
+Usage: compagnon sources list [OPTIONS]
 
 Options:
       --json
   -h, --help  Print help
 ```
 
-### codev sources show
+### compagnon sources show
 
 ```text
 Show the details of a specific source
 
-Usage: codev sources show [OPTIONS] <TARGET>
+Usage: compagnon sources show [OPTIONS] <TARGET>
 
 Arguments:
   <TARGET>  URL (`git:` source) or path (`path:` source)
@@ -1206,12 +1246,12 @@ Options:
   -h, --help  Print help
 ```
 
-### codev sources update
+### compagnon sources update
 
 ```text
-Resolve refs, download, and update `_codev/codev.lock`
+Resolve refs, download, and update `_compagnon/compagnon.lock`
 
-Usage: codev sources update [OPTIONS]
+Usage: compagnon sources update [OPTIONS]
 
 Options:
       --json

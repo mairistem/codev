@@ -1,0 +1,60 @@
+name: Installers
+
+# Runs both installers against the published releases: a pin written before
+# the rename (CODEV_VERSION=0.6.1) must still install the former binary under
+# its former name, and a current pin must install compagnon. Started by hand
+# once a release is out, since it downloads real release assets.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "A published version to install with COMPAGNON_VERSION"
+        required: true
+        default: "0.7.0"
+
+permissions:
+  contents: read
+
+jobs:
+  installers_honor_a_codev_pin:
+    name: Installers on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: A former pin installs the former binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          set -eu
+          CODEV_VERSION=0.6.1 sh install.sh
+          "$HOME/.local/bin/codev" --version | grep -F 0.6.1
+
+      - name: A current pin installs compagnon (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          set -eu
+          COMPAGNON_VERSION=${{ inputs.version }} sh install.sh
+          "$HOME/.local/bin/compagnon" --version | grep -F ${{ inputs.version }}
+
+      - name: A former pin installs the former binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:CODEV_VERSION = '0.6.1'
+          ./install.ps1
+          & "$env:LOCALAPPDATA\Programs\codev\codev.exe" --version | Select-String -SimpleMatch '0.6.1'
+          if (-not $?) { exit 1 }
+
+      - name: A current pin installs compagnon (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Remove-Item Env:CODEV_VERSION -ErrorAction SilentlyContinue
+          $env:COMPAGNON_VERSION = '${{ inputs.version }}'
+          ./install.ps1
+          & "$env:LOCALAPPDATA\Programs\compagnon\compagnon.exe" --version | Select-String -SimpleMatch '${{ inputs.version }}'
+          if (-not $?) { exit 1 }

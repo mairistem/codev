@@ -1,9 +1,9 @@
-//! Scoring an implementation run, without a model: whether `/codev-apply`
+//! Scoring an implementation run, without a model: whether `/compagnon-apply`
 //! checked every task, left the project's checks passing, delivered the
 //! behavior the hidden acceptance script checks, reviewed its code, and
 //! touched nothing it must leave. Pure: the runner records the checks it
 //! ran itself, the script's lines, the change's files, the changed paths,
-//! `codev validate` and `codev review` before and after the run.
+//! `compagnon validate` and `compagnon review` before and after the run.
 
 use serde::{Deserialize, Serialize};
 
@@ -39,7 +39,7 @@ impl ImplementScore {
     }
 }
 
-/// Whether `codev review --json` holds a recorded `code.review` step.
+/// Whether `compagnon review --json` holds a recorded `code.review` step.
 fn reviewed(review: Option<&serde_json::Value>) -> bool {
     review
         .and_then(|r| r["steps"].as_array())
@@ -81,7 +81,7 @@ fn seen(observed: &Observed) -> Option<&crate::observed::ImplementObserved> {
         .filter(|_| observed.error.is_none())
 }
 
-/// A refusal changes no file, points to `/codev-propose`, and reads
+/// A refusal changes no file, points to `/compagnon-propose`, and reads
 /// nothing of the cases' repository.
 fn score_refusal(observed: &Observed, check: &mut impl FnMut(String, bool)) {
     let seen = seen(observed);
@@ -182,7 +182,7 @@ fn score_implementation(
     // Archiving moves the whole folder: a change whose proposal is still in
     // its folder was not archived.
     check(
-        "the change is still in `_codev/changes/`".to_string(),
+        "the change is still in `_compagnon/changes/`".to_string(),
         file("proposal.md").is_some(),
     );
     check(
@@ -334,7 +334,7 @@ mod tests {
     use serde_json::json;
     use std::collections::BTreeMap;
 
-    const CHANGE_DIR: &str = "_codev/changes/decision-accept-command";
+    const CHANGE_DIR: &str = "_compagnon/changes/decision-accept-command";
     const TASKS: &str = "## 1. Code\n\n- [ ] 1.1 A\n- [ ] 2.3 B\n";
 
     fn case(refuse: bool, docs: bool) -> ImplementCase {
@@ -407,7 +407,7 @@ mod tests {
                 script: None,
                 printed: vec![("works".into(), true), ("refuses-twice".into(), true)],
                 changed: vec![
-                    "crates/codev-cli/src/main.rs".into(),
+                    "crates/compagnon-cli/src/main.rs".into(),
                     "docs/en/src/cli.md".into(),
                     "docs/fr/src/cli.md".into(),
                 ],
@@ -468,7 +468,7 @@ mod tests {
     #[test]
     fn a_refusal_well_made() {
         let mut run = good_run();
-        run.messages = vec!["Planning is not ready: run `/codev-propose` first.".into()];
+        run.messages = vec!["Planning is not ready: run `/compagnon-propose` first.".into()];
         run.implement.as_mut().unwrap().changed.clear();
         let score = score_implement(&case(true, false), CHANGE_DIR, &run);
         assert!(score.passed, "{:?}", failed(&score));
@@ -485,7 +485,8 @@ mod tests {
     #[test]
     fn a_run_that_reads_the_merged_solution() {
         let mut run = good_run();
-        run.implement.as_mut().unwrap().read_repository = vec!["git -C /src/codev show def".into()];
+        run.implement.as_mut().unwrap().read_repository =
+            vec!["git -C /src/compagnon show def".into()];
         let score = score_implement(&case(false, true), CHANGE_DIR, &run);
         assert_eq!(failed(&score), ["no read of the cases' repository"]);
     }
@@ -533,7 +534,7 @@ mod tests {
     fn a_run_without_review_or_that_strays_fails() {
         let mut run = good_run();
         run.review = Some(json!({"steps": [{"step": "plan.challenge", "recorded": true}]}));
-        run.strayed = vec!["_codev/specs/decisions/spec.md".into()];
+        run.strayed = vec!["_compagnon/specs/decisions/spec.md".into()];
         let score = score_implement(&case(false, true), CHANGE_DIR, &run);
         assert_eq!(
             failed(&score),

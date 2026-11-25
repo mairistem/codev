@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 344
+          "compagnon review": 344
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 356
+          "compagnon review": 356
         }
       },
       {
@@ -68,7 +68,7 @@
         "output": 7,
         "toolCalls": 1,
         "sources": {
-          "codev review": 2270
+          "compagnon review": 2270
         }
       },
       {
@@ -99,7 +99,7 @@
         "output": 169,
         "toolCalls": 0,
         "sources": {
-          "codev review": 527
+          "compagnon review": 527
         }
       }
     ]
@@ -229,7 +229,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-csv-export/review.md",
+    "path": "_compagnon/changes/add-csv-export/review.md",
     "status": [],
     "steps": [
       {

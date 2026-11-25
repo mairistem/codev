@@ -1,8 +1,8 @@
-# codev
+# Compagnon
 
 **Spec-driven development for Claude Code.**
 
-codev adds a thin layer of specifications to a repository, so that you and
+Compagnon adds a thin layer of specifications to a repository, so that you and
 your coding agent agree on what must be built before a line of code is
 written — and so that architecture decisions, once made, stop being
 re-debated on every change.
@@ -11,37 +11,37 @@ It has two halves:
 
 | Where | What | Examples |
 |---|---|---|
-| Your terminal | The `codev` binary: the engine | `codev init`, `codev status`, `codev archive` |
-| The Claude Code chat | Generated skills: the steering wheel | `/codev-propose`, `/codev-apply` |
+| Your terminal | The `compagnon` binary: the engine | `compagnon init`, `compagnon status`, `compagnon archive` |
+| The Claude Code chat | Generated skills: the steering wheel | `/compagnon-propose`, `/compagnon-apply` |
 
-`codev init` installs the skills into `.claude/skills/`. From then on you work
+`compagnon init` installs the skills into `.claude/skills/`. From then on you work
 mostly in the chat, and the skills drive the CLI for you.
 
-codev never calls a language model. It manages Markdown files, the
+Compagnon never calls a language model. It manages Markdown files, the
 dependency graph between planning artifacts, validation, and the merging of
-spec changes. Your agent does the writing; codev tells it what to write,
+spec changes. Your agent does the writing; Compagnon tells it what to write,
 where, and under which constraints.
 
-## Why codev
+## Why Compagnon
 
 In a repository without specs, intent lives in people's heads. Code is
 written on one side, reviewed on the other, and six months later someone digs
-through commits to rediscover why a behavior exists. codev reverses that: for
+through commits to rediscover why a behavior exists. Compagnon reverses that: for
 every significant change, you first write down what you want, review it, then
 implement it.
 
-What codev gives you:
+What Compagnon gives you:
 
 - **An explicit cycle.** Every change goes through propose, apply, sync and
   archive. Each step has an artifact and a dedicated Claude Code skill. See
   [The workflow](workflow.md).
 - **Spec deltas, merged precisely.** A change never rewrites a spec wholesale.
   It declares `ADDED`, `MODIFIED`, `REMOVED` or `RENAMED` requirements, and
-  codev merges them into the main specs when the change is archived, leaving
-  everything else in the file untouched. This is what makes codev usable on
+  Compagnon merges them into the main specs when the change is archived, leaving
+  everything else in the file untouched. This is what makes Compagnon usable on
   existing code, not only on greenfield projects.
 - **Immutable architecture decisions.** Accepted decisions (ADRs) are sealed
-  with a hash of their body. `codev validate` reports any silent rewrite. You
+  with a hash of their body. `compagnon validate` reports any silent rewrite. You
   change a decision by superseding it, never by editing it.
 - **Shared conventions across repositories.** A project can inherit context,
   rules and decisions from another repository, read-only, pinned to a git
@@ -54,12 +54,12 @@ What codev gives you:
 
 ## Origins
 
-codev is inspired by [OpenSpec](https://github.com/Fission-AI/OpenSpec) (MIT),
+Compagnon is inspired by [OpenSpec](https://github.com/Fission-AI/OpenSpec) (MIT),
 the TypeScript tool that popularized a spec-driven development cycle for
-coding agents. codev keeps its skeleton, rebuilds it in Rust, and makes its
+coding agents. Compagnon keeps its skeleton, rebuilds it in Rust, and makes its
 own choices on top.
 
-**What codev owes to OpenSpec:**
+**What Compagnon owes to OpenSpec:**
 
 - The propose → apply → archive cycle, and the idea that a *change* is the
   unit of work.
@@ -69,48 +69,55 @@ own choices on top.
   than of files or modules.
 - Workflows and templates kept as data, not code.
 
-**What codev does differently:**
+**What Compagnon does differently:**
 
 - **A Rust binary instead of a Node.js package.** One prebuilt executable, no
   runtime.
-- **A visible `_codev/` folder.** Planning artifacts are first-class source
+- **A visible `_compagnon/` folder.** Planning artifacts are first-class source
   files: you read them, diff them and review them. The leading underscore keeps
   the folder visible to tools such as ripgrep and fd, which skip hidden
   directories by default.
 - **A pure core and an imperative shell.** The core library performs no I/O;
   every decision it makes is testable without a disk. See
   [Architecture](architecture.md).
-- **One target, done well.** codev targets Claude Code only, where OpenSpec
+- **One target, done well.** Compagnon targets Claude Code only, where OpenSpec
   supports many tools.
 
-**What is specific to codev:**
+**What is specific to Compagnon:**
 
 - Sealed architecture decisions, with supersession, local deviations from
   inherited decisions, and promotion of a design decision into an ADR.
-- Read-only inherited sources pinned by git commit in `_codev/codev.lock`.
-- Skill-side MCP integration: `/codev-propose` detects a ticket identifier
+- Read-only inherited sources pinned by git commit in `_compagnon/compagnon.lock`.
+- Skill-side MCP integration: `/compagnon-propose` detects a ticket identifier
   such as `PROJ-123` and fetches the ticket through the Jira MCP server
   configured for the project.
 - A versioned JSON contract on every command, so skills can rely on a stable
   output shape.
-- Documentation embedded in the binary (`codev docs`), readable offline.
+- Documentation embedded in the binary (`compagnon docs`), readable offline.
 
-## Built with codev
+**The name.** Compagnon comes from *compagnonnage*, the French tradition of
+craft guilds: a master leads the work, the *compagnons* carry it out, and
+everyone follows plans agreed beforehand. Here you are the master and the
+Claude agents are your compagnons. Until 0.6 the product was named codev;
+[Moving from codev](guides/moving-from-codev.md) explains how to convert a
+project set up then.
 
-codev is developed with codev: every change to its repository is planned,
-reviewed and archived with the tool itself. Its `_codev/` folder is a
+## Built with Compagnon
+
+Compagnon is developed with Compagnon: every change to its repository is planned,
+reviewed and archived with the tool itself. Its `_compagnon/` folder is a
 real-world example you can browse:
 
-- [the living specs](https://github.com/mairistem/codev/tree/main/_codev/specs) describing what codev does today;
-- [the archived changes](https://github.com/mairistem/codev/tree/main/_codev/changes/archive), each with its proposal,
+- [the living specs](https://github.com/mairistem/compagnon/tree/main/_compagnon/specs) describing what Compagnon does today;
+- [the archived changes](https://github.com/mairistem/compagnon/tree/main/_compagnon/changes/archive), each with its proposal,
   spec deltas, design and tasks;
-- [a review record](https://github.com/mairistem/codev/blob/main/_codev/changes/archive/2026-10-13-review-record/review.md), with findings, evidence, the author's answers and
+- [a review record](https://github.com/mairistem/compagnon/blob/main/_compagnon/changes/archive/2026-10-13-review-record/review.md), with findings, evidence, the author's answers and
   how each was settled;
-- [the architecture decisions](https://github.com/mairistem/codev/tree/main/_codev/decisions), sealed.
+- [the architecture decisions](https://github.com/mairistem/compagnon/tree/main/_compagnon/decisions), sealed.
 
 ## Where to go next
 
-- New to codev? Start with [Installation](installation.md), then the
+- New to Compagnon? Start with [Installation](installation.md), then the
   [Quickstart](quickstart.md).
 - Want the mental model? Read [The workflow](workflow.md) and
   [Concepts](concepts.md).

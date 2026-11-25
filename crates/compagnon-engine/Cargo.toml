@@ -1,0 +1,24 @@
+[package]
+name = "compagnon-engine"
+description = "On-disk layout, configuration, schema resolution and plan execution for compagnon"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+compagnon-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_norway = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+time = { version = "0.3", features = ["local-offset"] }
+toml = { workspace = true }
+
+[lints]
+workspace = true

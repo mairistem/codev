@@ -48,7 +48,7 @@
         "output": 4,
         "toolCalls": 0,
         "sources": {
-          "codev status": 734,
+          "compagnon status": 734,
           "output": 23
         }
       }
@@ -59,7 +59,7 @@
   "files": {},
   "messages": [
     "Note: no tasks.md exists. Check status.",
-    "I didn't sync `delegated-implementation` because its planning isn't finished. The change has no `tasks.md`.\n\nThe proposal, specs and design are done. The tasks artifact is the only one missing: its prerequisites are met, but it hasn't been written yet. Nothing in the main specs was changed.\n\nTo finish the planning, run `/codev-continue` to write `tasks.md`, then run `/codev-sync delegated-implementation` again. The skill points to `/codev-continue` when some artifacts already exist, but that command isn't among the installed skills here. If it isn't available, `/codev-propose` is the installed skill that writes planning artifacts."
+    "I didn't sync `delegated-implementation` because its planning isn't finished. The change has no `tasks.md`.\n\nThe proposal, specs and design are done. The tasks artifact is the only one missing: its prerequisites are met, but it hasn't been written yet. Nothing in the main specs was changed.\n\nTo finish the planning, run `/compagnon-continue` to write `tasks.md`, then run `/compagnon-sync delegated-implementation` again. The skill points to `/compagnon-continue` when some artifacts already exist, but that command isn't among the installed skills here. If it isn't available, `/compagnon-propose` is the installed skill that writes planning artifacts."
   ],
   "merge": {
     "changed": {},
@@ -72,17 +72,17 @@
         "status": [],
         "unchanged": [],
         "updated": [
-          "_codev/specs/implementation-evaluation/spec.md",
-          "_codev/specs/role-evaluation/spec.md",
-          "_codev/specs/roles/spec.md",
-          "_codev/specs/skills/spec.md"
+          "_compagnon/specs/implementation-evaluation/spec.md",
+          "_compagnon/specs/role-evaluation/spec.md",
+          "_compagnon/specs/roles/spec.md",
+          "_compagnon/specs/skills/spec.md"
         ]
       },
       "changed": {
-        "_codev/specs/implementation-evaluation/spec.md": "de5e7694bffd61b5154a7a614067c9a043e6330fb4c2cecfce526624fb28e086",
-        "_codev/specs/role-evaluation/spec.md": "6c639a2e37ea56f4144c3848b235f7e2e598787da6c0b5e0d0c9d0a77076c1c4",
-        "_codev/specs/roles/spec.md": "469078c6ed948fee3dd6168bf1668adbb1fc18906d28dce1eb03dfff670ed39c",
-        "_codev/specs/skills/spec.md": "d2b29f9d8aca99d55c73b9fe468fa292fd649679690b3e87e9f8525a20c1a083"
+        "_compagnon/specs/implementation-evaluation/spec.md": "de5e7694bffd61b5154a7a614067c9a043e6330fb4c2cecfce526624fb28e086",
+        "_compagnon/specs/role-evaluation/spec.md": "6c639a2e37ea56f4144c3848b235f7e2e598787da6c0b5e0d0c9d0a77076c1c4",
+        "_compagnon/specs/roles/spec.md": "469078c6ed948fee3dd6168bf1668adbb1fc18906d28dce1eb03dfff670ed39c",
+        "_compagnon/specs/skills/spec.md": "d2b29f9d8aca99d55c73b9fe468fa292fd649679690b3e87e9f8525a20c1a083"
       }
     }
   }

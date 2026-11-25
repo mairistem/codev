@@ -6,8 +6,8 @@
 |---------|-----------|
 | 0.x     | Latest minor release only |
 
-codev is pre-1.0: fixes land on the latest `0.x` release, and users are
-expected to upgrade. Once codev reaches 1.0, the most recent major version
+Compagnon is pre-1.0: fixes land on the latest `0.x` release, and users are
+expected to upgrade. Once Compagnon reaches 1.0, the most recent major version
 will be actively supported, and this table will be updated.
 
 ## Reporting a vulnerability
@@ -17,7 +17,7 @@ issues, discussions, or pull requests.**
 
 Use GitHub's private vulnerability reporting instead:
 
-1. Go to [github.com/mairistem/codev/security/advisories/new](https://github.com/mairistem/codev/security/advisories/new).
+1. Go to [github.com/mairistem/compagnon/security/advisories/new](https://github.com/mairistem/compagnon/security/advisories/new).
 2. Describe the vulnerability, a reproducible scenario, and the expected
    impact.
 
@@ -40,8 +40,8 @@ public disclosure.
 
 In scope:
 
-- The `codev` binary (crates `codev-core`, `codev-engine`, `codev-agents`,
-  `codev-cli`), including how it reads inherited sources from local paths
+- The `compagnon` binary (crates `compagnon-core`, `compagnon-engine`, `compagnon-agents`,
+  `compagnon-cli`), including how it reads inherited sources from local paths
   and remote git repositories.
 - The installers `install.sh` and `install.ps1` (download chain, SHA-256
   verification).
@@ -52,7 +52,7 @@ In scope:
 Out of scope:
 
 - Vulnerabilities in third-party dependencies with no demonstrated impact on
-  codev — please report those upstream.
+  Compagnon — please report those upstream.
 - Behavior of Claude Code itself or of third-party MCP servers.
 - Usage issues that are not security vulnerabilities — please open a regular
   issue.

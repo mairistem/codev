@@ -4,9 +4,9 @@ step: change.archive
 kind: seeded
 ref: 778c4a46c8ca4cfb614654450dd01023cb9c6526
 change: role-models
-summary: "A review record with a high finding open: codev refuses, the skill points to `codev review` and decides nothing in the author's place."
+summary: "A review record with a high finding open: compagnon refuses, the skill points to `compagnon review` and decides nothing in the author's place."
 expected:
   outcome: refused
   code: review_blocked
-  contains: ["codev review"]
+  contains: ["compagnon review"]
   absent: ["Moved to"]

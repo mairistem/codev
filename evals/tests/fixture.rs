@@ -1,6 +1,6 @@
 //! The fixtures of the cases the runner builds itself, with a stand-in
-//! `codev`: the state at a planning, update or sync case's `ref`, the change
-//! and the overlay laid on it, the skills of the codev under test, the
+//! `compagnon`: the state at a planning, update or sync case's `ref`, the change
+//! and the overlay laid on it, the skills of the compagnon under test, the
 //! reference command run on a copy, and a configure case's project.
 
 #![cfg(unix)]
@@ -10,8 +10,8 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use codev_evals::case::{Case, Kind, PlanCase, Step};
-use codev_evals::runner::{self, Tools};
+use compagnon_evals::case::{Case, Kind, PlanCase, Step};
+use compagnon_evals::runner::{self, Tools};
 
 fn git(dir: &Path, args: &[&str]) -> String {
     let output = Command::new("git")
@@ -29,34 +29,34 @@ fn write(path: &Path, text: &str) {
 }
 
 #[test]
-fn the_planning_fixture_holds_the_ref_and_the_skills_of_the_codev_under_test() {
+fn the_planning_fixture_holds_the_ref_and_the_skills_of_the_compagnon_under_test() {
     let root = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("planning-fixture");
     let _ = fs::remove_dir_all(&root);
     let repo = root.join("repo");
     fs::create_dir_all(&repo).unwrap();
     git(&repo, &["init", "-q", "-b", "main"]);
-    write(&repo.join("_codev/specs/a/spec.md"), "first state\n");
+    write(&repo.join("_compagnon/specs/a/spec.md"), "first state\n");
     write(
-        &repo.join(".claude/skills/codev-propose/SKILL.md"),
+        &repo.join(".claude/skills/compagnon-propose/SKILL.md"),
         "old skill\n",
     );
     git(&repo, &["add", "-A"]);
     git(&repo, &["commit", "-q", "-m", "one"]);
     let first = git(&repo, &["rev-parse", "HEAD"]);
-    write(&repo.join("_codev/specs/a/spec.md"), "second state\n");
+    write(&repo.join("_compagnon/specs/a/spec.md"), "second state\n");
     git(&repo, &["commit", "-q", "-am", "two"]);
 
-    // The codev under test: `update --force` renders its skills.
+    // The compagnon under test: `update --force` renders its skills.
     let bin = root.join("bin");
     fs::create_dir_all(&bin).unwrap();
-    let codev: PathBuf = bin.join("codev");
+    let compagnon: PathBuf = bin.join("compagnon");
     fs::write(
-        &codev,
+        &compagnon,
         "#!/bin/sh\n[ \"$1 $2\" = \"update --force\" ] || exit 3\n\
-         printf 'skill of the codev under test\\n' > .claude/skills/codev-propose/SKILL.md\n",
+         printf 'skill of the compagnon under test\\n' > .claude/skills/compagnon-propose/SKILL.md\n",
     )
     .unwrap();
-    fs::set_permissions(&codev, fs::Permissions::from_mode(0o755)).unwrap();
+    fs::set_permissions(&compagnon, fs::Permissions::from_mode(0o755)).unwrap();
 
     let case = Case {
         id: "plan-x".into(),
@@ -86,17 +86,17 @@ fn the_planning_fixture_holds_the_ref_and_the_skills_of_the_codev_under_test() {
     };
     let tools = Tools {
         claude: PathBuf::from("claude"),
-        codev,
+        compagnon,
         git: PathBuf::from("git"),
     };
     let dir = root.join("work").join("plan-x-1");
     runner::setup_plan(&case, &repo, &dir, &tools, None).unwrap();
 
     let read = |p: &str| fs::read_to_string(dir.join(p)).unwrap();
-    assert_eq!(read("_codev/specs/a/spec.md"), "first state\n");
+    assert_eq!(read("_compagnon/specs/a/spec.md"), "first state\n");
     assert_eq!(
-        read(".claude/skills/codev-propose/SKILL.md"),
-        "skill of the codev under test\n"
+        read(".claude/skills/compagnon-propose/SKILL.md"),
+        "skill of the compagnon under test\n"
     );
     assert_eq!(git(&dir, &["status", "--porcelain"]), "");
     assert_eq!(git(&dir, &["rev-list", "--count", "HEAD"]), "2");
@@ -104,7 +104,7 @@ fn the_planning_fixture_holds_the_ref_and_the_skills_of_the_codev_under_test() {
 
 #[test]
 fn the_update_fixture_lays_the_change_on_the_ref() {
-    use codev_evals::case::{Artifact, UpdateCase};
+    use compagnon_evals::case::{Artifact, UpdateCase};
     use std::collections::BTreeMap;
 
     let root = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("update-fixture");
@@ -112,24 +112,24 @@ fn the_update_fixture_lays_the_change_on_the_ref() {
     let repo = root.join("repo");
     fs::create_dir_all(&repo).unwrap();
     git(&repo, &["init", "-q", "-b", "main"]);
-    write(&repo.join("_codev/specs/a/spec.md"), "at the ref\n");
+    write(&repo.join("_compagnon/specs/a/spec.md"), "at the ref\n");
     git(&repo, &["add", "-A"]);
     git(&repo, &["commit", "-q", "-m", "one"]);
     let first = git(&repo, &["rev-parse", "HEAD"]);
-    write(&repo.join("_codev/specs/a/spec.md"), "after the ref\n");
+    write(&repo.join("_compagnon/specs/a/spec.md"), "after the ref\n");
     git(&repo, &["commit", "-q", "-am", "two"]);
 
     let bin = root.join("bin");
     fs::create_dir_all(&bin).unwrap();
-    let codev: PathBuf = bin.join("codev");
+    let compagnon: PathBuf = bin.join("compagnon");
     fs::write(
-        &codev,
+        &compagnon,
         "#!/bin/sh\n[ \"$1 $2\" = \"update --force\" ] || exit 3\n\
-         mkdir -p .claude/skills/codev-update\n\
-         printf 'skill of the codev under test\\n' > .claude/skills/codev-update/SKILL.md\n",
+         mkdir -p .claude/skills/compagnon-update\n\
+         printf 'skill of the compagnon under test\\n' > .claude/skills/compagnon-update/SKILL.md\n",
     )
     .unwrap();
-    fs::set_permissions(&codev, fs::Permissions::from_mode(0o755)).unwrap();
+    fs::set_permissions(&compagnon, fs::Permissions::from_mode(0o755)).unwrap();
 
     let case = Case {
         id: "update-x".into(),
@@ -164,19 +164,22 @@ fn the_update_fixture_lays_the_change_on_the_ref() {
     };
     let tools = Tools {
         claude: PathBuf::from("claude"),
-        codev,
+        compagnon,
         git: PathBuf::from("git"),
     };
     let dir = root.join("work").join("update-x-1");
     runner::setup_plan(&case, &repo, &dir, &tools, None).unwrap();
 
     let read = |p: &str| fs::read_to_string(dir.join(p)).unwrap();
-    assert_eq!(read("_codev/specs/a/spec.md"), "at the ref\n");
-    assert_eq!(read("_codev/changes/add-auth/design.md"), "# Design\n");
-    assert_eq!(read("_codev/changes/add-auth/specs/a/spec.md"), "# Delta\n");
+    assert_eq!(read("_compagnon/specs/a/spec.md"), "at the ref\n");
+    assert_eq!(read("_compagnon/changes/add-auth/design.md"), "# Design\n");
     assert_eq!(
-        read(".claude/skills/codev-update/SKILL.md"),
-        "skill of the codev under test\n"
+        read("_compagnon/changes/add-auth/specs/a/spec.md"),
+        "# Delta\n"
+    );
+    assert_eq!(
+        read(".claude/skills/compagnon-update/SKILL.md"),
+        "skill of the compagnon under test\n"
     );
     assert_eq!(git(&dir, &["status", "--porcelain"]), "");
 }
@@ -205,7 +208,7 @@ fn bare_case(id: &str, step: Step, change: &str) -> Case {
 
 #[test]
 fn the_sync_reference_runs_on_a_copy() {
-    use codev_evals::case::{MergeCase, MergeOutcome};
+    use compagnon_evals::case::{MergeCase, MergeOutcome};
     use std::collections::BTreeMap;
 
     let root = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("sync-reference");
@@ -213,35 +216,38 @@ fn the_sync_reference_runs_on_a_copy() {
     let repo = root.join("repo");
     fs::create_dir_all(&repo).unwrap();
     git(&repo, &["init", "-q", "-b", "main"]);
-    write(&repo.join("_codev/specs/doctor/spec.md"), "at the ref\n");
     write(
-        &repo.join("_codev/config.yaml"),
-        "codev_version: \">=0.6\"\n",
+        &repo.join("_compagnon/specs/doctor/spec.md"),
+        "at the ref\n",
+    );
+    write(
+        &repo.join("_compagnon/config.yaml"),
+        "compagnon_version: \">=0.6\"\n",
     );
     git(&repo, &["add", "-A"]);
     git(&repo, &["commit", "-q", "-m", "one"]);
     let first = git(&repo, &["rev-parse", "HEAD"]);
 
-    // The codev under test: `update --force` renders the skills; any other
+    // The compagnon under test: `update --force` renders the skills; any other
     // command records its arguments next to the case's directories, merges
     // a requirement into the doctor spec and prints its report.
     let bin = root.join("bin");
     fs::create_dir_all(&bin).unwrap();
-    let codev: PathBuf = bin.join("codev");
+    let compagnon: PathBuf = bin.join("compagnon");
     fs::write(
-        &codev,
+        &compagnon,
         "#!/bin/sh\n\
          if [ \"$1 $2\" = \"update --force\" ]; then\n\
-           mkdir -p .claude/skills/codev-sync\n\
-           printf 'skill\\n' > .claude/skills/codev-sync/SKILL.md\n\
+           mkdir -p .claude/skills/compagnon-sync\n\
+           printf 'skill\\n' > .claude/skills/compagnon-sync/SKILL.md\n\
            exit 0\n\
          fi\n\
          printf '%s\\n' \"$*\" > ../received-args\n\
-         printf 'merged\\n' >> _codev/specs/doctor/spec.md\n\
-         printf '{\"changeName\":\"add-auth\",\"root\":\"%s\",\"updated\":[\"%s/_codev/specs/doctor/spec.md\"],\"status\":[]}\\n' \"$PWD\" \"$PWD\"\n",
+         printf 'merged\\n' >> _compagnon/specs/doctor/spec.md\n\
+         printf '{\"changeName\":\"add-auth\",\"root\":\"%s\",\"updated\":[\"%s/_compagnon/specs/doctor/spec.md\"],\"status\":[]}\\n' \"$PWD\" \"$PWD\"\n",
     )
     .unwrap();
-    fs::set_permissions(&codev, fs::Permissions::from_mode(0o755)).unwrap();
+    fs::set_permissions(&compagnon, fs::Permissions::from_mode(0o755)).unwrap();
 
     let mut case = bare_case("sync-x", Step::ChangeSync, "add-auth");
     case.merge = Some(MergeCase {
@@ -255,21 +261,24 @@ fn the_sync_reference_runs_on_a_copy() {
             "## MODIFIED Requirements\n".to_string(),
         )]),
         overlay: BTreeMap::from([(
-            "_codev/config.yaml".to_string(),
-            b"codev_version: \">=99\"\n".to_vec(),
+            "_compagnon/config.yaml".to_string(),
+            b"compagnon_version: \">=99\"\n".to_vec(),
         )]),
     });
     let tools = Tools {
         claude: PathBuf::from("claude"),
-        codev,
+        compagnon,
         git: PathBuf::from("git"),
     };
     let dir = root.join("work").join("sync-x-1");
     runner::setup_plan(&case, &repo, &dir, &tools, None).unwrap();
     let read = |p: &str| fs::read_to_string(dir.join(p)).unwrap();
-    assert_eq!(read("_codev/config.yaml"), "codev_version: \">=99\"\n");
+    assert_eq!(
+        read("_compagnon/config.yaml"),
+        "compagnon_version: \">=99\"\n"
+    );
 
-    let before = runner::codev_digests(&dir);
+    let before = runner::compagnon_digests(&dir);
     let reference = runner::make_reference(&case, &dir, &before, &tools).unwrap();
     assert_eq!(
         fs::read_to_string(root.join("work").join("received-args")).unwrap(),
@@ -277,18 +286,18 @@ fn the_sync_reference_runs_on_a_copy() {
     );
     assert_eq!(reference.exit_code, Some(0));
     let report = reference.report.expect("a report");
-    assert_eq!(report["updated"][0], "_codev/specs/doctor/spec.md");
+    assert_eq!(report["updated"][0], "_compagnon/specs/doctor/spec.md");
     assert!(report.get("root").is_none());
     assert_eq!(
         reference.changed,
         BTreeMap::from([(
-            "_codev/specs/doctor/spec.md".to_string(),
-            Some(codev_core::update::sha256_hex(b"at the ref\nmerged\n")),
+            "_compagnon/specs/doctor/spec.md".to_string(),
+            Some(compagnon_core::update::sha256_hex(b"at the ref\nmerged\n")),
         )])
     );
     // The case's own directory is as the fixture's commit left it, and the
     // copy is gone.
-    assert_eq!(read("_codev/specs/doctor/spec.md"), "at the ref\n");
+    assert_eq!(read("_compagnon/specs/doctor/spec.md"), "at the ref\n");
     assert_eq!(git(&dir, &["status", "--porcelain"]), "");
     assert!(!root.join("work").join("sync-x-1-reference").exists());
 }
@@ -299,31 +308,31 @@ fn the_configure_fixture_without_a_configuration_keeps_the_skills() {
     let _ = fs::remove_dir_all(&root);
     let case_dir = root.join("case");
     write(&case_dir.join("base/main.go"), "package main\n");
-    // The codev under test: `init` writes a configuration and the skills.
+    // The compagnon under test: `init` writes a configuration and the skills.
     let bin = root.join("bin");
     fs::create_dir_all(&bin).unwrap();
-    let codev: PathBuf = bin.join("codev");
+    let compagnon: PathBuf = bin.join("compagnon");
     fs::write(
-        &codev,
+        &compagnon,
         "#!/bin/sh\n[ \"$1\" = \"init\" ] || exit 3\n\
-         mkdir -p _codev .claude/skills/codev-configure\n\
-         printf 'schema: spec-driven\\n' > _codev/config.yaml\n\
-         printf 'skill\\n' > .claude/skills/codev-configure/SKILL.md\n",
+         mkdir -p _compagnon .claude/skills/compagnon-configure\n\
+         printf 'schema: spec-driven\\n' > _compagnon/config.yaml\n\
+         printf 'skill\\n' > .claude/skills/compagnon-configure/SKILL.md\n",
     )
     .unwrap();
-    fs::set_permissions(&codev, fs::Permissions::from_mode(0o755)).unwrap();
+    fs::set_permissions(&compagnon, fs::Permissions::from_mode(0o755)).unwrap();
     let tools = Tools {
         claude: PathBuf::from("claude"),
-        codev,
+        compagnon,
         git: PathBuf::from("git"),
     };
     let dir = root.join("work").join("configure-x-1");
     runner::setup_configure(&case_dir, &dir, &tools).unwrap();
     assert_eq!(
-        fs::read_to_string(dir.join(".claude/skills/codev-configure/SKILL.md")).unwrap(),
+        fs::read_to_string(dir.join(".claude/skills/compagnon-configure/SKILL.md")).unwrap(),
         "skill\n"
     );
-    assert!(!dir.join("_codev").exists());
+    assert!(!dir.join("_compagnon").exists());
     assert_eq!(
         fs::read_to_string(dir.join("main.go")).unwrap(),
         "package main\n"
@@ -333,20 +342,88 @@ fn the_configure_fixture_without_a_configuration_keeps_the_skills() {
     // With a configuration, `update --force` installs the skills and the
     // case's file stays as written.
     write(
-        &case_dir.join("base/_codev/config.yaml"),
+        &case_dir.join("base/_compagnon/config.yaml"),
         "# kept\nschema: spec-driven\n",
     );
     fs::write(
-        &tools.codev,
+        &tools.compagnon,
         "#!/bin/sh\n[ \"$1 $2\" = \"update --force\" ] || exit 3\n\
-         mkdir -p .claude/skills/codev-configure\n\
-         printf 'skill\\n' > .claude/skills/codev-configure/SKILL.md\n",
+         mkdir -p .claude/skills/compagnon-configure\n\
+         printf 'skill\\n' > .claude/skills/compagnon-configure/SKILL.md\n",
     )
     .unwrap();
     runner::setup_configure(&case_dir, &dir, &tools).unwrap();
     assert_eq!(
-        fs::read_to_string(dir.join("_codev/config.yaml")).unwrap(),
+        fs::read_to_string(dir.join("_compagnon/config.yaml")).unwrap(),
         "# kept\nschema: spec-driven\n"
     );
-    assert!(dir.join(".claude/skills/codev-configure/SKILL.md").exists());
+    assert!(
+        dir.join(".claude/skills/compagnon-configure/SKILL.md")
+            .exists()
+    );
+}
+
+#[test]
+fn a_case_pinned_before_the_rename_is_migrated_before_it_runs() {
+    use compagnon_core::legacy;
+    use compagnon_evals::case::{Artifact, UpdateCase};
+    use std::collections::BTreeMap;
+
+    let root = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("pinned-before-rename");
+    let _ = fs::remove_dir_all(&root);
+    let repo = root.join("repo");
+    fs::create_dir_all(&repo).unwrap();
+    git(&repo, &["init", "-q", "-b", "main"]);
+    // The state at the ref: the former planning root, the former names.
+    let stem = legacy::BINARY_STEM;
+    write(
+        &repo.join(legacy::PLANNING_DIR).join("specs/a/spec.md"),
+        &format!("### Requirement: {stem} validates\n\nRun `{stem} validate`.\n"),
+    );
+    write(
+        &repo.join(format!("crates/{stem}-core/Cargo.toml")),
+        &format!("[package]\nname = \"{stem}-core\"\n"),
+    );
+    git(&repo, &["add", "-A"]);
+    git(&repo, &["commit", "-q", "-m", "before the rename"]);
+    let pinned = git(&repo, &["rev-parse", "HEAD"]);
+
+    let bin = root.join("bin");
+    fs::create_dir_all(&bin).unwrap();
+    let compagnon: PathBuf = bin.join("compagnon");
+    fs::write(&compagnon, "#!/bin/sh\nexit 0\n").unwrap();
+    fs::set_permissions(&compagnon, fs::Permissions::from_mode(0o755)).unwrap();
+
+    let mut case = bare_case("update-pinned", Step::PlanUpdate, "add-auth");
+    case.update = Some(UpdateCase {
+        git_ref: pinned,
+        artifact: Artifact::Design,
+        request: "r".into(),
+        revised: vec!["design.md".into()],
+        kept: Vec::new(),
+        ripple: Vec::new(),
+        contains: Vec::new(),
+        refuse: false,
+        files: BTreeMap::from([("design.md".to_string(), "# Design\n".to_string())]),
+    });
+    let tools = Tools {
+        claude: PathBuf::from("claude"),
+        compagnon,
+        git: PathBuf::from("git"),
+    };
+    let dir = root.join("work").join("update-pinned-1");
+    runner::setup_plan(&case, &repo, &dir, &tools, None).unwrap();
+
+    let read = |p: &str| fs::read_to_string(dir.join(p)).unwrap();
+    assert_eq!(
+        read("_compagnon/specs/a/spec.md"),
+        "### Requirement: compagnon validates\n\nRun `compagnon validate`.\n"
+    );
+    assert_eq!(
+        read("crates/compagnon-core/Cargo.toml"),
+        "[package]\nname = \"compagnon-core\"\n"
+    );
+    assert_eq!(read("_compagnon/changes/add-auth/design.md"), "# Design\n");
+    assert!(!dir.join(legacy::PLANNING_DIR).exists());
+    assert!(!dir.join(format!("crates/{stem}-core")).exists());
 }

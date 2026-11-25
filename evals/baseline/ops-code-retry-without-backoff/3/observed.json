@@ -48,7 +48,7 @@
         "output": 5,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1809
+          "compagnon review": 1809
         }
       },
       {
@@ -68,7 +68,7 @@
         "output": 192,
         "toolCalls": 0,
         "sources": {
-          "codev review": 520
+          "compagnon review": 520
         }
       }
     ]
@@ -148,7 +148,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-merchant-webhooks/review.md",
+    "path": "_compagnon/changes/add-merchant-webhooks/review.md",
     "status": [],
     "steps": [
       {

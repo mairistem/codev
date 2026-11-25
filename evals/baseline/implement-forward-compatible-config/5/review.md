@@ -1,6 +1,6 @@
 # Review record: forward-compatible-config
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
@@ -13,7 +13,7 @@ Mode: inline.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/config.rs:249-267"
+location: "crates/compagnon-engine/src/config.rs:249-267"
 evidence: |
           } else if key == "mcp"
               && let serde_norway::Value::Mapping(mcp) = value
@@ -26,7 +26,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/config.rs: unknown_mcp_keys extracted"
+    ref: "crates/compagnon-engine/src/config.rs: unknown_mcp_keys extracted"
   - status: fixed
     by: newcomer
 ```
@@ -36,7 +36,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/config.rs:300-302"
+location: "crates/compagnon-engine/src/config.rs:300-302"
 evidence: |
           .take_while(|(_, line)| {
               is_indented(line) || line.trim().is_empty() || line.trim_start().starts_with('#')
@@ -47,7 +47,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/config.rs: stays_in_block, documented"
+    ref: "crates/compagnon-engine/src/config.rs: stays_in_block, documented"
   - status: fixed
     by: newcomer
 ```

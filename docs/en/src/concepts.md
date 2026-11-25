@@ -1,11 +1,11 @@
 # Concepts
 
-codev keeps three kinds of records in the repository: **specs** say what the
+Compagnon keeps three kinds of records in the repository: **specs** say what the
 system does, **decisions** say why it is built the way it is, and **changes**
 are the work in progress that modifies both.
 
 ```text
-_codev/
+_compagnon/
 ├── config.yaml     # project configuration
 ├── specs/          # behavior contracts — WHAT the system does
 ├── decisions/      # architecture decisions — WHY it is built this way
@@ -13,10 +13,10 @@ _codev/
 │   ├── <name>/     #   proposal.md, design.md, tasks.md, specs/** (deltas)
 │   └── archive/    #   finished changes, dated
 ├── schemas/        # custom workflow schemas (optional)
-└── codev.lock      # pinned inherited git sources (when used)
+└── compagnon.lock      # pinned inherited git sources (when used)
 ```
 
-codev finds this folder by walking up from the current directory, so every
+Compagnon finds this folder by walking up from the current directory, so every
 command works from any subdirectory of the project.
 
 ## Capability
@@ -29,7 +29,7 @@ your domain is organized, not the way your code is.
 
 ## Spec
 
-The main spec of a capability lives at `_codev/specs/<capability>/spec.md`. It
+The main spec of a capability lives at `_compagnon/specs/<capability>/spec.md`. It
 has a `## Purpose` — one or two sentences on what the capability is for — and
 a `## Requirements` section:
 
@@ -64,20 +64,20 @@ or archived, which is what makes its history readable.
 
 ## Change
 
-A change is a folder `_codev/changes/<name>/` that carries one evolution of
+A change is a folder `_compagnon/changes/<name>/` that carries one evolution of
 the system: a proposal, spec deltas, a design and a task list, plus a
 `change.yaml` holding its metadata. Which artifacts a change has is defined by
 its [schema](guides/custom-schemas.md); the default `spec-driven` schema is
 described in [The workflow](workflow.md).
 
-A change is **active** while it lives in `_codev/changes/<name>/`. Archiving
-moves it to `_codev/changes/archive/<YYYY-MM-DD>-<name>/`, where it becomes a
+A change is **active** while it lives in `_compagnon/changes/<name>/`. Archiving
+moves it to `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`, where it becomes a
 record of why and how the specs changed.
 
 ## Delta
 
 A delta is the part of a change that modifies a spec. It lives at
-`_codev/changes/<name>/specs/<capability>/spec.md` — the same capability path
+`_compagnon/changes/<name>/specs/<capability>/spec.md` — the same capability path
 as the main spec it targets — and is organized in up to four operations:
 
 | Section | Effect when merged |
@@ -127,19 +127,19 @@ The exact syntax is in [File formats](reference/file-formats.md).
 ## Decision
 
 A decision, or ADR (architecture decision record), is a file
-`_codev/decisions/NNNN-<slug>.md` that records an architectural choice: its
+`_compagnon/decisions/NNNN-<slug>.md` that records an architectural choice: its
 context, the decision, its consequences and the alternatives considered.
 
 ```bash
-codev decision new "Use PostgreSQL for persistence"
-codev decision accept 0001
+compagnon decision new "Use PostgreSQL for persistence"
+compagnon decision accept 0001
 ```
 
 A decision has one of five statuses: `accepted`, `superseded`, `proposed`,
 `deprecated` or `rejected`. Every command that creates a decision —
-`codev decision new`, [`supersede`](#supersession), [`deviate`](#deviation) and
+`compagnon decision new`, [`supersede`](#supersession), [`deviate`](#deviation) and
 [`promote`](#promotion) — creates it `proposed`, so you can write it freely;
-`codev decision accept` makes it `accepted` once its text is final. Accepting
+`compagnon decision accept` makes it `accepted` once its text is final. Accepting
 is the only step that makes a decision take effect: a `proposed` decision
 supersedes nothing and deviates from nothing yet. A decision is **in effect**
 when it is `accepted` and nothing supersedes it. The decisions in effect are handed to the agent
@@ -154,9 +154,9 @@ decision inherited from another repository.
 ## Seal
 
 An accepted decision is immutable. When a decision becomes accepted through a
-`codev decision` command — `accept`, or `new --status accepted` — codev
-records a SHA-256 hash of the decision's body in `_codev/decisions/seal.yaml`; `codev decision seal` does the same for a
-decision you accepted by hand. `codev validate` compares the body of
+`compagnon decision` command — `accept`, or `new --status accepted` — Compagnon
+records a SHA-256 hash of the decision's body in `_compagnon/decisions/seal.yaml`; `compagnon decision seal` does the same for a
+decision you accepted by hand. `compagnon validate` compares the body of
 every local `accepted` or `superseded` decision with its hash, and reports an
 edit as a `decision_seal_mismatch` error and a missing seal as a
 `decision_unsealed` warning. A `proposed` decision is not sealed.
@@ -166,9 +166,9 @@ The frontmatter is not covered by the seal, so a status can move from
 
 > **Note**
 > Seal a decision when its text is final: write the `proposed` decision
-> first, then run `codev decision accept <ID>`, which sets the status and
+> first, then run `compagnon decision accept <ID>`, which sets the status and
 > records the seal in one step. If you have edited a sealed decision on
-> purpose, `codev decision seal <ID> --force` records the new body; to change
+> purpose, `compagnon decision seal <ID> --force` records the new body; to change
 > what an accepted decision says, [supersede](#supersession) it instead.
 
 ## Supersession
@@ -176,21 +176,21 @@ The frontmatter is not covered by the seal, so a status can move from
 To change a decision, supersede it rather than editing it:
 
 ```bash
-codev decision supersede 0001 "Use SQLite for persistence"
+compagnon decision supersede 0001 "Use SQLite for persistence"
 ```
 
-codev creates a new `proposed` decision whose frontmatter lists
+Compagnon creates a new `proposed` decision whose frontmatter lists
 `supersedes: ["0001"]`, and leaves `0001` untouched: it stays `accepted`, and in
 effect, while you write the new one. Accepting the new decision marks `0001` as
 `superseded` in the same step:
 
 ```bash
-codev decision accept 0002
+compagnon decision accept 0002
 ```
 
 The old body stays exactly as it was, so its seal stays valid and the history
 of the reasoning is preserved. Only an `accepted` decision can be superseded:
-if another decision superseded `0001` in the meantime, `codev decision accept`
+if another decision superseded `0001` in the meantime, `compagnon decision accept`
 refuses with `predecessor_not_accepted` and writes nothing.
 
 ## Deviation
@@ -200,13 +200,13 @@ project, because you cannot write to its source. Instead, record a local
 deviation:
 
 ```bash
-codev decision deviate path:~/shared/0100 "Services log in logfmt"
+compagnon decision deviate path:~/shared/0100 "Services log in logfmt"
 ```
 
 This creates a local `proposed` decision with `deviates_from` pointing at the
 inherited one. The deviation takes effect when you accept it with
-`codev decision accept`: the inherited decision then stays visible in
-`codev decision list`, but it is no longer in effect for your project and is no
+`compagnon decision accept`: the inherited decision then stays visible in
+`compagnon decision list`, but it is no longer in effect for your project and is no
 longer handed to the agent when writing designs. Until then, the inherited
 decision is still in effect.
 
@@ -216,29 +216,29 @@ A design often contains a decision that deserves to outlive the change. Write
 it in `design.md` as a `### Decision: <title>` block, then promote it:
 
 ```bash
-codev decision promote add-audit-log "Append-only audit table"
+compagnon decision promote add-audit-log "Append-only audit table"
 ```
 
-codev creates a `proposed` ADR whose `## Decision` section is the block's
+Compagnon creates a `proposed` ADR whose `## Decision` section is the block's
 content, verbatim, and replaces the block's body with a reference to the new
 ADR. Review it and split the promoted text into the ADR's sections, then accept
-it with `codev decision accept`, which seals it — ideally before archiving the
+it with `compagnon decision accept`, which seals it — ideally before archiving the
 change.
 
 ## Inherited source
 
-A project can inherit read-only material from other codev repositories — a
+A project can inherit read-only material from other Compagnon repositories — a
 shared folder on your machine (`path:`) or a git repository pinned to a commit
 (`git:`). Each source contributes its `context:`, its `rules:` and its
 decisions. Nothing executable is ever inherited, and nothing is read from a
-floating branch: git sources are pinned in `_codev/codev.lock`. See
+floating branch: git sources are pinned in `_compagnon/compagnon.lock`. See
 [Inherited sources](guides/inherited-sources.md).
 
 ## Schema
 
 A schema defines which artifacts a change has, what each one requires, and the
-instructions and templates the agent follows to write them. codev embeds one
-schema, `spec-driven`. A project can define its own in `_codev/schemas/`. See
+instructions and templates the agent follows to write them. Compagnon embeds one
+schema, `spec-driven`. A project can define its own in `_compagnon/schemas/`. See
 [Custom schemas](guides/custom-schemas.md).
 
 In `spec-driven`, each instruction opens with the role that owns the

@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 3495,
+          "compagnon roles": 3495,
           "skill": 9568
         }
       },
@@ -49,7 +49,7 @@
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1871
+          "compagnon review": 1871
         }
       },
       {
@@ -69,7 +69,7 @@
         "output": 5,
         "toolCalls": 0,
         "sources": {
-          "codev review": 599,
+          "compagnon review": 599,
           "edit": 393
         }
       }
@@ -91,7 +91,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/log-fulfilment-batches/review.md",
+    "path": "_compagnon/changes/log-fulfilment-batches/review.md",
     "status": [],
     "steps": [
       {

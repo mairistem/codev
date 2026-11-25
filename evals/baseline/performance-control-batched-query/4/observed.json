@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 236
+          "compagnon review": 236
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 10,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1498
+          "compagnon review": 1498
         }
       },
       {
@@ -88,7 +88,7 @@
         "output": 164,
         "toolCalls": 0,
         "sources": {
-          "codev review": 251,
+          "compagnon review": 251,
           "output": 28
         }
       }
@@ -110,7 +110,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/batch-cart-prices/review.md",
+    "path": "_compagnon/changes/batch-cart-prices/review.md",
     "status": [],
     "steps": [
       {

@@ -18,7 +18,7 @@ done_when:
     proposal's Domains, so that its expert reviews it? The domain itself —
     security, privacy, migration, operations, performance, accessibility —
     is the expert's to review, not the skeptic's"
-  - Also apply the `rules` you received through `codev instructions`
+  - Also apply the `rules` you received through `compagnon instructions`
 ---
 
 ## Scope

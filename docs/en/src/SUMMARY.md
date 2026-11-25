@@ -7,7 +7,7 @@
 - [Installation](installation.md)
 - [Quickstart](quickstart.md)
 
-# Using codev
+# Using Compagnon
 
 - [The workflow](workflow.md)
 - [Claude Code skills](skills.md)
@@ -17,8 +17,9 @@
 
 # Guides
 
+- [Moving from codev](guides/moving-from-codev.md)
 - [Inherited sources](guides/inherited-sources.md)
-- [Repository integration and codev doctor](guides/repository-integration.md)
+- [Repository integration and compagnon doctor](guides/repository-integration.md)
 - [Release notes and CHANGELOG](guides/release-notes.md)
 - [Review record](guides/review-record.md)
 - [Jira and other MCP servers](guides/mcp.md)

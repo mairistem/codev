@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 2498,
+          "compagnon roles": 2498,
           "skill": 7877
         }
       },
@@ -59,7 +59,7 @@
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1743
+          "compagnon review": 1743
         }
       },
       {
@@ -89,7 +89,7 @@
         "output": 9,
         "toolCalls": 0,
         "sources": {
-          "codev review": 440,
+          "compagnon review": 440,
           "output": 24
         }
       }
@@ -170,7 +170,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-ticket-attachments/review.md",
+    "path": "_compagnon/changes/add-ticket-attachments/review.md",
     "status": [],
     "steps": [
       {

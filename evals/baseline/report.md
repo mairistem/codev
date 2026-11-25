@@ -3,7 +3,7 @@
 - Date: 2026-10-15
 - Model: Claude Code's default
 - Claude Code: 2.1.289 (Claude Code)
-- codev: codev 0.6.1
+- compagnon: compagnon 0.6.1
 - Cases: 92
 - Repetitions: 5
 - Cost: 77.13 USD for one run of the suite (sum of the cases' medians), 388.20 USD in all
@@ -34,7 +34,7 @@
 
 ## `plan.write`
 
-Per repetition, every planning run pooled; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline.
+Per repetition, every planning run pooled; then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges these against the baseline.
 
 | Cases | Primary recall | Collateral recall | Probable duplicates | Decisions ignored | Plans that do not validate | Cost (USD) |
 |---|---|---|---|---|---|---|
@@ -44,7 +44,7 @@ Plans whose structural keywords are in the language their case expects: 1.00.
 
 ## `plan.update`
 
-Per repetition, every update run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the change's folder; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline.
+Per repetition, every update run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the change's folder; then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges these against the baseline.
 
 | Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
 |---|---|---|---|---|
@@ -52,7 +52,7 @@ Per repetition, every update run pooled: the share of runs whose every check pas
 
 ## `code.implement`
 
-Per repetition, every implementation run pooled, the refusing cases apart: the share of runs whose every check passes, the share of checks that pass, the share of acceptance assertions that pass, the share of refusing runs that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline.
+Per repetition, every implementation run pooled, the refusing cases apart: the share of runs whose every check passes, the share of checks that pass, the share of acceptance assertions that pass, the share of refusing runs that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges these against the baseline.
 
 | Cases | Runs passing | Checks passing | Acceptance | Refusals passing | Runs modifying a file outside the step | Cost (USD) |
 |---|---|---|---|---|---|---|
@@ -60,7 +60,7 @@ Per repetition, every implementation run pooled, the refusing cases apart: the s
 
 ## `change.sync`
 
-Per repetition, every sync run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline, step by step and case by case.
+Per repetition, every sync run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges these against the baseline, step by step and case by case.
 
 | Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
 |---|---|---|---|---|
@@ -68,7 +68,7 @@ Per repetition, every sync run pooled: the share of runs whose every check passe
 
 ## `change.archive`
 
-Per repetition, every archive run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline, step by step and case by case.
+Per repetition, every archive run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges these against the baseline, step by step and case by case.
 
 | Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
 |---|---|---|---|---|
@@ -76,7 +76,7 @@ Per repetition, every archive run pooled: the share of runs whose every check pa
 
 ## `configure.enrich`
 
-Per repetition, every configure run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline, step by step and case by case.
+Per repetition, every configure run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges these against the baseline, step by step and case by case.
 
 | Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
 |---|---|---|---|---|
@@ -112,17 +112,17 @@ The tokens written to the cache, by source: per case the median over its runs, s
 | search | 403335 | 8 % |
 | shell | 347590 | 7 % |
 | output | 184447 | 4 % |
-| codev instructions | 172598 | 4 % |
-| codev roles | 111141 | 2 % |
-| codev review | 100105 | 2 % |
-| codev validate | 81415 | 2 % |
-| codev new | 62257 | 1 % |
-| codev status | 44523 | 1 % |
+| compagnon instructions | 172598 | 4 % |
+| compagnon roles | 111141 | 2 % |
+| compagnon review | 100105 | 2 % |
+| compagnon validate | 81415 | 2 % |
+| compagnon new | 62257 | 1 % |
+| compagnon status | 44523 | 1 % |
 | agent | 36667 | 1 % |
-| codev list | 26508 | 0 % |
-| codev archive | 3084 | 0 % |
-| codev --help | 2347 | 0 % |
-| codev sync | 1943 | 0 % |
+| compagnon list | 26508 | 0 % |
+| compagnon archive | 3084 | 0 % |
+| compagnon --help | 2347 | 0 % |
+| compagnon sync | 1943 | 0 % |
 
 ### `change.archive`
 
@@ -130,8 +130,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 |---|---:|---:|
 | prompt | 53959 | 52 % |
 | skill | 32434 | 31 % |
-| codev status | 14026 | 14 % |
-| codev archive | 3084 | 3 % |
+| compagnon status | 14026 | 14 % |
+| compagnon archive | 3084 | 3 % |
 | search | 345 | 0 % |
 | output | 226 | 0 % |
 
@@ -141,8 +141,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 |---|---:|---:|
 | prompt | 31454 | 46 % |
 | skill | 25658 | 38 % |
-| codev status | 7844 | 12 % |
-| codev sync | 1943 | 3 % |
+| compagnon status | 7844 | 12 % |
+| compagnon sync | 1943 | 3 % |
 | search | 914 | 1 % |
 | output | 261 | 0 % |
 
@@ -157,11 +157,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 | edit | 29210 | 5 % |
 | prompt | 26618 | 5 % |
 | output | 16731 | 3 % |
-| codev status | 12816 | 2 % |
+| compagnon status | 12816 | 2 % |
 | agent | 9587 | 2 % |
-| codev roles | 6547 | 1 % |
-| codev review | 4305 | 1 % |
-| codev validate | 577 | 0 % |
+| compagnon roles | 6547 | 1 % |
+| compagnon review | 4305 | 1 % |
+| compagnon validate | 577 | 0 % |
 
 ### `code.review`
 
@@ -169,8 +169,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 |---|---:|---:|
 | skill | 354581 | 48 % |
 | prompt | 207013 | 28 % |
-| codev review | 83841 | 11 % |
-| codev roles | 39027 | 5 % |
+| compagnon review | 83841 | 11 % |
+| compagnon roles | 39027 | 5 % |
 | edit | 34656 | 5 % |
 | shell | 12732 | 2 % |
 | file | 8560 | 1 % |
@@ -182,7 +182,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 |---|---:|---:|
 | skill | 45533 | 44 % |
 | prompt | 37303 | 36 % |
-| codev status | 9542 | 9 % |
+| compagnon status | 9542 | 9 % |
 | file | 5014 | 5 % |
 | edit | 2517 | 2 % |
 | shell | 2513 | 2 % |
@@ -196,9 +196,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 | prompt | 73874 | 26 % |
 | file | 41103 | 14 % |
 | edit | 16369 | 6 % |
-| codev review | 11959 | 4 % |
+| compagnon review | 11959 | 4 % |
 | shell | 8856 | 3 % |
-| codev roles | 2604 | 1 % |
+| compagnon roles | 2604 | 1 % |
 | search | 1962 | 1 % |
 | output | 1176 | 0 % |
 
@@ -209,7 +209,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 | skill | 27187 | 54 % |
 | prompt | 14589 | 29 % |
 | file | 3499 | 7 % |
-| codev roles | 2480 | 5 % |
+| compagnon roles | 2480 | 5 % |
 | edit | 1138 | 2 % |
 | shell | 1014 | 2 % |
 | output | 59 | 0 % |
@@ -220,11 +220,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 |---|---:|---:|
 | skill | 46597 | 31 % |
 | prompt | 46360 | 31 % |
-| codev list | 26001 | 17 % |
+| compagnon list | 26001 | 17 % |
 | file | 21234 | 14 % |
 | edit | 3872 | 3 % |
 | search | 3482 | 2 % |
-| codev validate | 3021 | 2 % |
+| compagnon validate | 3021 | 2 % |
 | output | 570 | 0 % |
 | shell | 205 | 0 % |
 
@@ -238,15 +238,15 @@ The tokens written to the cache, by source: per case the median over its runs, s
 | edit | 341173 | 12 % |
 | prompt | 210984 | 8 % |
 | shell | 190984 | 7 % |
-| codev instructions | 172598 | 6 % |
+| compagnon instructions | 172598 | 6 % |
 | output | 162667 | 6 % |
-| codev validate | 77817 | 3 % |
-| codev new | 62257 | 2 % |
-| codev roles | 60483 | 2 % |
+| compagnon validate | 77817 | 3 % |
+| compagnon new | 62257 | 2 % |
+| compagnon roles | 60483 | 2 % |
 | agent | 27080 | 1 % |
-| codev --help | 2347 | 0 % |
-| codev list | 507 | 0 % |
-| codev status | 295 | 0 % |
+| compagnon --help | 2347 | 0 % |
+| compagnon list | 507 | 0 % |
+| compagnon status | 295 | 0 % |
 
 ## Failures
 
@@ -520,7 +520,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 16 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "Moved to": passed
 
@@ -530,7 +530,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 19 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "Moved to": passed
 
@@ -540,7 +540,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 9 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "Moved to": passed
 
@@ -550,7 +550,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 9 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "Moved to": passed
 
@@ -560,7 +560,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 24 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "Moved to": passed
 
@@ -576,9 +576,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.17 USD, 10 s
 - Tool calls: 3, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "/codev-propose": passed
+- Check says "/compagnon-propose": passed
 - Check does not say "Moved to": passed
 
 #### Run 2
@@ -587,9 +587,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.17 USD, 7 s
 - Tool calls: 2, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "/codev-propose": passed
+- Check says "/compagnon-propose": passed
 - Check does not say "Moved to": passed
 
 #### Run 3
@@ -598,9 +598,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.17 USD, 12 s
 - Tool calls: 2, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "/codev-propose": passed
+- Check says "/compagnon-propose": passed
 - Check does not say "Moved to": passed
 
 #### Run 4
@@ -609,9 +609,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.17 USD, 12 s
 - Tool calls: 2, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "/codev-propose": passed
+- Check says "/compagnon-propose": passed
 - Check does not say "Moved to": passed
 
 #### Run 5
@@ -620,9 +620,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 10 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "/codev-propose": passed
+- Check says "/compagnon-propose": passed
 - Check does not say "Moved to": passed
 
 ### archive-review-blocked
@@ -637,9 +637,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 6 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev review": passed
+- Check says "compagnon review": passed
 - Check does not say "Moved to": passed
 
 #### Run 2
@@ -648,9 +648,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 8 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev review": passed
+- Check says "compagnon review": passed
 - Check does not say "Moved to": passed
 
 #### Run 3
@@ -659,9 +659,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 6 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev review": passed
+- Check says "compagnon review": passed
 - Check does not say "Moved to": passed
 
 #### Run 4
@@ -670,9 +670,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 13 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev review": passed
+- Check says "compagnon review": passed
 - Check does not say "Moved to": passed
 
 #### Run 5
@@ -681,9 +681,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 9 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev review": passed
+- Check says "compagnon review": passed
 - Check does not say "Moved to": passed
 
 ### archive-unchecked-tasks
@@ -698,7 +698,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.21 USD, 13 s
 - Tool calls: 5, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "Moved to": passed
 
@@ -708,7 +708,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 10 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "Moved to": passed
 
@@ -718,7 +718,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.21 USD, 14 s
 - Tool calls: 3, no artifact written
 - Checks: 1 of 3 passed, the run **fails**
-- Check files under `_codev/` as `codev archive` leaves them: **failed**
+- Check files under `_compagnon/` as `compagnon archive` leaves them: **failed**
 - Check no file modified outside the step: passed
 - Check says "Moved to": **failed**
 
@@ -728,7 +728,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.21 USD, 12 s
 - Tool calls: 5, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "Moved to": passed
 
@@ -738,7 +738,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.21 USD, 13 s
 - Tool calls: 3, no artifact written
 - Checks: 1 of 3 passed, the run **fails**
-- Check files under `_codev/` as `codev archive` leaves them: **failed**
+- Check files under `_compagnon/` as `compagnon archive` leaves them: **failed**
 - Check no file modified outside the step: passed
 - Check says "Moved to": **failed**
 
@@ -754,9 +754,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.17 USD, 9 s
 - Tool calls: 3, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "Moved to": passed
 
 #### Run 2
@@ -765,9 +765,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 21 s
 - Tool calls: 5, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "Moved to": passed
 
 #### Run 3
@@ -776,9 +776,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.18 USD, 7 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "Moved to": passed
 
 #### Run 4
@@ -787,9 +787,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.18 USD, 7 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "Moved to": passed
 
 #### Run 5
@@ -798,9 +798,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 8 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "Moved to": passed
 
 ### archive-version-later
@@ -815,7 +815,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 7 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 - Check says "Moved to": passed
@@ -826,7 +826,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.18 USD, 8 s
 - Tool calls: 3, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 - Check says "Moved to": passed
@@ -837,7 +837,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 8 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 - Check says "Moved to": passed
@@ -848,7 +848,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 9 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 - Check says "Moved to": passed
@@ -859,7 +859,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 18 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check files under `_compagnon/` as `compagnon archive` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 - Check says "Moved to": passed
@@ -934,13 +934,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 10 of 10 passed, the run passes
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: passed
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "go test ./...": passed
 - Check `tasks` holds "go vet": passed
 - Check `tasks` holds "_test.go": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 2
@@ -951,13 +951,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 10 of 10 passed, the run passes
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: passed
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "go test ./...": passed
 - Check `tasks` holds "go vet": passed
 - Check `tasks` holds "_test.go": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 3
@@ -968,13 +968,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 3 of 10 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: **failed**
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: **failed**
 - Check `tasks` holds "go test ./...": **failed**
 - Check `tasks` holds "go vet": **failed**
 - Check `tasks` holds "_test.go": **failed**
-- Check `codev status --json` reads the configuration: **failed**
+- Check `compagnon status --json` reads the configuration: **failed**
 - Check no file modified outside the step: passed
 
 #### Run 4
@@ -985,13 +985,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 10 of 10 passed, the run passes
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: passed
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "go test ./...": passed
 - Check `tasks` holds "go vet": passed
 - Check `tasks` holds "_test.go": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 5
@@ -1002,13 +1002,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 9 of 10 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "go test ./...": passed
 - Check `tasks` holds "go vet": passed
 - Check `tasks` holds "_test.go": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 ### configure-no-config
@@ -1023,9 +1023,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.18 USD, 20 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check no `_codev/` folder created: passed
+- Check no `_compagnon/` folder created: passed
 - Check no file modified outside the step: passed
-- Check says "codev init": passed
+- Check says "compagnon init": passed
 
 #### Run 2
 
@@ -1033,9 +1033,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 14 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check no `_codev/` folder created: passed
+- Check no `_compagnon/` folder created: passed
 - Check no file modified outside the step: passed
-- Check says "codev init": passed
+- Check says "compagnon init": passed
 
 #### Run 3
 
@@ -1043,9 +1043,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 9 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check no `_codev/` folder created: passed
+- Check no `_compagnon/` folder created: passed
 - Check no file modified outside the step: passed
-- Check says "codev init": passed
+- Check says "compagnon init": passed
 
 #### Run 4
 
@@ -1053,9 +1053,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 14 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check no `_codev/` folder created: passed
+- Check no `_compagnon/` folder created: passed
 - Check no file modified outside the step: passed
-- Check says "codev init": passed
+- Check says "compagnon init": passed
 
 #### Run 5
 
@@ -1063,9 +1063,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 9 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check no `_codev/` folder created: passed
+- Check no `_compagnon/` folder created: passed
 - Check no file modified outside the step: passed
-- Check says "codev init": passed
+- Check says "compagnon init": passed
 
 ### configure-python-preserves
 
@@ -1081,11 +1081,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 7 of 8 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "pytest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 2
@@ -1096,11 +1096,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 8 of 8 passed, the run passes
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: passed
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "pytest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 3
@@ -1111,11 +1111,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 7 of 8 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "pytest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 4
@@ -1126,11 +1126,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 7 of 8 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "pytest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 5
@@ -1141,11 +1141,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 7 of 8 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "pytest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 ### configure-ts-jest
@@ -1162,13 +1162,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 9 of 10 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "Jest": passed
 - Check `tasks` holds "__tests__/": passed
 - Check `tasks` does not hold "Vitest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 2
@@ -1179,13 +1179,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 9 of 10 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "Jest": passed
 - Check `tasks` holds "__tests__/": passed
 - Check `tasks` does not hold "Vitest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 3
@@ -1196,13 +1196,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 9 of 10 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "Jest": passed
 - Check `tasks` holds "__tests__/": passed
 - Check `tasks` does not hold "Vitest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 4
@@ -1213,13 +1213,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 10 of 10 passed, the run passes
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: passed
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "Jest": passed
 - Check `tasks` holds "__tests__/": passed
 - Check `tasks` does not hold "Vitest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 #### Run 5
@@ -1230,13 +1230,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Checks: 9 of 10 passed, the run **fails**
 - Check keys other than `context` and `rules` preserved: passed
 - Check comments kept: passed
-- Check `# written by /codev-configure` above `context:`: passed
+- Check `# written by /compagnon-configure` above `context:`: passed
 - Check `context` spans two to five lines: **failed**
 - Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
 - Check `tasks` holds "Jest": passed
 - Check `tasks` holds "__tests__/": passed
 - Check `tasks` does not hold "Vitest": passed
-- Check `codev status --json` reads the configuration: passed
+- Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
 ### implement-decision-accept-command
@@ -1270,7 +1270,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1300,7 +1300,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1330,7 +1330,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1360,7 +1360,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1390,7 +1390,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1422,7 +1422,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1448,7 +1448,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1474,7 +1474,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1500,7 +1500,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1526,7 +1526,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1549,7 +1549,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tests` passes: passed
 - Check `build` passes: passed
 - Check acceptance `clean-configuration-has-no-config-item`: passed
-- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-fixes-a-compagnon-above-the-requirement`: passed
 - Check acceptance `doctor-reports-the-unknown-key`: passed
 - Check acceptance `misspelled-top-level-key-warns`: passed
 - Check acceptance `non-strict-validation-warns-and-succeeds`: passed
@@ -1560,7 +1560,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1577,7 +1577,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tests` passes: passed
 - Check `build` passes: passed
 - Check acceptance `clean-configuration-has-no-config-item`: passed
-- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-fixes-a-compagnon-above-the-requirement`: passed
 - Check acceptance `doctor-reports-the-unknown-key`: passed
 - Check acceptance `misspelled-top-level-key-warns`: passed
 - Check acceptance `non-strict-validation-warns-and-succeeds`: passed
@@ -1588,7 +1588,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1605,7 +1605,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tests` passes: passed
 - Check `build` passes: passed
 - Check acceptance `clean-configuration-has-no-config-item`: passed
-- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-fixes-a-compagnon-above-the-requirement`: passed
 - Check acceptance `doctor-reports-the-unknown-key`: passed
 - Check acceptance `misspelled-top-level-key-warns`: passed
 - Check acceptance `non-strict-validation-warns-and-succeeds`: passed
@@ -1616,7 +1616,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1633,7 +1633,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tests` passes: passed
 - Check `build` passes: passed
 - Check acceptance `clean-configuration-has-no-config-item`: passed
-- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-fixes-a-compagnon-above-the-requirement`: passed
 - Check acceptance `doctor-reports-the-unknown-key`: passed
 - Check acceptance `misspelled-top-level-key-warns`: passed
 - Check acceptance `non-strict-validation-warns-and-succeeds`: passed
@@ -1644,7 +1644,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1661,7 +1661,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tests` passes: passed
 - Check `build` passes: passed
 - Check acceptance `clean-configuration-has-no-config-item`: passed
-- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-fixes-a-compagnon-above-the-requirement`: passed
 - Check acceptance `doctor-reports-the-unknown-key`: passed
 - Check acceptance `misspelled-top-level-key-warns`: passed
 - Check acceptance `non-strict-validation-warns-and-succeeds`: passed
@@ -1672,7 +1672,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check the review record holds `code.review`: passed
 - Check no validation error added: passed
 - Check nothing modified outside the step: passed
-- Check the change is still in `_codev/changes/`: passed
+- Check the change is still in `_compagnon/changes/`: passed
 - Check no read of the cases' repository: passed
 - Check `docs/en/` touched: passed
 - Check `docs/fr/` touched: passed
@@ -1690,7 +1690,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 2, no artifact written
 - Checks: 3 of 3 passed, the run passes
 - Check no file changed: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 - Check no read of the cases' repository: passed
 
 #### Run 2
@@ -1700,7 +1700,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 2, no artifact written
 - Checks: 3 of 3 passed, the run passes
 - Check no file changed: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 - Check no read of the cases' repository: passed
 
 #### Run 3
@@ -1710,7 +1710,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 2, no artifact written
 - Checks: 3 of 3 passed, the run passes
 - Check no file changed: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 - Check no read of the cases' repository: passed
 
 #### Run 4
@@ -1720,7 +1720,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 2, no artifact written
 - Checks: 3 of 3 passed, the run passes
 - Check no file changed: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 - Check no read of the cases' repository: passed
 
 #### Run 5
@@ -1730,7 +1730,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 2, no artifact written
 - Checks: 3 of 3 passed, the run passes
 - Check no file changed: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 - Check no read of the cases' repository: passed
 
 ### migration-code-drop-and-rename
@@ -2602,12 +2602,12 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.98 USD, 308 s
 - Tool calls: 37, 13 before the first artifact
-- Requirement `roles::codev knows a catalog of roles bound to workflow steps`: modified
+- Requirement `roles::compagnon knows a catalog of roles bound to workflow steps`: modified
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: modified
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: **missed**
 - Collateral `roles::The project configures roles under `roles:``: modified
 - Collateral `roles::Invalid role settings are reported with stable codes`: modified
-- Collateral `roles::`codev roles` serves the roles of a step`: modified
+- Collateral `roles::`compagnon roles` serves the roles of a step`: modified
 - Collateral `skills::The default schema gives each artifact a role with "Done when" criteria`: modified
 - Collateral `docs::The Roles chapter lists exactly the catalog's roles`: missed
 - Added `skills::The `apply` skill reviews the change's code as each active expert`: **probable duplicate**
@@ -2617,12 +2617,12 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.87 USD, 314 s
 - Tool calls: 30, 16 before the first artifact
-- Requirement `roles::codev knows a catalog of roles bound to workflow steps`: modified
+- Requirement `roles::compagnon knows a catalog of roles bound to workflow steps`: modified
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: modified
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: **missed**
 - Collateral `roles::The project configures roles under `roles:``: modified
 - Collateral `roles::Invalid role settings are reported with stable codes`: modified
-- Collateral `roles::`codev roles` serves the roles of a step`: modified
+- Collateral `roles::`compagnon roles` serves the roles of a step`: modified
 - Collateral `skills::The default schema gives each artifact a role with "Done when" criteria`: modified
 - Collateral `docs::The Roles chapter lists exactly the catalog's roles`: missed
 - Added `skills::The `apply` skill has the change's code reviewed by its experts`: **probable duplicate**
@@ -2632,13 +2632,13 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.91 USD, 320 s
 - Tool calls: 28, 11 before the first artifact
-- Requirement `roles::codev knows a catalog of roles bound to workflow steps`: modified
+- Requirement `roles::compagnon knows a catalog of roles bound to workflow steps`: modified
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: modified
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: modified
 - Collateral `docs::The Roles chapter lists exactly the catalog's roles`: modified
 - Collateral `roles::The project configures roles under `roles:``: modified
 - Collateral `roles::Invalid role settings are reported with stable codes`: modified
-- Collateral `roles::`codev roles` serves the roles of a step`: modified
+- Collateral `roles::`compagnon roles` serves the roles of a step`: modified
 - Collateral `skills::The default schema gives each artifact a role with "Done when" criteria`: modified
 
 #### Run 4
@@ -2646,12 +2646,12 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.85 USD, 328 s
 - Tool calls: 29, 13 before the first artifact
-- Requirement `roles::codev knows a catalog of roles bound to workflow steps`: modified
+- Requirement `roles::compagnon knows a catalog of roles bound to workflow steps`: modified
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: modified
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: **missed**
 - Collateral `roles::The project configures roles under `roles:``: modified
 - Collateral `roles::Invalid role settings are reported with stable codes`: modified
-- Collateral `roles::`codev roles` serves the roles of a step`: modified
+- Collateral `roles::`compagnon roles` serves the roles of a step`: modified
 - Collateral `skills::The default schema gives each artifact a role with "Done when" criteria`: modified
 - Collateral `docs::The Roles chapter lists exactly the catalog's roles`: missed
 - Added `skills::The `propose` skill ticks the proposal's domains`: **probable duplicate**
@@ -2662,12 +2662,12 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 2.17 USD, 382 s
 - Tool calls: 39, 18 before the first artifact
-- Requirement `roles::codev knows a catalog of roles bound to workflow steps`: modified
+- Requirement `roles::compagnon knows a catalog of roles bound to workflow steps`: modified
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: modified
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: modified
 - Collateral `roles::The project configures roles under `roles:``: modified
 - Collateral `roles::Invalid role settings are reported with stable codes`: modified
-- Collateral `roles::`codev roles` serves the roles of a step`: modified
+- Collateral `roles::`compagnon roles` serves the roles of a step`: modified
 - Collateral `skills::The default schema gives each artifact a role with "Done when" criteria`: modified
 - Collateral `docs::The Roles chapter lists exactly the catalog's roles`: missed
 
@@ -2775,8 +2775,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.33 USD, 159 s
 - Tool calls: 24, 13 before the first artifact
 - Requirement `decisions::Inherited decisions taken into account`: **missed**
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: **missed**
-- Added `decisions::`codev decision deviate --copy` starts the deviation from the inherited text`: **probable duplicate**
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: **missed**
+- Added `decisions::`compagnon decision deviate --copy` starts the deviation from the inherited text`: **probable duplicate**
 - The plan does not validate
 
 #### Run 2
@@ -2785,8 +2785,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.24 USD, 156 s
 - Tool calls: 26, 12 before the first artifact
 - Requirement `decisions::Inherited decisions taken into account`: **missed**
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: **missed**
-- Added `decisions::`codev decision deviate --copy` starts the deviation from the inherited text`: **probable duplicate**
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: **missed**
+- Added `decisions::`compagnon decision deviate --copy` starts the deviation from the inherited text`: **probable duplicate**
 
 #### Run 3
 
@@ -2794,17 +2794,17 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.52 USD, 198 s
 - Tool calls: 31, 18 before the first artifact
 - Requirement `decisions::Inherited decisions taken into account`: **missed**
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: **missed**
-- Added `decisions::`codev decision deviate --copy` starts the deviation from the inherited content`: **probable duplicate**
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: **missed**
+- Added `decisions::`compagnon decision deviate --copy` starts the deviation from the inherited content`: **probable duplicate**
 
 #### Run 4
 
 - Outcome: scored
 - Cost: 1.47 USD, 230 s
 - Tool calls: 31, 13 before the first artifact
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: modified
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: modified
 - Requirement `decisions::Inherited decisions taken into account`: **missed**
-- Added `decisions::`codev decision deviate --copy` starts the deviation from the inherited decision's content`: **probable duplicate**
+- Added `decisions::`compagnon decision deviate --copy` starts the deviation from the inherited decision's content`: **probable duplicate**
 - Added `decisions::`decision deviate --json` reports whether the body was copied`: **probable duplicate**
 
 #### Run 5
@@ -2812,7 +2812,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.11 USD, 148 s
 - Tool calls: 21, 11 before the first artifact
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: modified
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: modified
 - Requirement `decisions::Inherited decisions taken into account`: **missed**
 - Added `decisions::A copied deviation reproduces the inherited decision`: **probable duplicate**
 
@@ -2865,8 +2865,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 26, 15 before the first artifact
 - Requirement `decisions::Supersession resolved as a chain`: modified
 - Requirement `decisions::Superseding a decision through the CLI`: modified
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: modified
-- Requirement `decisions::The `codev decision promote` command extracts a design block into an ADR`: modified
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: modified
+- Requirement `decisions::The `compagnon decision promote` command extracts a design block into an ADR`: modified
 - Requirement `decisions::`decision accept` accepts and seals a proposed decision`: modified
 
 #### Run 2
@@ -2875,8 +2875,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.77 USD, 224 s
 - Tool calls: 25, 15 before the first artifact
 - Requirement `decisions::Superseding a decision through the CLI`: modified
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: modified
-- Requirement `decisions::The `codev decision promote` command extracts a design block into an ADR`: modified
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: modified
+- Requirement `decisions::The `compagnon decision promote` command extracts a design block into an ADR`: modified
 - Requirement `decisions::Supersession resolved as a chain`: **missed**
 - Requirement `decisions::`decision accept` accepts and seals a proposed decision`: **missed**
 - Added `decisions::A proposed decision supersedes nothing`: **probable duplicate**
@@ -2889,8 +2889,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 25, 16 before the first artifact
 - Requirement `decisions::Supersession resolved as a chain`: modified
 - Requirement `decisions::Superseding a decision through the CLI`: modified
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: modified
-- Requirement `decisions::The `codev decision promote` command extracts a design block into an ADR`: modified
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: modified
+- Requirement `decisions::The `compagnon decision promote` command extracts a design block into an ADR`: modified
 - Requirement `decisions::`decision accept` accepts and seals a proposed decision`: modified
 
 #### Run 4
@@ -2900,8 +2900,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 23, 14 before the first artifact
 - Requirement `decisions::Supersession resolved as a chain`: modified
 - Requirement `decisions::Superseding a decision through the CLI`: modified
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: modified
-- Requirement `decisions::The `codev decision promote` command extracts a design block into an ADR`: modified
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: modified
+- Requirement `decisions::The `compagnon decision promote` command extracts a design block into an ADR`: modified
 - Requirement `decisions::`decision accept` accepts and seals a proposed decision`: modified
 
 #### Run 5
@@ -2910,8 +2910,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.67 USD, 224 s
 - Tool calls: 24, 13 before the first artifact
 - Requirement `decisions::Superseding a decision through the CLI`: modified
-- Requirement `decisions::The `codev decision deviate` command creates a deviation ADR`: modified
-- Requirement `decisions::The `codev decision promote` command extracts a design block into an ADR`: modified
+- Requirement `decisions::The `compagnon decision deviate` command creates a deviation ADR`: modified
+- Requirement `decisions::The `compagnon decision promote` command extracts a design block into an ADR`: modified
 - Requirement `decisions::`decision accept` accepts and seals a proposed decision`: modified
 - Requirement `decisions::Supersession resolved as a chain`: **missed**
 - Added `decisions::Accepting a supersession retires the superseded decisions`: **probable duplicate**
@@ -2930,7 +2930,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 24, 10 before the first artifact
 - Requirement `review-mode::The project and a change set the review mode`: modified
 - Requirement `skills::In isolated mode, each reviewing role runs alone, then the skill consolidates`: **missed**
-- Added `skills::In api mode, codev runs the roles and the skill consolidates`: **probable duplicate**
+- Added `skills::In api mode, compagnon runs the roles and the skill consolidates`: **probable duplicate**
 
 #### Run 2
 
@@ -2947,7 +2947,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 29, 11 before the first artifact
 - Requirement `review-mode::The project and a change set the review mode`: modified
 - Requirement `skills::In isolated mode, each reviewing role runs alone, then the skill consolidates`: **missed**
-- Added `skills::In api mode, codev dispatches the roles and the skill consolidates`: **probable duplicate**
+- Added `skills::In api mode, compagnon dispatches the roles and the skill consolidates`: **probable duplicate**
 
 #### Run 4
 
@@ -2956,7 +2956,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 26, 11 before the first artifact
 - Requirement `skills::In isolated mode, each reviewing role runs alone, then the skill consolidates`: modified
 - Requirement `review-mode::The project and a change set the review mode`: **missed**
-- Added `review-mode::`codev roles --briefs` serves each reviewer's brief whole`: **probable duplicate**
+- Added `review-mode::`compagnon roles --briefs` serves each reviewer's brief whole`: **probable duplicate**
 
 #### Run 5
 
@@ -3020,10 +3020,10 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Requirement `skills::The `propose` skill checks traceability before presenting the plan`: **missed**
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: **missed**
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: **missed**
-- Collateral `instructions::`codev instructions` describes one artifact of a change`: modified
-- Collateral `instructions::The human output of `codev instructions` reads top to bottom`: modified
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
-- Added `skills::The `propose` and `apply` skills take each step's criteria from `codev roles``: **probable duplicate**
+- Collateral `instructions::`compagnon instructions` describes one artifact of a change`: modified
+- Collateral `instructions::The human output of `compagnon instructions` reads top to bottom`: modified
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
+- Added `skills::The `propose` and `apply` skills take each step's criteria from `compagnon roles``: **probable duplicate**
 
 #### Run 2
 
@@ -3034,11 +3034,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Requirement `skills::The `propose` skill checks traceability before presenting the plan`: **missed**
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: **missed**
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: **missed**
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
-- Collateral `instructions::`codev instructions` describes one artifact of a change`: missed
-- Collateral `instructions::The human output of `codev instructions` reads top to bottom`: missed
-- Added `instructions::`codev instructions` carries the role owning the artifact`: **probable duplicate**
-- Added `skills::Skills take role criteria from `codev roles` and skip disabled steps`: **probable duplicate**
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
+- Collateral `instructions::`compagnon instructions` describes one artifact of a change`: missed
+- Collateral `instructions::The human output of `compagnon instructions` reads top to bottom`: missed
+- Added `instructions::`compagnon instructions` carries the role owning the artifact`: **probable duplicate**
+- Added `skills::Skills take role criteria from `compagnon roles` and skip disabled steps`: **probable duplicate**
 
 #### Run 3
 
@@ -3049,9 +3049,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Requirement `skills::The `propose` skill checks traceability before presenting the plan`: modified
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: modified
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: modified
-- Collateral `instructions::`codev instructions` describes one artifact of a change`: modified
-- Collateral `instructions::The human output of `codev instructions` reads top to bottom`: modified
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Collateral `instructions::`compagnon instructions` describes one artifact of a change`: modified
+- Collateral `instructions::The human output of `compagnon instructions` reads top to bottom`: modified
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 
 #### Run 4
 
@@ -3062,11 +3062,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Requirement `skills::The `propose` skill checks traceability before presenting the plan`: **missed**
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: **missed**
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: **missed**
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
-- Collateral `instructions::`codev instructions` describes one artifact of a change`: missed
-- Collateral `instructions::The human output of `codev instructions` reads top to bottom`: missed
-- Added `instructions::`codev instructions` carries the artifact's effective role`: **probable duplicate**
-- Added `skills::Skills apply the roles codev serves at each step`: **probable duplicate**
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
+- Collateral `instructions::`compagnon instructions` describes one artifact of a change`: missed
+- Collateral `instructions::The human output of `compagnon instructions` reads top to bottom`: missed
+- Added `instructions::`compagnon instructions` carries the artifact's effective role`: **probable duplicate**
+- Added `skills::Skills apply the roles compagnon serves at each step`: **probable duplicate**
 - Added `skills::A step whose roles are all disabled is skipped`: **probable duplicate**
 
 #### Run 5
@@ -3078,9 +3078,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Requirement `skills::The `propose` skill checks traceability before presenting the plan`: modified
 - Requirement `skills::The `propose` skill challenges the plan and reports points to challenge`: modified
 - Requirement `skills::The `apply` skill reviews the change's code as a newcomer`: modified
-- Collateral `instructions::`codev instructions` describes one artifact of a change`: modified
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
-- Collateral `instructions::The human output of `codev instructions` reads top to bottom`: missed
+- Collateral `instructions::`compagnon instructions` describes one artifact of a change`: modified
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
+- Collateral `instructions::The human output of `compagnon instructions` reads top to bottom`: missed
 
 ### plan-docs-and-tests-in-done
 
@@ -3142,41 +3142,41 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.80 USD, 329 s
 - Tool calls: 30, 16 before the first artifact
-- Requirement `roles::`codev roles` serves the roles of a step`: modified
+- Requirement `roles::`compagnon roles` serves the roles of a step`: modified
 
 #### Run 2
 
 - Outcome: scored
 - Cost: 1.88 USD, 328 s
 - Tool calls: 39, 17 before the first artifact
-- Requirement `roles::`codev roles` serves the roles of a step`: modified
+- Requirement `roles::`compagnon roles` serves the roles of a step`: modified
 
 #### Run 3
 
 - Outcome: scored
 - Cost: 1.90 USD, 316 s
 - Tool calls: 29, 16 before the first artifact
-- Requirement `roles::`codev roles` serves the roles of a step`: modified
+- Requirement `roles::`compagnon roles` serves the roles of a step`: modified
 
 #### Run 4
 
 - Outcome: scored
 - Cost: 1.90 USD, 320 s
 - Tool calls: 33, 20 before the first artifact
-- Requirement `roles::`codev roles` serves the roles of a step`: modified
+- Requirement `roles::`compagnon roles` serves the roles of a step`: modified
 
 #### Run 5
 
 - Outcome: scored
 - Cost: 1.74 USD, 308 s
 - Tool calls: 29, 15 before the first artifact
-- Requirement `roles::`codev roles` serves the roles of a step`: **missed**
+- Requirement `roles::`compagnon roles` serves the roles of a step`: **missed**
 - Added `roles::Each expert declares the triggers of its domain`: **probable duplicate**
-- Added `roles::`codev roles` reads the change's diff`: **probable duplicate**
-- Added `roles::`codev roles` suggests the domains the diff points to`: **probable duplicate**
-- Added `roles::`codev roles` serves the knowledge of the project's stacks`: **probable duplicate**
+- Added `roles::`compagnon roles` reads the change's diff`: **probable duplicate**
+- Added `roles::`compagnon roles` suggests the domains the diff points to`: **probable duplicate**
+- Added `roles::`compagnon roles` serves the knowledge of the project's stacks`: **probable duplicate**
 - Added `roles::The project sets the stack filter under `stacks:``: **probable duplicate**
-- Added `roles::The human output of `codev roles` shows the stacks and the suggestions`: **probable duplicate**
+- Added `roles::The human output of `compagnon roles` shows the stacks and the suggestions`: **probable duplicate**
 
 ### plan-fix-core-command-edge-cases
 
@@ -3190,11 +3190,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 2.10 USD, 289 s
 - Tool calls: 49, 29 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: modified
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: modified
-- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: **missed**
 - Collateral `changes::The commands taking `--change` pick the change predictably`: missed
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 - Collateral `schemas::The schema of a change is chosen once, at creation`: missed
 
 #### Run 2
@@ -3203,12 +3203,12 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 2.76 USD, 465 s
 - Tool calls: 63, 48 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
-- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: **missed**
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: **missed**
 - Collateral `changes::The commands taking `--change` pick the change predictably`: modified
 - Collateral `schemas::The schema of a change is chosen once, at creation`: modified
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 
 #### Run 3
 
@@ -3216,11 +3216,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.93 USD, 262 s
 - Tool calls: 52, 31 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
-- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: **missed**
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: **missed**
 - Collateral `changes::The commands taking `--change` pick the change predictably`: missed
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 - Collateral `schemas::The schema of a change is chosen once, at creation`: missed
 
 #### Run 4
@@ -3229,11 +3229,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 2.24 USD, 215 s
 - Tool calls: 60, 45 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
-- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: **missed**
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: **missed**
 - Collateral `changes::The commands taking `--change` pick the change predictably`: missed
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 - Collateral `schemas::The schema of a change is chosen once, at creation`: missed
 
 #### Run 5
@@ -3242,11 +3242,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 2.26 USD, 422 s
 - Tool calls: 59, 46 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
-- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: **missed**
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: **missed**
 - Collateral `changes::The commands taking `--change` pick the change predictably`: missed
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 - Collateral `schemas::The schema of a change is chosen once, at creation`: missed
 
 ### plan-forward-compatible-config
@@ -3260,35 +3260,35 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.73 USD, 280 s
 - Tool calls: 36, 14 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 #### Run 2
 
 - Outcome: scored
 - Cost: 1.55 USD, 285 s
 - Tool calls: 28, 17 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 #### Run 3
 
 - Outcome: scored
 - Cost: 1.44 USD, 229 s
 - Tool calls: 28, 11 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 #### Run 4
 
 - Outcome: scored
 - Cost: 1.69 USD, 267 s
 - Tool calls: 30, 12 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 #### Run 5
 
 - Outcome: scored
 - Cost: 1.45 USD, 269 s
 - Tool calls: 27, 13 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 ### plan-generated-changelog
 
@@ -3302,7 +3302,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.80 USD, 295 s
 - Tool calls: 48, 37 before the first artifact
 - Requirement `skills::The default schema gives each artifact a role with "Done when" criteria`: modified
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Collateral `skills::The `propose` skill checks traceability before presenting the plan`: missed
 
 #### Run 2
@@ -3311,7 +3311,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.58 USD, 280 s
 - Tool calls: 34, 22 before the first artifact
 - Requirement `skills::The default schema gives each artifact a role with "Done when" criteria`: **missed**
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Collateral `skills::The `propose` skill checks traceability before presenting the plan`: missed
 - Added `skills::The default proposal asks for a categorized release note`: **probable duplicate**
 
@@ -3321,7 +3321,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.55 USD, 256 s
 - Tool calls: 32, 12 before the first artifact
 - Requirement `skills::The default schema gives each artifact a role with "Done when" criteria`: modified
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Collateral `skills::The `propose` skill checks traceability before presenting the plan`: missed
 
 #### Run 4
@@ -3330,7 +3330,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.40 USD, 251 s
 - Tool calls: 25, 13 before the first artifact
 - Requirement `skills::The default schema gives each artifact a role with "Done when" criteria`: modified
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Collateral `skills::The `propose` skill checks traceability before presenting the plan`: missed
 
 #### Run 5
@@ -3339,7 +3339,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 1.34 USD, 281 s
 - Tool calls: 27, 17 before the first artifact
 - Requirement `skills::The default schema gives each artifact a role with "Done when" criteria`: modified
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Collateral `skills::The `propose` skill checks traceability before presenting the plan`: missed
 
 ### plan-harder-eval-cases
@@ -3405,8 +3405,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 2.53 USD, 432 s
 - Tool calls: 52, 22 before the first artifact
-- Requirement `skills::The `propose` and `apply` skills take their roles from `codev roles``: **missed**
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Requirement `skills::The `propose` and `apply` skills take their roles from `compagnon roles``: **missed**
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Added `skills::The `propose` and `apply` skills run each reviewer in isolation when the project asks for it`: **probable duplicate**
 
 #### Run 2
@@ -3414,8 +3414,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.46 USD, 272 s
 - Tool calls: 28, 14 before the first artifact
-- Requirement `skills::The `propose` and `apply` skills take their roles from `codev roles``: **missed**
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Requirement `skills::The `propose` and `apply` skills take their roles from `compagnon roles``: **missed**
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Added `skills::In isolated mode, each reviewer runs alone in a sub-agent`: **probable duplicate**
 - Added `skills::The skill holds a meeting before writing the isolated findings`: **probable duplicate**
 
@@ -3424,8 +3424,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.77 USD, 253 s
 - Tool calls: 37, 14 before the first artifact
-- Requirement `skills::The `propose` and `apply` skills take their roles from `codev roles``: **missed**
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Requirement `skills::The `propose` and `apply` skills take their roles from `compagnon roles``: **missed**
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Added `skills::In isolated mode, each reviewing role reviews alone as a sub-agent`: **probable duplicate**
 - Added `skills::In isolated mode, the skill consolidates the findings in a meeting`: **probable duplicate**
 
@@ -3434,8 +3434,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.92 USD, 294 s
 - Tool calls: 34, 19 before the first artifact
-- Requirement `skills::The `propose` and `apply` skills take their roles from `codev roles``: **missed**
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Requirement `skills::The `propose` and `apply` skills take their roles from `compagnon roles``: **missed**
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Added `skills::The `propose` and `apply` skills run each reviewer alone in isolated mode`: **probable duplicate**
 - Added `skills::The `propose` and `apply` skills consolidate isolated reviews in a meeting`: **probable duplicate**
 
@@ -3444,8 +3444,8 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.62 USD, 227 s
 - Tool calls: 26, 19 before the first artifact
-- Requirement `skills::The `propose` and `apply` skills take their roles from `codev roles``: **missed**
-- Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
+- Requirement `skills::The `propose` and `apply` skills take their roles from `compagnon roles``: **missed**
+- Collateral `doctor::`compagnon doctor` runs a fixed list of read-only checks`: missed
 - Added `skills::In isolated mode, each reviewing role reviews alone, then the skill holds the meeting`: **probable duplicate**
 
 ### plan-keywords-in-french
@@ -3459,35 +3459,35 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.90 USD, 323 s
 - Tool calls: 47, 15 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 #### Run 2
 
 - Outcome: scored
 - Cost: 1.57 USD, 245 s
 - Tool calls: 28, 13 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 #### Run 3
 
 - Outcome: scored
 - Cost: 1.50 USD, 230 s
 - Tool calls: 32, 13 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 #### Run 4
 
 - Outcome: scored
 - Cost: 1.45 USD, 244 s
 - Tool calls: 27, 13 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 #### Run 5
 
 - Outcome: scored
 - Cost: 1.33 USD, 202 s
 - Tool calls: 29, 13 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: modified
 
 ### plan-keywords-in-pt-br
 
@@ -3501,12 +3501,12 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 2.55 USD, 428 s
 - Tool calls: 32, 13 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: modified
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: modified
-- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: **missed**
 - Collateral `changes::The commands taking `--change` pick the change predictably`: modified
 - Collateral `schemas::The schema of a change is chosen once, at creation`: modified
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 
 #### Run 2
 
@@ -3514,11 +3514,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 2.43 USD, 376 s
 - Tool calls: 32, 19 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
-- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: **missed**
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: **missed**
 - Collateral `changes::The commands taking `--change` pick the change predictably`: missed
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 - Collateral `schemas::The schema of a change is chosen once, at creation`: missed
 
 #### Run 3
@@ -3527,11 +3527,11 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 2.85 USD, 515 s
 - Tool calls: 32, 15 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
-- Requirement `schemas::`codev schemas` lists the usable schemas`: modified
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: modified
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: modified
 - Collateral `changes::The commands taking `--change` pick the change predictably`: missed
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 - Collateral `schemas::The schema of a change is chosen once, at creation`: missed
 
 #### Run 4
@@ -3540,12 +3540,12 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 2.35 USD, 331 s
 - Tool calls: 51, 34 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
-- Requirement `schemas::`codev schemas` lists the usable schemas`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: **missed**
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: modified
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: **missed**
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: **missed**
 - Collateral `schemas::The schema of a change is chosen once, at creation`: modified
 - Collateral `changes::The commands taking `--change` pick the change predictably`: missed
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 
 #### Run 5
 
@@ -3554,10 +3554,10 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Tool calls: 45, 26 before the first artifact
 - Requirement `changes::A change name is kebab-case and unique`: modified
 - Requirement `schemas::A schema is resolved from the project before the built-in one`: modified
-- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: **missed**
-- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Requirement `changes::`compagnon list` lists the active changes and, with `--specs`, the capabilities`: **missed**
+- Requirement `schemas::`compagnon schemas` lists the usable schemas`: **missed**
 - Collateral `changes::The commands taking `--change` pick the change predictably`: missed
-- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `instructions::`compagnon instructions` fails with stable codes`: missed
 - Collateral `schemas::The schema of a change is chosen once, at creation`: missed
 
 ### plan-read-french-keywords
@@ -3617,45 +3617,45 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.30 USD, 181 s
 - Tool calls: 29, 17 before the first artifact
-- Requirement `init::`codev init` integrates codev into the repository`: modified
-- Requirement `init::codev's text lives in managed sections that never touch user content`: **missed**
-- Added `init::`codev init` installs a Claude Code session start hook without overwriting the user's settings`: **probable duplicate**
+- Requirement `init::`compagnon init` integrates compagnon into the repository`: modified
+- Requirement `init::compagnon's text lives in managed sections that never touch user content`: **missed**
+- Added `init::`compagnon init` installs a Claude Code session start hook without overwriting the user's settings`: **probable duplicate**
 
 #### Run 2
 
 - Outcome: scored
 - Cost: 1.34 USD, 204 s
 - Tool calls: 24, 10 before the first artifact
-- Requirement `init::`codev init` integrates codev into the repository`: modified
-- Requirement `init::codev's text lives in managed sections that never touch user content`: **missed**
-- Added `init::`codev init` installs a Claude Code session start hook without overwriting the user's settings`: **probable duplicate**
+- Requirement `init::`compagnon init` integrates compagnon into the repository`: modified
+- Requirement `init::compagnon's text lives in managed sections that never touch user content`: **missed**
+- Added `init::`compagnon init` installs a Claude Code session start hook without overwriting the user's settings`: **probable duplicate**
 
 #### Run 3
 
 - Outcome: scored
 - Cost: 1.24 USD, 183 s
 - Tool calls: 20, 12 before the first artifact
-- Requirement `init::`codev init` integrates codev into the repository`: modified
-- Requirement `init::codev's text lives in managed sections that never touch user content`: **missed**
-- Added `init::`codev init` registers a Claude Code session-start hook without overwriting the user's settings`: **probable duplicate**
+- Requirement `init::`compagnon init` integrates compagnon into the repository`: modified
+- Requirement `init::compagnon's text lives in managed sections that never touch user content`: **missed**
+- Added `init::`compagnon init` registers a Claude Code session-start hook without overwriting the user's settings`: **probable duplicate**
 
 #### Run 4
 
 - Outcome: scored
 - Cost: 1.33 USD, 196 s
 - Tool calls: 28, 17 before the first artifact
-- Requirement `init::`codev init` integrates codev into the repository`: modified
-- Requirement `init::codev's text lives in managed sections that never touch user content`: **missed**
-- Added `init::`codev init` installs a Claude Code session start hook without overwriting the user's settings`: **probable duplicate**
+- Requirement `init::`compagnon init` integrates compagnon into the repository`: modified
+- Requirement `init::compagnon's text lives in managed sections that never touch user content`: **missed**
+- Added `init::`compagnon init` installs a Claude Code session start hook without overwriting the user's settings`: **probable duplicate**
 
 #### Run 5
 
 - Outcome: scored
 - Cost: 1.58 USD, 238 s
 - Tool calls: 28, 16 before the first artifact
-- Requirement `init::`codev init` integrates codev into the repository`: modified
-- Requirement `init::codev's text lives in managed sections that never touch user content`: **missed**
-- Added `init::`codev init` installs a Claude Code session start hook`: **probable duplicate**
+- Requirement `init::`compagnon init` integrates compagnon into the repository`: modified
+- Requirement `init::compagnon's text lives in managed sections that never touch user content`: **missed**
+- Added `init::`compagnon init` installs a Claude Code session start hook`: **probable duplicate**
 - Added `init::The session start hook never overwrites the user's settings`: **probable duplicate**
 
 ### plan-requirement-skill-edited
@@ -3669,35 +3669,35 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.39 USD, 207 s
 - Tool calls: 30, 18 before the first artifact
-- Requirement `skills::`codev update` regenerates the skills of the configured workflows`: modified
+- Requirement `skills::`compagnon update` regenerates the skills of the configured workflows`: modified
 
 #### Run 2
 
 - Outcome: scored
 - Cost: 1.46 USD, 193 s
 - Tool calls: 31, 17 before the first artifact
-- Requirement `skills::`codev update` regenerates the skills of the configured workflows`: modified
+- Requirement `skills::`compagnon update` regenerates the skills of the configured workflows`: modified
 
 #### Run 3
 
 - Outcome: scored
 - Cost: 1.18 USD, 164 s
 - Tool calls: 26, 16 before the first artifact
-- Requirement `skills::`codev update` regenerates the skills of the configured workflows`: modified
+- Requirement `skills::`compagnon update` regenerates the skills of the configured workflows`: modified
 
 #### Run 4
 
 - Outcome: scored
 - Cost: 1.24 USD, 175 s
 - Tool calls: 30, 20 before the first artifact
-- Requirement `skills::`codev update` regenerates the skills of the configured workflows`: modified
+- Requirement `skills::`compagnon update` regenerates the skills of the configured workflows`: modified
 
 #### Run 5
 
 - Outcome: scored
 - Cost: 1.59 USD, 237 s
 - Tool calls: 41, 18 before the first artifact
-- Requirement `skills::`codev update` regenerates the skills of the configured workflows`: modified
+- Requirement `skills::`compagnon update` regenerates the skills of the configured workflows`: modified
 
 ### plan-requirement-spanish
 
@@ -3855,7 +3855,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 3.53 USD, 182 s
 - Tool calls: 90, 74 before the first artifact
 - Requirement `decisions::Showing a decision through the CLI`: **missed**
-- Added `decisions::Output of `codev decision show``: **probable duplicate**
+- Added `decisions::Output of `compagnon decision show``: **probable duplicate**
 
 #### Run 3
 
@@ -3863,7 +3863,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 3.92 USD, 156 s
 - Tool calls: 117, 104 before the first artifact
 - Requirement `decisions::Showing a decision through the CLI`: **missed**
-- Added `decisions::What `codev decision show` returns`: **probable duplicate**
+- Added `decisions::What `compagnon decision show` returns`: **probable duplicate**
 
 #### Run 4
 
@@ -3871,7 +3871,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 4.67 USD, 523 s
 - Tool calls: 115, 99 before the first artifact
 - Requirement `decisions::Showing a decision through the CLI`: **missed**
-- Added `decisions::Outputs of `codev decision show``: **probable duplicate**
+- Added `decisions::Outputs of `compagnon decision show``: **probable duplicate**
 
 #### Run 5
 
@@ -3891,39 +3891,39 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.47 USD, 191 s
 - Tool calls: 31, 22 before the first artifact
-- Requirement `init::`codev init --inherit` declares inherited sources`: **missed**
-- Added `init::Inherited paths written by `codev init` use forward slashes`: **probable duplicate**
+- Requirement `init::`compagnon init --inherit` declares inherited sources`: **missed**
+- Added `init::Inherited paths written by `compagnon init` use forward slashes`: **probable duplicate**
 
 #### Run 2
 
 - Outcome: scored
 - Cost: 1.08 USD, 136 s
 - Tool calls: 26, 17 before the first artifact
-- Requirement `init::`codev init --inherit` declares inherited sources`: **missed**
-- Added `init::Inherited paths made absolute by `codev init` use forward slashes`: **probable duplicate**
+- Requirement `init::`compagnon init --inherit` declares inherited sources`: **missed**
+- Added `init::Inherited paths made absolute by `compagnon init` use forward slashes`: **probable duplicate**
 
 #### Run 3
 
 - Outcome: scored
 - Cost: 1.48 USD, 186 s
 - Tool calls: 40, 25 before the first artifact
-- Requirement `init::`codev init --inherit` declares inherited sources`: modified
+- Requirement `init::`compagnon init --inherit` declares inherited sources`: modified
 
 #### Run 4
 
 - Outcome: scored
 - Cost: 1.36 USD, 212 s
 - Tool calls: 31, 19 before the first artifact
-- Requirement `init::`codev init --inherit` declares inherited sources`: **missed**
-- Added `init::Inherited paths written by `codev init` use forward slashes`: **probable duplicate**
+- Requirement `init::`compagnon init --inherit` declares inherited sources`: **missed**
+- Added `init::Inherited paths written by `compagnon init` use forward slashes`: **probable duplicate**
 
 #### Run 5
 
 - Outcome: scored
 - Cost: 1.40 USD, 191 s
 - Tool calls: 34, 21 before the first artifact
-- Requirement `init::`codev init --inherit` declares inherited sources`: **missed**
-- Added `init::Inherited paths written by `codev init` use forward slashes`: **probable duplicate**
+- Requirement `init::`compagnon init --inherit` declares inherited sources`: **missed**
+- Added `init::Inherited paths written by `compagnon init` use forward slashes`: **probable duplicate**
 
 ### plan-update-notice-and-self-update
 
@@ -3936,50 +3936,50 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 1.18 USD, 195 s
 - Tool calls: 18, 7 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: **missed**
-- Collateral `configure::The `configure` skill enriches `_codev/config.yaml` by analyzing the project`: missed
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: **missed**
+- Collateral `configure::The `configure` skill enriches `_compagnon/config.yaml` by analyzing the project`: missed
 - Collateral `decisions::A git source is never read from a floating branch`: missed
-- Collateral `doctor::`codev status` hints at `codev doctor``: missed
+- Collateral `doctor::`compagnon status` hints at `compagnon doctor``: missed
 
 #### Run 2
 
 - Outcome: scored
 - Cost: 1.79 USD, 319 s
 - Tool calls: 29, 15 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: **missed**
-- Collateral `configure::The `configure` skill enriches `_codev/config.yaml` by analyzing the project`: missed
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: **missed**
+- Collateral `configure::The `configure` skill enriches `_compagnon/config.yaml` by analyzing the project`: missed
 - Collateral `decisions::A git source is never read from a floating branch`: missed
-- Collateral `doctor::`codev status` hints at `codev doctor``: missed
+- Collateral `doctor::`compagnon status` hints at `compagnon doctor``: missed
 
 #### Run 3
 
 - Outcome: scored
 - Cost: 1.72 USD, 294 s
 - Tool calls: 29, 17 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: **missed**
-- Collateral `configure::The `configure` skill enriches `_codev/config.yaml` by analyzing the project`: missed
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: **missed**
+- Collateral `configure::The `configure` skill enriches `_compagnon/config.yaml` by analyzing the project`: missed
 - Collateral `decisions::A git source is never read from a floating branch`: missed
-- Collateral `doctor::`codev status` hints at `codev doctor``: missed
+- Collateral `doctor::`compagnon status` hints at `compagnon doctor``: missed
 
 #### Run 4
 
 - Outcome: scored
 - Cost: 1.68 USD, 293 s
 - Tool calls: 34, 20 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: **missed**
-- Collateral `configure::The `configure` skill enriches `_codev/config.yaml` by analyzing the project`: missed
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: **missed**
+- Collateral `configure::The `configure` skill enriches `_compagnon/config.yaml` by analyzing the project`: missed
 - Collateral `decisions::A git source is never read from a floating branch`: missed
-- Collateral `doctor::`codev status` hints at `codev doctor``: missed
+- Collateral `doctor::`compagnon status` hints at `compagnon doctor``: missed
 
 #### Run 5
 
 - Outcome: scored
 - Cost: 1.68 USD, 349 s
 - Tool calls: 35, 15 before the first artifact
-- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: **missed**
-- Collateral `configure::The `configure` skill enriches `_codev/config.yaml` by analyzing the project`: missed
+- Requirement `doctor::`compagnon doctor` runs a fixed list of read-only checks`: **missed**
+- Collateral `configure::The `configure` skill enriches `_compagnon/config.yaml` by analyzing the project`: missed
 - Collateral `decisions::A git source is never read from a floating branch`: missed
-- Collateral `doctor::`codev status` hints at `codev doctor``: missed
+- Collateral `doctor::`compagnon status` hints at `compagnon doctor``: missed
 
 ### privacy-code-email-in-logs
 
@@ -4795,7 +4795,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.26 USD, 14 s
 - Tool calls: 5, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "ready to be archived": passed
 
@@ -4805,7 +4805,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 20 s
 - Tool calls: 5, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "ready to be archived": passed
 
@@ -4815,7 +4815,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.26 USD, 8 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "ready to be archived": passed
 
@@ -4825,7 +4825,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 7 s
 - Tool calls: 4, no artifact written
 - Checks: 2 of 3 passed, the run **fails**
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "ready to be archived": **failed**
 
@@ -4835,7 +4835,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.22 USD, 14 s
 - Tool calls: 5, no artifact written
 - Checks: 2 of 3 passed, the run **fails**
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says "ready to be archived": **failed**
 
@@ -4851,7 +4851,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.18 USD, 8 s
 - Tool calls: 3, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
 - Check does not say "Synced": passed
 
@@ -4861,7 +4861,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.18 USD, 9 s
 - Tool calls: 3, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
 - Check does not say "Synced": passed
 
@@ -4871,7 +4871,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.17 USD, 15 s
 - Tool calls: 2, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
 - Check does not say "Synced": passed
 
@@ -4881,7 +4881,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.32 USD, 15 s
 - Tool calls: 3, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
 - Check does not say "Synced": passed
 
@@ -4891,7 +4891,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 11 s
 - Tool calls: 2, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
 - Check does not say "Synced": passed
 
@@ -4907,9 +4907,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 19 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "ready to be archived": passed
 
 #### Run 2
@@ -4918,9 +4918,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 19 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "ready to be archived": passed
 
 #### Run 3
@@ -4929,9 +4929,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 13 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "ready to be archived": passed
 
 #### Run 4
@@ -4940,9 +4940,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.18 USD, 7 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "ready to be archived": passed
 
 #### Run 5
@@ -4951,9 +4951,9 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.19 USD, 10 s
 - Tool calls: 4, no artifact written
 - Checks: 4 of 4 passed, the run passes
-- Check files under `_codev/` as the fixture's: passed
+- Check files under `_compagnon/` as the fixture's: passed
 - Check no file modified outside the step: passed
-- Check says "codev validate": passed
+- Check says "compagnon validate": passed
 - Check does not say "ready to be archived": passed
 
 ### sync-version-later
@@ -4968,7 +4968,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 10 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 
@@ -4978,7 +4978,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 9 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 
@@ -4988,7 +4988,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 11 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 
@@ -4998,7 +4998,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 13 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 
@@ -5008,7 +5008,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.20 USD, 10 s
 - Tool calls: 4, no artifact written
 - Checks: 3 of 3 passed, the run passes
-- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check files under `_compagnon/` as `compagnon sync` leaves them: passed
 - Check no file modified outside the step: passed
 - Check says ">=99": passed
 
@@ -5023,7 +5023,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 0.32 USD, 24 s
 - Tool calls: 10, 9 before the first artifact
-- Changed although it should not: `_codev/changes/add-session-timeout/tasks.md` (**false positive**)
+- Changed although it should not: `_compagnon/changes/add-session-timeout/tasks.md` (**false positive**)
 
 #### Run 2
 
@@ -5060,35 +5060,35 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 0.30 USD, 20 s
 - Tool calls: 11, 9 before the first artifact
-- Expected `_codev/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _codev/changes/add-magic-links/tasks.md
+- Expected `_compagnon/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _compagnon/changes/add-magic-links/tasks.md
 
 #### Run 2
 
 - Outcome: scored
 - Cost: 0.29 USD, 19 s
 - Tool calls: 9, 7 before the first artifact
-- Expected `_codev/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _codev/changes/add-magic-links/tasks.md
+- Expected `_compagnon/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _compagnon/changes/add-magic-links/tasks.md
 
 #### Run 3
 
 - Outcome: scored
 - Cost: 0.29 USD, 18 s
 - Tool calls: 9, 8 before the first artifact
-- Expected `_codev/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _codev/changes/add-magic-links/tasks.md
+- Expected `_compagnon/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _compagnon/changes/add-magic-links/tasks.md
 
 #### Run 4
 
 - Outcome: scored
 - Cost: 0.30 USD, 20 s
 - Tool calls: 9, 7 before the first artifact
-- Expected `_codev/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _codev/changes/add-magic-links/tasks.md
+- Expected `_compagnon/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _compagnon/changes/add-magic-links/tasks.md
 
 #### Run 5
 
 - Outcome: scored
 - Cost: 0.31 USD, 19 s
 - Tool calls: 10, 9 before the first artifact
-- Expected `_codev/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _codev/changes/add-magic-links/tasks.md
+- Expected `_compagnon/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _compagnon/changes/add-magic-links/tasks.md
 
 ### update-design-decision
 
@@ -5253,7 +5253,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tasks.md` kept: passed
 - Check no validation error added: passed
 - Check change folder untouched: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 
 #### Run 2
 
@@ -5265,7 +5265,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tasks.md` kept: passed
 - Check no validation error added: passed
 - Check change folder untouched: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 
 #### Run 3
 
@@ -5277,7 +5277,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tasks.md` kept: passed
 - Check no validation error added: passed
 - Check change folder untouched: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 
 #### Run 4
 
@@ -5289,7 +5289,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tasks.md` kept: passed
 - Check no validation error added: passed
 - Check change folder untouched: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 
 #### Run 5
 
@@ -5301,7 +5301,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `tasks.md` kept: passed
 - Check no validation error added: passed
 - Check change folder untouched: passed
-- Check points to `/codev-propose`: passed
+- Check points to `/compagnon-propose`: passed
 
 ### update-specs-ripple-tasks
 
@@ -5498,7 +5498,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `specs/roles/spec.md` kept: passed
 - Check `specs/skills/spec.md` kept: passed
 - Check `review.md` kept: passed
-- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check holds "no_skill_body_asks_for_compagnon_review_json": passed
 - Check no validation error added: passed
 
 #### Run 2
@@ -5513,7 +5513,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `specs/roles/spec.md` kept: passed
 - Check `specs/skills/spec.md` kept: passed
 - Check `review.md` kept: passed
-- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check holds "no_skill_body_asks_for_compagnon_review_json": passed
 - Check no validation error added: passed
 
 #### Run 3
@@ -5528,7 +5528,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `specs/roles/spec.md` kept: passed
 - Check `specs/skills/spec.md` kept: passed
 - Check `review.md` kept: passed
-- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check holds "no_skill_body_asks_for_compagnon_review_json": passed
 - Check no validation error added: passed
 
 #### Run 4
@@ -5543,7 +5543,7 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `specs/roles/spec.md` kept: passed
 - Check `specs/skills/spec.md` kept: passed
 - Check `review.md` kept: passed
-- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check holds "no_skill_body_asks_for_compagnon_review_json": passed
 - Check no validation error added: passed
 
 #### Run 5
@@ -5558,6 +5558,6 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `specs/roles/spec.md` kept: passed
 - Check `specs/skills/spec.md` kept: passed
 - Check `review.md` kept: passed
-- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check holds "no_skill_body_asks_for_compagnon_review_json": passed
 - Check no validation error added: passed
 

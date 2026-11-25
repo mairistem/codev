@@ -6,7 +6,7 @@ summary: "A request written against decision 0005."
 expected:
   modified:
     - "decisions::Inherited decisions taken into account"
-    - "decisions::The `codev decision deviate` command creates a deviation ADR"
+    - "decisions::The `compagnon decision deviate` command creates a deviation ADR"
   collateral: []
   decisions:
     - { id: "0005", expect: follow }

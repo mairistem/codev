@@ -19,12 +19,12 @@
 ### Capacités modifiées
 
 <!-- Une ligne par capacité dont les EXIGENCES changent, avec son chemin exact
-     sous `_codev/specs/`. Laissez vide s'il n'y en a pas. -->
+     sous `_compagnon/specs/`. Laissez vide s'il n'y en a pas. -->
 
 ### Capacités supprimées
 
 <!-- Une ligne par capacité que ce change supprime entièrement. Chaque entrée est
-     le chemin exact sous `_codev/specs/`. Demande `retire_capabilities: true`
+     le chemin exact sous `_compagnon/specs/`. Demande `retire_capabilities: true`
      dans `change.yaml` et une section `## Exigences SUPPRIMÉES` qui vide la
      spec. Sans ce marqueur, sync et archive refusent plutôt que d'effectuer une
      opération irréversible. Laissez vide s'il n'y en a pas. -->
@@ -37,7 +37,7 @@
 
 <!-- Cochez chaque domaine que le change touche : son expert relit le plan et
      le code. Écrivez la seule ligne `Aucun` s'il n'en touche aucun. Les noms
-     des domaines restent ceux de codev. -->
+     des domaines restent ceux de compagnon. -->
 
 - [ ] security
 - [ ] personal-data

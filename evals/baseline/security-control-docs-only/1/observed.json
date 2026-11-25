@@ -48,7 +48,7 @@
         "output": 8,
         "toolCalls": 2,
         "sources": {
-          "codev review": 922
+          "compagnon review": 922
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 8,
         "toolCalls": 0,
         "sources": {
-          "codev review": 2332,
+          "compagnon review": 2332,
           "edit": 1629
         }
       }
@@ -80,7 +80,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/document-token-rotation/review.md",
+    "path": "_compagnon/changes/document-token-rotation/review.md",
     "status": [],
     "steps": [
       {
