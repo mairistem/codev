@@ -1,8 +1,14 @@
 # Concepts
 
-Compagnon keeps three kinds of records in the repository: **specs** say what the
-system does, **decisions** say why it is built the way it is, and **changes**
-are the work in progress that modifies both.
+Compagnon keeps three kinds of records in your project's repository, next to
+the code:
+
+- **specs** say what the system does;
+- **decisions** say why it is built the way it is;
+- **changes** are the work in progress that modifies the specs and the
+  decisions.
+
+Here is where each one lives:
 
 ```text
 _compagnon/
@@ -16,22 +22,31 @@ _compagnon/
 └── compagnon.lock      # pinned inherited git sources (when used)
 ```
 
-Compagnon finds this folder by walking up from the current directory, so every
-command works from any subdirectory of the project.
+You can run every Compagnon command from any folder inside the project.
+Compagnon looks upward, folder by folder, until it finds `_compagnon/`.
 
 ## Capability
 
-A capability is a unit of observable behavior the system offers — user
-authentication, the theme setting, the `validate` command. Capabilities are
-identified by a path of kebab-case segments, such as `ui/theme` or
-`identity/user-auth`, which is also where their spec lives. Group them the way
-your domain is organized, not the way your code is.
+A [capability](glossary.md#capability) is one thing the system does that
+someone can see from the outside. For example: signing users in, the theme
+setting, or the `validate` command.
+
+Each capability has a name made of parts separated by slashes, such as
+`ui/theme` or `identity/user-auth`. Each part is written in
+[kebab-case](glossary.md#kebab-case): lowercase words joined by hyphens. The
+name is also the folder where the capability's spec is stored.
+
+Group your capabilities the way your business is organized, not the way your
+code is.
 
 ## Spec
 
-The main spec of a capability lives at `_compagnon/specs/<capability>/spec.md`. It
-has a `## Purpose` — one or two sentences on what the capability is for — and
-a `## Requirements` section:
+Each capability has one spec, stored in
+`_compagnon/specs/<capability>/spec.md`. It is the project's reference for
+what that capability does today. It has two sections:
+
+- `## Purpose`: one or two sentences on what the capability is for;
+- `## Requirements`: the rules the capability follows.
 
 ```markdown
 # Theme Specification
@@ -53,39 +68,55 @@ The application SHALL render with the operating system's color scheme until the 
 - **THEN** the application renders with the dark theme
 ```
 
-Each requirement is normative (it uses `SHALL` or `MUST`, or `DOIT` or
-`DOIVENT` in a French spec) and has at least one
-scenario describing observable behavior. A spec describes behavior, never
-implementation: if the code can change without the behavior changing, the
-spec should not change either.
+Each requirement is a firm rule: it uses `SHALL` or `MUST` (`DOIT` or
+`DOIVENT` in a spec written in French). Each requirement has at least one
+scenario: a short example of what someone can see happen. In the example
+above, when the computer is set to dark mode, the application shows the dark
+theme.
 
-You never edit a main spec directly. It changes only when a change is synced
-or archived, which is what makes its history readable.
+A spec describes what the system does, never how the code does it. A simple
+test: if the code can change without the behavior changing, the spec should
+not change either.
+
+You never edit the project's specs directly. They change only when a change
+is synced or archived. That way, every edit to a spec comes with the change
+that explains it, and its history stays readable.
 
 ## Change
 
-A change is a folder `_compagnon/changes/<name>/` that carries one evolution of
-the system: a proposal, spec deltas, a design and a task list, plus a
-`change.yaml` holding its metadata. Which artifacts a change has is defined by
-its [schema](guides/custom-schemas.md); the default `spec-driven` schema is
-described in [The workflow](workflow.md).
+A change is one piece of work on the system, in its own folder
+`_compagnon/changes/<name>/`. It holds:
 
-A change is **active** while it lives in `_compagnon/changes/<name>/`. Archiving
-moves it to `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`, where it becomes a
+- a proposal: why the work is needed and what it changes;
+- the planned edits to the specs, called [deltas](glossary.md#delta);
+- a design: how the work will be done;
+- a task list;
+- a `change.yaml` file, which holds the change's details (its metadata).
+
+These documents are the change's [artifacts](glossary.md#artifact). Which
+ones a change has is set by its [schema](glossary.md#schema): see
+[Custom schemas](guides/custom-schemas.md). The default schema,
+`spec-driven`, sets the [workflow](glossary.md#workflow), the steps from the
+request to the archive, described in [The workflow](workflow.md).
+
+A change is **active** while its folder is in `_compagnon/changes/<name>/`.
+Archiving moves the folder to
+`_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`. There, it stays as a
 record of why and how the specs changed.
 
 ## Delta
 
-A delta is the part of a change that modifies a spec. It lives at
-`_compagnon/changes/<name>/specs/<capability>/spec.md` — the same capability path
-as the main spec it targets — and is organized in up to four operations:
+A delta is the part of a change that edits one spec. It lives at
+`_compagnon/changes/<name>/specs/<capability>/spec.md`, under the same
+capability name as the project's spec it edits. It holds up to four kinds of
+edit, each in its own section:
 
-| Section | Effect when merged |
+| Section | What it does when merged into the project's spec |
 |---|---|
-| `## ADDED Requirements` | Appends the requirements to the main spec |
-| `## MODIFIED Requirements` | Replaces the requirement of the same name, in place |
-| `## REMOVED Requirements` | Deletes the requirement, with a **Reason** and a **Migration** |
-| `## RENAMED Requirements` | Changes a requirement's title, leaving its body untouched |
+| `## ADDED Requirements` | Adds the requirements at the end of the spec |
+| `## MODIFIED Requirements` | Replaces the requirement with the same name, where it stands |
+| `## REMOVED Requirements` | Deletes the requirement, giving a **Reason** and a **Migration** (what to do instead) |
+| `## RENAMED Requirements` | Changes a requirement's title, without touching its text |
 
 Here is a delta that modifies one requirement and renames another:
 
@@ -108,27 +139,29 @@ The application SHALL render with the operating system's color scheme until the 
 - TO: The chosen theme follows the user
 ```
 
-A `MODIFIED` block replaces the whole requirement, so copy the entire block
-from the main spec — scenarios included — before editing it. Content you leave
-out is lost at merge time. If you are adding behavior without changing
-existing behavior, use `ADDED`.
+Be careful with `MODIFIED`: it replaces the whole requirement. First copy the
+entire requirement from the project's spec, scenarios included, then edit the
+copy. Anything you leave out is lost when the delta is merged. If you only
+add new behavior, without changing what exists, use `ADDED`.
 
-The merge touches only the requirements named in the delta. Everything else in
-the main spec — other requirements, free-form sections, comments — stays as
-it was.
+The merge touches only the requirements the delta names. Everything else in
+the project's spec stays as it was: other requirements, free-form sections,
+comments.
 
-A delta for a **new** capability starts with its own `## Purpose`; merging it
-creates the main spec. Removing a capability entirely — a `REMOVED` delta that
-empties a spec — requires `retire_capabilities: true` in `change.yaml`,
-because the deletion can only be undone from git.
+A delta for a **new** capability starts with its own `## Purpose`. Merging it
+creates the capability's spec. Removing a capability entirely, with a
+`REMOVED` delta that empties a spec, needs `retire_capabilities: true` in
+`change.yaml`. This safety switch exists because only git, the project's
+version history, can undo the deletion.
 
 The exact syntax is in [File formats](reference/file-formats.md).
 
 ## Decision
 
 A decision, or ADR (architecture decision record), is a file
-`_compagnon/decisions/NNNN-<slug>.md` that records an architectural choice: its
-context, the decision, its consequences and the alternatives considered.
+`_compagnon/decisions/NNNN-<slug>.md`. It records a choice about how the
+system is built: what led to it (the context), the choice itself, its
+consequences, and the other options considered.
 
 ```bash
 compagnon decision new "Use PostgreSQL for persistence"
@@ -136,112 +169,157 @@ compagnon decision accept 0001
 ```
 
 A decision has one of five statuses: `accepted`, `superseded`, `proposed`,
-`deprecated` or `rejected`. Every command that creates a decision —
-`compagnon decision new`, [`supersede`](#supersession), [`deviate`](#deviation) and
-[`promote`](#promotion) — creates it `proposed`, so you can write it freely;
-`compagnon decision accept` makes it `accepted` once its text is final. Accepting
-is the only step that makes a decision take effect: a `proposed` decision
-supersedes nothing and deviates from nothing yet. A decision is **in effect**
-when it is `accepted` and nothing supersedes it. The decisions in effect are handed to the agent
-whenever it writes a `design.md`, so designs follow them instead of
-re-debating them.
+`deprecated` or `rejected`.
 
-Each decision has a short id (`0007`) and a qualified id that names its
-origin: `project/0007` for a decision of the project itself,
-`path:~/shared/0100` or `git:git@github.com:acme/shared.git/0100` for a
-decision inherited from another repository.
+Every command that creates a decision creates it `proposed`:
+`compagnon decision new`, [`supersede`](#supersession),
+[`deviate`](#deviation) and [`promote`](#promotion). While it is `proposed`,
+you can write and rewrite it freely. Once its text is final,
+`compagnon decision accept` makes it `accepted`.
+
+Accepting is the only step that puts a decision into effect. A `proposed`
+decision does not replace or set aside any other decision yet. A decision is
+**in effect** when it is `accepted` and no other decision replaces it.
+
+The agent receives the decisions in effect every time it writes a
+`design.md`. So designs follow them instead of debating them again.
+
+Each decision has a short id, such as `0007`, and a full id that also says
+where the decision comes from: your project, or another repository it
+inherits from.
+
+<details>
+<summary>Under the hood: the full id of a decision</summary>
+
+The qualified id names the decision's origin: `project/0007` for a decision
+of the project itself, `path:~/shared/0100` or
+`git:git@github.com:acme/shared.git/0100` for a decision inherited from
+another repository.
+
+</details>
 
 ## Seal
 
-An accepted decision is immutable. When a decision becomes accepted through a
-`compagnon decision` command — `accept`, or `new --status accepted` — Compagnon
-records a SHA-256 hash of the decision's body in `_compagnon/decisions/seal.yaml`; `compagnon decision seal` does the same for a
-decision you accepted by hand. `compagnon validate` compares the body of
-every local `accepted` or `superseded` decision with its hash, and reports an
-edit as a `decision_seal_mismatch` error and a missing seal as a
-`decision_unsealed` warning. A `proposed` decision is not sealed.
+An accepted decision must not be edited afterwards. Compagnon checks this
+with a seal: a fingerprint of the decision's text, recorded when the decision
+is accepted. If someone edits the text later, `compagnon validate` sees that
+the fingerprint no longer matches and reports it. It also warns about an
+accepted decision that has no seal. A `proposed` decision is not sealed.
 
-The frontmatter is not covered by the seal, so a status can move from
-`accepted` to `superseded` without breaking it.
+The seal does not cover the decision's [frontmatter](glossary.md#frontmatter),
+the short header at the top of the file that holds its status. So the status
+can move from `accepted` to `superseded` without breaking the seal.
 
 > **Note**
 > Seal a decision when its text is final: write the `proposed` decision
 > first, then run `compagnon decision accept <ID>`, which sets the status and
 > records the seal in one step. If you have edited a sealed decision on
-> purpose, `compagnon decision seal <ID> --force` records the new body; to change
-> what an accepted decision says, [supersede](#supersession) it instead.
+> purpose, `compagnon decision seal <ID> --force` records the new text; to
+> change what an accepted decision says, [supersede](#supersession) it
+> instead.
+
+<details>
+<summary>Under the hood: how the seal is recorded and checked</summary>
+
+When a decision becomes accepted through a `compagnon decision` command —
+`accept`, or `new --status accepted` — Compagnon records a SHA-256 hash of the
+decision's body in `_compagnon/decisions/seal.yaml`. `compagnon decision seal`
+does the same for a decision you accepted by hand. `compagnon validate`
+compares the body of every local `accepted` or `superseded` decision with its
+hash, and reports an edit as a `decision_seal_mismatch` error and a missing
+seal as a `decision_unsealed` warning.
+
+</details>
 
 ## Supersession
 
-To change a decision, supersede it rather than editing it:
+To change a decision, do not edit it: replace it with a new one. Compagnon
+calls this superseding it.
 
 ```bash
 compagnon decision supersede 0001 "Use SQLite for persistence"
 ```
 
-Compagnon creates a new `proposed` decision whose frontmatter lists
-`supersedes: ["0001"]`, and leaves `0001` untouched: it stays `accepted`, and in
-effect, while you write the new one. Accepting the new decision marks `0001` as
-`superseded` in the same step:
+Compagnon creates a new `proposed` decision whose frontmatter names the one
+it replaces: `supersedes: ["0001"]`. It does not touch `0001`, which stays
+`accepted`, and in effect, while you write the new one. When you accept the
+new decision, `0001` is marked `superseded` in the same step:
 
 ```bash
 compagnon decision accept 0002
 ```
 
-The old body stays exactly as it was, so its seal stays valid and the history
-of the reasoning is preserved. Only an `accepted` decision can be superseded:
-if another decision superseded `0001` in the meantime, `compagnon decision accept`
-refuses with `predecessor_not_accepted` and writes nothing.
+The old decision's text stays exactly as it was. So its seal stays valid, and
+the history of the reasoning is kept.
+
+Only an `accepted` decision can be replaced. If another decision replaced
+`0001` in the meantime, `compagnon decision accept` refuses, with the error
+`predecessor_not_accepted`, and writes nothing.
 
 ## Deviation
 
-An [inherited](#inherited-source) decision cannot be superseded from your
+Some decisions come from another repository: they are
+[inherited](#inherited-source). You cannot replace one of those from your
 project, because you cannot write to its source. Instead, record a local
-deviation:
+exception, called a deviation:
 
 ```bash
 compagnon decision deviate path:~/shared/0100 "Services log in logfmt"
 ```
 
-This creates a local `proposed` decision with `deviates_from` pointing at the
-inherited one. The deviation takes effect when you accept it with
-`compagnon decision accept`: the inherited decision then stays visible in
-`compagnon decision list`, but it is no longer in effect for your project and is no
-longer handed to the agent when writing designs. Until then, the inherited
-decision is still in effect.
+This creates a `proposed` decision in your project. Its `deviates_from` field
+points at the inherited decision.
+
+The deviation takes effect when you accept it with
+`compagnon decision accept`. From then on, the inherited decision still
+appears in `compagnon decision list`, but it no longer applies to your
+project, and the agent no longer receives it when writing designs. Until you
+accept the deviation, the inherited decision still applies.
 
 ## Promotion
 
-A design often contains a decision that deserves to outlive the change. Write
-it in `design.md` as a `### Decision: <title>` block, then promote it:
+While a change is being planned, its design often makes a choice that
+deserves to outlive the change. Write that choice in `design.md` as a
+`### Decision: <title>` block, then promote it to a decision of its own:
 
 ```bash
 compagnon decision promote add-audit-log "Append-only audit table"
 ```
 
-Compagnon creates a `proposed` ADR whose `## Decision` section is the block's
-content, verbatim, and replaces the block's body with a reference to the new
-ADR. Review it and split the promoted text into the ADR's sections, then accept
-it with `compagnon decision accept`, which seals it — ideally before archiving the
-change.
+Compagnon creates a `proposed` ADR. Its `## Decision` section holds the
+block's text, word for word. In `design.md`, the block's text is replaced by
+a reference to the new ADR.
+
+Then reread the ADR and spread the promoted text across its sections
+(context, decision, consequences). Finally, accept it with
+`compagnon decision accept`, which seals it. Ideally, do this before
+archiving the change.
 
 ## Inherited source
 
-A project can inherit read-only material from other Compagnon repositories — a
-shared folder on your machine (`path:`) or a git repository pinned to a commit
-(`git:`). Each source contributes its `context:`, its `rules:` and its
-decisions. Nothing executable is ever inherited, and nothing is read from a
-floating branch: git sources are pinned in `_compagnon/compagnon.lock`. See
-[Inherited sources](guides/inherited-sources.md).
+A project can reuse material from other Compagnon repositories, without
+being able to change it. A source can be:
+
+- a shared folder on your computer (`path:`);
+- a git repository, pinned to one precise commit (`git:`).
+
+Each source brings its `context:`, its `rules:` and its decisions. Nothing
+that runs as a program is ever inherited. Nothing is read from a branch that
+keeps moving either: git sources are pinned in `_compagnon/compagnon.lock`.
+See [Inherited sources](guides/inherited-sources.md).
 
 ## Schema
 
-A schema defines which artifacts a change has, what each one requires, and the
-instructions and templates the agent follows to write them. Compagnon embeds one
-schema, `spec-driven`. A project can define its own in `_compagnon/schemas/`. See
-[Custom schemas](guides/custom-schemas.md).
+The schema defines which artifacts a change has, what each one must contain,
+and the instructions and templates the agent follows to write them.
+Compagnon comes with one schema, `spec-driven`. A project can define its own
+in `_compagnon/schemas/`. See [Custom schemas](guides/custom-schemas.md).
 
-In `spec-driven`, each instruction opens with the role that owns the
-artifact and its "Done when" criteria: product owner for the proposal (why
-and what), QA analyst for the specs (observable behavior), architect for the
-design (how), tech lead for the tasks (sequencing and verification).
+In `spec-driven`, each instruction starts by naming the role that owns the
+artifact, and its "Done when" criteria, which say when the artifact is
+complete:
+
+- the product owner, for the proposal (why and what);
+- the QA analyst, for the specs (behavior someone can observe);
+- the architect, for the design (how);
+- the tech lead, for the tasks (their order, and how to check each one).

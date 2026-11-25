@@ -732,7 +732,7 @@ Options:
 Valide le change, refuse de continuer si la validation signale une erreur,
 puis fusionne ses deltas dans les specs principales, sans déplacer le change.
 Relancée, la commande indique que les specs sont inchangées. Voir
-[Sync](../workflow.md#sync).
+[Synchroniser](../workflow.md#synchroniser).
 
 ### compagnon review
 
@@ -785,7 +785,7 @@ relecture étaient actifs ou si un constat de gravité haute est encore ouvert
 ou contesté ; fusionne ensuite ses deltas dans les specs principales et le
 déplace, compte rendu compris, dans
 `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`. Voir
-[Archive](../workflow.md#archive).
+[Archiver](../workflow.md#archiver).
 
 ### compagnon changelog
 

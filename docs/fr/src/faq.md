@@ -2,82 +2,137 @@
 
 ## Questions générales
 
-### Compagnon envoie-t-il mon code à un modèle ?
+### Compagnon envoie-t-il mon code à un modèle ?
 
-Non. Le binaire `compagnon` n'appelle jamais de modèle de langage. Il n'accède
-au réseau que pour récupérer les sources git héritées (`compagnon sources update`)
-et pour chercher une release plus récente de Compagnon (`compagnon status`,
-`compagnon self-update`). C'est votre agent — Claude Code — qui rédige, avec les mêmes accès
-que dans n'importe quelle autre session.
+Non. Le programme `compagnon` ne parle jamais à un modèle d'IA. Il ne va sur
+internet que pour deux choses :
 
-### Compagnon vérifie-t-il les mises à jour ?
+- télécharger des règles partagées depuis un autre dépôt, quand vous le
+  demandez (`compagnon sources update`) ;
+- voir si une version plus récente de Compagnon existe (`compagnon status`,
+  `compagnon self-update`).
 
-Oui, et seulement cela. Au plus une fois toutes les 24 heures,
-`compagnon status` envoie une requête HTTPS anonyme à l'API publique de GitHub
-(`https://api.github.com/repos/mairistem/compagnon/releases/latest`) pour lire le
-numéro de la dernière release, et le garde en cache dans
-`~/.cache/compagnon/update-check.json`. La requête ne contient rien sur vous ni
-sur votre projet ; il n'y a aucune télémétrie. Une requête qui échoue reste
-silencieuse et n'est pas retentée avant le lendemain.
+C'est votre agent, Claude Code, qui rédige. Il a les mêmes accès que dans
+n'importe quelle autre session.
 
-La vérification ne s'exécute jamais lorsque `CI` est défini, afin que les
-pipelines restent reproductibles. Pour la désactiver sur votre machine,
-définissez `COMPAGNON_NO_UPDATE_CHECK=1`. Rien n'est jamais installé sans votre
-accord : la mise à jour passe par `compagnon self-update`, ou par votre réponse
-« Update now » dans une skill.
+### Compagnon vérifie-t-il les mises à jour ?
 
-### Puis-je utiliser Compagnon sans Claude Code ?
+Oui, et c'est tout ce qu'il vérifie. Au plus une fois par jour,
+`compagnon status` demande à GitHub le numéro de la dernière version de
+Compagnon, et garde la réponse sur votre ordinateur.
 
-La CLI fonctionne seule : vous pouvez créer des changes, rédiger vous-même les
-artefacts en suivant `compagnon instructions`, valider, synchroniser et archiver.
-Les skills, qui rédigent à votre place, ciblent uniquement Claude Code.
+- Rien sur vous ni sur votre projet n'est envoyé. Il n'y a aucun suivi
+  d'aucune sorte.
+- Si la demande échoue, rien ne s'affiche, et Compagnon ne réessaie pas
+  avant le lendemain.
+- La vérification ne s'exécute jamais dans les chaînes automatisées
+  (lorsque la variable `CI` est définie) : leurs résultats restent ainsi
+  identiques d'une exécution à l'autre.
+- Pour la désactiver sur votre ordinateur, définissez
+  `COMPAGNON_NO_UPDATE_CHECK=1`.
+- Rien n'est jamais installé sans votre accord. Pour mettre à jour, vous
+  lancez `compagnon self-update`, ou vous répondez « Update now » quand une
+  compétence vous le propose.
 
-### Faut-il commiter `_compagnon/` et `.claude/skills/` ?
+<details>
+<summary>Sous le capot : la requête de mise à jour</summary>
 
-Oui. `_compagnon/` est la mémoire de vos specs, de vos décisions et de vos
-changes : commitez-le en entier, y compris `_compagnon/decisions/seal.yaml` et
-`_compagnon/compagnon.lock`. Commiter `.claude/skills/` donne à toute l'équipe les
-mêmes skills, sans avoir à lancer `compagnon init`.
+La requête est un unique appel HTTPS anonyme à l'API publique de GitHub :
+`https://api.github.com/repos/mairistem/compagnon/releases/latest`. Elle lit
+le numéro de la dernière release et le garde en cache dans
+`~/.cache/compagnon/update-check.json`, pendant 24 heures.
 
-### Une petite correction exige-t-elle un change complet ?
+</details>
 
-Chaque change suit le même cycle, mais le plan peut rester modeste : une
-proposal d'une ligne, un delta d'une seule exigence, une liste de deux tâches.
-Pour un change sans impact sur le comportement, définissez
-`skip_specs: true` dans son `change.yaml`.
+### Puis-je utiliser Compagnon sans Claude Code ?
 
-### Puis-je tenir Compagnon à l'écart de `CLAUDE.md`, de la CI ou du modèle de pull request ?
+Oui, en partie. La commande `compagnon` fonctionne seule. Vous pouvez créer
+une modification et rédiger vous-même les documents de son plan (les
+[artefacts](glossary.md#artefact)), en suivant ce que vous indique
+`compagnon instructions`. Vous pouvez ensuite vérifier, synchroniser et
+archiver la modification. Ce que vous perdez, ce sont les compétences
+(skills) : elles rédigent à votre place, et ne fonctionnent que dans Claude
+Code.
 
-Oui. Passez `--no-claude-md`, `--no-ci` ou `--no-pr-template` à `compagnon init`,
-ou `--no-integration` pour les trois. `compagnon update` ne les ajoute jamais par
-la suite. Pour garder le workflow tout en en reprenant la main, supprimez sa
-première ligne, `# compagnon:managed` : Compagnon laisse alors le fichier tranquille.
-Pour retirer le texte de Compagnon de `CLAUDE.md` ou du modèle, supprimez le bloc
-compris entre les marqueurs `compagnon:begin` et `compagnon:end`. Voir
-[Intégration au dépôt et compagnon doctor](guides/repository-integration.md).
+### Faut-il enregistrer `_compagnon/` et `.claude/skills/` dans git ?
 
-### Mes relecteurs doivent-ils travailler isolément ?
+Oui, les deux.
 
-Par défaut (`inline`), la skill qui a écrit le plan ou le code le relit
-aussi, un rôle après l'autre, dans la même conversation. Avec
-`review: { mode: isolated }` dans `_compagnon/config.yaml`, chaque rôle
-relecteur travaille seul, comme sous-agent de Claude Code qui ne voit
-jamais la conversation, puis la skill fusionne ce qu'ils ont trouvé. Cela
-coûte plus cher — chaque relecteur lit la matière — et le bénéfice n'est
-pas encore mesuré : commencez par les changes où un regard neuf compte le
-plus, en définissant `review: { mode: isolated }` dans leur
-`change.yaml`, ou pour tout le projet une fois la différence constatée.
-Lancez `compagnon update` après avoir changé le mode du projet. Voir
+- `_compagnon/` est la mémoire de vos spécifications, de vos décisions et de
+  vos modifications. Enregistrez-le en entier (commit), y compris
+  `_compagnon/decisions/seal.yaml` et `_compagnon/compagnon.lock`.
+- Quand `.claude/skills/` est enregistré, toute l'équipe a les mêmes
+  compétences, sans avoir à lancer `compagnon init`.
+
+### Une petite correction exige-t-elle une modification complète ?
+
+Chaque modification suit les mêmes étapes, mais son plan peut être très
+court. Par exemple : une proposition d'une ligne, une seule exigence dans
+son [delta](glossary.md#delta) (la partie de la spécification qu'elle ajoute
+ou change), et une liste de deux tâches. Si la modification ne change pas le
+comportement du logiciel, définissez `skip_specs: true` dans son
+`change.yaml` : elle n'a alors besoin d'aucune spécification.
+
+### Puis-je tenir Compagnon à l'écart de `CLAUDE.md`, de la CI ou du modèle de demande de fusion ?
+
+Oui. Lors de la mise en place du projet, dites à `compagnon init` ce qu'il
+doit laisser de côté :
+
+- `--no-claude-md` laisse `CLAUDE.md` tranquille ;
+- `--no-ci` n'ajoute aucune vérification automatique (CI) ;
+- `--no-pr-template` laisse tranquille le modèle de demande de fusion
+  (pull request) ;
+- `--no-integration` fait les trois.
+
+`compagnon update` ne les ajoute jamais par la suite.
+
+Vous pouvez aussi les reprendre en main après coup :
+
+- Pour garder la vérification automatique tout en gérant vous-même son
+  fichier, supprimez sa première ligne, `# compagnon:managed`. Compagnon
+  laisse alors le fichier tranquille.
+- Pour retirer le texte de Compagnon de `CLAUDE.md` ou du modèle, supprimez
+  tout ce qui se trouve entre les marqueurs `compagnon:begin` et
+  `compagnon:end`.
+
+Voir [Intégration au dépôt et compagnon doctor](guides/repository-integration.md).
+
+### Mes relecteurs doivent-ils travailler isolément ?
+
+Par défaut, la compétence qui a écrit le plan ou le code le relit aussi.
+Elle joue chaque rôle de relecteur tour à tour, dans la même conversation.
+C'est le mode `inline`.
+
+En mode `isolated`, chaque rôle de relecteur travaille seul, comme un
+assistant séparé (un sous-agent de Claude Code) qui ne voit jamais votre
+conversation. La compétence rassemble ensuite ce qu'ils ont trouvé.
+
+La relecture isolée coûte plus cher, car chaque relecteur relit tout. Son
+bénéfice n'est pas encore mesuré. Commencez donc petit : utilisez-la pour
+les modifications où un regard neuf compte le plus. Activez-la pour tout le
+projet une fois la différence constatée. Voir
 [Revue en ligne ou isolée](roles.md#revue-en-ligne-ou-isolée).
 
-### Comment partager cette documentation ?
+<details>
+<summary>Sous le capot : activer la relecture isolée</summary>
+
+Pour une modification, ajoutez `review: { mode: isolated }` à son
+`change.yaml`. Pour tout le projet, ajoutez-le à `_compagnon/config.yaml`,
+puis lancez `compagnon update` : les compétences sont régénérées pour le
+nouveau mode.
+
+</details>
+
+### Comment partager cette documentation ?
+
+Enregistrez-la sous la forme d'une seule page web :
 
 ```bash
 compagnon docs --lang fr --write ~/Downloads/compagnon-manual-fr.html
 ```
 
-Le fichier est autonome — CSS intégré, aucune ressource externe — et peut être
-envoyé par e-mail ou déposé dans un wiki.
+Le fichier contient tout ce dont il a besoin : il ne charge rien depuis
+internet. Vous pouvez l'envoyer par e-mail ou le déposer dans un wiki.
 
 ## Dépannage
 
@@ -87,118 +142,159 @@ envoyé par e-mail ou déposé dans un wiki.
 error: no compagnon project found from /home/you — run `compagnon init` at the project root
 ```
 
-Compagnon cherche `_compagnon/` dans le répertoire courant et dans ses parents. Lancez
-la commande depuis votre projet, ou initialisez-le avec `compagnon init`.
+Compagnon cherche un dossier `_compagnon/` dans le dossier courant, puis dans
+chaque dossier au-dessus. Il n'en a trouvé aucun. Lancez la commande depuis
+votre projet, ou mettez le projet en place avec `compagnon init`.
 
-### Les skills n'apparaissent pas dans Claude Code
+### Les compétences n'apparaissent pas dans Claude Code
 
-Claude Code découvre les skills au démarrage d'une session. Après
-`compagnon init` ou `compagnon update`, redémarrez Claude Code ou ouvrez une nouvelle
-session. Vérifiez que les fichiers `.claude/skills/compagnon-*/SKILL.md` existent à
-la racine du projet que vous avez ouvert.
+Claude Code ne cherche les compétences (skills) qu'au démarrage d'une
+session. Après `compagnon init` ou `compagnon update`, redémarrez Claude
+Code ou ouvrez une nouvelle session. Vérifiez aussi que les fichiers
+`.claude/skills/compagnon-*/SKILL.md` existent à la racine du projet que
+vous avez ouvert.
 
-### `compagnon update` laisse une skill en place
+### `compagnon update` laisse une compétence en place
 
 ```text
   Left in place because edited by hand — rerun with --force to overwrite:
 ```
 
-Cette skill a été modifiée à la main — son contenu ne correspond plus à son
-empreinte —, et Compagnon ne supprime pas votre travail. Conservez la
-modification et ignorez le message, ou lancez `compagnon update --force` pour la
-régénérer (vérifiez d'abord `git diff`). Une skill générée avant les
-empreintes est préservée de la même façon, jusqu'à ce qu'un
-`compagnon update --force` lui en donne une.
+Quelqu'un a modifié cette compétence à la main, et Compagnon ne jette pas
+votre travail. Vous avez deux choix :
+
+- garder votre retouche, et ignorer le message ;
+- ou la remplacer par une copie neuve : lancez `compagnon update --force`.
+  Vérifiez d'abord ce que vous perdriez avec `git diff`.
+
+<details>
+<summary>Sous le capot : comment Compagnon repère une retouche à la main</summary>
+
+Compagnon garde une empreinte de chaque compétence qu'il écrit. Une
+compétence dont le contenu ne correspond plus à son empreinte est considérée
+comme modifiée à la main. Une compétence générée avant les empreintes est
+préservée de la même façon, jusqu'à ce qu'un `compagnon update --force` lui
+en donne une.
+
+</details>
 
 ### Le sous-agent d'un relecteur échoue
 
-Lors d'une revue isolée, un sous-agent qui échoue ou qui est arrêté est
-relancé une fois ; s'il échoue encore, ce rôle relit en ligne et le
-compte rendu dit pourquoi, par une ligne `Fallback:` sous le rôle. Rien
-n'est perdu : la revue est faite, simplement pas isolément pour ce rôle.
-Si tous les rôles se rabattent sur la revue en ligne, vérifiez que Claude
-Code peut lancer des sous-agents (l'outil `Agent`) et que `compagnon doctor`
-indique des skills à jour pour le mode de revue : `skills_review_mode`
-signifie que `compagnon update` n'a pas été lancé depuis le changement de
-mode.
+Cela n'arrive qu'en relecture isolée. Quand l'assistant d'un relecteur
+(sous-agent) échoue ou est arrêté, Compagnon le relance une fois. S'il
+échoue encore, ce rôle relit dans la conversation principale, et le compte
+rendu de relecture dit pourquoi, par une ligne `Fallback:` sous le rôle.
+Rien n'est perdu : la relecture est faite, simplement pas isolément pour ce
+rôle.
+
+Si tous les rôles se rabattent sur la conversation principale, vérifiez
+deux choses :
+
+- que Claude Code peut lancer des sous-agents (l'outil `Agent`) ;
+- que `compagnon doctor` indique des compétences à jour pour le mode de
+  relecture. S'il signale `skills_review_mode`, le mode a changé mais
+  `compagnon update` n'a pas été lancé depuis.
 
 ### `compagnon validate` signale `zero_delta_without_marker`
 
-Le change ne comporte aucun delta de spec sous `specs/`. Rédigez le delta — le
-comportement que le change ajoute ou modifie — ou, si le change n'a vraiment
-aucun impact sur le comportement, ajoutez `skip_specs: true` à son
-`change.yaml`.
+La modification ne dit pas en quoi le comportement du logiciel change : son
+dossier `specs/` ne contient aucun delta. Faites l'un ou l'autre :
+
+- rédigez le delta : le comportement que la modification ajoute ou
+  modifie ;
+- ou, si la modification ne change vraiment pas le comportement, ajoutez
+  `skip_specs: true` à son `change.yaml`.
 
 ### `compagnon validate` signale `decision_seal_mismatch`
 
-Le contenu d'une décision scellée a été modifié — à la main, ou par un outil
-de formatage. Les décisions acceptées sont immuables :
+Quelqu'un a modifié le texte d'une décision acceptée, à la main ou avec un
+outil de mise en forme. Les décisions acceptées sont scellées : elles ne
+doivent pas changer. Vous pouvez :
 
-- **Restaurez** le contenu d'origine (`git diff` montre ce qui a changé) ; le
-  sceau redevient valide.
-- Ou, si la modification était volontaire, **scellez-la à nouveau** :
+- **restaurer** le texte d'origine (`git diff` montre ce qui a changé) ; le
+  sceau redevient valide ;
+- ou, si la retouche était volontaire, **la sceller à nouveau** :
   `compagnon decision seal <ID> --force`.
 
-Pour rédiger une décision avant de la sceller, laissez-la `proposed` — comme
-la créent `compagnon decision new`, `supersede`, `deviate` et `promote` — et lancez
-`compagnon decision accept <ID>` une fois son texte définitif. Une décision créée
-avec `compagnon decision new --status accepted` est scellée immédiatement, avec le
-texte d'exemple du template.
+Pour changer ce que dit une décision, la bonne façon est de la remplacer
+par une nouvelle : `compagnon decision supersede <ID> "<new title>"`,
+rédigez la nouvelle décision, puis acceptez-la.
 
-Pour changer ce que dit une décision, remplacez-la plutôt avec
-`compagnon decision supersede <ID> "<new title>"`, rédigez la nouvelle décision,
-puis acceptez-la.
+Pour tenir les outils de mise en forme à l'écart des décisions, excluez
+`_compagnon/decisions/` dans leurs réglages.
 
-Pour tenir les outils de formatage à l'écart des décisions, excluez
-`_compagnon/decisions/` dans leur configuration.
+<details>
+<summary>Sous le capot : quand une décision est scellée</summary>
+
+Une décision est scellée quand elle est acceptée. Pour rédiger une décision
+avant de la sceller, laissez-la `proposed` — comme la créent
+`compagnon decision new`, `supersede`, `deviate` et `promote` — et lancez
+`compagnon decision accept <ID>` une fois son texte définitif. Une décision
+créée avec `compagnon decision new --status accepted` est scellée
+immédiatement, avec le texte d'exemple du modèle.
+
+</details>
 
 ### `compagnon decision accept` signale `predecessor_not_accepted`
 
-La décision que vous acceptez liste, dans `supersedes`, une décision qui n'est
-plus `accepted` — le plus souvent parce qu'une autre décision l'a remplacée
-après la création de la vôtre. Rien n'a été écrit. Lancez
-`compagnon decision list` pour voir quelle décision est désormais en vigueur, puis
-faites pointer `supersedes` vers elle dans le frontmatter de la vôtre, ou
-abandonnez la vôtre si elle est devenue inutile. `compagnon decision supersede`
+La décision que vous acceptez dit en remplacer une autre (dans
+`supersedes`). Mais cette autre décision n'est plus `accepted` : le plus
+souvent, une troisième décision l'a remplacée après la création de la
+vôtre. Rien n'a été écrit.
+
+Lancez `compagnon decision list` pour voir quelle décision est en vigueur
+aujourd'hui. Ensuite, soit faites pointer `supersedes` vers elle, dans
+l'en-tête ([frontmatter](glossary.md#frontmatter)) de la vôtre, soit
+abandonnez la vôtre si elle ne sert plus. `compagnon decision supersede`
 refuse avec le même code une décision qui n'est pas `accepted`.
 
 ### `compagnon validate` signale `decision_missing_frontmatter`
 
-Chaque fichier `.md` de `_compagnon/decisions/` est analysé comme une décision.
-Sortez de ce dossier les autres fichiers Markdown, un README par exemple.
+Compagnon lit chaque fichier `.md` de `_compagnon/decisions/` comme une
+décision. Sortez de ce dossier les autres fichiers Markdown, un README par
+exemple.
 
-### Une spec archivée avec un Compagnon antérieur contient une exigence coupée
+### Une spécification archivée avec un Compagnon antérieur contient une exigence coupée
 
-Avec Compagnon 0.6.1 et les versions antérieures — les compilations faites avant
-ce correctif —, archiver un change qui modifiait la dernière exigence d'une
-spec et ajoutait des exigences pouvait écrire les ajouts au milieu d'une ligne
-de l'exigence modifiée : la spec contient alors le début de cette exigence,
-les ajouts, puis sa fin collée derrière eux. `compagnon validate` ne le détecte
-pas, et synchroniser ou archiver à nouveau le change ne le répare pas. Pour
-vérifier, regardez le diff de chaque archivage d'un change dont le delta
-modifiait la dernière exigence d'une spec et ajoutait des exigences ; pour
-réparer, remettez l'exigence entière à la main, ou par un nouveau change dont
-le delta `MODIFIED` en donne le texte complet.
+C'est un défaut de Compagnon 0.6.1 et des versions antérieures (les
+compilations faites avant le correctif). Il se produisait en archivant une
+modification qui faisait deux choses à la fois : elle modifiait la dernière
+exigence d'une spécification, et elle ajoutait de nouvelles exigences.
 
-### La synchronisation ou l'archivage refuse un change
+Les exigences ajoutées pouvaient alors atterrir au milieu d'une ligne de
+l'exigence modifiée. La spécification contient le début de cette exigence,
+puis les ajouts, puis la fin de l'exigence coupée, collée derrière eux.
+
+`compagnon validate` ne le détecte pas, et synchroniser ou archiver à
+nouveau la modification ne le répare pas.
+
+- **Pour vérifier :** regardez ce que chacun de ces archivages a changé
+  dans la spécification (`git diff`).
+- **Pour réparer :** remettez l'exigence entière, à la main, ou par une
+  nouvelle modification dont le delta `MODIFIED` en donne le texte complet.
+
+### La synchronisation ou l'archivage refuse une modification
 
 ```text
 error: change `add-dark-mode` has errors; run `compagnon validate add-dark-mode` for details
 ```
 
-Avec `--json`, le code d'erreur est `validation_failed`. Lancez la commande
-`compagnon validate` suggérée, corrigez les constats, puis synchronisez ou
-archivez à nouveau. Si l'archivage est refusé parce qu'une exigence
-`MODIFIED` n'existe pas dans la spec principale, c'est que son nom diffère de
-celui de la spec principale : corrigez le nom, ou utilisez `ADDED` si
-l'exigence est nouvelle.
+La modification contient des erreurs : Compagnon refuse donc de la fusionner
+dans les spécifications du projet. Lancez la commande `compagnon validate`
+suggérée, corrigez ce qu'elle signale, puis synchronisez ou archivez à
+nouveau. Avec `--json`, le code d'erreur est `validation_failed`.
+
+Un cas fréquent : l'archivage est refusé parce qu'une exigence `MODIFIED`
+n'existe pas dans la spécification du projet. Son nom diffère de celui de la
+spécification du projet. Corrigez le nom, ou utilisez `ADDED` si l'exigence
+est nouvelle.
 
 ### `compagnon validate` signale `rename_source_missing`
 
-Le nom qui suit `FROM:` dans `## RENAMED Requirements` ne correspond à aucun
-titre `### Requirement:` de la spec principale. Il doit correspondre
-exactement, que vous écriviez le nom seul ou le titre complet entre accents
-graves :
+Vous renommez une exigence, mais l'ancien nom (après `FROM:` dans
+`## RENAMED Requirements`) ne correspond à aucun titre `### Requirement:` de
+la spécification du projet. Il doit correspondre exactement. Vous pouvez
+écrire le nom seul, ou le titre complet entre accents graves :
 
 ```markdown
 - FROM: `### Requirement: Le thème choisi est mémorisé`
@@ -207,143 +303,190 @@ graves :
 
 ### `compagnon validate` signale `delta_unexpected_heading`
 
-Un titre `###` d'une section de delta n'est pas un titre d'exigence — par
-exemple `### Notes`, ou un mot-clé dans une langue que Compagnon ne connaît pas.
-Compagnon lit `### Requirement:` et son équivalent français `### Exigence :` ;
-voir [Langue des artefacts](guides/artifact-language.md).
+Un titre `###` d'un delta n'est pas un titre d'exigence. Par exemple
+`### Notes`, ou un mot-clé dans une langue que Compagnon ne connaît pas.
+Compagnon lit `### Requirement:` et son équivalent français
+`### Exigence :` ; voir [Langue des artefacts](guides/artifact-language.md).
 
 ### `/compagnon-propose` ignore mon ticket
 
-1. `mcp.jira_tool` n'était pas défini dans `_compagnon/config.yaml` lors de la
-   génération des skills : `.claude/skills/compagnon-propose/SKILL.md` affiche
-   alors « (Jira MCP not configured) » à la place du nom de l'outil. Ajoutez la
-   clé, puis lancez `compagnon update --force`.
-2. L'outil est configuré mais indisponible dans la session Claude Code en
-   cours — nom erroné, serveur non connecté, session expirée. La skill vous le
-   signale et rédige la proposal à partir de votre seule demande.
+Il y a deux causes probables.
+
+1. L'outil Jira n'était pas défini lors de la génération des compétences.
+   Dans `.claude/skills/compagnon-propose/SKILL.md`, vous lisez alors
+   « (Jira MCP not configured) » à la place du nom de l'outil. Ajoutez la
+   clé `mcp.jira_tool` à `_compagnon/config.yaml`, puis lancez
+   `compagnon update --force`.
+2. L'outil est défini, mais indisponible dans la session Claude Code en
+   cours : nom erroné, serveur non connecté ou connexion expirée. La
+   compétence vous le signale, et rédige la proposition à partir de votre
+   seule demande.
 
 Voir [Jira et autres serveurs MCP](guides/mcp.md).
 
 ### `compagnon init` signale `inherit_pin_failed`
 
-Une source git passée avec `--inherit` a été déclarée mais n'a pas pu être
-épinglée : `git` est absent, le réseau ou vos identifiants ont échoué, ou la
-`ref` n'existe pas (`main` par défaut ; un dépôt dont la branche par défaut
-est `master` demande `…/repo.git@master`). Corrigez la cause — ou la `ref:`
-dans `_compagnon/config.yaml` —, puis lancez `compagnon sources update`.
+Vous avez demandé à hériter des règles d'un autre dépôt git (avec
+`--inherit`). Compagnon l'a noté, mais n'a pas pu le fixer sur une version
+précise. La cause est l'une de celles-ci :
+
+- `git` n'est pas installé ;
+- le réseau ou vos identifiants ont échoué ;
+- la branche ou l'étiquette (`ref`) n'existe pas. La valeur par défaut est
+  `main` : un dépôt dont la branche par défaut est `master` demande
+  `…/repo.git@master`.
+
+Corrigez la cause, ou la `ref:` dans `_compagnon/config.yaml`, puis lancez
+`compagnon sources update`.
 
 ### `compagnon init` signale `managed_section_malformed`
 
-`CLAUDE.md` ou le modèle de pull request contient une ligne
-`<!-- compagnon:begin` sans `<!-- compagnon:end -->` correspondant, ou plusieurs.
-Compagnon n'a pas touché au fichier. Gardez exactement une paire de marqueurs, ou
-supprimez-les tous pour que `compagnon init` ajoute une section neuve.
+`CLAUDE.md` ou le modèle de demande de fusion contient une ligne
+`<!-- compagnon:begin` sans `<!-- compagnon:end -->` correspondant, ou en
+contient plusieurs. Compagnon n'a pas touché au fichier. Gardez exactement
+une paire de marqueurs, ou supprimez-les tous pour que `compagnon init`
+ajoute une section neuve.
 
 ### Une source git est `unlocked` ou `needs_update`
 
-Lancez `compagnon sources update`. `unlocked` signifie que la source n'a jamais
-été résolue ; `needs_update` signifie qu'elle est épinglée dans `compagnon.lock`
-mais absente de votre cache local, typiquement sur une machine neuve.
+Lancez `compagnon sources update`.
+
+- `unlocked` signifie que la source n'a jamais été récupérée.
+- `needs_update` signifie qu'elle est notée dans `compagnon.lock`, mais
+  absente de votre ordinateur. C'est typique sur une machine neuve.
 
 ### Le Compagnon d'un collègue échoue sur la configuration
 
-Son Compagnon est plus ancien que votre `_compagnon/config.yaml` : le fichier contient
-une clé que sa version ne connaît pas.
+Le Compagnon de votre collègue est plus ancien que votre
+`_compagnon/config.yaml` : le fichier contient un réglage que sa version ne
+connaît pas.
 
-- **Compagnon 0.5 et les versions antérieures** rejettent toute clé inconnue :
-  chaque commande échoue avec `invalid` en nommant la clé. Il doit mettre à
-  jour : `compagnon self-update` depuis une version récente, sinon l'installateur
-  décrit dans [Installation](installation.md).
+- **Compagnon 0.5 et les versions antérieures** rejettent toute clé
+  inconnue : chaque commande échoue avec `invalid`, en nommant la clé. Votre
+  collègue doit mettre à jour : avec `compagnon self-update` depuis une
+  version récente, sinon avec l'installateur décrit dans
+  [Installation](installation.md).
 - **Compagnon 0.6.1 et les versions antérieures** rejettent aussi une clé
-  inconnue dans la table d'un rôle sous `roles:`, dans le `change.yaml` d'un
-  change, dans un `schema.yaml` de projet et dans le frontmatter d'un ADR.
-- **Les versions plus récentes** émettent à la place un avertissement —
-  `unknown_config_key`, `change_unknown_key`, `schema_unknown_key` ou
-  `decision_unknown_field`, selon le fichier — et continuent de
-  fonctionner ; l'avertissement cite votre `compagnon_version` et renvoie à
-  `compagnon self-update`. Une clé inconnue dans une entrée de `inherits` ou dans
-  `changelog` échoue toujours avec `invalid`, en citant `compagnon_version`.
+  inconnue à quelques autres endroits : dans un rôle sous `roles:`, dans le
+  `change.yaml` d'une modification, dans un `schema.yaml` de projet et dans
+  l'en-tête d'un fichier de décision.
+- **Les versions plus récentes** affichent un avertissement à la place, et
+  continuent de fonctionner. L'avertissement cite votre `compagnon_version`
+  et renvoie à `compagnon self-update`.
 
-Pour que le message soit explicite pour tous, relevez `compagnon_version` chaque
+Pour que le message soit clair pour tous, relevez `compagnon_version` chaque
 fois que vous ajoutez une clé que seules les versions récentes connaissent.
 Voir [Clés inconnues](reference/configuration.md#clés-inconnues).
 
+<details>
+<summary>Sous le capot : les codes d'avertissement des clés inconnues</summary>
+
+Selon le fichier, l'avertissement est `unknown_config_key`,
+`change_unknown_key`, `schema_unknown_key` ou `decision_unknown_field`. Une
+clé inconnue dans une entrée de `inherits` ou dans `changelog` échoue
+toujours avec `invalid`, en citant `compagnon_version`.
+
+</details>
+
 ### `unknown_config_key`
 
-`_compagnon/config.yaml` contient une clé que ce Compagnon ne connaît pas : elle est
-ignorée et le reste de la configuration s'applique. Soit la clé vient d'une
-version plus récente de Compagnon (lancez `compagnon self-update`, ou la version que
-`compagnon doctor` indique dans sa vérification `compagnon_version`), soit c'est une
-faute de frappe, comme `shema` pour `schema` : corrigez-la.
-`compagnon validate --strict` échoue d'ici là. Lorsque `compagnon doctor` propose
-`compagnon self-update --version <X.Y.Z>`, votre Compagnon est plus récent que ce
-qu'autorise le `compagnon_version` du projet, et cette commande installe une
-version qui le satisfait.
+`_compagnon/config.yaml` contient une clé que ce Compagnon ne connaît pas.
+Cette clé est ignorée ; le reste de la configuration s'applique. Il y a deux
+raisons possibles :
+
+- la clé vient d'une version plus récente de Compagnon : lancez
+  `compagnon self-update`, ou installez la version que `compagnon doctor`
+  indique dans sa vérification `compagnon_version` ;
+- c'est une faute de frappe, comme `shema` pour `schema` : corrigez-la.
+
+D'ici là, `compagnon validate --strict` échoue.
+
+Lorsque `compagnon doctor` propose `compagnon self-update --version <X.Y.Z>`,
+votre Compagnon est plus récent que ce qu'autorise le `compagnon_version` du
+projet. Cette commande installe une version qui convient.
 
 ### `change_unknown_key`
 
-Le `change.yaml` d'un change contient une clé que ce Compagnon ne connaît pas, au
-premier niveau ou sous `review:` (`review.<clé>`) : elle est ignorée et le
-reste du fichier s'applique. Le change a été écrit avec une version plus
-récente de Compagnon — lancez `compagnon self-update` — ou la clé est mal
-orthographiée, comme `skip_spec` pour `skip_specs` : corrigez-la, sinon le
-marqueur qu'elle désigne ne s'applique pas. `compagnon validate --strict` échoue
-d'ici là.
+Le `change.yaml` d'une modification contient une clé que ce Compagnon ne
+connaît pas, au premier niveau ou sous `review:` (`review.<clé>`). Cette clé
+est ignorée ; le reste du fichier s'applique. Soit :
+
+- la modification a été écrite avec une version plus récente de Compagnon :
+  lancez `compagnon self-update` ;
+- soit la clé est mal orthographiée, comme `skip_spec` pour `skip_specs` :
+  corrigez-la, sinon le réglage qu'elle désigne ne s'applique pas.
+
+D'ici là, `compagnon validate --strict` échoue.
 
 ### `schema_unknown_key`
 
-Un schéma de projet, `_compagnon/schemas/<nom>/schema.yaml`, contient une clé que
-ce Compagnon ne connaît pas : l'avertissement nomme la clé et sa ligne, la clé
-est ignorée et le schéma reste utilisable. Lancez `compagnon self-update` si le
-schéma a été écrit pour une version plus récente de Compagnon, sinon corrigez la
-clé — un `require` mal orthographié laisse l'artefact sans sa dépendance.
+Un [schéma](glossary.md#schéma) de votre projet,
+`_compagnon/schemas/<nom>/schema.yaml`, contient une clé que ce Compagnon ne
+connaît pas. L'avertissement nomme la clé et sa ligne. La clé est ignorée,
+et le schéma reste utilisable.
+
+- Si le schéma a été écrit pour une version plus récente de Compagnon,
+  lancez `compagnon self-update`.
+- Sinon, corrigez la clé. Par exemple, un `require` mal orthographié laisse
+  un artefact sans le document dont il dépend.
+
 `compagnon validate --strict` la signale sur l'élément `config`.
 
 ### `decision_unknown_field`
 
-Le frontmatter d'un ADR contient un champ que ce Compagnon ne connaît pas : la
-décision est lue à partir des champs qu'il connaît, et
-`compagnon decision accept` conserve le champ lorsqu'il réécrit le frontmatter.
-Lancez `compagnon self-update` si une version plus récente de Compagnon l'a ajouté,
-sinon corrigez-le ou supprimez-le. Les champs d'une décision héritée ne sont
-pas signalés : vous ne pouvez pas modifier sa source.
+L'en-tête d'un fichier de décision (un ADR) contient un champ que ce
+Compagnon ne connaît pas. La décision est lue à partir des champs qu'il
+connaît, et `compagnon decision accept` conserve le champ inconnu lorsqu'il
+réécrit l'en-tête. Lancez `compagnon self-update` si une version plus
+récente de Compagnon l'a ajouté ; sinon, corrigez-le ou supprimez-le. Les
+champs d'une décision héritée d'un autre dépôt ne sont pas signalés : vous
+ne pouvez pas modifier sa source.
 
 ### `compagnon validate`, `sync` ou `archive` signale `compagnon_version_unsatisfied`
 
-Le Compagnon en cours ne satisfait pas le `compagnon_version` du projet, et les
-commandes dont la réussite est un verdict sur le projet refusent d'en donner
-un avec lui : un Compagnon plus ancien pourrait accepter ce que celui d'un
-collègue refuse. Appliquez la correction que nomme le message —
-`compagnon self-update`, ou `compagnon self-update --version <X.Y.Z>` lorsque votre
-Compagnon dépasse une borne supérieure comme `^0.6` (ou élargissez
-`compagnon_version` si l'équipe passe à la version plus récente). En CI,
-relevez l'épinglage `COMPAGNON_VERSION=` chaque fois que `compagnon_version` est
-relevé. Toutes les autres commandes, `compagnon status` et `compagnon doctor`
-compris, continuent de fonctionner.
+Votre Compagnon n'est pas une version qu'autorise le projet (son réglage
+`compagnon_version`). Certaines commandes rendent un verdict sur le projet :
+elles l'acceptent ou le refusent. Ces commandes refusent de s'exécuter avec
+une version que le projet n'autorise pas. Sinon, un Compagnon plus ancien
+pourrait accepter ce que celui d'un collègue refuserait.
+
+Appliquez la correction que nomme le message :
+
+- `compagnon self-update` ;
+- ou `compagnon self-update --version <X.Y.Z>`, lorsque votre Compagnon
+  dépasse une limite haute comme `^0.6`. Vous pouvez aussi élargir
+  `compagnon_version`, si l'équipe passe à la version plus récente.
+
+En CI, relevez l'épinglage `COMPAGNON_VERSION=` chaque fois que
+`compagnon_version` est relevé. Toutes les autres commandes,
+`compagnon status` et `compagnon doctor` compris, continuent de fonctionner.
 
 ### `compagnon self-update` signale `update_checksum_mismatch`
 
-L'archive téléchargée ne correspond pas à sa ligne dans le `SHA256SUMS` de la
-release, ou cette ligne manque. Rien n'a été installé. Réessayez plus tard —
-un proxy a pu altérer le téléchargement — et, si le problème persiste,
-signalez-le : c'est la vérification qui vous protège d'une archive
-falsifiée.
+Le fichier téléchargé ne correspond pas à l'empreinte publiée avec la
+version (sa ligne dans `SHA256SUMS`), ou cette ligne manque. Rien n'a été
+installé. Réessayez plus tard : un intermédiaire réseau (proxy) a pu
+altérer le téléchargement. Si le problème persiste, signalez-le. Cette
+vérification est ce qui vous protège d'un fichier falsifié.
 
 ### `compagnon self-update` signale `update_not_writable`
 
-Compagnon ne peut pas écrire dans le dossier de son binaire, par exemple
-`/usr/local/bin` appartenant à root. Réinstallez Compagnon dans un dossier qui
-vous appartient (`install.sh` utilise `~/.local/bin`), ou lancez la commande
-avec les droits qu'exige ce dossier.
+Compagnon ne peut pas écrire dans le dossier où il est installé, par
+exemple `/usr/local/bin`, qui appartient à l'administrateur (root).
+Réinstallez Compagnon dans un dossier qui vous appartient (`install.sh`
+utilise `~/.local/bin`), ou lancez la commande avec les droits qu'exige ce
+dossier.
 
 ### `compagnon self-update` indique que Compagnon est géré ailleurs
 
-Votre binaire a été installé par `cargo install`, compilé depuis un clone ou
-installé par un gestionnaire de paquets : Compagnon laisse cet outil s'en charger
-et affiche la commande à lancer, par exemple
-`cargo install --path crates/compagnon-cli` depuis un clone à jour.
+Votre copie de Compagnon a été installée autrement : avec `cargo install`,
+compilée depuis un clone de son code, ou par un gestionnaire de paquets.
+Compagnon laisse cet outil gérer les mises à jour, et affiche la commande à
+lancer, par exemple `cargo install --path crates/compagnon-cli` depuis un
+clone à jour.
 
 ### `compagnon: command not found`
 
-Le dossier d'installation n'est pas dans votre `PATH`. Voir
+Votre terminal ne sait pas où Compagnon est installé : son dossier n'est pas
+dans votre `PATH`. Voir
 [Vérifier l'installation](installation.md#vérifier-linstallation).
