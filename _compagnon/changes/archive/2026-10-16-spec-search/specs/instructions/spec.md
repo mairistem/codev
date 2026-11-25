@@ -1,19 +1,19 @@
 ## ADDED Requirements
 
-### Requirement: `codev instructions` names the existing requirements the change likely touches
+### Requirement: `compagnon instructions` names the existing requirements the change likely touches
 
-Once the change folder holds its `proposal.md`, `codev instructions` SHALL
+Once the change folder holds its `proposal.md`, `compagnon instructions` SHALL
 give, for each artifact that requires the proposal directly in the
 change's schema — `specs` and `design` in `spec-driven` —, the requirements
 of the project's main specs most relevant to the proposal's text — its
 `Why` and `What Changes` sections, its whole text when it has neither —,
-ranked as `codev search` ranks them, at most 10. With `--json`, the
+ranked as `compagnon search` ranks them, at most 10. With `--json`, the
 document SHALL carry `related`: one entry per requirement, the most
 relevant first, with `capability`, `requirement` and `excerpt`, the
 excerpt at most 160 characters of the requirement's description.
 
 `related` SHALL be an empty array for any other artifact — so that the
-calls that only need the context and the rules, such as `/codev-apply`'s
+calls that only need the context and the rules, such as `/compagnon-apply`'s
 and the reviews', read no main spec —, when `proposal.md` does not exist
 yet, when the project has no main spec, when the proposal's text holds no
 word to rank once its common words are removed, when nothing matches, and
@@ -25,7 +25,7 @@ repeated in `related`.
 The human section `Existing requirements this change likely touches:`
 SHALL print one line per requirement as `<capability>::<requirement> —
 <excerpt>`, then a line saying that one of them is read with
-`codev show <capability>::<requirement>`, and that a requirement the
+`compagnon show <capability>::<requirement>`, and that a requirement the
 change alters is modified, in a `MODIFIED` block copied from its spec,
 rather than added again.
 
@@ -34,7 +34,7 @@ rather than added again.
 - **GIVEN** a project whose spec `decisions` holds the requirement
   `Creating a decision through the CLI`, and a change whose `proposal.md`
   says it lets a user create a decision as a draft from the command line
-- **WHEN** the user runs `codev instructions specs --change draft-decisions --json`
+- **WHEN** the user runs `compagnon instructions specs --change draft-decisions --json`
 - **THEN** `related` lists `decisions` / `Creating a decision through the CLI`
   with an excerpt
 - **AND** it holds at most 10 entries
@@ -42,28 +42,28 @@ rather than added again.
 #### Scenario: The artifacts that do not require the proposal
 
 - **GIVEN** the same change
-- **WHEN** the user runs `codev instructions proposal --change draft-decisions --json`,
-  or `codev instructions tasks --change draft-decisions --json`
+- **WHEN** the user runs `compagnon instructions proposal --change draft-decisions --json`,
+  or `compagnon instructions tasks --change draft-decisions --json`
 - **THEN** `related` is an empty array
 - **AND** no main spec is read
 
 #### Scenario: A proposal not written yet
 
 - **GIVEN** a change whose folder holds no `proposal.md`
-- **WHEN** the user runs `codev instructions specs --change draft-decisions --json`
+- **WHEN** the user runs `compagnon instructions specs --change draft-decisions --json`
 - **THEN** `related` is an empty array
 
 #### Scenario: A proposal with nothing to rank
 
 - **GIVEN** a change whose `proposal.md` is empty
-- **WHEN** the user runs `codev instructions specs --change draft-decisions --json`
+- **WHEN** the user runs `compagnon instructions specs --change draft-decisions --json`
 - **THEN** `related` is an empty array and the command succeeds
 
 #### Scenario: A main spec that cannot be read
 
 - **GIVEN** a project whose spec `billing` cannot be read and whose spec
   `decisions` matches the proposal
-- **WHEN** the user runs `codev instructions specs --change draft-decisions --json`
+- **WHEN** the user runs `compagnon instructions specs --change draft-decisions --json`
 - **THEN** `related` lists the requirements of `decisions`
 - **AND** `status` holds a warning naming `billing`, and the command exits
   with code 0
@@ -71,26 +71,26 @@ rather than added again.
 #### Scenario: The human output
 
 - **GIVEN** the change of the first scenario
-- **WHEN** the user runs `codev instructions design --change draft-decisions`
+- **WHEN** the user runs `compagnon instructions design --change draft-decisions`
 - **THEN** the output has the section `Existing requirements this change
   likely touches:` with the line
   `decisions::Creating a decision through the CLI — …`
-- **AND** a line naming `codev show <capability>::<requirement>` and saying
+- **AND** a line naming `compagnon show <capability>::<requirement>` and saying
   that a requirement the change alters is modified, not added again
 
 #### Scenario: A project without specs
 
-- **GIVEN** a project whose `_codev/specs/` is empty, and a change whose
+- **GIVEN** a project whose `_compagnon/specs/` is empty, and a change whose
   `proposal.md` exists
-- **WHEN** the user runs `codev instructions specs --change first --json`
+- **WHEN** the user runs `compagnon instructions specs --change first --json`
 - **THEN** `related` is an empty array and the human output has no
   `Existing requirements` section
 
 ## MODIFIED Requirements
 
-### Requirement: `codev instructions` describes one artifact of a change
+### Requirement: `compagnon instructions` describes one artifact of a change
 
-`codev instructions [ARTIFACT] --change <name>` SHALL describe the named
+`compagnon instructions [ARTIFACT] --change <name>` SHALL describe the named
 artifact of the change's schema or, without `ARTIFACT`, the first artifact
 whose state is `ready` in the schema's dependency order. With `--json`, the
 document SHALL carry:
@@ -111,7 +111,7 @@ document SHALL carry:
   `decisions` capability;
 - `skipped` — `true` when the change's `skip_specs` disables the artifact;
 - `related` — the existing requirements the change likely touches, as
-  "`codev instructions` names the existing requirements the change likely
+  "`compagnon instructions` names the existing requirements the change likely
   touches" says; an empty array when there are none;
 - `role` — the artifact's role as the `roles` capability resolves it
   (`id`, `name`, `kind`, `at`, `artifact`, `question`, `when`,
@@ -124,31 +124,31 @@ The command reads files and writes none. It exits with code 0.
 #### Scenario: The next artifact to write
 
 - **GIVEN** a `spec-driven` change whose `proposal.md` exists
-- **WHEN** the user runs `codev instructions --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions --change add-auth --json`
 - **THEN** `artifact` is `specs`
-- **AND** `resolvedOutputPath` ends with `_codev/changes/add-auth/specs/**/*.md`
+- **AND** `resolvedOutputPath` ends with `_compagnon/changes/add-auth/specs/**/*.md`
 - **AND** `dependencies` is one entry `proposal` with `done: true` and the
   path of `proposal.md`, and `unlocks` is `["tasks"]`
 
 #### Scenario: A named artifact carries the schema's guidance
 
 - **GIVEN** a `spec-driven` change
-- **WHEN** the user runs `codev instructions proposal --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth --json`
 - **THEN** `instruction` is the `proposal` instruction of the schema and
   `template` its template, which holds `## Why`
-- **AND** `resolvedOutputPath` ends with `_codev/changes/add-auth/proposal.md`
+- **AND** `resolvedOutputPath` ends with `_compagnon/changes/add-auth/proposal.md`
 
 #### Scenario: Dependencies not written yet
 
 - **GIVEN** a `spec-driven` change with no artifact written
-- **WHEN** the user runs `codev instructions tasks --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions tasks --change add-auth --json`
 - **THEN** `dependencies` lists `specs` and `design`, both with
   `done: false`
 
 #### Scenario: The configured language
 
 - **GIVEN** a configuration with `language: fr`
-- **WHEN** the user runs `codev instructions proposal --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth --json`
 - **THEN** `language` is `fr`
 - **AND** without `language:` in the configuration it is `en`
 
@@ -156,14 +156,14 @@ The command reads files and writes none. It exits with code 0.
 
 - **GIVEN** a change using a project schema whose artifact `brief` declares
   neither `instruction` nor `template`
-- **WHEN** the user runs `codev instructions brief --change quick --json`
+- **WHEN** the user runs `compagnon instructions brief --change quick --json`
 - **THEN** `instruction` and `template` are `null`
 
 #### Scenario: The artifact's role
 
 - **GIVEN** a `spec-driven` change and a configuration where `qa` has the
   extra criterion `Every error code is named`
-- **WHEN** the user runs `codev instructions specs --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions specs --change add-auth --json`
 - **THEN** `role.id` is `qa` and `role.question` is the QA analyst's
   question
 - **AND** `role.doneWhen` ends with `Every error code is named` with the
@@ -173,12 +173,12 @@ The command reads files and writes none. It exits with code 0.
 
 - **GIVEN** a change using a project schema whose artifact `brief` declares
   no role
-- **WHEN** the user runs `codev instructions brief --change quick --json`
+- **WHEN** the user runs `compagnon instructions brief --change quick --json`
 - **THEN** `role` is `null`
 
-### Requirement: The human output of `codev instructions` reads top to bottom
+### Requirement: The human output of `compagnon instructions` reads top to bottom
 
-Without `--json`, `codev instructions` SHALL print, in this order: the line
+Without `--json`, `compagnon instructions` SHALL print, in this order: the line
 `Artifact: <id> (change `<name>`, schema <schema>)`, `Write to:` with the
 resolved output path, `Language:` with the language; then, each only when
 not empty, `Read before writing:` with one line per dependency marked `[x]`
@@ -193,7 +193,7 @@ criteria each prefixed by its origin in parentheses, `Decisions in effect:`,
 
 - **GIVEN** a configuration with a context and a rule for `specs`, and a
   change whose `proposal.md` exists
-- **WHEN** the user runs `codev instructions specs --change add-auth`
+- **WHEN** the user runs `compagnon instructions specs --change add-auth`
 - **THEN** the output starts with `Artifact: specs (change `add-auth`,
   schema spec-driven)`
 - **AND** it shows `[x] proposal`, the context and the rule each prefixed
@@ -203,6 +203,6 @@ criteria each prefixed by its origin in parentheses, `Decisions in effect:`,
 #### Scenario: No empty section
 
 - **GIVEN** a configuration without context nor rules
-- **WHEN** the user runs `codev instructions proposal --change add-auth`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth`
 - **THEN** the output has no `Read before writing:`, `Project context:`,
   `Rules for this artifact:` nor `Decisions in effect:` heading

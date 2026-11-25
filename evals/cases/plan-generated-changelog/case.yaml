@@ -7,6 +7,6 @@ expected:
   modified:
     - "skills::The default schema gives each artifact a role with \"Done when\" criteria"
   collateral:
-    - "doctor::`codev doctor` runs a fixed list of read-only checks"
+    - "doctor::`compagnon doctor` runs a fixed list of read-only checks"
     - "skills::The `propose` skill checks traceability before presenting the plan"
   decisions: []

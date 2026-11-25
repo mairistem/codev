@@ -1,4 +1,4 @@
-# Design: ship `/codev-apply`
+# Design: ship `/compagnon-apply`
 
 ## Context
 
@@ -22,29 +22,29 @@ until feedback is in.
 
 ## Decisions
 
-### Decision: `allowed-tools` includes `Bash` in addition to `Bash(codev:*)`
+### Decision: `allowed-tools` includes `Bash` in addition to `Bash(compagnon:*)`
 
 `apply` must be able to run the verification commands written in
 `tasks.md` (`cargo test …`, `cargo build …`, etc.). Restricting to
-`Bash(codev:*)` like `propose` and `explore` would prevent the verification
+`Bash(compagnon:*)` like `propose` and `explore` would prevent the verification
 that each task specifically requires.
 
-Decided to list explicitly: `Bash(codev:*), Read, Write, Edit, Glob,
+Decided to list explicitly: `Bash(compagnon:*), Read, Write, Edit, Glob,
 Grep, Bash`. The order carries meaning for the user reading the
-frontmatter — the `Bash(codev:*)` prefix first documents the main usage;
+frontmatter — the `Bash(compagnon:*)` prefix first documents the main usage;
 plain `Bash` last documents the necessary opening.
 
-**Rejected alternative**: restrict to `Bash(cargo:*), Bash(codev:*)`. Too
+**Rejected alternative**: restrict to `Bash(cargo:*), Bash(compagnon:*)`. Too
 narrow — a test may require `git`, `npm`, `python`. The project context
-decides; codev has no business prejudging the toolbox.
+decides; compagnon has no business prejudging the toolbox.
 
 ### Decision: the skill checks boxes via `Edit`, not via a CLI command
 
-There is no `codev task check <n>` command — and there will not be one
+There is no `compagnon task check <n>` command — and there will not be one
 as long as the `tasks.md` format stays stable, cf. decision
 [0001](../../decisions/0001-functional-core-imperative-shell.md): the
 core does not touch the disk, and the markdown format is the source of
-truth read by `codev status`. The skill therefore uses `Edit` to turn
+truth read by `compagnon status`. The skill therefore uses `Edit` to turn
 `- [ ] X.Y` into `- [x] X.Y` on the task's line.
 
 **Rationale**: introducing a dedicated command would duplicate the tasks
@@ -80,5 +80,5 @@ and leaves the next step to the user.
 
 Not applicable — this is a new skill. An existing project that has
 `workflows: [propose, explore]` in its `config.yaml` must add `apply` to it
-and rerun `codev update` to install it. The `codev update` message already
+and rerun `compagnon update` to install it. The `compagnon update` message already
 points out the new skill when it appears.

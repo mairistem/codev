@@ -362,3 +362,68 @@ fn the_configure_fixture_without_a_configuration_keeps_the_skills() {
             .exists()
     );
 }
+
+#[test]
+fn a_case_pinned_before_the_rename_is_migrated_before_it_runs() {
+    use compagnon_core::legacy;
+    use compagnon_evals::case::{Artifact, UpdateCase};
+    use std::collections::BTreeMap;
+
+    let root = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("pinned-before-rename");
+    let _ = fs::remove_dir_all(&root);
+    let repo = root.join("repo");
+    fs::create_dir_all(&repo).unwrap();
+    git(&repo, &["init", "-q", "-b", "main"]);
+    // The state at the ref: the former planning root, the former names.
+    let stem = legacy::BINARY_STEM;
+    write(
+        &repo.join(legacy::PLANNING_DIR).join("specs/a/spec.md"),
+        &format!("### Requirement: {stem} validates\n\nRun `{stem} validate`.\n"),
+    );
+    write(
+        &repo.join(format!("crates/{stem}-core/Cargo.toml")),
+        &format!("[package]\nname = \"{stem}-core\"\n"),
+    );
+    git(&repo, &["add", "-A"]);
+    git(&repo, &["commit", "-q", "-m", "before the rename"]);
+    let pinned = git(&repo, &["rev-parse", "HEAD"]);
+
+    let bin = root.join("bin");
+    fs::create_dir_all(&bin).unwrap();
+    let compagnon: PathBuf = bin.join("compagnon");
+    fs::write(&compagnon, "#!/bin/sh\nexit 0\n").unwrap();
+    fs::set_permissions(&compagnon, fs::Permissions::from_mode(0o755)).unwrap();
+
+    let mut case = bare_case("update-pinned", Step::PlanUpdate, "add-auth");
+    case.update = Some(UpdateCase {
+        git_ref: pinned,
+        artifact: Artifact::Design,
+        request: "r".into(),
+        revised: vec!["design.md".into()],
+        kept: Vec::new(),
+        ripple: Vec::new(),
+        contains: Vec::new(),
+        refuse: false,
+        files: BTreeMap::from([("design.md".to_string(), "# Design\n".to_string())]),
+    });
+    let tools = Tools {
+        claude: PathBuf::from("claude"),
+        compagnon,
+        git: PathBuf::from("git"),
+    };
+    let dir = root.join("work").join("update-pinned-1");
+    runner::setup_plan(&case, &repo, &dir, &tools, None).unwrap();
+
+    let read = |p: &str| fs::read_to_string(dir.join(p)).unwrap();
+    assert_eq!(
+        read("_compagnon/specs/a/spec.md"),
+        "### Requirement: compagnon validates\n\nRun `compagnon validate`.\n"
+    );
+    assert_eq!(
+        read("crates/compagnon-core/Cargo.toml"),
+        "[package]\nname = \"compagnon-core\"\n"
+    );
+    assert_eq!(read("_compagnon/changes/add-auth/design.md"), "# Design\n");
+    assert!(!dir.join(legacy::PLANNING_DIR).exists());
+    assert!(!dir.join(format!("crates/{stem}-core")).exists());
+}

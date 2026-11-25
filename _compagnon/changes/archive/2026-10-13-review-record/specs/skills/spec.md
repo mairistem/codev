@@ -4,7 +4,7 @@
 
 After the traceability check, the `propose` skill SHALL re-read the
 artifacts as reviewers who did not write them: every role
-`codev roles --at plan.challenge --change <name> --json` returns — the
+`compagnon roles --at plan.challenge --change <name> --json` returns — the
 `skeptic` and the experts the change's domains activate — each along its
 criteria, the project's extra criteria included, and using its
 `knowledge` when it has one. The `skeptic`'s grid covers the need (does
@@ -16,7 +16,7 @@ one that would bring the plan down if wrong) and the tasks (each one
 verifiable). It MUST also apply, only when the proposal's Impact touches
 them, the lenses security & privacy, compatibility & migration,
 operability, performance, and accessibility & UX, as well as the project's
-`rules:` received through `codev instructions`. An expert asks whether
+`rules:` received through `compagnon instructions`. An expert asks whether
 the design addresses its domain.
 
 Each finding MUST be written to the change's review record under
@@ -40,7 +40,7 @@ by configuration instead of listing points.
 #### Scenario: Points to challenge are reported
 
 - **GIVEN** a plan whose design rests on an unverified assumption
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** the summary contains a "Points to challenge" block naming the
   assumption, why it matters and the artifact concerned, tagged `skeptic`
 - **AND** the same point is a finding of `review.md` under
@@ -50,7 +50,7 @@ by configuration instead of listing points.
 
 - **GIVEN** a plan in which the skeptic finds four weak points and the
   `security` expert four more
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** the "Points to challenge" block lists at most five items in
   total, the most severe first, each tagged with its role id
 - **AND** all eight are findings of the record
@@ -59,14 +59,14 @@ by configuration instead of listing points.
 
 - **GIVEN** a change whose proposal ticks `personal-data` and whose design
   stores a new e-mail field with no retention rule
-- **WHEN** `/codev-propose` challenges the plan
+- **WHEN** `/compagnon-propose` challenges the plan
 - **THEN** the missing retention rule is a finding of the record under
   `### privacy`, fixed in the design or raised as a point to challenge
 
 #### Scenario: Nothing to challenge
 
 - **GIVEN** a plan in which the contrarian pass finds nothing worth raising
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** the summary says "No point to challenge found"
 - **AND** lists no invented point
 - **AND** each role's section of the record says `No finding.`
@@ -88,7 +88,7 @@ by configuration instead of listing points.
 
 - **GIVEN** a configuration with `roles: { skeptic: never }` and a change
   that ticks no domain
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** no contrarian pass has run
 - **AND** the "Points to challenge" block says the skeptic is disabled by
   configuration
@@ -105,7 +105,7 @@ by configuration instead of listing points.
 
 Once every task is checked and before running the full test suite, the
 `apply` skill SHALL re-read only the code the change added or modified,
-with every role `codev roles --at code.review --change <name> --json`
+with every role `compagnon roles --at code.review --change <name> --json`
 returns — the `newcomer` and the experts the change's domains activate —
 each along its criteria, the project's extra criteria included, and using
 its `knowledge` when it has one. The `newcomer` reads as a developer
@@ -117,7 +117,7 @@ premature genericity and single-use abstractions give way to the simple
 version unless the clever one is justified; comments explain the why where
 it is not obvious and never paraphrase the code; tests read as a
 description of the behavior. It MUST also apply the project's `rules`
-received through `codev instructions`. An expert asks whether the
+received through `compagnon instructions`. An expert asks whether the
 implementation respects its domain.
 
 Each finding MUST be written to the change's review record under
@@ -147,7 +147,7 @@ configuration.
 
 - **GIVEN** a change whose tasks are all checked, and whose code contains a
   dense one-liner with a simple equivalent
-- **WHEN** `/codev-apply` reviews the change as a newcomer
+- **WHEN** `/compagnon-apply` reviews the change as a newcomer
 - **THEN** the one-liner is replaced by the simple version
 - **AND** the affected tests are run again and pass
 
@@ -155,7 +155,7 @@ configuration.
 
 - **GIVEN** a change whose code could be simplified by also changing an edge
   case's behavior, or by adding an unrequested helper
-- **WHEN** `/codev-apply` reviews the change as a newcomer
+- **WHEN** `/compagnon-apply` reviews the change as a newcomer
 - **THEN** the behavior and the scope of the change stay as implemented
 - **AND** the tests that passed before the review still pass
 
@@ -163,7 +163,7 @@ configuration.
 
 - **GIVEN** a review that finds seven concerns it does not fix alone, none
   of them a high-severity security or privacy finding
-- **WHEN** `/codev-apply` presents its final summary
+- **WHEN** `/compagnon-apply` presents its final summary
 - **THEN** the "Review notes" block lists at most five items, each tagged
   with its role id and giving what, where and why
 - **AND** all seven are findings of the record
@@ -172,14 +172,14 @@ configuration.
 
 - **GIVEN** a review with five readability notes and a `security` finding
   of high severity
-- **WHEN** `/codev-apply` presents its final summary
+- **WHEN** `/compagnon-apply` presents its final summary
 - **THEN** the `security` finding is listed in the "Review notes" block
 
 #### Scenario: An expert reports a behavior-changing fix
 
 - **GIVEN** a change whose proposal ticks `performance`, and whose code
   could be made faster by changing the order of its results
-- **WHEN** `/codev-apply` reviews the change
+- **WHEN** `/compagnon-apply` reviews the change
 - **THEN** the order of results is unchanged
 - **AND** the suggestion is a finding of the record under
   `### performance`, listed as a review note
@@ -188,7 +188,7 @@ configuration.
 
 - **GIVEN** a change whose proposal ticks `security`, and whose new
   endpoint builds an SQL query by concatenating a request parameter
-- **WHEN** `/codev-apply` reviews the change
+- **WHEN** `/compagnon-apply` reviews the change
 - **THEN** the query is parameterized, a test covers the hostile input,
   and the summary names the fix
 - **AND** the record's finding is `fixed` with a reference to the change
@@ -196,14 +196,14 @@ configuration.
 #### Scenario: Nothing to note
 
 - **GIVEN** a change whose code raises no review concern
-- **WHEN** `/codev-apply` presents its final summary
+- **WHEN** `/compagnon-apply` presents its final summary
 - **THEN** the summary says "No review concern found"
 - **AND** lists no invented note
 
 #### Scenario: Code outside the change is untouched
 
 - **GIVEN** a change that calls an obscure function it did not modify
-- **WHEN** `/codev-apply` reviews the change as a newcomer
+- **WHEN** `/compagnon-apply` reviews the change as a newcomer
 - **THEN** that function is left unchanged
 - **AND** it appears, at most, as a review note
 
@@ -211,7 +211,7 @@ configuration.
 
 - **GIVEN** a change whose `change.yaml` holds `roles: { newcomer: never }`
   and whose proposal ticks no domain
-- **WHEN** `/codev-apply` has checked every task
+- **WHEN** `/compagnon-apply` has checked every task
 - **THEN** no review runs and the full test suite runs next
 - **AND** the "Review notes" block says the review is disabled by
   configuration
@@ -221,7 +221,7 @@ configuration.
 ### Requirement: The `propose` and `apply` skills keep the review record and run the answer loop
 
 At `plan.challenge` and `code.review`, the skill SHALL first read the
-record with `codev review --change <name> --json` and resume from it: a
+record with `compagnon review --change <name> --json` and resume from it: a
 finding already recorded is not raised again, and a finding still waiting
 for an answer is answered before anything else. It SHALL write, under the
 step's section of `review.md`, one section per role returned — its
@@ -243,7 +243,7 @@ second round. The skill MUST NOT record `accepted-risk`, nor defer a
 `high` finding: those are the human's decisions, recorded with `by:
 human` (or `human:<name>`) only once the human has given them.
 
-The skill SHALL then run `codev review --change <name> --json` and fix
+The skill SHALL then run `compagnon review --change <name> --json` and fix
 the defects it reports in the record itself, never by changing a
 finding's substance. Its summary MUST carry a "To decide" block listing
 every finding the record says awaits a human and every `high` finding
@@ -252,9 +252,9 @@ justification) or defer (with where it goes); or "Nothing to decide".
 
 #### Scenario: The skills describe the record and the loop
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the compagnon workflow catalog
 - **WHEN** the `propose` and `apply` workflows are rendered
-- **THEN** each names `review.md`, `codev review --change`, the statuses,
+- **THEN** each names `review.md`, `compagnon review --change`, the statuses,
   the author's answer, the single re-check and the "To decide" block
 
 #### Scenario: A maintained dispute goes to the human
@@ -276,22 +276,22 @@ justification) or defer (with where it goes); or "Nothing to decide".
 
 - **GIVEN** a record whose `## code.review` holds a finding `disputed` by
   `developer` that the reviewer has not answered
-- **WHEN** `/codev-apply` runs the review again in a new session
+- **WHEN** `/compagnon-apply` runs the review again in a new session
 - **THEN** the reviewer answers that dispute
 - **AND** no finding already in the record is written twice
 
 ### Requirement: The `archive` skill explains a review that blocks archiving
 
-When `codev archive --json` fails with the code `review_blocked`, the
+When `compagnon archive --json` fails with the code `review_blocked`, the
 `archive` skill SHALL reply that the review record blocks archiving and
-invite the user to run `codev review --change <name>` to see what is left
+invite the user to run `compagnon review --change <name>` to see what is left
 to decide, without retrying and without editing the record.
 
 #### Scenario: Archive blocked by the review
 
-- **GIVEN** a change for which `codev archive --json` refuses with
+- **GIVEN** a change for which `compagnon archive --json` refuses with
   `review_blocked`
-- **WHEN** the user types `/codev-archive`
+- **WHEN** the user types `/compagnon-archive`
 - **THEN** the skill says the review record blocks archiving and names
-  `codev review --change <name>`
+  `compagnon review --change <name>`
 - **AND** does not retry

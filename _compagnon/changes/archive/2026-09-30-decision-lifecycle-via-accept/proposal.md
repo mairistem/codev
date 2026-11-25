@@ -2,29 +2,29 @@
 
 ## Why
 
-`codev decision supersede`, `codev decision deviate` and
-`codev decision promote` still create `accepted` decisions and seal their
-body at once. The placeholder or promoted text is then written, `codev
+`compagnon decision supersede`, `compagnon decision deviate` and
+`compagnon decision promote` still create `accepted` decisions and seal their
+body at once. The placeholder or promoted text is then written, `compagnon
 validate` fails with `decision_seal_mismatch`, and users are pushed to
-`codev decision seal --force` — which defeats the seal. `promote` is the
+`compagnon decision seal --force` — which defeats the seal. `promote` is the
 worst case: its own output invites the user to rework the promoted text.
-`decision new` already creates `proposed` decisions sealed by `codev
+`decision new` already creates `proposed` decisions sealed by `compagnon
 decision accept`; the other three should follow the same lifecycle.
 
 ## What Changes
 
-- `codev decision supersede <old> <title>` creates a `proposed` ADR with
+- `compagnon decision supersede <old> <title>` creates a `proposed` ADR with
   `supersedes: ["<old>"]` and leaves the old decision untouched: it stays
   `accepted` and in effect until the new one is accepted.
-- `codev decision deviate <qualified-id> <title>` creates a `proposed` ADR
+- `compagnon decision deviate <qualified-id> <title>` creates a `proposed` ADR
   with `deviates_from`; the inherited decision stays in effect until the
   deviation is accepted.
-- `codev decision promote <change> <title>` creates a `proposed` ADR whose
+- `compagnon decision promote <change> <title>` creates a `proposed` ADR whose
   `## Decision` section is the design block verbatim, and still replaces the
   block with a reference in `design.md`. Its output says to review the ADR,
-  then run `codev decision accept NNNN`.
+  then run `compagnon decision accept NNNN`.
 - None of the three writes to `seal.yaml` any more.
-- `codev decision accept <id>` becomes the single place where a decision
+- `compagnon decision accept <id>` becomes the single place where a decision
   takes effect: for an ADR with `supersedes`, the same plan rewrites each
   predecessor to `status: superseded` (body byte for byte identical, seal
   untouched), sets the new ADR `accepted` and seals it.
@@ -40,7 +40,7 @@ decision accept`; the other three should follow the same lifecycle.
 - No one-step flag: `decision new --status accepted` stays as it is, and no
   `--accept` is added (see design).
 - **BREAKING** for scripts that relied on `supersede`, `deviate` or `promote`
-  taking effect immediately: they must now run `codev decision accept` on the
+  taking effect immediately: they must now run `compagnon decision accept` on the
   created ADR.
 
 ## Capabilities
@@ -61,9 +61,9 @@ None.
 
 ## Impact
 
-- `codev-engine` (`decisions_actions`: `plan_supersede`, `plan_deviate`,
+- `compagnon-engine` (`decisions_actions`: `plan_supersede`, `plan_deviate`,
   `plan_promote` without seal, `plan_accept` with predecessors, one new
-  refusal code) and `codev-cli` (commands, clap help, human rendering, JSON
+  refusal code) and `compagnon-cli` (commands, clap help, human rendering, JSON
   contract).
 - JSON contract v1: `DecisionAcceptedV1` gains `superseded`;
   `DecisionDeviatedV1` and `DecisionPromotedV1` lose `bodySha256`, which was

@@ -14,7 +14,7 @@ remove the capability".
 The marker is already reserved in `ChangeMetadata` but nobody reads
 it. F5 delivers the feature behind it: when a change removes all the
 requirements of a spec **and** declares `retire_capabilities: true`,
-`sync`/`archive` **deletes** the file `_codev/specs/<capa>/spec.md`
+`sync`/`archive` **deletes** the file `_compagnon/specs/<capa>/spec.md`
 instead of leaving it empty or refusing.
 
 This closes the CRUD loop on specs — without this step, an obsolete
@@ -66,15 +66,15 @@ template as soon as it ships.)
 ## Impact
 
 - **Code**:
-  - `codev-core::plan::Plan` gains `deletions: Vec<PathBuf>` and
+  - `compagnon-core::plan::Plan` gains `deletions: Vec<PathBuf>` and
     `Plan::delete()`.
-  - `codev-core::merge::MergePlan` gains `should_delete_spec: bool` and
+  - `compagnon-core::merge::MergePlan` gains `should_delete_spec: bool` and
     `merge_into_existing` takes a `retire_capabilities: bool` argument.
-  - `codev-engine::ports::FileSystem` gains `remove_file(&Path)` (with
+  - `compagnon-engine::ports::FileSystem` gains `remove_file(&Path)` (with
     `RealFileSystem` and `MemoryFileSystem`).
-  - `codev-engine::apply::execute` applies deletions **after** the
+  - `compagnon-engine::apply::execute` applies deletions **after** the
     writes and **before** the moves.
-  - `codev-engine::sync::SyncPlan/SyncOutcome` gain `deleted:
+  - `compagnon-engine::sync::SyncPlan/SyncOutcome` gain `deleted:
     Vec<PathBuf>`.
 - **JSON contract** — `SyncReportV1` and `ArchiveReportV1` gain
   `deleted: Vec<String>` (additive, always present, empty in the usual
@@ -86,7 +86,7 @@ template as soon as it ships.)
 - **Migration** — none. Without the flag, behavior is unchanged (the
   historical refusal remains).
 - **Out of scope**:
-  - **A `codev new change --retire-capabilities` flag** — the user
+  - **A `compagnon new change --retire-capabilities` flag** — the user
     edits `change.yaml` by hand in this rare case; no extra ergonomics
     until a need shows up.
   - **Restoring a capability removed by a previous change** — no

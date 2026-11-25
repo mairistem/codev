@@ -36,8 +36,8 @@ is not driven from the consumer.
 
 ### Decision: deviation only applies to inherited targets
 
-`codev decision deviate project/0003 …` is refused (code
-`cannot_deviate_from_local`), with a pointer to `codev decision
+`compagnon decision deviate project/0003 …` is refused (code
+`cannot_deviate_from_local`), with a pointer to `compagnon decision
 supersede`. Two distinct gestures, each with its own semantics:
 
 - `supersede` — "we replace our own decision with a new one"; the file
@@ -58,7 +58,7 @@ inherited entry referenced by a local `accepted` ADR. Two effects:
   section. The agent drafting a `design.md` sees the deviation, not the
   replaced decision — otherwise it would propose to respect it,
   wrongly.
-- **`codev decision list`** — the deviated entry stays listed, with its
+- **`compagnon decision list`** — the deviated entry stays listed, with its
   `deviatedBy` visible. Transparency prevails: the user must be able to
   see everything that exists in the index, including inherited
   decisions set aside.
@@ -104,7 +104,7 @@ Nothing special on the seal side: `plan_deviate` produces a plan that
 writes the ADR **and** the seal entry, exactly like `plan_new`. The
 rule "accepted → sealed" still holds.
 
-**Corollary**: `codev decision deviate <target> <title>` refuses if the
+**Corollary**: `compagnon decision deviate <target> <title>` refuses if the
 target is ambiguous (two sources expose the same `<qualified-id>`); the
 stable code is `ambiguous_decision_id` (an existing code).
 
@@ -116,7 +116,7 @@ stable code is `ambiguous_decision_id` (an existing code).
   source.
   → **Accepted trade-off**: this batch does no cascading resolution
   (out of the proposal's scope). The user will see both deviations side
-  by side in `codev decision list`, and will decide.
+  by side in `compagnon decision list`, and will decide.
 - **A user might deviate "to test"** and then forget to remove the
   local ADR, leaving a `deviatesFrom` entry that no longer makes sense.
   → **Mitigation**: the propose/apply/archive workflow leaves a clean

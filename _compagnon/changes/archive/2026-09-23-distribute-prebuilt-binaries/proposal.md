@@ -1,9 +1,9 @@
-# Proposal: distribute codev without requiring Rust
+# Proposal: distribute compagnon without requiring Rust
 
 ## Why
 
 Today, the only documented installation path is
-`cargo install --path crates/codev-cli`. That works for Ludovic and
+`cargo install --path crates/compagnon-cli`. That works for Ludovic and
 any developer who already has the Rust toolchain — but **most of the
 target JVS users do not have Rust**. They have git, Claude Code,
 often Node or Python, never rustc.
@@ -20,7 +20,7 @@ This batch ships two additional install paths, without breaking the
   extracts, puts it on their PATH.
 - **`install.sh` script** pipeable via `curl … | sh` — detects
   OS/arch, downloads the right binary, verifies its SHA-256, installs
-  into `~/.local/bin/`. A user discovering codev types **a single
+  into `~/.local/bin/`. A user discovering compagnon types **a single
   line** to get it.
 
 ## What Changes
@@ -29,29 +29,29 @@ This batch ships two additional install paths, without breaking the
   triggered by a `v*.*.*` tag:
   - Three matrix jobs, one per target: `aarch64-apple-darwin`,
     `x86_64-apple-darwin`, `x86_64-unknown-linux-musl`.
-  - Each job runs `cargo build --release --bin codev --target <target>`.
-  - Packaging: `codev-<version>-<target>.tar.gz` containing the
+  - Each job runs `cargo build --release --bin compagnon --target <target>`.
+  - Packaging: `compagnon-<version>-<target>.tar.gz` containing the
     binary, `README.md`, `LICENSE`, and the file
-    `docs/codev.md` (the doc source).
+    `docs/compagnon.md` (the doc source).
   - A final job aggregates the SHA-256 checksums into a `SHA256SUMS`
     file and publishes the GitHub Release with the artifacts.
 - **New root script `install.sh`**:
   - Detects the OS via `uname` (macOS/Linux) and the arch via
     `uname -m` (arm64/x86_64).
-  - Resolves the requested version (`$CODEV_VERSION` env var or the
+  - Resolves the requested version (`$COMPAGNON_VERSION` env var or the
     latest release via the GitHub API).
   - Downloads the target tar.gz and the `SHA256SUMS`.
   - Verifies the SHA-256 of the downloaded file against the one in
     `SHA256SUMS`.
-  - Extracts and copies `codev` into `~/.local/bin/`. Creates the
+  - Extracts and copies `compagnon` into `~/.local/bin/`. Creates the
     folder if missing.
   - Checks that `~/.local/bin/` is in `$PATH` — otherwise, prints
     the line to add to `.zshrc`/`.bashrc`.
-- **"Installation" section of `docs/codev.md`** — reworked with
+- **"Installation" section of `docs/compagnon.md`** — reworked with
   **three paths**: `curl … | sh` (recommended), manual download
   from GitHub Releases, `cargo install` (contributors).
 - **Repository README.md** — the first path mentioned becomes
-  `curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh`.
+  `curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh`.
 
 ## Capabilities
 
@@ -74,11 +74,11 @@ None.
 - **Code**: nothing in the Rust crates. The change touches only:
   - `.github/workflows/release.yml` (new)
   - `install.sh` (new)
-  - `docs/codev.md` (Installation section)
+  - `docs/compagnon.md` (Installation section)
   - `README.md` (mention)
 - **JSON contract**: nothing. Distribution lives outside the binary.
 - **Files written**: the GH Actions workflow writes artifacts to
-  GitHub Releases; `install.sh` writes `~/.local/bin/codev` on the
+  GitHub Releases; `install.sh` writes `~/.local/bin/compagnon` on the
   user's machine.
 - **Migration**: none. The `cargo install` path remains documented
   and works.
@@ -91,7 +91,7 @@ None.
     tap, Ruby formula, versioning). Deferrable until explicitly
     requested.
   - **Binary auto-update** — a `rustup update`-style pattern. Not
-    needed for V1; `codev-<version>` reinstalls easily.
+    needed for V1; `compagnon-<version>` reinstalls easily.
   - **GPG / cosign signing** — SHA-256 verification against a file
     published by the same workflow is enough for V1. A real
     signature would require a key to manage and publish.

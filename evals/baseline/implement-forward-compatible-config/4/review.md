@@ -1,6 +1,6 @@
 # Review record: forward-compatible-config
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
@@ -13,7 +13,7 @@ Mode: inline.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/config.rs:242-259"
+location: "crates/compagnon-engine/src/config.rs:242-259"
 evidence: |
         } else if key == "mcp"
             && let serde_norway::Value::Mapping(mcp) = value
@@ -26,7 +26,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/config.rs — the `mcp` branch moved to `unknown_mcp_keys`"
+    ref: "crates/compagnon-engine/src/config.rs — the `mcp` branch moved to `unknown_mcp_keys`"
   - status: fixed
     by: newcomer
 ```
@@ -36,7 +36,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/config.rs:293-296"
+location: "crates/compagnon-engine/src/config.rs:293-296"
 evidence: |
         .take_while(|(_, line)| {
             let content = line.trim_start();
@@ -48,7 +48,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/config.rs — comment on where the section block ends in `nested_line`"
+    ref: "crates/compagnon-engine/src/config.rs — comment on where the section block ends in `nested_line`"
   - status: fixed
     by: newcomer
 ```
@@ -58,7 +58,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/config.rs:278-281"
+location: "crates/compagnon-engine/src/config.rs:278-281"
 evidence: |
   /// A text scan, only to point at the key: a miss falls back to line 1.
   fn line_or_first(line: Option<usize>) -> u32 {
@@ -68,7 +68,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/config.rs — `line_or_first` and `top_level_line` documented for what each does"
+    ref: "crates/compagnon-engine/src/config.rs — `line_or_first` and `top_level_line` documented for what each does"
   - status: fixed
     by: newcomer
 ```

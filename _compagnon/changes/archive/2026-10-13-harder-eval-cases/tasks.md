@@ -22,12 +22,12 @@
 ## 5. Cases
 
 - [x] 5.1 Complete the existing cases: categories from the vocabulary, secondary locations moved to `alternatives`, every cited file or test present in the fixture or `planned` (`skeptic-control-small-flag`, `skeptic-plan-scope-creep`, `newcomer-code-clever-one-liner` and every case the lint names), keeping unchanged the lines existing expectations point to, so that the first baseline's observations still describe the code they cite, verified by `every_case_of_the_suite_loads`
-- [x] 5.2 Re-score the first baseline's observations (copied outside the repository, with its `run.json`) against the completed cases under the new matching, and tune `evals/categories.yaml` until every finding that named its seeded defect stays a true positive and the icon button's findings pair the right way round; then freeze the vocabulary for the new run, verified by `cargo run -p codev-evals -- score <copy> --out <dir>` and the per-case lines of its report
+- [x] 5.2 Re-score the first baseline's observations (copied outside the repository, with its `run.json`) against the completed cases under the new matching, and tune `evals/categories.yaml` until every finding that named its seeded defect stays a true positive and the icon button's findings pair the right way round; then freeze the vocabulary for the new run, verified by `cargo run -p compagnon-evals -- score <copy> --out <dir>` and the per-case lines of its report
 - [x] 5.3 Add the fourteen cases of the design's table (security, privacy and their Python cases, accessibility, performance, ops, migration; seeded and controls), verified by `every_case_of_the_suite_loads`, `the_suite_covers_every_reviewing_role` and `categories_of_one_case_share_no_term`
 
 ## 6. Baseline
 
-- [x] 6.1 Record the baseline again: remove `evals/baseline/`, `cargo build --bin codev`, `cargo run -p codev-evals -- run --out evals/baseline` on Claude Code's default model, verified by `every_case_has_a_baseline_observation` and `the_baseline_agrees_with_the_scoring`
+- [x] 6.1 Record the baseline again: remove `evals/baseline/`, `cargo build --bin compagnon`, `cargo run -p compagnon-evals -- run --out evals/baseline` on Claude Code's default model, verified by `every_case_has_a_baseline_observation` and `the_baseline_agrees_with_the_scoring`
 - [x] 6.2 Fill the design's "Baseline before and after" with each role's scores (first baseline, first baseline re-scored, new baseline) and the cases that explain the moves, verified by reading `design.md` against `evals/baseline/report.md`
 
 ## 7. Documentation
@@ -37,4 +37,4 @@
 
 ## 8. Done
 
-- [x] 8.1 `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `codev validate --strict` and `codev doctor --strict` all pass
+- [x] 8.1 `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `compagnon validate --strict` and `compagnon doctor --strict` all pass

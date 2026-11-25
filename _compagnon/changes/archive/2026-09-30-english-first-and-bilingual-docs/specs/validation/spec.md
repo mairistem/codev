@@ -11,7 +11,7 @@ exists there, which means an earlier sync already applied the rename.
 
 - **GIVEN** a main spec without any requirement named `Remember Me`
 - **AND** a delta renaming `Remember Me` to `Stay Signed In`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** an error `rename_source_missing` is reported
 - **AND** the exit code is non-zero
 
@@ -20,5 +20,5 @@ exists there, which means an earlier sync already applied the rename.
 - **GIVEN** a delta renaming `Remember Me` to `Stay Signed In`
 - **AND** a main spec that already contains `Stay Signed In` and no longer
   contains `Remember Me`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `rename_source_missing` is reported

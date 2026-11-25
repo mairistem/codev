@@ -1,8 +1,8 @@
 ## MODIFIED Requirements
 
-### Requirement: `codev roles` measures the material of a reviewing step
+### Requirement: `compagnon roles` measures the material of a reviewing step
 
-`codev roles --json` SHALL carry a `review` object with `mode`, `origin`
+`compagnon roles --json` SHALL carry a `review` object with `mode`, `origin`
 and `material`; in a failure's document, `review` is `null`. `material` SHALL be `null` unless both `--change` and an
 `--at` among `plan.trace`, `plan.challenge` and `code.review` are given.
 Then it SHALL list what the reviewers of that step read, each file once,
@@ -33,7 +33,7 @@ sizes, never their content, and writes nothing.
 
 - **GIVEN** a change `add-auth` whose diff modifies two source files of
   1200 and 800 bytes
-- **WHEN** the user runs `codev roles --at code.review --change add-auth
+- **WHEN** the user runs `compagnon roles --at code.review --change add-auth
   --json`
 - **THEN** `review.material.files` lists both with `treatment: "full"`,
   `totalBytes` is 2000 and `summarized` is `false`
@@ -42,7 +42,7 @@ sizes, never their content, and writes nothing.
 
 - **GIVEN** a change whose diff modifies files of 100000, 60000 and 10000
   bytes
-- **WHEN** the user runs `codev roles --at code.review --change <name>
+- **WHEN** the user runs `compagnon roles --at code.review --change <name>
   --json`
 - **THEN** the 10000- and 60000-byte files are `full`, the 100000-byte
   file is `summarize`, and `summarized` is `true`
@@ -51,21 +51,21 @@ sizes, never their content, and writes nothing.
 
 - **GIVEN** a change with `proposal.md`, `design.md`, `tasks.md`, one
   spec delta, a `change.yaml`, a `review.md` and a `corrections.md`
-- **WHEN** the user runs `codev roles --at plan.challenge --change <name>
+- **WHEN** the user runs `compagnon roles --at plan.challenge --change <name>
   --json`
 - **THEN** `review.material.files` lists the four planning files and
   neither `change.yaml`, `review.md` nor `corrections.md`
 
 #### Scenario: No material without a reviewing step
 
-- **WHEN** the user runs `codev roles --at code.implement --change <name>
-  --json`, or `codev roles --json`
+- **WHEN** the user runs `compagnon roles --at code.implement --change <name>
+  --json`, or `compagnon roles --json`
 - **THEN** `review.material` is `null` and `review.mode` is given
 
 #### Scenario: No diff, no material
 
 - **GIVEN** a project outside a git repository
-- **WHEN** the user runs `codev roles --at code.review --change <name>
+- **WHEN** the user runs `compagnon roles --at code.review --change <name>
   --json`
 - **THEN** `review.material` is `null`
 
@@ -73,11 +73,11 @@ sizes, never their content, and writes nothing.
 
 - **GIVEN** a change whose diff modifies `Cargo.lock`, a binary image, a
   symbolic link `docs/notes.md` and `src/lib.rs`
-- **WHEN** the user runs `codev roles --at code.review --change <name>
+- **WHEN** the user runs `compagnon roles --at code.review --change <name>
   --json`
 - **THEN** `review.material.files` lists only `src/lib.rs`
 
 #### Scenario: A failure carries no review
 
-- **WHEN** the user runs `codev roles --at plan.review --json`
+- **WHEN** the user runs `compagnon roles --at plan.review --json`
 - **THEN** the exit code is 1 and `review` is `null`

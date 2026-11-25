@@ -9,17 +9,17 @@
 
 ## 2. CLI
 
-- [x] 2.1 `decision supersede`, `deviate` and `promote` report a `proposed` decision and name `codev decision accept NNNN` as the next step, verified by `decision_supersede_creates_a_proposed_decision_and_keeps_the_old_one_in_effect`, `decision_supersede_refuses_a_decision_that_is_not_accepted`, `decision_deviate_creates_a_proposed_adr_without_seal`, `decision_promote_creates_a_proposed_adr_and_references_the_design` and the render tests `superseded_output_names_the_accept_step`, `deviated_output_names_the_accept_step` and `promoted_output_names_the_accept_step`
+- [x] 2.1 `decision supersede`, `deviate` and `promote` report a `proposed` decision and name `compagnon decision accept NNNN` as the next step, verified by `decision_supersede_creates_a_proposed_decision_and_keeps_the_old_one_in_effect`, `decision_supersede_refuses_a_decision_that_is_not_accepted`, `decision_deviate_creates_a_proposed_adr_without_seal`, `decision_promote_creates_a_proposed_adr_and_references_the_design` and the render tests `superseded_output_names_the_accept_step`, `deviated_output_names_the_accept_step` and `promoted_output_names_the_accept_step`
 - [x] 2.2 `decision accept` supersedes the predecessors and reports them, verified by `decision_supersede_then_accept_supersedes_the_old_one_and_validates_clean`, `decision_accept_refuses_a_second_supersession_of_the_same_decision`, `decision_deviate_has_no_effect_until_accepted`, `decision_list_exposes_deviated_by_on_the_inherited_one` and `decision_promote_rework_then_accept_validates_clean`
 - [x] 2.3 JSON contract v1: `superseded` on `DecisionAcceptedV1`, no `bodySha256` on `DecisionDeviatedV1` and `DecisionPromotedV1`, verified by `accepted_report_exposes_the_expected_fields_in_camel_case`, `accepted_report_lists_the_superseded_predecessors` and `deviated_and_promoted_reports_carry_no_hash`
-- [x] 2.4 Help of `decision supersede`, `deviate`, `promote` and `accept` describes the lifecycle, verified by reading `codev decision --help` and each subcommand's `--help`
+- [x] 2.4 Help of `decision supersede`, `deviate`, `promote` and `accept` describes the lifecycle, verified by reading `compagnon decision --help` and each subcommand's `--help`
 
 ## 3. Skills and documentation
 
-- [x] 3.1 Check the skills in `assets/workflows/` for `supersede`, `deviate`, `promote` and the decision lifecycle, verified by a grep and `codev update`
+- [x] 3.1 Check the skills in `assets/workflows/` for `supersede`, `deviate`, `promote` and the decision lifecycle, verified by a grep and `compagnon update`
 - [x] 3.2 CLI reference, JSON output, concepts, FAQ and inherited sources guide in `docs/en` and `docs/fr`, with outputs from real runs, verified by `both_languages_have_the_same_chapters`, the docs anchor tests and an mdbook build of both books without warnings
 - [x] 3.3 CHANGELOG entry under `[Unreleased]` and ROADMAP item removed, verified by reading `CHANGELOG.md` and `ROADMAP.md`
 
 ## 4. Verification
 
-- [x] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked` and `codev validate --strict`
+- [x] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked` and `compagnon validate --strict`

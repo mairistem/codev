@@ -5,7 +5,7 @@ request: "Les relecteurs tournent dans la même conversation que celle qui a éc
 summary: "Replays the change 2026-10-13-isolated-review (feat(review): isolated review, each reviewer alone then the meeting (#37))."
 expected:
   modified:
-    - "skills::The `propose` and `apply` skills take their roles from `codev roles`"
+    - "skills::The `propose` and `apply` skills take their roles from `compagnon roles`"
   collateral:
-    - "doctor::`codev doctor` runs a fixed list of read-only checks"
+    - "doctor::`compagnon doctor` runs a fixed list of read-only checks"
   decisions: []

@@ -1,24 +1,24 @@
-# Design: Update notice and `codev self-update`
+# Design: Update notice and `compagnon self-update`
 
 ## Context
 
-- codev ships as one static binary per target, published by
-  `.github/workflows/release.yml` as `codev-<version>-<target>.tar.gz`
+- compagnon ships as one static binary per target, published by
+  `.github/workflows/release.yml` as `compagnon-<version>-<target>.tar.gz`
   (`.zip` on Windows) next to a `SHA256SUMS` file. `install.sh` and
   `install.ps1` resolve the latest release through
-  `https://api.github.com/repos/mairistem/codev/releases/latest`, download,
+  `https://api.github.com/repos/mairistem/compagnon/releases/latest`, download,
   verify the SHA-256 and copy the binary to `~/.local/bin` or
-  `%LOCALAPPDATA%\Programs\codev`.
+  `%LOCALAPPDATA%\Programs\compagnon`.
 - The engine reaches the outside world only through ports
   (`FileSystem`, `Env`, `Clock`, `ProcessRunner`), with in-memory doubles
   (`MemoryFileSystem`, `FixedEnv`, `FixedClock`, `MockProcessRunner`).
   The only network access so far is `git`, driven through `ProcessRunner`
-  by `codev sources update` (decision 0005).
+  by `compagnon sources update` (decision 0005).
 - A per-user cache already exists for inherited sources:
-  `codev_engine::sources::cache::root` (`$XDG_CACHE_HOME/codev/`, otherwise
-  `~/.cache/codev/`).
-- `codev doctor` is specified offline; `codev status --json` is read by
-  the installed skills, through the v1 contract in `codev-cli::contract`.
+  `compagnon_engine::sources::cache::root` (`$XDG_CACHE_HOME/compagnon/`, otherwise
+  `~/.cache/compagnon/`).
+- `compagnon doctor` is specified offline; `compagnon status --json` is read by
+  the installed skills, through the v1 contract in `compagnon-cli::contract`.
 - `ProjectConfig` denies unknown fields.
 
 ## Goals / Non-Goals
@@ -27,7 +27,7 @@ Goals: one daily, anonymous, cached check; one explicit command that
 installs a verified release; every decision unit-tested without network
 or disk.
 
-Non-goals: background or silent updates; updating installations codev did
+Non-goals: background or silent updates; updating installations compagnon did
 not make (cargo, package managers); signature verification beyond the
 `SHA256SUMS` the installers already trust; a `--json` on every command for
 the notice (only `status` carries it).
@@ -36,16 +36,16 @@ the notice (only `status` carries it).
 
 ### Decision: Decide in the core, execute in the shell
 
-Following decision 0001, `codev-core::update` is pure and owns every
+Following decision 0001, `compagnon-core::update` is pure and owns every
 decision: version and requirement parsing, whether to check (`CI`,
 opt-out, 24-hour freshness), the notice (`available`, `snoozed`), the
 snooze record, the target asset name for a target triple, the
 `SHA256SUMS` lookup and the SHA-256 comparison, the installation method
 from the binary's path, and the self-update decision (`up to date`,
-`refuse downgrade`, `install X`). `codev-engine::update` only gathers
+`refuse downgrade`, `install X`). `compagnon-engine::update` only gathers
 facts and executes: it reads and writes the cache, calls the `Http` port,
 writes the staged binary, swaps it, and runs the new binary's
-`codev update`. `codev-core` gains no I/O; the cache format is a plain
+`compagnon update`. `compagnon-core` gains no I/O; the cache format is a plain
 struct serialized with `serde_json`, already a core dependency.
 
 **Alternatives considered**: a single `self_update()` function mixing
@@ -73,7 +73,7 @@ requirements (`install.sh` needs both); Windows 10+ ships both
 proxy configuration (`HTTPS_PROXY`, `.curlrc`) for free.
 
 The only new crate is `semver` (pure, no dependencies), for Cargo's
-requirement syntax in `codev_version` — the syntax Rust developers already
+requirement syntax in `compagnon_version` — the syntax Rust developers already
 know, and one we should not reimplement.
 
 **Alternatives considered**: `ureq` + `rustls` (+2.2 MB, cross-build
@@ -91,14 +91,14 @@ target, aside)`. `RealExecutable` implements them with `std::fs`;
 `MemoryExecutable` records bytes and swaps for tests.
 
 Atomicity: the new binary is written next to the target
-(`<dir>/.codev-<version>.new`), made executable (0755 on Unix), then
+(`<dir>/.compagnon-<version>.new`), made executable (0755 on Unix), then
 renamed over the target. A same-directory `rename` is atomic on every
 supported platform, and it gives the new binary a new inode, which keeps
 macOS's code-signing cache from killing the replaced process. On Windows a
 running `.exe` cannot be overwritten but can be renamed: the target is
-first renamed to `codev.old.exe`, the staged file renamed into place, and
-on failure the old one is renamed back. Every codev start on Windows
-removes a leftover `codev.old.exe` next to the running binary, ignoring
+first renamed to `compagnon.old.exe`, the staged file renamed into place, and
+on failure the old one is renamed back. Every compagnon start on Windows
+removes a leftover `compagnon.old.exe` next to the running binary, ignoring
 errors. Write permission is detected when the staged file cannot be
 written (`update_not_writable`), before anything is moved.
 
@@ -122,17 +122,17 @@ the side of not replacing.
 (older installs have none, and it can drift); asking the package manager
 (slow, platform-specific).
 
-### Decision: `codev status` is the only command that checks; doctor reads the cache
+### Decision: `compagnon status` is the only command that checks; doctor reads the cache
 
-The check runs in `codev status` (human and JSON) and in `codev
+The check runs in `compagnon status` (human and JSON) and in `compagnon
 self-update`, nowhere else, so every other machine output stays byte-for-
 byte stable and only one command pays the timeout, at most once a day.
-`codev doctor` keeps its offline guarantee: its `codev_version` check
+`compagnon doctor` keeps its offline guarantee: its `compagnon_version` check
 reads the cache only. A failed check is recorded with its time and the
 previously known release, so an offline laptop makes one attempt a day,
 not one per command.
 
-The cache lives at `<codev cache root>/update-check.json`, reusing
+The cache lives at `<compagnon cache root>/update-check.json`, reusing
 `sources::cache::root`: `{ "checkedAt": <unix seconds>, "latest":
 "0.6.0", "url": "…", "snoozedVersion": "0.6.0", "snoozedUntil": <unix
 seconds> }`. A missing or unreadable cache is treated as "never checked";
@@ -148,39 +148,39 @@ exceptions); checking in doctor (breaks its offline spec); a background
 thread (a detached process outliving the command is precisely the kind of
 behind-the-back activity we reject).
 
-### Decision: `self-update` runs the new binary's `codev update`
+### Decision: `self-update` runs the new binary's `compagnon update`
 
 After the swap, the running process is still the old version: calling
 `commands::update` in-process would stamp the skills with the old version.
 The engine runs `<exe> update` through `ProcessRunner` in the project
 root, so the new binary regenerates skills, managed sections and the
-version pinned in `.github/workflows/codev.yml`. A non-zero exit becomes
+version pinned in `.github/workflows/compagnon.yml`. A non-zero exit becomes
 the warning `update_project_refresh_failed`.
 
 **Alternatives considered**: in-process update (wrong version stamp);
-printing "now run `codev update`" (one more manual step, the one users
+printing "now run `compagnon update`" (one more manual step, the one users
 forget).
 
 ### Decision: The skill notice is one shared paragraph
 
 The notice lives once in `assets/workflows/_update-notice.md` and is
 substituted for a `{{UPDATE_NOTICE}}` placeholder in the five action
-workflows by `codev-agents::claude`, like `{{JIRA_MCP_TOOL}}`. It is
-placed right after each workflow's first `codev status --json`; the apply
+workflows by `compagnon-agents::claude`, like `{{JIRA_MCP_TOOL}}`. It is
+placed right after each workflow's first `compagnon status --json`; the apply
 workflow already calls status before reading tasks, so the question comes
-before the first task. "Update now" runs `codev self-update --yes`
-because the skill already asked; allowed tools stay `Bash(codev:*)`
+before the first task. "Update now" runs `compagnon self-update --yes`
+because the skill already asked; allowed tools stay `Bash(compagnon:*)`
 (decision 0004 is untouched: skill and command keep one identity).
 
 **Alternatives considered**: copying the paragraph into each workflow
-(five copies to keep in sync); a separate `/codev-self-update` skill (the
+(five copies to keep in sync); a separate `/compagnon-self-update` skill (the
 user would have to know it exists, which is the problem).
 
-### Decision: `codev_version` is validated at load, like `language`
+### Decision: `compagnon_version` is validated at load, like `language`
 
-`ProjectConfig` gains `codev_version: Option<String>`, parsed with
+`ProjectConfig` gains `compagnon_version: Option<String>`, parsed with
 `semver::VersionReq` in `config::load`; an invalid value fails with the
-new `EngineError::InvalidCodevVersion` (`invalid_codev_version`), so the
+new `EngineError::InvalidCompagnonVersion` (`invalid_compagnon_version`), so the
 error surfaces on the first command rather than only in doctor. The value
 is project-only, never inherited: the team writing in this repository
 owns it, as with `language` and `mcp`.
@@ -207,16 +207,16 @@ for a non-problem.
   check fails silently; `self-update` fails with
   `update_download_failed` / `update_extract_failed` naming the missing
   program, and the installers already require both.
-- [Codev 0.5 and older reject `codev_version` (unknown field)] → the
-  error names the key; the docs say to add `codev_version` only once the
-  team runs 0.6+, and this repository's CI builds codev from source.
+- [Compagnon 0.5 and older reject `compagnon_version` (unknown field)] → the
+  error names the key; the docs say to add `compagnon_version` only once the
+  team runs 0.6+, and this repository's CI builds compagnon from source.
 - [GitHub API rate limit (60 requests/hour/IP, anonymous)] → one check
   per user per day; a 403 is a failed check, recorded and silent.
 - [A compromised release replaces binaries and `SHA256SUMS` together] →
   same trust model as the installers (HTTPS to github.com); signatures
   are out of scope and noted in the FAQ.
-- [`codev_version` with an upper bound below the running version] →
-  doctor reports `codev_version_unsatisfied`; `self-update` refuses the
+- [`compagnon_version` with an upper bound below the running version] →
+  doctor reports `compagnon_version_unsatisfied`; `self-update` refuses the
   implicit downgrade, and the docs show `--version X.Y.Z`.
 - [Path heuristics misclassify an installation] → it errs towards "not
   standalone", printing a command instead of replacing; `--version` does
@@ -224,13 +224,13 @@ for a non-problem.
 
 ## Migration Plan
 
-No migration: the cache is created on the first check, `codev_version` is
+No migration: the cache is created on the first check, `compagnon_version` is
 opt-in, the JSON objects are additive, and existing skills keep working
-until `codev update` regenerates them. Rollback: `codev self-update
+until `compagnon update` regenerates them. Rollback: `compagnon self-update
 --version <previous>`.
 
 ## Open Questions
 
-- Should the notice also appear in other human commands (e.g. `codev
-  list`)? Deferred: `codev status` covers the skills and the terminal
+- Should the notice also appear in other human commands (e.g. `compagnon
+  list`)? Deferred: `compagnon status` covers the skills and the terminal
   workflow; widening later changes no contract.

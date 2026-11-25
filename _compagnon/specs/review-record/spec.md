@@ -4,7 +4,7 @@
 
 Keep, for each change, a record of what the reviewing roles found — with a
 severity, the evidence and the answer each finding received, and who
-decided it — that codev checks deterministically and that gates archiving.
+decided it — that Compagnon checks deterministically and that gates archiving.
 
 ## Requirements
 
@@ -33,7 +33,7 @@ the checks; any other value is a `review_invalid` error.
 
 #### Scenario: The scales reach the skills
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the Compagnon workflow catalog
 - **WHEN** the `propose` and `apply` skills are rendered
 - **THEN** each carries the three severities and the two confidences with
   their definitions
@@ -41,16 +41,16 @@ the checks; any other value is a `review_invalid` error.
 #### Scenario: An unknown severity
 
 - **GIVEN** a review record with a finding whose severity is `critical`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error names `critical` and the valid values
 
-### Requirement: The review record has a layout both humans and codev read
+### Requirement: The review record has a layout both humans and Compagnon read
 
 A change's review record SHALL be the file `review.md` of the change's
 directory. Its layout:
 
 - an optional first line `# Review record: <change>`, and an optional
-  format marker `<!-- codev-review: <n> -->`; a record without a marker is
+  format marker `<!-- compagnon-review: <n> -->`; a record without a marker is
   format 1;
 - one level-2 heading per step, `## plan.challenge` or `## code.review`;
 - under a step, one level-3 heading per role, `### <role-id>`;
@@ -72,32 +72,32 @@ warning `review_unknown_section`, and is otherwise ignored.
 - **GIVEN** an active change whose `review.md` has a `## plan.challenge`
   step with `### skeptic` saying `No finding.` and `### security` holding
   one well-formed finding
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no review finding is reported
 
 #### Scenario: A role section with nothing in it
 
 - **GIVEN** a record whose `### skeptic` section holds only free text
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error at the line of `### skeptic` says to
   write `No finding.` when the role found nothing
 
 #### Scenario: A finding block that is not YAML
 
 - **GIVEN** a record whose finding block cannot be parsed as YAML
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error is reported at the line of the block
 
 #### Scenario: A misspelled step
 
 - **GIVEN** a record with a `## code.reveiw` section
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_unknown_section` warning names `code.reveiw`
 
 #### Scenario: Windows line endings
 
 - **GIVEN** a well-formed record saved with `\r\n` line endings
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no review finding is reported
 
 ### Requirement: A finding states where, what and why, with a verbatim quote
@@ -124,40 +124,40 @@ ignored.
 
 - **GIVEN** a finding located at `src/db.rs:12-14` and another at
   `specs/auth/spec.md#Requirement: Login`, each with its fields
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `review_invalid` error is reported for either
 
 #### Scenario: A missing evidence
 
 - **GIVEN** a finding without `evidence`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error names the finding and `evidence`
 
 #### Scenario: An id that does not match its role
 
 - **GIVEN** a finding `R-security-1` under `### privacy`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error says the id must start with
   `R-privacy-`
 
 #### Scenario: Two findings with the same id
 
 - **GIVEN** two findings `R-security-1`, one under each step
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error is reported at the second one
 
 #### Scenario: A location outside the project
 
 - **GIVEN** a finding whose location is `../secrets.txt:1`, and another
   at `C:\secrets.txt:1`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error is reported for each
 - **AND** neither file is read
 
-#### Scenario: A field from a newer codev
+#### Scenario: A field from a newer Compagnon
 
 - **GIVEN** a finding with an extra field `category: injection`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_unknown_field` warning names `category`
 
 ### Requirement: Each finding keeps the history of its answers and who gave them
@@ -187,20 +187,20 @@ entry as the error `review_decision_incomplete`.
 
 - **GIVEN** a finding whose last entry is `accepted-risk` by `developer`
   with a note
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_decision_incomplete` error says an accepted risk is
   decided by a human
 
 #### Scenario: A fix without a reference
 
 - **GIVEN** a finding whose last entry is `fixed` with no `ref`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_decision_incomplete` error names `ref`
 
 #### Scenario: A high finding deferred by the author
 
 - **GIVEN** a `high` finding deferred by `developer` to `harden-sessions`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_decision_incomplete` error says a high finding is
   deferred by a human
 
@@ -208,7 +208,7 @@ entry as the error `review_decision_incomplete`.
 
 - **GIVEN** a finding whose history goes from `disputed` by `developer` to
   `rejected` by `developer`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error says only the reviewer or a human
   rejects a finding
 
@@ -216,7 +216,7 @@ entry as the error `review_decision_incomplete`.
 
 - **GIVEN** a finding `open` by `security`, `disputed` by `developer` with
   an argument, then `rejected` by `security`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no review finding is reported
 
 ### Requirement: The evidence of an unresolved finding is found in the current tree
@@ -247,28 +247,28 @@ to have changed.
 
 - **GIVEN** an `open` finding located at `src/db.rs:12-13` whose evidence
   is the text of line 12, indented differently, and the start of line 13
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no review finding is reported
 
 #### Scenario: Evidence a few lines away
 
 - **GIVEN** an `open` finding located at `src/db.rs:12` whose evidence is
   now at line 15
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no review finding is reported
 
 #### Scenario: Evidence that moved further
 
 - **GIVEN** an `open` finding located at `src/db.rs:12` whose evidence is
   now at line 40
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_evidence_moved` warning names line 40
 
 #### Scenario: Invented evidence
 
 - **GIVEN** a `disputed` finding whose evidence appears nowhere in the
   cited file
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_evidence_not_found` error is reported
 - **AND** the exit code is 1
 
@@ -276,7 +276,7 @@ to have changed.
 
 - **GIVEN** an `open` finding located at `src/db.rs:400` in a file of 50
   lines
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_location_missing` error is reported
 
 #### Scenario: A plan finding in its section
@@ -284,25 +284,25 @@ to have changed.
 - **GIVEN** an `open` finding located at
   `design.md#Decision: Tokens are stored` whose evidence is a sentence of
   that decision
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no review finding is reported
 
 #### Scenario: A binary file
 
 - **GIVEN** an `open` finding located in a file holding NUL bytes
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_evidence_unchecked` warning is reported
 
 #### Scenario: A fixed finding whose code is gone
 
 - **GIVEN** a `fixed` finding whose cited file was deleted by the fix
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no review finding is reported
 
 ### Requirement: Every role active at a recorded step has its section
 
 When the record has a step's section, validation SHALL report the error
-`review_role_missing` for each role `codev roles --at <step> --change
+`review_role_missing` for each role `compagnon roles --at <step> --change
 <change>` returns that has no section under it, or whose section says
 `Disabled by configuration.`. A role inactive at the step may have a
 section or none.
@@ -311,7 +311,7 @@ section or none.
 
 - **GIVEN** a change whose proposal ticks `security`, and whose record's
   `## plan.challenge` holds only `### skeptic`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_role_missing` error names `security` and
   `plan.challenge`
 
@@ -320,26 +320,26 @@ section or none.
 - **GIVEN** a configuration with `roles: { newcomer: never }` and a record
   whose `## code.review` holds `### newcomer` saying
   `Disabled by configuration.`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no review finding is reported
 
-### Requirement: `codev review` shows the record and what is left to decide
+### Requirement: `compagnon review` shows the record and what is left to decide
 
-`codev review [--change <name>] [--json]` SHALL read the change's record
+`compagnon review [--change <name>] [--json]` SHALL read the change's record
 and print, per step and per role, the findings with their severity,
 status and location, and, for each finding, who must act next: the
 author for an `open` finding, the reviewer for a `fixed` finding not yet
 verified or a `disputed` one the reviewer has not answered, a human for a
 dispute the reviewer maintained. It SHALL say which findings are
 reported to the human (confidence `high`), list the record's defects as
-`codev validate` does, and say whether the record lets the change be
+`compagnon validate` does, and say whether the record lets the change be
 archived, naming each reason it does not. It SHALL also list the entries
 of the change's `corrections.md`, each with its identifier, step,
 location and what the author asked, under a section `Corrections`
 printed only when there is one, followed by the corrections file's
 defects; the corrections never decide whether the change can be archived,
 their defects are never listed among the record's, and they do not
-change the exit code, which `codev validate` already reports. The change
+change the exit code, which `compagnon validate` already reports. The change
 is picked as by the other commands taking `--change`. Without a record,
 the command succeeds and says so. The exit code is 1 when the record has
 an error, 0 otherwise. With `--json`, it prints a `ReviewV1` document,
@@ -352,26 +352,26 @@ empty without a corrections file.
 
 - **GIVEN** a finding `disputed` by `developer`, then `disputed` by
   `security` with a note
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** the finding's `awaiting` is `human`
 
 #### Scenario: A low-confidence finding is not reported
 
 - **GIVEN** a finding with confidence `low`
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** the finding's `reported` is `false`
 
 #### Scenario: No record yet
 
 - **GIVEN** an active change without `review.md`
-- **WHEN** the user runs `codev review --change <change> --json`
+- **WHEN** the user runs `compagnon review --change <change> --json`
 - **THEN** `exists` is `false`, `findings` is empty
 - **AND** the exit code is 0
 
 #### Scenario: A record with an error
 
 - **GIVEN** a record with a `review_invalid` error
-- **WHEN** the user runs `codev review`
+- **WHEN** the user runs `compagnon review`
 - **THEN** the error is listed with its line
 - **AND** the exit code is 1
 
@@ -379,7 +379,7 @@ empty without a corrections file.
 
 - **GIVEN** an active change whose `corrections.md` holds the entry
   `C-1` with `step: apply`, and no `review.md`
-- **WHEN** the user runs `codev review --change <change> --json`
+- **WHEN** the user runs `compagnon review --change <change> --json`
 - **THEN** `corrections` holds `C-1` with its `step`, `where`, `did` and
   `asked`
 - **AND** the human output prints a `Corrections` section with `C-1`
@@ -388,66 +388,66 @@ empty without a corrections file.
 
 - **GIVEN** a change whose review is settled and whose `corrections.md`
   holds two entries
-- **WHEN** the user runs `codev review`
+- **WHEN** the user runs `compagnon review`
 - **THEN** it says the record lets the change be archived
 
 #### Scenario: A corrections file with an error
 
 - **GIVEN** an active change without `review.md` whose `corrections.md`
   holds an entry without `did`
-- **WHEN** the user runs `codev review --change <change>`
+- **WHEN** the user runs `compagnon review --change <change>`
 - **THEN** the `corrections_invalid` error is listed with its line under
   `Corrections`, not under the record's issues, and `correctionsIssues`
   holds it with `--json`
 - **AND** the exit code is 0
 
-#### Scenario: Corrections from a newer codev
+#### Scenario: Corrections from a newer Compagnon
 
-- **GIVEN** a `corrections.md` starting with `<!-- codev-corrections: 2 -->`
-- **WHEN** the user runs `codev review --change <change> --json`
+- **GIVEN** a `corrections.md` starting with `<!-- compagnon-corrections: 2 -->`
+- **WHEN** the user runs `compagnon review --change <change> --json`
 - **THEN** `corrections` is an empty array and `correctionsIssues` holds
   the `corrections_format_unsupported` warning
 
 #### Scenario: A change without corrections
 
 - **GIVEN** an active change without `corrections.md`
-- **WHEN** the user runs `codev review --change <change>`
+- **WHEN** the user runs `compagnon review --change <change>`
 - **THEN** the output has no `Corrections` section, and `corrections` is
   an empty array with `--json`
 
-### Requirement: `codev archive` refuses a change whose review is not settled
+### Requirement: `compagnon archive` refuses a change whose review is not settled
 
-Before moving a change, and after the validation pre-flight, `codev
+Before moving a change, and after the validation pre-flight, `compagnon
 archive` SHALL refuse with the stable code `review_blocked`, writing and
 moving nothing, when, for `plan.challenge` or `code.review`, at least one
 role is active for the change and the record does not exist
 (`review_record_missing`) or has no section for that step
 (`review_step_missing`); or when a `high` finding's status is `open` or
 `disputed` (`review_unresolved`); or when the record's format is newer
-than this codev reads (`review_format_unsupported`). The message names
-each reason and points to `codev review`. A step with no active role
-needs no section. `codev sync` is not affected.
+than this Compagnon reads (`review_format_unsupported`). The message names
+each reason and points to `compagnon review`. A step with no active role
+needs no section. `compagnon sync` is not affected.
 
 #### Scenario: A high finding still open
 
 - **GIVEN** a change whose record holds a `high` finding `open`
-- **WHEN** the user runs `codev archive --change <change> --json`
+- **WHEN** the user runs `compagnon archive --change <change> --json`
 - **THEN** the command fails with the code `review_blocked`
-- **AND** the message names the finding and `codev review`
-- **AND** the change is still in `_codev/changes/`
+- **AND** the message names the finding and `compagnon review`
+- **AND** the change is still in `_compagnon/changes/`
 
 #### Scenario: An accepted risk lets the change go
 
 - **GIVEN** a change whose only `high` finding is `accepted-risk` by
   `human` with a justification, and whose record has both steps
-- **WHEN** the user runs `codev archive`
+- **WHEN** the user runs `compagnon archive`
 - **THEN** the change is archived with its `review.md`
 
 #### Scenario: No record for a reviewed step
 
 - **GIVEN** a change whose roles are active at `code.review` and that has
   no `review.md`
-- **WHEN** the user runs `codev archive`
+- **WHEN** the user runs `compagnon archive`
 - **THEN** the command fails with `review_blocked`, naming
   `review_record_missing`
 
@@ -455,54 +455,54 @@ needs no section. `codev sync` is not affected.
 
 - **GIVEN** a change whose `change.yaml` sets `skeptic` and `newcomer` to
   `never` and whose proposal ticks no domain, without `review.md`
-- **WHEN** the user runs `codev archive`
+- **WHEN** the user runs `compagnon archive`
 - **THEN** the change is archived
 
 #### Scenario: Sync does not look at the record
 
 - **GIVEN** a change with a `high` finding `open`
-- **WHEN** the user runs `codev sync`
+- **WHEN** the user runs `compagnon sync`
 - **THEN** the specs are merged
 
 ### Requirement: The record is read by future versions and older ones keep working
 
-A record whose format marker is greater than the format this codev reads
+A record whose format marker is greater than the format this Compagnon reads
 SHALL NOT be checked: validation reports the warning
-`review_format_unsupported` naming the format, and `codev archive` refuses
-it, telling the user to update codev. A codev that predates the record
-ignores `review.md`; that cannot be tested from this codev, and the
+`review_format_unsupported` naming the format, and `compagnon archive` refuses
+it, telling the user to update Compagnon. A Compagnon that predates the record
+ignores `review.md`; that cannot be tested from this Compagnon, and the
 design records why it holds.
 
-#### Scenario: A record from a newer codev
+#### Scenario: A record from a newer Compagnon
 
-- **GIVEN** a record starting with `<!-- codev-review: 2 -->`
-- **WHEN** the user runs `codev validate <change>`
+- **GIVEN** a record starting with `<!-- compagnon-review: 2 -->`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_format_unsupported` warning is reported and no other
   review finding
 
 ### Requirement: The record is not a planning artifact
 
-The review record SHALL NOT change the state `codev status` reports for
-the change's artifacts, and `codev sync` SHALL leave it in place. `codev
+The review record SHALL NOT change the state `compagnon status` reports for
+the change's artifacts, and `compagnon sync` SHALL leave it in place. `compagnon
 archive` moves it with the change; an archived record is never checked
-again, and `codev changelog` does not read it.
+again, and `compagnon changelog` does not read it.
 
 #### Scenario: Status ignores the record
 
 - **GIVEN** a change with a `review.md` and no other artifact
-- **WHEN** the user runs `codev status --json`
+- **WHEN** the user runs `compagnon status --json`
 - **THEN** the artifacts' states are those of a change without `review.md`
 
 #### Scenario: The changelog ignores the record
 
 - **GIVEN** an archived change whose folder holds a `review.md`
-- **WHEN** the user runs `codev changelog`
+- **WHEN** the user runs `compagnon changelog`
 - **THEN** the release notes are those of its proposal alone
 
 #### Scenario: The archive keeps the record
 
 - **GIVEN** a change whose review is settled
-- **WHEN** the user runs `codev archive`
+- **WHEN** the user runs `compagnon archive`
 - **THEN** `review.md` is in the dated archive folder
 
 ### Requirement: A finding presented to the human shows its impact
@@ -528,7 +528,7 @@ scales, that:
 
 #### Scenario: The evidence rule reaches the skills
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the Compagnon workflow catalog
 - **WHEN** the `propose` and `apply` skills are rendered
 - **THEN** each says that a `medium` or `high` finding with confidence
   `high` quotes the line and states the scenario that fails
@@ -537,7 +537,7 @@ scales, that:
 
 #### Scenario: What is not a finding reaches the skills
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the Compagnon workflow catalog
 - **WHEN** the `propose` and `apply` skills are rendered
 - **THEN** each lists as not a finding a concern another role owns, code
   the change does not touch, what the plan excludes, a missing test the
@@ -545,7 +545,7 @@ scales, that:
 
 #### Scenario: One finding per defect
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the Compagnon workflow catalog
 - **WHEN** the `propose` and `apply` skills are rendered
 - **THEN** each says that a defect is reported once with its consequences
   in its recommendation, and that two defects needing two fixes are two
@@ -561,7 +561,7 @@ the finding's own role. A record without `raised_by` stays valid: the
 finding was raised by its role alone. `raised_by` does not change who
 re-checks the answers: the finding's own role does.
 
-`codev review --json` SHALL give each finding `raisedBy`, the list as
+`compagnon review --json` SHALL give each finding `raisedBy`, the list as
 written or the finding's role alone, and each role of a step
 `credited`, the ids of the findings of other roles of that step whose
 `raised_by` names it. The human output SHALL name, for a finding raised
@@ -572,7 +572,7 @@ by several roles, the other roles.
 - **GIVEN** a record whose `### security` section holds `R-security-1`
   with `raised_by: [security, skeptic]` and whose `### skeptic` section
   says `No finding.`
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** `R-security-1` has `raisedBy: ["security", "skeptic"]`
 - **AND** the `skeptic` role of that step has `credited:
   ["R-security-1"]`, and no review finding is reported
@@ -580,14 +580,14 @@ by several roles, the other roles.
 #### Scenario: A finding without `raised_by`
 
 - **GIVEN** a record whose findings carry no `raised_by`
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** each finding's `raisedBy` holds its role alone
 
 #### Scenario: A malformed `raised_by`
 
 - **GIVEN** a finding of `### security` with `raised_by: [skeptic,
   security]`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error at the finding's block says the
   first entry must be `security`
 
@@ -603,7 +603,7 @@ or role holding two `Mode:` or two `Fallback:` lines. These lines do not
 change the role's state: a role still holds findings, `No finding.` or
 `Disabled by configuration.`.
 
-`codev review --json` SHALL give each step `mode` (`null` when not
+`compagnon review --json` SHALL give each step `mode` (`null` when not
 written) and `summarized` (the texts, in file order), and each role
 `fallback` (`null` when not written). The human output SHALL print them.
 
@@ -613,7 +613,7 @@ written) and `summarized` (the texts, in file order), and each role
   isolated.` and `Summarized: src/big.rs, diff over the limit.`, and
   whose `### newcomer` says `Fallback: the sub-agent timed out twice.`
   then `No finding.`
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** the step has `mode: "isolated"` and `summarized: ["src/big.rs,
   diff over the limit"]`
 - **AND** the `newcomer` role has `fallback: "the sub-agent timed out
@@ -622,13 +622,13 @@ written) and `summarized` (the texts, in file order), and each role
 #### Scenario: A record written before isolated review
 
 - **GIVEN** a record without `Mode:`, `Summarized:` or `Fallback:` lines
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** each step has `mode: null` and `summarized: []`, and each role
   `fallback: null`
 
 #### Scenario: An unknown mode in the record
 
 - **GIVEN** a record whose `## plan.challenge` holds `Mode: parallel.`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error at that line names `inline` and
   `isolated`

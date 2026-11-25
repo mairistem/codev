@@ -31,14 +31,14 @@ and `build.gradle`. The other roles carry no trigger.
 
 - **GIVEN** a change `add-login` whose diff adds the file
   `src/auth/session.rs`
-- **WHEN** the user runs `codev roles --change add-login --json`
+- **WHEN** the user runs `compagnon roles --change add-login --json`
 - **THEN** `suggestions` holds `security`, with a match of kind `paths`,
   source `security`, and path `src/auth/session.rs`
 
 #### Scenario: A manifest trigger matches at any depth
 
 - **GIVEN** a change whose diff modifies `services/api/package.json`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `suggestions` holds `security`, with a match of kind
   `manifests` and trigger `package.json`
 
@@ -46,14 +46,14 @@ and `build.gradle`. The other roles carry no trigger.
 
 - **GIVEN** a change whose diff adds, at line 12 of `src/db.rs`, the line
   `sqlx::query("ALTER TABLE users DROP COLUMN phone")`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `suggestions` holds `migration`, with a match of kind
   `patterns`, path `src/db.rs` and line 12
 
 #### Scenario: Every expert's triggers suggest its own domain
 
 - **GIVEN** the built-in role catalog
-- **WHEN** the test suite of `codev-core` runs
+- **WHEN** the test suite of `compagnon-core` runs
 - **THEN** it fails if an expert carries no trigger group, if a group names
   a domain other than its expert's, if a glob or a regular expression does
   not compile, or if a non-expert role carries triggers
@@ -61,18 +61,18 @@ and `build.gradle`. The other roles carry no trigger.
 #### Scenario: A removed line suggests nothing
 
 - **GIVEN** a change whose diff only removes lines holding `password`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** no pattern match is reported for those lines
 
 ### Requirement: The change's diff is read from git, never failing
 
-For a change, codev SHALL read a diff made of: the changes between the
+For a change, compagnon SHALL read a diff made of: the changes between the
 merge-base of `HEAD` and the default branch and the working tree —
 committed, staged and unstaged alike — plus the untracked files that git
 does not ignore. The default branch SHALL be the one `origin/HEAD` points
 to, else the local branch `main`, else `master`. Only files under the
 project root are read, and their paths are relative to it,
-`/`-separated, on every OS. Line endings `\r\n` count as `\n`. codev
+`/`-separated, on every OS. Line endings `\r\n` count as `\n`. compagnon
 reads the repository and never contacts a remote: an out-of-date
 `origin/HEAD` is used as it is.
 
@@ -86,20 +86,20 @@ reason, suggests no domain, and does not fail because of it.
 - **GIVEN** a branch whose default branch is `main`, with a file
   committed since the merge-base, a staged file, a modified unstaged file
   and an untracked file
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `diff.available` is `true`, `diff.base` is `main`, and
   `diff.files` counts the four files
 
 #### Scenario: The default branch from `origin/HEAD`
 
 - **GIVEN** a repository where `origin/HEAD` points to `origin/trunk`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `diff.base` is `origin/trunk`
 
 #### Scenario: Not a git repository
 
 - **GIVEN** a project outside any git repository
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** the exit code is 0, `diff.available` is `false`,
   `diff.reason` says the project is not in a git repository, and
   `suggestions` is empty
@@ -108,7 +108,7 @@ reason, suggests no domain, and does not fail because of it.
 
 - **GIVEN** a git repository with neither `origin/HEAD`, `main` nor
   `master`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `diff.available` is `false` and `diff.reason` names the
   branches it looked for
 
@@ -117,7 +117,7 @@ reason, suggests no domain, and does not fail because of it.
 - **GIVEN** a project whose root is the directory `packages/api` of a git
   repository, and a diff touching `packages/api/src/auth.rs` and
   `packages/web/src/auth.ts`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** only `src/auth.rs` is in the diff
 
 #### Scenario: Windows line endings
@@ -129,11 +129,11 @@ reason, suggests no domain, and does not fail because of it.
 
 ### Requirement: Noise is left out and the scan is capped
 
-Before matching, codev SHALL leave out of every trigger the files whose
+Before matching, compagnon SHALL leave out of every trigger the files whose
 path is:
 
-- under the project's planning directory (`_codev/`) or a codev-generated
-  skill (`.claude/skills/codev-*/`) — category `planning`;
+- under the project's planning directory (`_compagnon/`) or a compagnon-generated
+  skill (`.claude/skills/compagnon-*/`) — category `planning`;
 - under a directory named `node_modules`, `vendor`, `third_party`,
   `third-party` or `.yarn` — category `vendored`;
 - a lock file (`Cargo.lock`, `package-lock.json`, `npm-shrinkwrap.json`,
@@ -161,14 +161,14 @@ the files skipped per category.
 #### Scenario: A lock file suggests nothing
 
 - **GIVEN** a change whose diff only modifies `Cargo.lock`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `suggestions` is empty and `diff.skipped.lockfile` is 1
 
 #### Scenario: Vendored and planning files suggest nothing
 
 - **GIVEN** a change whose diff adds `vendor/auth/token.go` and
-  `_codev/changes/<name>/design.md`, both holding `password`
-- **WHEN** the user runs `codev roles --change <name> --json`
+  `_compagnon/changes/<name>/design.md`, both holding `password`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `suggestions` is empty and `diff.skipped` counts one `vendored`
   and one `planning` file
 
@@ -176,28 +176,28 @@ the files skipped per category.
 
 - **GIVEN** a change whose diff only modifies `docs/security.md`, which
   mentions `password`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** no pattern match is reported and `diff.skipped.prose` is 1
 
 #### Scenario: A binary file is matched by its path only
 
 - **GIVEN** a change whose diff adds the binary file
   `src/components/logo.png`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `suggestions` holds `user-interface` through a `paths` match,
   and `diff.skipped.binary` is 1
 
 #### Scenario: A huge diff is truncated
 
 - **GIVEN** a change whose diff touches 2500 files
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `diff.files` is 2500, `diff.truncated` is `true`, and the files
   after the first 2000 in path order are matched by no trigger
 
 #### Scenario: An untracked symbolic link is not read
 
 - **GIVEN** an untracked symbolic link `notes` pointing outside the project
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** the link's target is not read and no pattern match names
   `notes`
 
@@ -215,7 +215,7 @@ domain's state SHALL be:
 - `unticked` otherwise — including when the proposal does not exist yet,
   has no `## Domains` section, or says `None`.
 
-With `--change`, `codev roles --json` SHALL carry `diff` — `available`,
+With `--change`, `compagnon roles --json` SHALL carry `diff` — `available`,
 `reason` (`null` when available), `base` (the default branch used,
 `null` when unavailable), `files`, `scanned`, `skipped` (a count per
 category, only the categories met) and `truncated` — and `suggestions`,
@@ -233,7 +233,7 @@ line per suggested domain with its state and its first match.
 
 - **GIVEN** a change whose proposal ticks `security` and whose diff adds
   `src/auth/session.rs`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** the `security` suggestion has `state: "ticked"`
 
 #### Scenario: A justified domain
@@ -241,7 +241,7 @@ line per suggested domain with its state and its first match.
 - **GIVEN** a change whose proposal lists
   `- [ ] security — only renames a variable` and whose diff adds
   `src/auth/session.rs`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** the `security` suggestion has `state: "justified"` and
   `justification: "only renames a variable"`
 
@@ -249,48 +249,48 @@ line per suggested domain with its state and its first match.
 
 - **GIVEN** a change whose `## Domains` section says `None` and whose diff
   adds `src/auth/session.rs`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** the `security` suggestion has `state: "unticked"`
 
 #### Scenario: A disabled expert suggests nothing
 
 - **GIVEN** a configuration with `roles: { accessibility: never }` and a
   change whose diff adds `src/components/Button.tsx`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `suggestions` holds no `user-interface`
 
 #### Scenario: Without a change
 
-- **WHEN** the user runs `codev roles --at plan.challenge --json`
+- **WHEN** the user runs `compagnon roles --at plan.challenge --json`
 - **THEN** `diff` is `null` and `suggestions` is empty
 
 #### Scenario: Suggestions in the human output
 
 - **GIVEN** a change whose diff adds `src/auth/session.rs` and whose
   proposal ticks nothing
-- **WHEN** the user runs `codev roles --change <name>`
+- **WHEN** the user runs `compagnon roles --change <name>`
 - **THEN** it prints the diff's summary and a line naming `security`,
   `unticked`, the trigger `**/auth/**` and `src/auth/session.rs`
 
 #### Scenario: Run twice, the same answer
 
 - **GIVEN** a change and an unchanged working tree
-- **WHEN** the user runs `codev roles --change <name> --json` twice
+- **WHEN** the user runs `compagnon roles --change <name> --json` twice
 - **THEN** both documents are identical, and no file was written
 
 ### Requirement: The project adds its own triggers under `triggers:`
 
-`_codev/config.yaml` SHALL accept a top-level `triggers:` list of groups
+`_compagnon/config.yaml` SHALL accept a top-level `triggers:` list of groups
 of the same shape as an expert's — `domain`, `paths`, `manifests`,
 `patterns` — whose matches have the source `project`. They are evaluated
 whatever the project's or the change's role settings. The `triggers:` key
 of an inherited source's configuration MUST be ignored.
 
-`codev validate` SHALL report, at the line of the project's `triggers:`
+`compagnon validate` SHALL report, at the line of the project's `triggers:`
 key, the error `invalid_trigger` for a group whose domain is missing or
 not one of the six, a group with no trigger, or a glob or regular
-expression that does not compile or exceeds codev's size limit; and the
-warning `invalid_trigger` for a key of a group codev does not know. A
+expression that does not compile or exceeds compagnon's size limit; and the
+warning `invalid_trigger` for a key of a group compagnon does not know. A
 group with an error is ignored by every command, which reports it as an
 `invalid_trigger` warning in its `status`; a group with an unknown key is
 used without that key.
@@ -300,7 +300,7 @@ used without that key.
 - **GIVEN** a configuration whose `triggers:` holds a group
   `{ domain: personal-data, paths: ["src/billing/**"] }` and a change
   whose diff adds `src/billing/invoice.rs`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** `suggestions` holds `personal-data` with a match whose source
   is `project`
 
@@ -308,29 +308,29 @@ used without that key.
 
 - **GIVEN** a configuration whose `triggers:` holds a group with
   `domain: secrets` and a group whose pattern is `(unclosed`
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** two `invalid_trigger` errors are reported on
-  `_codev/config.yaml`, one naming `secrets`, one naming `(unclosed`
-- **AND** `codev roles --change <name> --json` succeeds with an
+  `_compagnon/config.yaml`, one naming `secrets`, one naming `(unclosed`
+- **AND** `compagnon roles --change <name> --json` succeeds with an
   `invalid_trigger` warning in `status`
 
 #### Scenario: An unknown key in a group
 
 - **GIVEN** a configuration whose `triggers:` group holds the key
   `exclude`
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** an `invalid_trigger` warning names `exclude`
 - **AND** the group's other triggers still suggest their domain
 
 #### Scenario: `triggers` is a known key
 
 - **GIVEN** a configuration with a valid `triggers:` list
-- **WHEN** the user runs `codev status --json`
+- **WHEN** the user runs `compagnon status --json`
 - **THEN** `status` holds no `unknown_config_key` warning
 
 #### Scenario: Triggers of an inherited source are ignored
 
 - **GIVEN** a project inheriting from a source whose configuration holds
   `triggers:` with a group `{ domain: operations, paths: ["**"] }`
-- **WHEN** the user runs `codev roles --change <name> --json`
+- **WHEN** the user runs `compagnon roles --change <name> --json`
 - **THEN** no match has the source `project`

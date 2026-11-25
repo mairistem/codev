@@ -5312,7 +5312,7 @@ The rationale for the choice.
     }
 
     /// A project set up before the rename, as the former version left it.
-    fn codev_project() -> Harness {
+    fn former_project() -> Harness {
         Harness::new()
             .with(
                 &former_root("config.yaml"),
@@ -5342,7 +5342,7 @@ The rationale for the choice.
 
     #[test]
     fn migrate_converts_a_codev_project() {
-        let h = codev_project();
+        let h = former_project();
         let outcome = migrate(&h.ctx(), false).unwrap();
         assert!(!outcome.already_migrated);
         let config = h.fs.read("/p/_compagnon/config.yaml").unwrap();
@@ -5367,7 +5367,7 @@ The rationale for the choice.
 
     #[test]
     fn migrate_dry_run_writes_nothing() {
-        let h = codev_project();
+        let h = former_project();
         let before: Vec<(PathBuf, Option<String>)> =
             h.fs.paths()
                 .into_iter()
@@ -5398,7 +5398,7 @@ The rationale for the choice.
     #[test]
     fn migrate_keeps_a_hand_edited_skill() {
         let edited = generated_skill("apply").replace("## Steps", "## Steps (ours)");
-        let h = codev_project().with(&format!("{}/SKILL.md", former_skill_dir("apply")), &edited);
+        let h = former_project().with(&format!("{}/SKILL.md", former_skill_dir("apply")), &edited);
         let outcome = migrate(&h.ctx(), false).unwrap();
         assert_eq!(
             h.fs.read(format!("{}/SKILL.md", former_skill_dir("apply")))
@@ -5429,7 +5429,7 @@ The rationale for the choice.
 
     #[test]
     fn migrate_with_both_roots_fails_with_migration_conflict() {
-        let h = codev_project().with("/p/_compagnon/config.yaml", "schema: spec-driven\n");
+        let h = former_project().with("/p/_compagnon/config.yaml", "schema: spec-driven\n");
         let before = h.fs.paths();
         let err = migrate(&h.ctx(), false).expect_err("a conflict");
         assert_eq!(err.code, "migration_conflict");
@@ -5445,7 +5445,7 @@ The rationale for the choice.
 
     #[test]
     fn migrate_leaves_spec_prose_alone() {
-        let h = codev_project();
+        let h = former_project();
         migrate(&h.ctx(), false).unwrap();
         assert_eq!(
             h.fs.read("/p/_compagnon/specs/auth/spec.md"),
@@ -5499,7 +5499,7 @@ The rationale for the choice.
     fn migrate_failure_names_the_path_and_the_applied_operations() {
         // A file of the user's sits in a generated skill's folder: the
         // folder cannot be removed, after the root already moved.
-        let h = codev_project().with(
+        let h = former_project().with(
             &format!("{}/notes.txt", former_skill_dir("propose")),
             "mine",
         );
@@ -5516,7 +5516,7 @@ The rationale for the choice.
 
     #[test]
     fn migrate_resumes_after_a_failure_past_the_root_rename() {
-        let h = codev_project().with(
+        let h = former_project().with(
             &format!("{}/notes.txt", former_skill_dir("propose")),
             "mine",
         );
@@ -5554,7 +5554,7 @@ The rationale for the choice.
 
     #[test]
     fn migrate_rewrites_the_pr_template_managed_section() {
-        let h = codev_project().with(
+        let h = former_project().with(
             "/p/.github/PULL_REQUEST_TEMPLATE.md",
             &format!(
                 "Describe your change.\n\n{} — managed\nold\n{}\n",

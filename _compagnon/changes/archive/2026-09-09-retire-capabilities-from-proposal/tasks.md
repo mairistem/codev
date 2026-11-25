@@ -2,7 +2,7 @@
 
 ## 1. Core — `Plan.deletions`
 
-- [x] 1.1 Add `deletions: Vec<PathBuf>` to `codev_core::plan::Plan`,
+- [x] 1.1 Add `deletions: Vec<PathBuf>` to `compagnon_core::plan::Plan`,
       initialized empty via the existing `#[derive(Default)]`.
 - [x] 1.2 Add `Plan::delete(&mut self, path: impl Into<PathBuf>)` —
       deduplication on exact path, like `dir()`.
@@ -33,7 +33,7 @@
       with flag → plan with `should_delete_spec: true`, edits applied;
       partial emptying with flag → normal plan,
       `should_delete_spec: false`.
-- [x] 2.5 Adapt the existing calls in `codev-engine::sync.rs` to pass
+- [x] 2.5 Adapt the existing calls in `compagnon-engine::sync.rs` to pass
       the new parameter (see task 4.1).
 
 ## 3. Shell — `FileSystem::remove_file`
@@ -87,7 +87,7 @@
       rule).
 - [x] 6.3 The sync and archive failure shape in `main.rs` gains
       `"deleted": []` — consistency with the shape's other fields.
-- [x] 6.4 Test: `codev sync <c> --json` on a change that removes a
+- [x] 6.4 Test: `compagnon sync <c> --json` on a change that removes a
       capability does expose `deleted[0]`.
 
 ## 7. Proposal template
@@ -97,7 +97,7 @@
       `## Capabilities`. Comment: "One line per removed capability,
       exact path. Requires `retire_capabilities: true` in
       `change.yaml`."
-- [x] 7.2 `codev instructions proposal` returns the updated template
+- [x] 7.2 `compagnon instructions proposal` returns the updated template
       (via `include_str!`).
 
 ## 8. Docs + dogfooding
@@ -107,7 +107,7 @@
       behavior."
 - [x] 8.2 `cargo test --workspace` stays green, +15 tests minimum.
 - [x] 8.3 `cargo clippy --workspace --all-targets` free of warnings.
-- [x] 8.4 `codev validate --strict` on this repository stays green.
+- [x] 8.4 `compagnon validate --strict` on this repository stays green.
 - [x] 8.5 Manual test: create a test change that removes a dummy
       capability, apply it via `sync`, check that the file is
       deleted, restore.

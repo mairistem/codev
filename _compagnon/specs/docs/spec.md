@@ -2,17 +2,17 @@
 
 ## Purpose
 
-Deliver complete codev documentation in a **single, shareable**
+Deliver complete Compagnon documentation in a **single, shareable**
 form: a self-contained HTML file (embedded CSS, no external assets)
-that the `codev` binary can generate and open by itself, to
+that the `compagnon` binary can generate and open by itself, to
 complement the CLI help and serve as a point of sharing with third
 parties.
 
 ## Requirements
 
-### Requirement: `codev docs` generates a self-contained HTML file and opens it in the browser
+### Requirement: `compagnon docs` generates a self-contained HTML file and opens it in the browser
 
-The `codev` binary SHALL expose a `docs` subcommand which, without
+The `compagnon` binary SHALL expose a `docs` subcommand which, without
 arguments, generates a self-contained HTML file and opens it in the
 default system browser.
 
@@ -23,24 +23,24 @@ The HTML MUST:
   runtime script;
 - correctly render the six common markdown elements — headings,
   paragraphs, lists, tables, code blocks, blockquotes;
-- carry the name `codev` and the version of the binary that
+- carry the name `compagnon` and the version of the binary that
   generated it at the top;
 - open in any recent browser, including **offline**.
 
 The default output path MUST be in the system temporary directory
 (`std::env::temp_dir()`) and carry the version in its name:
-`codev-docs-<version>.html`.
+`compagnon-docs-<version>.html`.
 
-#### Scenario: `codev docs` without arguments opens the HTML
+#### Scenario: `compagnon docs` without arguments opens the HTML
 
-- **GIVEN** a `codev` binary at version 0.1.0
-- **WHEN** the user runs `codev docs`
-- **THEN** a file `codev-docs-0.1.0.html` is written to
+- **GIVEN** a `compagnon` binary at version 0.1.0
+- **WHEN** the user runs `compagnon docs`
+- **THEN** a file `compagnon-docs-0.1.0.html` is written to
   `std::env::temp_dir()`
 - **AND** a system call opens that file in the default browser
   (macOS `open`, Linux `xdg-open`, Windows `start`)
 - **AND** the exit code is 0
-- **AND** the HTML carries the name `codev` and the version `0.1.0` at the top
+- **AND** the HTML carries the name `compagnon` and the version `0.1.0` at the top
 
 #### Scenario: The HTML is self-contained
 
@@ -50,9 +50,9 @@ The default output path MUST be in the system temporary directory
   request)
 - **AND** no `<link>` element points to an `http(s):` URL
 
-### Requirement: `codev docs --print` prints the markdown source to stdout
+### Requirement: `compagnon docs --print` prints the markdown source to stdout
 
-`codev docs --print` MUST print the **markdown source** of the
+`compagnon docs --print` MUST print the **markdown source** of the
 documentation to stdout, without conversion. The output is useful
 for piping into `less`, `bat`, or a tool that consumes markdown
 (an LLM, for example).
@@ -63,16 +63,16 @@ MUST return exit code 0.
 #### Scenario: `--print` outputs non-empty markdown
 
 - **GIVEN** the current binary
-- **WHEN** the user runs `codev docs --print`
+- **WHEN** the user runs `compagnon docs --print`
 - **THEN** stdout carries non-empty content (> 1000 bytes — the docs
   have several sections)
 - **AND** the content starts with a level-1 markdown heading
-  (`# codev`)
+  (`# compagnon`)
 - **AND** no file is written
 
-### Requirement: `codev docs --write <PATH>` writes without opening
+### Requirement: `compagnon docs --write <PATH>` writes without opening
 
-`codev docs --write <PATH>` MUST write the self-contained HTML to
+`compagnon docs --write <PATH>` MUST write the self-contained HTML to
 the given path and **open nothing**. This is the "targeted sharing"
 mode — placing the docs in a shared drive, a Confluence folder, a
 repository.
@@ -86,24 +86,24 @@ a path with several missing levels).
 
 - **GIVEN** the current binary
 - **AND** a working directory where `./out/` exists
-- **WHEN** the user runs `codev docs --write ./out/manual.html`
+- **WHEN** the user runs `compagnon docs --write ./out/manual.html`
 - **THEN** the file `./out/manual.html` exists and carries the
   self-contained HTML
 - **AND** no browser is opened
 - **AND** the exit code is 0
 
-### Requirement: `codev docs` does not depend on an initialized repository
+### Requirement: `compagnon docs` does not depend on an initialized repository
 
-`codev docs` MUST NOT read `_codev/config.yaml` or any other
+`compagnon docs` MUST NOT read `_compagnon/config.yaml` or any other
 project state. The command works from any directory, even without
-a codev repository, even without `.git`.
+a Compagnon repository, even without `.git`.
 
-#### Scenario: Works outside a codev repository
+#### Scenario: Works outside a Compagnon repository
 
-- **GIVEN** a user in a directory that has no `_codev/`
-- **WHEN** they run `codev docs --print`
+- **GIVEN** a user in a directory that has no `_compagnon/`
+- **WHEN** they run `compagnon docs --print`
 - **THEN** the markdown is printed normally
-- **AND** no error message mentions `_codev`
+- **AND** no error message mentions `_compagnon`
 
 ### Requirement: The documentation exists in English and French with the same structure
 
@@ -118,37 +118,37 @@ edition.
 
 - **GIVEN** the repository's `docs/en/src/SUMMARY.md` and
   `docs/fr/src/SUMMARY.md`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if the two tables of contents do not list the same
   chapter paths in the same order
 
-### Requirement: `codev docs --lang` selects the documentation language
+### Requirement: `compagnon docs --lang` selects the documentation language
 
-`codev docs` SHALL accept `--lang <en|fr>`, defaulting to `en`, in all three
+`compagnon docs` SHALL accept `--lang <en|fr>`, defaulting to `en`, in all three
 forms (open, `--write`, `--print`). The selected language's chapters MUST
 be embedded in the binary in the order of its `SUMMARY.md` and concatenated
 into a single document; links between chapters MUST be rewritten to anchors
 within that document, and the HTML MUST declare the language in
 `<html lang>`. When opened by default, a non-English page is written to
-`codev-docs-<version>-<lang>.html`.
+`compagnon-docs-<version>-<lang>.html`.
 
 #### Scenario: French documentation printed
 
 - **GIVEN** the current binary
-- **WHEN** the user runs `codev docs --print --lang fr`
-- **THEN** stdout carries the French documentation, starting with `# codev`
+- **WHEN** the user runs `compagnon docs --print --lang fr`
+- **THEN** stdout carries the French documentation, starting with `# compagnon`
 - **AND** no file is written
 
 #### Scenario: Cross-chapter links work on the single page
 
 - **GIVEN** a chapter that links to `concepts.md#delta`
-- **WHEN** the user runs `codev docs --write out.html`
+- **WHEN** the user runs `compagnon docs --write out.html`
 - **THEN** the link points to `#delta`
 - **AND** an element with the id `delta` exists in `out.html`
 
 ### Requirement: Warning callouts stand out from notes in the offline manual
 
-In the HTML that `codev docs` produces, a blockquote that opens on a bold
+In the HTML that `compagnon docs` produces, a blockquote that opens on a bold
 warning title — `**Warning**` in English, `**Attention**` in French — MUST
 be rendered as a warning callout, visually distinct from a note (a coral
 rule instead of the green one). Other blockquotes keep the note style.
@@ -156,20 +156,20 @@ rule instead of the green one). Other blockquotes keep the note style.
 #### Scenario: Warning and note callouts differ
 
 - **GIVEN** a chapter containing `> **Warning**` and `> **Note**` callouts
-- **WHEN** the user runs `codev docs --write out.html`
+- **WHEN** the user runs `compagnon docs --write out.html`
 - **THEN** the warning blockquote carries a distinct style class
 - **AND** the note blockquote does not
 
-### Requirement: `codev docs --print` stops silently when its reader exits
+### Requirement: `compagnon docs --print` stops silently when its reader exits
 
-When the output of `codev docs --print` is closed before everything is
-written (for example `codev docs --print | head`), the command MUST stop
+When the output of `compagnon docs --print` is closed before everything is
+written (for example `compagnon docs --print | head`), the command MUST stop
 without printing an error and exit with code 0. Any other write error is
 reported and exits with a non-zero code.
 
 #### Scenario: Piping into `head`
 
-- **WHEN** the user runs `codev docs --print | head -1`
+- **WHEN** the user runs `compagnon docs --print | head -1`
 - **THEN** the first line of the manual is printed
 - **AND** nothing is printed on stderr
 
@@ -189,7 +189,7 @@ activation, and the sections of a role's knowledge.
 
 - **GIVEN** the role catalog and the `roles.md` chapters of `docs/en` and
   `docs/fr`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if a role of the catalog is missing from either table,
   or listed without its display name in that language
 
@@ -197,14 +197,14 @@ activation, and the sections of a role's knowledge.
 
 - **GIVEN** a `roles.md` whose table of built-in roles lists an id the
   catalog does not hold
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails and names that id
 
 #### Scenario: Every expert is documented with its domain
 
 - **GIVEN** the role catalog and the `roles.md` chapters of `docs/en` and
   `docs/fr`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if an expert's row does not name its domain
 
 ### Requirement: The review record is documented in both languages
@@ -213,15 +213,15 @@ The documentation of each language SHALL hold a "Review record" guide —
 the file `guides/review-record.md`, listed in its table of contents — that
 describes the record's layout, a finding's fields, the statuses and who
 may set them, the answer loop, the checks, the archive gate and what to do
-for a change started with an earlier codev. The Roles chapter of each
+for a change started with an earlier Compagnon. The Roles chapter of each
 language SHALL give the severity and confidence scales; the English
-chapter MUST give each level's definition exactly as codev's skills
+chapter MUST give each level's definition exactly as Compagnon's skills
 receive it.
 
 #### Scenario: The guide exists in both languages
 
 - **GIVEN** the repository's `docs/en` and `docs/fr`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if either table of contents does not list
   `guides/review-record.md`
 
@@ -229,7 +229,7 @@ receive it.
 
 - **GIVEN** the English `roles.md` and the severity and confidence scales
   the skills receive
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if a level's definition is missing from the chapter,
   or if a level is missing from the French chapter
 
@@ -247,7 +247,7 @@ SHALL document the `triggers:` key.
 
 - **GIVEN** the `roles.md` and `reference/configuration.md` chapters of
   `docs/en` and `docs/fr`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if a `roles.md` does not name `paths`, `manifests`,
   `patterns`, `domain_suggested` and `--all-stacks`, or if a
   `configuration.md` has no `triggers` section
@@ -255,7 +255,7 @@ SHALL document the `triggers:` key.
 #### Scenario: A chapter that forgets the flag
 
 - **GIVEN** a French `roles.md` that does not name `--all-stacks`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails and names the French chapter
 
 ### Requirement: Isolated review is documented in both languages
@@ -265,7 +265,7 @@ what a reviewer receives in isolated mode, the fallback to inline, and
 the meeting — how findings are merged, credited and ranked. The
 configuration reference of each language SHALL document `review.mode`,
 its values, its default and the per-change override, how to switch
-modes, and that a project using the key raises `codev_version` to the
+modes, and that a project using the key raises `compagnon_version` to the
 release that reads it. The skills chapter of each language SHALL say which skills
 request the sub-agent tool and when. No error case applies: the
 requirement is on the repository's documentation, checked by its tests.
@@ -273,9 +273,9 @@ requirement is on the repository's documentation, checked by its tests.
 #### Scenario: Both languages document the review modes
 
 - **GIVEN** the repository's `docs/en` and `docs/fr`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if the Roles chapter or the configuration reference
   of either language does not name `review.mode`, `inline` and
   `isolated`, if the configuration reference's `review` section does not
-  name `codev_version`, or if the skills chapter of either language does
+  name `compagnon_version`, or if the skills chapter of either language does
   not name the `Agent` tool

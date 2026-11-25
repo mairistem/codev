@@ -1,12 +1,12 @@
-# Proposal: Specify behaviors that shipped without a codev change
+# Proposal: Specify behaviors that shipped without a compagnon change
 
 ## Why
 
 Four observable behaviors reached `main` through plain pull requests instead
-of a codev change, so the main specs do not describe them: decisions saved
-with Windows line endings, coral warning callouts in `codev docs`, a silent
-`codev docs --print` when its reader exits, and forward slashes in the paths
-`codev init --inherit` writes. codev is developed with codev: the specs must
+of a compagnon change, so the main specs do not describe them: decisions saved
+with Windows line endings, coral warning callouts in `compagnon docs`, a silent
+`compagnon docs --print` when its reader exits, and forward slashes in the paths
+`compagnon init --inherit` writes. compagnon is developed with compagnon: the specs must
 describe what the system does, so these behaviors are specified now.
 
 ## What Changes
@@ -39,5 +39,5 @@ None.
 
 ## Impact
 
-- `_codev/specs/decisions/spec.md`, `_codev/specs/docs/spec.md`,
-  `_codev/specs/init/spec.md` only.
+- `_compagnon/specs/decisions/spec.md`, `_compagnon/specs/docs/spec.md`,
+  `_compagnon/specs/init/spec.md` only.

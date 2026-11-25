@@ -10,11 +10,11 @@ supported language its own text for every key.
 
 ### Requirement: Every structural keyword has a key and a text per language
 
-codev SHALL know a catalog of structural keywords, each identified by a
+Compagnon SHALL know a catalog of structural keywords, each identified by a
 stable key, and SHALL ship the languages English (`en`) and French (`fr`),
 each giving a text for every key. A key MAY have several texts in a
 language — alternative spellings or grammatical forms — and the first one
-is the form codev writes. The shipped keywords are:
+is the form Compagnon writes. The shipped keywords are:
 
 | Key | `en` | `fr` |
 |---|---|---|
@@ -47,12 +47,12 @@ is the form codev writes. The shipped keywords are:
 
 Domain names (`security`, `personal-data`…), finding codes and the
 `**WHEN**` / `**THEN**` scenario lines are not keywords of the catalog:
-codev does not read the scenario lines, and the other two are
+Compagnon does not read the scenario lines, and the other two are
 identifiers.
 
 #### Scenario: Every shipped language is complete
 
-- **GIVEN** the languages shipped with codev
+- **GIVEN** the languages shipped with Compagnon
 - **WHEN** the catalog is loaded
 - **THEN** each of `en` and `fr` gives at least one text for every key of
   the table
@@ -60,12 +60,12 @@ identifiers.
 #### Scenario: A key with several texts accepts each of them
 
 - **GIVEN** the key `normative`, whose `fr` texts are `DOIT` and `DOIVENT`
-- **WHEN** codev reads a French requirement
+- **WHEN** Compagnon reads a French requirement
 - **THEN** either word makes it normative
 
 ### Requirement: A keyword is recognized in every catalog language
 
-Wherever codev reads a structural keyword — in a main spec, a delta, a
+Wherever Compagnon reads a structural keyword — in a main spec, a delta, a
 proposal or a design — it SHALL recognize the text of that keyword's key in
 every language of the catalog, whatever the project's `language:`
 setting, and give it the same meaning. A document MAY mix languages: each
@@ -76,7 +76,7 @@ keyword is recognized on its own. Recognition is unchanged for English.
 - **GIVEN** a main spec holding `## Objet`, a sentence, `## Exigences`,
   then `### Exigence : Expiration de session` with a
   `#### Scénario : Inactivité`
-- **WHEN** codev reads the spec
+- **WHEN** Compagnon reads the spec
 - **THEN** it exposes the Purpose text and a requirement named
   `Expiration de session` carrying its scenario named `Inactivité`
 
@@ -84,7 +84,7 @@ keyword is recognized on its own. Recognition is unchanged for English.
 
 - **GIVEN** a project whose config has `language: en`
 - **AND** a delta written with `## Exigences AJOUTÉES`
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** the delta is read as an `ADDED` section, with no finding about
   its headings
 
@@ -92,23 +92,23 @@ keyword is recognized on its own. Recognition is unchanged for English.
 
 - **GIVEN** a delta holding `## ADDED Requirements` then
   `### Exigence : Annulation`
-- **WHEN** codev reads the delta
+- **WHEN** Compagnon reads the delta
 - **THEN** the `ADDED` operation carries the requirement `Annulation`
 
 #### Scenario: A word that is no keyword stays text
 
 - **GIVEN** a delta whose level-2 heading is `## Exigences AJOUTEES PLUS TARD`
-- **WHEN** codev reads the delta
+- **WHEN** Compagnon reads the delta
 - **THEN** the heading is not taken for an `ADDED` section
 
 ### Requirement: Keywords of new languages are matched with tolerance; English keeps its exact rules
 
-When codev compares a heading or a labelled line with a keyword text of a
+When Compagnon compares a heading or a labelled line with a keyword text of a
 language other than English, it SHALL ignore letter case, SHALL treat an
 accented letter as its unaccented form, and SHALL accept the text with or
 without a space before its colon — an ordinary space, a no-break space
 (U+00A0) or a narrow no-break space (U+202F). The English texts keep the
-rules codev applies today, so that no existing English document is read
+rules Compagnon applies today, so that no existing English document is read
 differently. A section heading matches only as a whole line; a heading
 that carries a name (requirement, scenario, decision) matches as the start
 of its line. The normative keywords are case-sensitive in every language,
@@ -121,7 +121,7 @@ scenario heading written without its accent.
 
 - **GIVEN** a delta holding `## exigences ajoutees` then
   `### Exigence: Annulation` with a `#### Scenario : Dans les temps`
-- **WHEN** codev reads the delta
+- **WHEN** Compagnon reads the delta
 - **THEN** the `ADDED` operation carries `Annulation` and its scenario
   `Dans les temps`
 
@@ -129,61 +129,61 @@ scenario heading written without its accent.
 
 - **GIVEN** a delta holding `## Exigences AJOUTÉES` then
   `### Exigence` followed by a no-break space (U+00A0) and `: Annulation`
-- **WHEN** codev reads the delta
+- **WHEN** Compagnon reads the delta
 - **THEN** the `ADDED` operation carries the requirement `Annulation`
 
 #### Scenario: English edge cases are read as today
 
 - **GIVEN** a delta whose section heading is `## ADDED   Requirements`,
   holding a requirement whose body has the line `### requirement: x`
-- **WHEN** codev reads the delta
-- **THEN** the findings and the requirements are those an earlier codev
+- **WHEN** Compagnon reads the delta
+- **THEN** the findings and the requirements are those an earlier Compagnon
   reports for the same file
 
 #### Scenario: Lower-case "doit" is not normative
 
 - **GIVEN** an added requirement whose only sentence is
   `Le portail doit afficher la date.`
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** a `requirement_no_shall` finding names the requirement
 
 ### Requirement: A project writes its keywords in its keyword language
 
-codev SHALL resolve a project's keyword language from its `language:`
+Compagnon SHALL resolve a project's keyword language from its `language:`
 setting: the language whose code is the setting's primary subtag, compared
 without regard to case (`fr`, `fr-CA` and `FR` give `fr`), when the keyword
 catalog ships that language, and English (`en`) otherwise, including when
 `language:` is absent. The keyword language is the language of the
-structural keywords codev's templates and skills write in a new artifact;
+structural keywords Compagnon's templates and skills write in a new artifact;
 the prose stays in the `language:` itself. Reading is unchanged: a keyword
-of any catalog language is still recognized wherever codev reads one.
+of any catalog language is still recognized wherever Compagnon reads one.
 
 #### Scenario: A shipped language
 
 - **GIVEN** a configuration with `language: fr`
-- **WHEN** codev resolves the keyword language
+- **WHEN** Compagnon resolves the keyword language
 - **THEN** it is `fr`
 
 #### Scenario: A regional variant of a shipped language
 
 - **GIVEN** a configuration with `language: fr-CA`
-- **WHEN** codev resolves the keyword language
+- **WHEN** Compagnon resolves the keyword language
 - **THEN** it is `fr`
 
 #### Scenario: An upper-case setting
 
 - **GIVEN** a configuration with `language: FR`
-- **WHEN** codev resolves the keyword language
+- **WHEN** Compagnon resolves the keyword language
 - **THEN** it is `fr`
 
 #### Scenario: A language the catalog does not ship
 
 - **GIVEN** a configuration with `language: de`
-- **WHEN** codev resolves the keyword language
+- **WHEN** Compagnon resolves the keyword language
 - **THEN** it is `en`
 
 #### Scenario: No configured language
 
 - **GIVEN** a configuration without `language:`
-- **WHEN** codev resolves the keyword language
+- **WHEN** Compagnon resolves the keyword language
 - **THEN** it is `en`

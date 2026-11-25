@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-### Requirement: `codev changelog` selects the changes archived between two git refs
+### Requirement: `compagnon changelog` selects the changes archived between two git refs
 
 `compagnon changelog` SHALL list the changes present in
 `_compagnon/changes/archive/` at `--until` — by default, in the working tree —

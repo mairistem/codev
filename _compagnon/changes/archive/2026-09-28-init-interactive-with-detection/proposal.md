@@ -1,20 +1,20 @@
-# Proposal: interactive codev init with auto-detection
+# Proposal: interactive compagnon init with auto-detection
 
 ## Why
 
-Today, `codev init` does the bare minimum: it creates the `_codev/`
+Today, `compagnon init` does the bare minimum: it creates the `_compagnon/`
 tree, writes a template `config.yaml` with the workflows **commented
 out**, and installs **three** skills — `propose`, `explore`,
 `onboard`. The four others (`apply`, `sync`, `archive`, `update`) are
-opt-in: one has to edit `_codev/config.yaml` by hand, uncomment the
-list, and rerun `codev update`.
+opt-in: one has to edit `_compagnon/config.yaml` by hand, uncomment the
+list, and rerun `compagnon update`.
 
-This default breaks discovery: a user who installs codev naturally
-types `/codev-apply` after `/codev-propose`, does not find the skill,
-and concludes that codev has no implementer — or that they installed
+This default breaks discovery: a user who installs compagnon naturally
+types `/compagnon-apply` after `/compagnon-propose`, does not find the skill,
+and concludes that compagnon has no implementer — or that they installed
 it wrong.
 
-Three other frictions that no `codev init` handles:
+Three other frictions that no `compagnon init` handles:
 
 - **MCP detection** — the project probably has one or more MCPs
   declared (Jira, Confluence, Figma). Today, the user has to
@@ -25,7 +25,7 @@ Three other frictions that no `codev init` handles:
 - **No onboarding** — the first invocation ends in a YAML file full of
   comments that the user has to decode.
 
-This change turns `codev init` into **real onboarding**: maximal
+This change turns `compagnon init` into **real onboarding**: maximal
 auto-detection, two targeted questions, config generated with
 provenance comments.
 
@@ -33,7 +33,7 @@ provenance comments.
 
 ### Detection (no question asked)
 
-On startup, `codev init` silently probes the current folder and
+On startup, `compagnon init` silently probes the current folder and
 derives:
 
 | Field | Source | Use |
@@ -51,7 +51,7 @@ The server-name → tool-id resolution rule is the Claude Code
 convention: spaces and dots → `_`, prefix `mcp__`, suffix `__<tool>`.
 For `"claude.ai Atlassian Rovo"` + `getJiraIssue` →
 `mcp__claude_ai_Atlassian_Rovo__getJiraIssue`. Pure function in
-`codev-core::detect::mcp`.
+`compagnon-core::detect::mcp`.
 
 ### Prompts (two questions, not three)
 
@@ -111,8 +111,8 @@ mcp:
 
 # detected from Cargo.toml — edit if needed
 context: |
-  Rust workspace project (4 crates: codev-core, codev-engine,
-  codev-agents, codev-cli), edition 2024, MSRV 1.89. MIT license.
+  Rust workspace project (4 crates: compagnon-core, compagnon-engine,
+  compagnon-agents, compagnon-cli), edition 2024, MSRV 1.89. MIT license.
   GitHub Actions CI.
 
   <what the user typed at question 2>
@@ -131,7 +131,7 @@ context: |
 - **Without a TTY** (non-interactive stdin — pipe, redirect): implicit
   `--yes`, no prompt.
 
-All these options compose: `codev init --preset complet --yes` uses
+All these options compose: `compagnon init --preset complet --yes` uses
 the preset and asks no question.
 
 ### Reversed default
@@ -143,7 +143,7 @@ flow:
 - **Interactive**: question 1 offers "Full (7)" as the default; the
   user can choose minimal.
 - **`--yes`**: applies the new default → 7 workflows.
-- **Missing from `_codev/config.yaml`**: `codev update` on an existing
+- **Missing from `_compagnon/config.yaml`**: `compagnon update` on an existing
   project applies the default → 7 workflows as well.
 
 The `skills` spec must be updated accordingly.
@@ -153,8 +153,8 @@ The `skills` spec must be updated accordingly.
 ### New Capabilities
 
 - **`init`** — new capability that describes the interactive contract
-  of `codev init`: detection, prompts, generation with provenance,
-  non-interactive flags. Today `codev init` has a behavior, but no
+  of `compagnon init`: detection, prompts, generation with provenance,
+  non-interactive flags. Today `compagnon init` has a behavior, but no
   spec pins it down — this change fills the gap.
 
 ### Modified Capabilities
@@ -170,11 +170,11 @@ None.
 ## Impact
 
 - **Code**:
-  - New module `codev-core::detect` (pure — receives `&[u8]` of
+  - New module `compagnon-core::detect` (pure — receives `&[u8]` of
     manifests, returns a typed `Detected`).
-  - New module `codev-core::config::generate` (pure — receives
+  - New module `compagnon-core::config::generate` (pure — receives
     `Detected` + user choices, returns YAML with comments).
-  - Rework of `codev-cli::commands::init`: orchestration
+  - Rework of `compagnon-cli::commands::init`: orchestration
     (sniff → prompt → generate → scaffold → install).
   - New workspace dependency: **`dialoguer`** (prompt library,
     mature, used by cargo/rustup). Rejected alternative: `inquire` —
@@ -182,31 +182,31 @@ None.
 - **JSON contract**: the `SetupOutcome`/`InitReportV1` contract gains
   an optional `detected` field that lists what was detected. Not
   breaking — additive.
-- **Backward compat**: on an already initialized project, `codev init`
+- **Backward compat**: on an already initialized project, `compagnon init`
   detects the existing `config.yaml` and **does not re-prompt** — same
-  idempotent behavior as today. Only difference: `codev update`
+  idempotent behavior as today. Only difference: `compagnon update`
   honors the new `DEFAULT_WORKFLOWS`, so a project that never set an
   explicit `workflows:` suddenly receives the 4 missing skills.
   Documented in the CHANGELOG.
 - **Tests**:
-  - `codev-core::detect`: unit tests per manifest (fixtures of
+  - `compagnon-core::detect`: unit tests per manifest (fixtures of
     `Cargo.toml`, `package.json`, etc.) + MCP tests per variant of
     `.mcp.json`.
-  - `codev-core::config::generate`: golden test — a fixed `Detected`
+  - `compagnon-core::config::generate`: golden test — a fixed `Detected`
     + known choices always produces the same YAML.
-  - `codev-cli::commands::init`: end-to-end `--yes` integration test
+  - `compagnon-cli::commands::init`: end-to-end `--yes` integration test
     with a `MemoryFileSystem`, plus a `--no-detect` test, plus a
     "without TTY implicit --yes" test.
 - **Files written**: ~4 new code files, ~2 modified, the `init` spec
   (~150 lines), `skills` delta (MODIFIED), test fixtures, a
-  `docs/codev.md` §2 entry.
+  `docs/compagnon.md` §2 entry.
 - **Out of scope**:
   - **Figma / design MCP detection** — the same mechanism will apply
     when we add the `mcp.design_tool:` key, but not in this batch. The
     matching function remains extensible (list of patterns).
   - **Rule detection** (per-artifact `rules:`) — too niche; users
     discover them by editing the YAML.
-  - **`codev init --update`** — a flag that would replay the prompts
+  - **`compagnon init --update`** — a flag that would replay the prompts
     on an existing project to complete the config. Deferred to a
     future cycle if requested.
   - **Detection beyond the project root** — we do not walk up the

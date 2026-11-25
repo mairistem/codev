@@ -2,7 +2,7 @@
 
 ## 1. `ProcessRunner` port and in-memory impl
 
-- [x] 1.1 Add `pub trait ProcessRunner` in `codev-engine::ports`
+- [x] 1.1 Add `pub trait ProcessRunner` in `compagnon-engine::ports`
       with `fn run(&self, program: &str, args: &[&str], cwd: Option<&Path>)
       -> io::Result<ProcessOutput>`. Verified by
       `ports::process_runner_trait_est_defini`.
@@ -21,8 +21,8 @@
 
 ## 2. Cache and disk layout
 
-- [x] 2.1 `codev-engine::sources::cache::root(env, fs) -> PathBuf` —
-      returns `$XDG_CACHE_HOME/codev/` or `~/.cache/codev/`. Verified by
+- [x] 2.1 `compagnon-engine::sources::cache::root(env, fs) -> PathBuf` —
+      returns `$XDG_CACHE_HOME/compagnon/` or `~/.cache/compagnon/`. Verified by
       `cache::respecte_xdg_cache_home` and `cache::retombe_sur_home_cache`.
 - [x] 2.2 `url_hash(url: &str) -> String` — hex sha256 truncated to the
       first 16 characters. Verified by
@@ -34,7 +34,7 @@
 
 ## 3. Pure function `plan_sources_update`
 
-- [x] 3.1 Create `codev-engine::sources::update` with `pub struct
+- [x] 3.1 Create `compagnon-engine::sources::update` with `pub struct
       SourcesUpdatePlan { fetches: Vec<Fetch>, worktrees: Vec<Worktree>,
       lock_entries: Vec<LockEntry>, diff: Vec<PinChange> }`. Verified by
       a compiling test `update::plan_types_sont_constructibles`.
@@ -55,7 +55,7 @@
       <ref>` via `runner` to obtain the SHA, (c) builds the plan via
       `plan_sources_update`, (d) executes the fetches (`git fetch --depth
       1 --filter=blob:none`), (e) creates the worktrees (`git worktree add
-      <content-dir> <sha>`), (f) writes `codev.lock`. Verified by
+      <content-dir> <sha>`), (f) writes `compagnon.lock`. Verified by
       `update::run_avec_mock_runner_ecrit_le_lock`.
 - [x] 4.2 Idempotence: two successive `run_sources_update` runs against
       the same server leave the lock unchanged (content-to-content
@@ -68,7 +68,7 @@
 
 - [x] 5.1 Add `toml = "0.8"` to the workspace dependencies. Verified
       by `cargo build`.
-- [x] 5.2 `codev-engine::sources::lockfile` with `pub struct Lockfile {
+- [x] 5.2 `compagnon-engine::sources::lockfile` with `pub struct Lockfile {
       version: u32, sources: Vec<LockEntry> }`, `pub struct LockEntry {
       git: String, ref_: String, subpath: Option<String>, commit: String,
       resolved_at: String }`. TOML serialization tested by
@@ -83,7 +83,7 @@
 
 ## 6. Integration into `config::resolve`
 
-- [x] 6.1 Extend `config::resolve` to read `_codev/codev.lock` and
+- [x] 6.1 Extend `config::resolve` to read `_compagnon/compagnon.lock` and
       resolve each `inherits: git:` into a `<cache>/content/<sha>/` path.
       Verified by
       `config::inherits_git_est_resolu_depuis_le_lock`.
@@ -101,7 +101,7 @@
 
 - [x] 7.1 The decision index loader already filters by `.md` (already in
       place via `walk_files` + filter). Add a dedicated test that checks
-      that a `_codev/decisions/hook.sh` file placed in an inherited source
+      that a `_compagnon/decisions/hook.sh` file placed in an inherited source
       does not appear in the index. Verified by
       `decisions::hook_sh_dans_source_heritee_est_ignore` (the spec's
       scenario of the same name).
@@ -114,16 +114,16 @@
 - [x] 8.1 Add the `Command::Sources` group with subcommands
       `List`, `Update`, `Show`. Verified by
       `cli_sources::sous_commandes_declarees`.
-- [x] 8.2 `codev sources list [--json]` — assembles the state of each
+- [x] 8.2 `compagnon sources list [--json]` — assembles the state of each
       source: `SourceState { type, address, state, path?, sha?, ref? }`.
       Verified by `cli_sources::list_montre_letat_de_chaque_source`
       (scenario "List shows the state of each source").
-- [x] 8.3 `codev sources update [--json]` — calls
+- [x] 8.3 `compagnon sources update [--json]` — calls
       `run_sources_update`, renders the diff in human output + a JSON
       report `SourcesUpdateReportV1 { changes: [PinChange], root, status
       }`. Verified by `cli_sources::update_montre_le_diff_avant_ecriture`
       (scenario "Diff before writing a moved pin").
-- [x] 8.4 `codev sources show <ref> [--json]` — resolves by URL or
+- [x] 8.4 `compagnon sources show <ref> [--json]` — resolves by URL or
       path, returns `SourceDetailV1 { type, address, ref?, sha?, path,
       files_exposed: [String] }`. Verified by
       `cli_sources::show_pointe_vers_le_cache_resolu` (scenario of the
@@ -164,11 +164,11 @@
 - [x] 11.1 Create a small local git repository in a temporary folder
       with a few ADRs, point an `inherits: git:` source of this project
       at that repository via a `file://` URL, run
-      `codev sources update`, check that a `codev.lock` is written and
-      that `codev decision list` shows the remote ADRs.
-- [x] 11.2 Check that `codev sources show file:///…` does list the
+      `compagnon sources update`, check that a `compagnon.lock` is written and
+      that `compagnon decision list` shows the remote ADRs.
+- [x] 11.2 Check that `compagnon sources show file:///…` does list the
       exposed files (only `.md` and `.yaml`).
-- [x] 11.3 Check that `codev decision list` on this repository still
+- [x] 11.3 Check that `compagnon decision list` on this repository still
       shows the 6 local ADRs plus the remote ADRs (no id conflict
       expected if the remote ADRs carry different numbers).
 
@@ -179,4 +179,4 @@
       commands + rendering).
 - [x] 12.2 `cargo clippy --workspace --all-targets` stays
       warning-free.
-- [x] 12.3 `codev validate --all` stays green.
+- [x] 12.3 `compagnon validate --all` stays green.

@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 3237,
+          "compagnon roles": 3237,
           "skill": 11630
         }
       },
@@ -49,7 +49,7 @@
         "output": 8,
         "toolCalls": 2,
         "sources": {
-          "codev review": 1134
+          "compagnon review": 1134
         }
       },
       {
@@ -59,7 +59,7 @@
         "output": 4,
         "toolCalls": 1,
         "sources": {
-          "codev review": 2161,
+          "compagnon review": 2161,
           "edit": 353
         }
       },
@@ -80,7 +80,7 @@
         "output": 3,
         "toolCalls": 0,
         "sources": {
-          "codev review": 989,
+          "compagnon review": 989,
           "edit": 161
         }
       }
@@ -223,7 +223,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/charge-orders/review.md",
+    "path": "_compagnon/changes/charge-orders/review.md",
     "status": [],
     "steps": [
       {

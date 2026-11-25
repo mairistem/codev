@@ -1,6 +1,6 @@
 ## Purpose
 
-Measure how well `/codev-propose` plans a change and what it consumes doing
+Measure how well `/compagnon-propose` plans a change and what it consumes doing
 so — which existing requirements it modifies, which decisions it follows,
 whether its plan validates — by replaying requests against this
 repository's own history, so that a change to the skills is shown to use
@@ -23,12 +23,12 @@ or one decision.
 
 Loading a case SHALL fail, naming the case and the cause, when `ref` is
 not a commit of the repository's history; when a requirement of
-`modified` or `collateral` is not in `_codev/specs/<capability>/spec.md`
-at `ref`; when a decision id is not one of `_codev/decisions/` at `ref`;
+`modified` or `collateral` is not in `_compagnon/specs/<capability>/spec.md`
+at `ref`; when a decision id is not one of `_compagnon/decisions/` at `ref`;
 when the tree at `ref` holds `evals/cases/<case id>/`, which would hand
 the agent the answer; or when an unknown key or an empty request is
-found. `codev-evals list` SHALL show planning cases with their step, and
-`codev-evals run` and `score` SHALL exit with code 2 on an invalid case,
+found. `compagnon-evals list` SHALL show planning cases with their step, and
+`compagnon-evals run` and `score` SHALL exit with code 2 on an invalid case,
 as for the other cases.
 
 #### Scenario: A case replaying an archived change
@@ -72,7 +72,7 @@ ask, not copied from the archived proposal.
 #### Scenario: The repository's planning suite
 
 - **GIVEN** `evals/cases/`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails if there are fewer than 17 planning cases with a
   `modified` requirement, or fewer than 4 with a decision, or none with
   a decision to supersede
@@ -81,53 +81,53 @@ ask, not copied from the archived proposal.
 
 - **GIVEN** a planning case whose `request` repeats a sentence of more
   than twelve words of the archived change's proposal
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails, naming the case
 
 ### Requirement: The runner replays the request on the pinned state with the skills under test
 
-For a planning case, `codev-evals run` SHALL build the case's directory
+For a planning case, `compagnon-evals run` SHALL build the case's directory
 from the tree at `ref` (`git archive`), make it a new git repository with
-one commit, install the skills of the codev under test into it (`codev
+one commit, install the skills of the compagnon under test into it (`compagnon
 update` with that binary, forced over skills edited since), and commit
 them. It SHALL then run Claude Code as for the other cases, with a
-prompt that names the `codev-propose` skill and the request, and the
+prompt that names the `compagnon-propose` skill and the request, and the
 evaluation mode: ask no question — make the most reasonable assumption
 and state it in the proposal —, write the proposal, the delta specs and
 the design, then stop before the tasks, the traceability check and the
-challenge, and modify no file outside `_codev/changes/`. Unless
-`CODEV_EVAL_BUDGET_USD` and `CODEV_EVAL_TIMEOUT_SECS` say otherwise, a
+challenge, and modify no file outside `_compagnon/changes/`. Unless
+`COMPAGNON_EVAL_BUDGET_USD` and `COMPAGNON_EVAL_TIMEOUT_SECS` say otherwise, a
 planning case SHALL run under a budget of 6 USD and a timeout of 1,800
-seconds. `codev-evals run --step <step>` (repeatable) SHALL select the
+seconds. `compagnon-evals run --step <step>` (repeatable) SHALL select the
 cases of the steps named, `review` naming the three review steps, so that
 a change can be measured on the steps it touches; an unknown step SHALL
 exit with code 2, naming the valid ones.
 
 The observation SHALL hold, next to what every case records, the files
-of every change the run created under `_codev/changes/`, and what `codev
+of every change the run created under `_compagnon/changes/`, and what `compagnon
 validate` reports on each, as JSON. A file modified outside
-`_codev/changes/` SHALL be recorded as modified outside the step.
+`_compagnon/changes/` SHALL be recorded as modified outside the step.
 
 #### Scenario: The prompt of a planning case
 
 - **GIVEN** a planning case whose request is « Je voudrais qu'une
   décision naisse en brouillon »
 - **WHEN** the runner builds its prompt
-- **THEN** the prompt names `codev-propose`, quotes the request, and says
+- **THEN** the prompt names `compagnon-propose`, quotes the request, and says
   to ask no question, to stop before the tasks, the traceability check
-  and the challenge, and to modify nothing outside `_codev/changes/`
+  and the challenge, and to modify nothing outside `_compagnon/changes/`
 
 #### Scenario: A planning run that edits the code
 
-- **GIVEN** a planning run that writes `crates/codev-core/src/lib.rs`
+- **GIVEN** a planning run that writes `crates/compagnon-core/src/lib.rs`
   besides its change
 - **WHEN** its observation is recorded
-- **THEN** it lists `crates/codev-core/src/lib.rs` as modified outside
+- **THEN** it lists `crates/compagnon-core/src/lib.rs` as modified outside
   the step, and the report shows it for that run
 
 #### Scenario: The budget of a planning case
 
-- **GIVEN** no `CODEV_EVAL_BUDGET_USD` nor `CODEV_EVAL_TIMEOUT_SECS`
+- **GIVEN** no `COMPAGNON_EVAL_BUDGET_USD` nor `COMPAGNON_EVAL_TIMEOUT_SECS`
 - **WHEN** the runner builds the Claude Code command of a planning case
 - **THEN** it passes a budget of 6 and waits up to 1,800 seconds; a
   review case keeps 3 and 600
@@ -135,21 +135,21 @@ validate` reports on each, as JSON. A file modified outside
 #### Scenario: Only the planning cases
 
 - **GIVEN** a suite of review and planning cases
-- **WHEN** the user runs `codev-evals run --step plan.write`
+- **WHEN** the user runs `compagnon-evals run --step plan.write`
 - **THEN** only the planning cases run; with `--step review`, only the
   review cases; with `--step plan.writ`, it exits with 2 naming the steps
 
-#### Scenario: The skills of the codev under test
+#### Scenario: The skills of the compagnon under test
 
 - **GIVEN** a planning case whose `ref` predates a change to the skills
 - **WHEN** the runner builds its fixture
 - **THEN** the fixture's specs and decisions are those at `ref`, and its
-  skills are the ones the codev under test renders
+  skills are the ones the compagnon under test renders
 
 ### Requirement: A plan is scored on the requirements it modifies, its added duplicates, its decisions and its validity
 
 Scoring a planning run SHALL read the deltas of the change it created
-with codev's own parser, whatever the language of their keywords. An
+with compagnon's own parser, whatever the language of their keywords. An
 expected requirement SHALL count as modified when a delta of its
 capability holds it under `MODIFIED` or `REMOVED`, or as the `FROM` of a
 `RENAMED`, its name compared ignoring case and runs of whitespace. Each
@@ -166,14 +166,14 @@ run SHALL be given:
   design do not cite, by its id or its title; a decision to `supersede`
   also counts as ignored when no paragraph citing it says the plan
   supersedes or deviates from it;
-- whether the plan validates: `codev validate` reports no error on it.
+- whether the plan validates: `compagnon validate` reports no error on it.
 
 A run that created no change SHALL be a failed run (`no-plan`), with
 every expected requirement missed; a run that created several changes is
 scored on all of them together. The planning measures SHALL be computed
 per repetition over the planning runs, then given as their median with
 their minimum and maximum, as the role measures are; they have no
-threshold of their own and are judged by `codev-evals compare` against
+threshold of their own and are judged by `compagnon-evals compare` against
 the baseline.
 
 #### Scenario: A requirement modified, another added beside it
@@ -227,7 +227,7 @@ give no planning section.
 #### Scenario: A suite with both kinds of cases
 
 - **GIVEN** observations of review cases and of planning cases
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** the report has the per-role section and a `plan.write`
   section, and the roles' figures are those of the review cases alone
 

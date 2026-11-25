@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 271
+          "compagnon review": 271
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1848
+          "compagnon review": 1848
         }
       },
       {
@@ -119,7 +119,7 @@
         "output": 166,
         "toolCalls": 0,
         "sources": {
-          "codev review": 258
+          "compagnon review": 258
         }
       }
     ]
@@ -140,7 +140,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-order-note/review.md",
+    "path": "_compagnon/changes/add-order-note/review.md",
     "status": [],
     "steps": [
       {

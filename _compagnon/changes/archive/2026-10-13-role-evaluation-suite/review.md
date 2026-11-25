@@ -38,9 +38,9 @@ severity: medium
 confidence: high
 location: "design.md#Decision: The baseline is a recorded run, checked by the tests"
 evidence: |
-  `report.md`, `report.json` (with `model`, `date`, `codevVersion`), and
+  `report.md`, `report.json` (with `model`, `date`, `compagnonVersion`), and
 recommendation: >-
-  The run's metadata (model asked, date, Claude Code and codev versions)
+  The run's metadata (model asked, date, Claude Code and compagnon versions)
   belongs to the run, not to the scoring: write it once in the output
   directory when the run starts, and have `score` read it, so that scoring
   the same directory twice gives the same bytes.
@@ -55,14 +55,14 @@ history:
     note: verified; the baseline test can compare bytes
 ```
 
-#### R-skeptic-3 `codev review` exits with 1 on the very records the suite must score
+#### R-skeptic-3 `compagnon review` exits with 1 on the very records the suite must score
 
 ```yaml
 severity: low
 confidence: high
 location: "design.md#Decision: The runner isolates the evaluated role and runs one skill step"
 evidence: |
-  4. run `codev review --change <change> --json` (review steps) and read the
+  4. run `compagnon review --change <change> --json` (review steps) and read the
 recommendation: >-
   Say that the runner keeps the JSON whatever the exit code: exit 1 means
   the record has an error, which the scoring turns into `record-invalid`
@@ -176,7 +176,7 @@ history:
     ref: design.md runner step 3 allows `git diff`, `git log`, `git show`, `git status` only, and says why
   - status: fixed
     by: security
-    note: verified; the remaining Bash access is `codev`, which the fixture configures
+    note: verified; the remaining Bash access is `compagnon`, which the fixture configures
 ```
 
 #### R-security-2 Workflow inputs interpolated into a shell script
@@ -366,7 +366,7 @@ evidence: |
   if path.exists() {
 recommendation: >-
   `run.json` of a resumed directory is kept as is: resuming with another
-  `CODEV_EVAL_MODEL` scores observations of two models under the first
+  `COMPAGNON_EVAL_MODEL` scores observations of two models under the first
   one's name. Refuse to resume when the model asked differs from the one
   recorded, naming both, and say how to start a new directory.
 history:

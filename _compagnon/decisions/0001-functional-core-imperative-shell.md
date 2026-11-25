@@ -24,7 +24,7 @@ The core never touches the disk. Every operation is split in two steps:
 2. an **execution** function in the shell, dumb and transactional, the only
    one that writes.
 
-Enforced corollary: `codev-core` depends neither on `std::fs`, nor on
+Enforced corollary: `compagnon-core` depends neither on `std::fs`, nor on
 `std::env`, nor on a clock, nor on the network. Effects go through the ports
 described in decision [0002](0002-crate-graph-as-dependency-rule.md).
 

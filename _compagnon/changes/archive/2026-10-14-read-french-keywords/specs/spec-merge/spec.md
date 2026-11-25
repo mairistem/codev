@@ -17,7 +17,7 @@ copied verbatim, whatever their language.
 - **GIVEN** a main spec whose sections are `## Objet` and `## Exigences`
 - **AND** a delta holding `## Exigences MODIFIÉES` with
   `### Exigence : Annulation`
-- **WHEN** the user runs `codev sync <change>`
+- **WHEN** the user runs `compagnon sync <change>`
 - **THEN** the spec's requirement is written `### Exigence : Annulation`
   with its scenarios as `#### Scénario : <name>`
 
@@ -26,16 +26,16 @@ copied verbatim, whatever their language.
 - **GIVEN** a main spec whose requirements heading is `## Exigences`
 - **AND** a delta holding `## ADDED Requirements` with
   `### Requirement: Export`
-- **WHEN** the user runs `codev sync <change>`
+- **WHEN** the user runs `compagnon sync <change>`
 - **THEN** the new requirement is written `### Exigence : Export` in the
   spec
 
 #### Scenario: New capability created from a French delta
 
-- **GIVEN** no main spec under `_codev/specs/conges/`
+- **GIVEN** no main spec under `_compagnon/specs/conges/`
 - **AND** a delta holding `## Objet` and `## Exigences AJOUTÉES` with
   `### Exigence : Annulation`
-- **WHEN** the user runs `codev sync <change>`
+- **WHEN** the user runs `compagnon sync <change>`
 - **THEN** the new spec holds `## Objet`, the Purpose text, then
   `## Exigences` and `### Exigence : Annulation`
 
@@ -43,5 +43,5 @@ copied verbatim, whatever their language.
 
 - **GIVEN** a main spec whose requirements heading is `## Requirements`
 - **AND** an English delta
-- **WHEN** the user runs `codev sync <change>`
-- **THEN** the spec's bytes are those an earlier codev would have written
+- **WHEN** the user runs `compagnon sync <change>`
+- **THEN** the spec's bytes are those an earlier compagnon would have written

@@ -48,7 +48,7 @@
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1983
+          "compagnon review": 1983
         }
       },
       {
@@ -78,7 +78,7 @@
         "output": 7,
         "toolCalls": 0,
         "sources": {
-          "codev review": 437
+          "compagnon review": 437
         }
       }
     ]
@@ -154,7 +154,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-size-picker/review.md",
+    "path": "_compagnon/changes/add-size-picker/review.md",
     "status": [],
     "steps": [
       {

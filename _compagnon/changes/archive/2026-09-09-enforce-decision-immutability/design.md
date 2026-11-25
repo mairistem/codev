@@ -16,19 +16,19 @@ decisions from `design.md` (that is K7).
 
 ## Decisions
 
-### Decision: seal in a separate file `_codev/decisions/seal.yaml`
+### Decision: seal in a separate file `_compagnon/decisions/seal.yaml`
 
 Two options considered:
 
 | Option | Pro | Con |
 |---|---|---|
 | **A. `bodySha256` field in each ADR's frontmatter** | Self-contained; `git diff` directly reveals tampering | Adds a "machine" field that clutters human reading of an ADR; forces answering the question "and the hash itself, is it in the hash?" (no — but it is confusing on first read) |
-| **B. Separate `seal.yaml` file next to the ADRs** | The ADR stays clean for the human eye; aligned with the pattern already in place (`codev.lock` for sources) | One more file to keep consistent |
+| **B. Separate `seal.yaml` file next to the ADRs** | The ADR stays clean for the human eye; aligned with the pattern already in place (`compagnon.lock` for sources) | One more file to keep consistent |
 
-**Chosen: B.** The pattern goes beyond this case — codev already has a
-source-of-truth file kept by the CLI (`codev.lock` for sources), we
+**Chosen: B.** The pattern goes beyond this case — compagnon already has a
+source-of-truth file kept by the CLI (`compagnon.lock` for sources), we
 repeat the pattern instead of inventing a new mode. The `seal.yaml` file
-lives under `_codev/decisions/` to stay as close as possible to its
+lives under `_compagnon/decisions/` to stay as close as possible to its
 subject, and `serde_norway` parses it like the rest of the YAML —
 consistent with decision
 [0006](../../decisions/0006-serde-norway-for-yaml.md).
@@ -37,7 +37,7 @@ consistent with decision
 
 An ADR's frontmatter is designed to evolve legitimately — an `accepted`
 ADR becomes `superseded` through an explicit write by
-`codev decision supersede`. Hashing the whole file would require
+`compagnon decision supersede`. Hashing the whole file would require
 re-sealing on every transition, which would deprive the requirement
 "supersede does not touch the body" (already in the spec) of its
 verifiable attribute.
@@ -68,8 +68,8 @@ beforehand), it does not read it itself — decision
 
 `decision_unsealed` is a **warning** (exit code 0), not an error: on an
 existing project, all ADRs start unsealed — a non-zero errno would
-prevent every other flow (`codev status`, `codev sync`,
-`codev archive`) from running until sealing is done. The warning draws
+prevent every other flow (`compagnon status`, `compagnon sync`,
+`compagnon archive`) from running until sealing is done. The warning draws
 attention without blocking.
 
 `decision_seal_mismatch` is an **error** (non-zero exit code): a body
@@ -82,11 +82,11 @@ deliberately (unlikely but possible); the orphan lock alone does not
 seriously compromise anything.
 
 **Rejected alternative**: align everything as errors. Makes migration
-impractical — the first post-delivery `codev validate` fails on the 6
+impractical — the first post-delivery `compagnon validate` fails on the 6
 existing ADRs, breaking `sync`, `archive` and the rest. Costs too much
 for what we gain.
 
-### Decision: a single CLI command `codev decision seal <id>`, with `--force`
+### Decision: a single CLI command `compagnon decision seal <id>`, with `--force`
 
 A single command, two modes depending on state:
 
@@ -97,9 +97,9 @@ A single command, two modes depending on state:
 - Sealed ADR and the body is unchanged → silent no-op (the seal is
   already correct).
 
-A `codev decision seal --all` (bulk) command for the initial migration
-is deferred: `for id in $(codev decision list --json | jq
--r …); do codev decision seal "$id"; done` does the job on the 6 ADRs
+A `compagnon decision seal --all` (bulk) command for the initial migration
+is deferred: `for id in $(compagnon decision list --json | jq
+-r …); do compagnon decision seal "$id"; done` does the job on the 6 ADRs
 of this repository without requiring a dedicated path in the CLI. If
 the pattern becomes recurrent, we will add it later.
 
@@ -113,7 +113,7 @@ decisions (already in place), may optionally verify their remote
 
 **Aligned** with decision
 [0005](../../decisions/0005-read-only-inherited-sources.md):
-inherited sources are read-only. `codev decision seal
+inherited sources are read-only. `compagnon decision seal
 path:~/shared/0100` therefore returns `cannot_seal_inherited`.
 
 ## Risks / Trade-offs
@@ -122,13 +122,13 @@ path:~/shared/0100` therefore returns `cannot_seal_inherited`.
   `decision_unsealed` warnings (for example because they never run
   `validate` manually — they go through `sync` or `archive`, which do a
   `validate` pre-flight), they could leave their ADRs unsealed for a
-  long time. → **Mitigation**: `codev status` (which does not yet have
+  long time. → **Mitigation**: `compagnon status` (which does not yet have
   a validate pre-flight) will gain the warning count in its human
   summary, in a future change. For now, the mention in the `sync` /
   `archive` summary is sufficient.
 - **False positive on line endings.** The byte-for-byte hash will catch
   an accidental `LF → CRLF` (git config `core.autocrlf`, an editor that
-  reformats). → **Accepted trade-off**: `codev decision seal --force` is
+  reformats). → **Accepted trade-off**: `compagnon decision seal --force` is
   the official path. Document it in the error message.
 - **The seal does not protect against an author who edits knowingly.**
   A developer can run `--force` without thinking. → **Accepted
@@ -139,10 +139,10 @@ path:~/shared/0100` therefore returns `cannot_seal_inherited`.
 
 After delivery:
 
-1. `codev validate` surfaces 6 `decision_unsealed` warnings on this
+1. `compagnon validate` surfaces 6 `decision_unsealed` warnings on this
    repository.
-2. Short loop: `codev decision list --json | jq -r '.decisions[] |
-   select(.origin == "project") | .id' | while read id; do codev
+2. Short loop: `compagnon decision list --json | jq -r '.decisions[] |
+   select(.origin == "project") | .id' | while read id; do compagnon
    decision seal "$id"; done`. A single commit carries the 6 seals
-   added in `_codev/decisions/seal.yaml`.
-3. `codev validate` returns to 0 warnings on the decisions side.
+   added in `_compagnon/decisions/seal.yaml`.
+3. `compagnon validate` returns to 0 warnings on the decisions side.

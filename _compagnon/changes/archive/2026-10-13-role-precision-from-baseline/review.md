@@ -71,7 +71,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/roles.rs:1267"
+location: "crates/compagnon-core/src/roles.rs:1267"
 evidence: |
   reporting.contains("name") || reporting.contains("state"),
 recommendation: >-
@@ -84,7 +84,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: crates/codev-core/src/roles.rs, `every_expert_says_what_it_does_not_report` lists per expert the Reporting sentence it checks, with a comment saying why
+    ref: crates/compagnon-core/src/roles.rs, `every_expert_says_what_it_does_not_report` lists per expert the Reporting sentence it checks, with a comment saying why
   - status: fixed
     by: newcomer
     note: verified

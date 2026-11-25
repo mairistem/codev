@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 2211
+          "compagnon review": 2211
         }
       },
       {
@@ -99,7 +99,7 @@
         "output": 300,
         "toolCalls": 0,
         "sources": {
-          "codev review": 740,
+          "compagnon review": 740,
           "edit": 179
         }
       }
@@ -184,7 +184,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-order-currency/review.md",
+    "path": "_compagnon/changes/add-order-currency/review.md",
     "status": [],
     "steps": [
       {

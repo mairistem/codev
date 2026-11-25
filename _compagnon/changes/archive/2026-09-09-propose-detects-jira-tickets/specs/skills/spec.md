@@ -32,7 +32,7 @@ does no JQL search.
 
 #### Scenario: Ticket mentioned, MCP available → ticket cited at the top
 
-- **GIVEN** a user types `/codev-propose add JWT for PROJ-123`
+- **GIVEN** a user types `/compagnon-propose add JWT for PROJ-123`
 - **AND** the MCP `mcp__claude_ai_Atlassian__getJiraIssue` is
   available in the session
 - **AND** the ticket `PROJ-123` exists, with the title "Authenticate
@@ -48,7 +48,7 @@ does no JQL search.
 
 #### Scenario: Ticket mentioned, MCP unavailable → proposal anyway
 
-- **GIVEN** a user types `/codev-propose add JWT for PROJ-123`
+- **GIVEN** a user types `/compagnon-propose add JWT for PROJ-123`
 - **AND** no Atlassian MCP is available in the session
 - **WHEN** the skill runs
 - **THEN** the skill displays an informational message naming
@@ -61,7 +61,7 @@ does no JQL search.
 
 #### Scenario: No ticket mentioned → unchanged behavior
 
-- **GIVEN** a user types `/codev-propose add
+- **GIVEN** a user types `/compagnon-propose add
   authentication`
 - **WHEN** the skill runs
 - **THEN** no MCP call is issued
@@ -70,7 +70,7 @@ does no JQL search.
 
 #### Scenario: Several tickets mentioned → only the first is fetched
 
-- **GIVEN** a user types `/codev-propose fix PROJ-123
+- **GIVEN** a user types `/compagnon-propose fix PROJ-123
   and PROJ-456`
 - **AND** the MCP is available
 - **WHEN** the skill runs

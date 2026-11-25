@@ -1,17 +1,17 @@
 ## Purpose
 
 Describes the experience of initializing a project for the first time
-with `codev init`: silent detection of the environment, targeted
-interactive prompts, generation of a pre-filled `_codev/config.yaml`
+with `compagnon init`: silent detection of the environment, targeted
+interactive prompts, generation of a pre-filled `_compagnon/config.yaml`
 with provenance comments. The capability contractualizes what no spec
 pinned down until now — the command's behavior was left to the
 implementation.
 
 ## ADDED Requirements
 
-### Requirement: Interactive `codev init` detects the environment before asking questions
+### Requirement: Interactive `compagnon init` detects the environment before asking questions
 
-Before any prompt, `codev init` SHALL silently probe the current
+Before any prompt, `compagnon init` SHALL silently probe the current
 folder and derive a `Detected` report covering:
 
 - **Stack** — language and framework, read from `Cargo.toml`,
@@ -43,8 +43,8 @@ A `--no-detect` flag MUST short-circuit the probe entirely.
 
 - **GIVEN** a folder with a workspace `Cargo.toml` containing 4
   members and `[workspace.package].edition = "2024"`
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the `context:` of the generated `_codev/config.yaml`
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the `context:` of the generated `_compagnon/config.yaml`
   mentions the Rust workspace stack, the 2024 edition, the number of
   crates
 - **AND** no prompt is displayed (`--yes` mode)
@@ -53,16 +53,16 @@ A `--no-detect` flag MUST short-circuit the probe entirely.
 
 - **GIVEN** a folder with no recognized manifest, no `.git/`, no
   `LICENSE`, no `.github/workflows/`
-- **WHEN** the user runs `codev init --yes`
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** the command succeeds
 - **AND** the generated `context:` is empty or minimal (a generic
   line)
 - **AND** no error is raised because of an empty detection
 
-### Requirement: `codev init` detects Jira/Atlassian MCPs and pre-fills the config
+### Requirement: `compagnon init` detects Jira/Atlassian MCPs and pre-fills the config
 
 On detection of at least one MCP server whose name, command or URL
-matches the case-insensitive regex `/jira|atlassian/`, `codev init`
+matches the case-insensitive regex `/jira|atlassian/`, `compagnon init`
 SHALL compute a candidate `tool_id` via the Claude Code convention:
 
 - The server name is normalized: spaces and dots replaced with `_`.
@@ -70,12 +70,12 @@ SHALL compute a candidate `tool_id` via the Claude Code convention:
 - Example: `"claude.ai Atlassian Rovo"` →
   `mcp__claude_ai_Atlassian_Rovo__getJiraIssue`.
 
-The computation function MUST be pure (`codev-core::detect::mcp`),
+The computation function MUST be pure (`compagnon-core::detect::mcp`),
 with no network call nor introspection of the MCP server itself.
 
-If a single unambiguous candidate emerges, interactive `codev init`
+If a single unambiguous candidate emerges, interactive `compagnon init`
 MUST display it for confirmation with its source (`.mcp.json`,
-`~/.claude.json`, etc.), and the generated `_codev/config.yaml`
+`~/.claude.json`, etc.), and the generated `_compagnon/config.yaml`
 carries the tool_id under the `mcp.jira_tool` key with a **provenance
 comment** above it.
 
@@ -93,22 +93,22 @@ without confirmation.
 
 - **GIVEN** a root `.mcp.json` containing a server named
   `"claude.ai Atlassian Rovo"`
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the generated `_codev/config.yaml` contains
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the generated `_compagnon/config.yaml` contains
   `mcp.jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue`
 - **AND** a comment above it mentions `.mcp.json` as the source
 
 #### Scenario: No MCP detected
 
 - **GIVEN** a folder without any MCP config file
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the generated `_codev/config.yaml` does not contain an
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the generated `_compagnon/config.yaml` does not contain an
   active `mcp:` key (it remains commented out in the template)
 - **AND** no warning is raised
 
-### Requirement: Interactive `codev init` asks at most two questions
+### Requirement: Interactive `compagnon init` asks at most two questions
 
-Without a non-interactive flag, `codev init` MUST ask exactly the
+Without a non-interactive flag, `compagnon init` MUST ask exactly the
 following two questions, in this order:
 
 1. **Workflows to install** — choice among three presets, default
@@ -130,13 +130,13 @@ detection, not asked).
 #### Scenario: Two questions asked in interactive mode
 
 - **GIVEN** an interactive TTY and a new project
-- **WHEN** the user runs `codev init`
+- **WHEN** the user runs `compagnon init`
 - **THEN** exactly two prompts are displayed — workflows then context
 - **AND** the workflows prompt has "Full (7)" as the default option
 
 ### Requirement: Non-interactive flags compose cleanly
 
-`codev init` MUST accept the following composable flags:
+`compagnon init` MUST accept the following composable flags:
 
 - `--yes` (`-y`) — applies the defaults for all questions, no prompt
   displayed.
@@ -147,14 +147,14 @@ detection, not asked).
 - `--force` — unchanged, rewrites skills even if modified by hand.
 
 In the **absence of a TTY on stdin** (pipe, redirect, CI),
-`codev init` MUST behave as if `--yes` had been passed — no prompt,
+`compagnon init` MUST behave as if `--yes` had been passed — no prompt,
 defaults applied. This guarantees scriptability and behavior in a
 pipeline.
 
 #### Scenario: --yes short-circuits the prompts
 
 - **GIVEN** an interactive TTY
-- **WHEN** the user runs `codev init --yes`
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** no prompt is displayed
 - **AND** the 7 workflows are installed
 - **AND** the generated `context:` carries only what detection
@@ -163,13 +163,13 @@ pipeline.
 #### Scenario: Non-TTY stdin implies --yes
 
 - **GIVEN** stdin redirected from `/dev/null`
-- **WHEN** the user runs `codev init` (without an explicit `--yes`)
+- **WHEN** the user runs `compagnon init` (without an explicit `--yes`)
 - **THEN** no prompt is displayed
 - **AND** installation completes as under `--yes`
 
 ### Requirement: The generated `config.yaml` carries provenance comments
 
-`codev init` MUST write a **pre-filled** `_codev/config.yaml` (and not
+`compagnon init` MUST write a **pre-filled** `_compagnon/config.yaml` (and not
 a commented template) in which each non-trivial key carries, on the
 line above, a comment indicating its source:
 
@@ -180,16 +180,16 @@ line above, a comment indicating its source:
   (`workflows:`).
 
 The generated YAML format MUST remain **readable by the existing
-codev reader** (`codev-engine::config::resolve`) — no regression on
+compagnon reader** (`compagnon-engine::config::resolve`) — no regression on
 reading back.
 
 #### Scenario: Provenance present for context and mcp
 
 - **GIVEN** a Rust workspace + an Atlassian `.mcp.json`
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the generated `_codev/config.yaml` carries
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the generated `_compagnon/config.yaml` carries
   `# detected from Cargo.toml` above the `context:` key
 - **AND** carries
   `# detected from .mcp.json → server "claude.ai Atlassian Rovo"`
   above `mcp.jira_tool:`
-- **AND** `codev status` on this new project succeeds (read-back OK)
+- **AND** `compagnon status` on this new project succeeds (read-back OK)

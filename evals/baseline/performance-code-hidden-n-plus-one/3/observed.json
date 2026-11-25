@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 2375
+          "compagnon review": 2375
         }
       },
       {
@@ -78,7 +78,7 @@
         "output": 4,
         "toolCalls": 0,
         "sources": {
-          "codev review": 573,
+          "compagnon review": 573,
           "edit": 232
         }
       }
@@ -155,7 +155,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-monthly-report/review.md",
+    "path": "_compagnon/changes/add-monthly-report/review.md",
     "status": [],
     "steps": [
       {

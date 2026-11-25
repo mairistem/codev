@@ -1104,6 +1104,26 @@ mark {
   border-radius: var(--mx-radius-sm);
 }
 
+/* The sidebar is narrow: the Mairistem logo, the separator, the mark and
+   "Compagnon" only fit with tighter spacing. */
+.mx-sidebar-brand {
+  gap: 10px;
+}
+
+.mx-sidebar-brand .mx-logo {
+  height: 22px;
+}
+
+.mx-sidebar-brand .mx-brand-title {
+  gap: 10px;
+}
+
+.mx-sidebar-brand .cp-mark {
+  width: 1.1em;
+  height: 1.1em;
+  margin-inline-end: 0.25em;
+}
+
 .cp-mark {
   /* The Compagnon mark, beside the product name it decorates. */
   width: 1.35em;

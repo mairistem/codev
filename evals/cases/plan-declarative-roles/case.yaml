@@ -10,7 +10,7 @@ expected:
     - "skills::The `propose` skill challenges the plan and reports points to challenge"
     - "skills::The `apply` skill reviews the change's code as a newcomer"
   collateral:
-    - "doctor::`codev doctor` runs a fixed list of read-only checks"
-    - "instructions::`codev instructions` describes one artifact of a change"
-    - "instructions::The human output of `codev instructions` reads top to bottom"
+    - "doctor::`compagnon doctor` runs a fixed list of read-only checks"
+    - "instructions::`compagnon instructions` describes one artifact of a change"
+    - "instructions::The human output of `compagnon instructions` reads top to bottom"
   decisions: []

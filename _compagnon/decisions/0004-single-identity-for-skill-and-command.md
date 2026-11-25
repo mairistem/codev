@@ -19,8 +19,8 @@ be invoked by the user by typing `/<name>`.
 
 ## Decision
 
-One artifact per workflow: `.claude/skills/codev-<workflow>/SKILL.md`, invoked
-as `/codev-propose`. No command file is generated.
+One artifact per workflow: `.claude/skills/compagnon-<workflow>/SKILL.md`, invoked
+as `/compagnon-propose`. No command file is generated.
 
 OpenSpec's `delivery` axis (`skills` / `commands` / `both`) does not exist.
 
@@ -32,8 +32,8 @@ OpenSpec's `delivery` axis (`skills` / `commands` / `both`) does not exist.
 - A single name to document, type and search for.
 - If a tool one day only reads command files, that is one more
   implementation of `AgentTarget`, not a rework of the model.
-- Accepted cost: we cannot offer a `/codev:<verb>` namespace distinct from the
-  skill names. `codev-propose` remains readable and completes at the keyboard.
+- Accepted cost: we cannot offer a `/compagnon:<verb>` namespace distinct from the
+  skill names. `compagnon-propose` remains readable and completes at the keyboard.
 
 ## Alternatives considered
 

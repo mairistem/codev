@@ -2,10 +2,10 @@
 
 ### Requirement: The runner runs each case alone, headlessly, with Claude Code
 
-`codev-evals run` SHALL, for each selected case, in a new directory
+`compagnon-evals run` SHALL, for each selected case, in a new directory
 outside the repository:
 
-- create a git repository whose branch `main` holds `base/` with codev
+- create a git repository whose branch `main` holds `base/` with compagnon
   initialized (configuration and skills, non-interactive), and a branch
   holding `change/` on top of it, both committed;
 - write the change's `change.yaml` so that every reviewing role serving
@@ -18,7 +18,7 @@ outside the repository:
   without modifying any other file; at `plan.trace`, fix the gaps in the
   plan as the step says;
 - run it as a user who works with Claude Code's sandbox would: the
-  shell commands Claude Code approves in its sandbox, and `codev`, which
+  shell commands Claude Code approves in its sandbox, and `compagnon`, which
   the skills grant, run without a prompt, in a sandbox that lets them
   write only in the case's directory and the temporary directory and
   reach no host but the Anthropic API; file edits inside the case's
@@ -27,7 +27,7 @@ outside the repository:
   the runner SHALL check, before any case runs, that the sandbox can
   run on the machine — on Linux, `bubblewrap` and `socat` — and exit with
   code 2 naming what is missing, rather than run without it;
-- record what it observed: the review record as `codev review --json`
+- record what it observed: the review record as `compagnon review --json`
   reports it, the files the case checks, the files the run modified
   outside what the step allows, what the run consumed as Claude Code
   reports it — the cost, the duration and the API duration, the number
@@ -44,10 +44,10 @@ that is not a whole number of at least 1 SHALL exit with code 2 before
 any case runs, naming the flag.
 
 The model SHALL be the one named by the environment variable
-`CODEV_EVAL_MODEL`, else Claude Code's default. Each case SHALL run under
-a budget (`CODEV_EVAL_BUDGET_USD`, default 3) and a timeout
-(`CODEV_EVAL_TIMEOUT_SECS`, default 600). Before any case runs, the
-runner SHALL check that `claude`, `git` and the `codev` binary can be
+`COMPAGNON_EVAL_MODEL`, else Claude Code's default. Each case SHALL run under
+a budget (`COMPAGNON_EVAL_BUDGET_USD`, default 3) and a timeout
+(`COMPAGNON_EVAL_TIMEOUT_SECS`, default 600). Before any case runs, the
+runner SHALL check that `claude`, `git` and the `compagnon` binary can be
 executed, and exit with code 2 naming the missing one otherwise. A case
 that fails or times out is recorded as an error; the others still run.
 
@@ -63,14 +63,14 @@ that fails or times out is recorded as an error; the others still run.
 
 - **GIVEN** a `plan.challenge` case on the change `add-sessions`
 - **WHEN** the runner builds its prompt
-- **THEN** the prompt names the `codev-propose` skill, its
+- **THEN** the prompt names the `compagnon-propose` skill, its
   `plan.challenge` step, the change `add-sessions`, and says to leave
   every finding `open` and to modify no file but the review record
 
 #### Scenario: The model and the budget come from the environment
 
-- **GIVEN** `CODEV_EVAL_MODEL=claude-sonnet-4-5` and
-  `CODEV_EVAL_BUDGET_USD=1.5`
+- **GIVEN** `COMPAGNON_EVAL_MODEL=claude-sonnet-4-5` and
+  `COMPAGNON_EVAL_BUDGET_USD=1.5`
 - **WHEN** the runner builds the Claude Code command
 - **THEN** it passes that model and that budget; without the variables,
   it passes no model and a budget of 3
@@ -86,7 +86,7 @@ that fails or times out is recorded as an error; the others still run.
 #### Scenario: Claude Code is not installed
 
 - **GIVEN** a `claude` command that cannot be executed
-- **WHEN** the user runs `codev-evals run`
+- **WHEN** the user runs `compagnon-evals run`
 - **THEN** it exits with code 2 before setting up any case, and the
   message names `claude`
 
@@ -109,7 +109,7 @@ that fails or times out is recorded as an error; the others still run.
 #### Scenario: A machine without the sandbox
 
 - **GIVEN** a Linux machine where `socat` is not installed
-- **WHEN** the user runs `codev-evals run`
+- **WHEN** the user runs `compagnon-evals run`
 - **THEN** it exits with code 2 before setting up any case, and the
   message names the sandbox and `socat`
 
@@ -135,18 +135,18 @@ that fails or times out is recorded as an error; the others still run.
 #### Scenario: Each case repeated
 
 - **GIVEN** two selected cases
-- **WHEN** the user runs `codev-evals run --repeat 3`
+- **WHEN** the user runs `compagnon-evals run --repeat 3`
 - **THEN** six runs are made, and each case holds three observations
 
 #### Scenario: An invalid repetition count
 
-- **WHEN** the user runs `codev-evals run --repeat 0`
+- **WHEN** the user runs `compagnon-evals run --repeat 0`
 - **THEN** it exits with code 2 before setting up any case, and the
   message names `--repeat`
 
 ### Requirement: The report is per role, in markdown and JSON, and the exit code follows thresholds
 
-`codev-evals run` and `codev-evals score` SHALL write `report.md` and
+`compagnon-evals run` and `compagnon-evals score` SHALL write `report.md` and
 `report.json` in their output directory, with, per role: the cases, the
 expected findings, true positives, misses, false positives, unreported,
 duplicates, cross-role findings, recall (true positives over expected),
@@ -177,8 +177,8 @@ A role SHALL fail when the median of its recall is under `--min-recall`
 (default 0.5), the median of its false positives exceeds
 `--max-false-positives` (default 2), or the median of its evidence
 validity is under `--min-evidence` (default 0.8); each threshold
-can also be set by `CODEV_EVAL_MIN_RECALL`,
-`CODEV_EVAL_MAX_FALSE_POSITIVES` and `CODEV_EVAL_MIN_EVIDENCE`, the flag
+can also be set by `COMPAGNON_EVAL_MIN_RECALL`,
+`COMPAGNON_EVAL_MAX_FALSE_POSITIVES` and `COMPAGNON_EVAL_MIN_EVIDENCE`, the flag
 winning. The command SHALL exit with 0 when every role passes and no
 repetition of a case is in error, 1 otherwise, naming each failing role
 and measure and each case in error with its repetition, and 2 on
@@ -189,27 +189,27 @@ repetition, the measures and the verdict SHALL be those of that run.
 
 - **GIVEN** observations where each role's recall, false positives and
   evidence validity meet the thresholds
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** it exits with 0 and writes both reports
 
 #### Scenario: A role under the recall threshold
 
 - **GIVEN** observations where `ops` finds one of four expected findings
-- **WHEN** the user runs `codev-evals score <dir> --min-recall 0.5`
+- **WHEN** the user runs `compagnon-evals score <dir> --min-recall 0.5`
 - **THEN** it exits with 1, and the message names `ops`, its recall
   0.25 and the threshold
 
 #### Scenario: An invalid threshold
 
-- **GIVEN** `CODEV_EVAL_MIN_RECALL=lots`
-- **WHEN** the user runs `codev-evals score <dir>`
+- **GIVEN** `COMPAGNON_EVAL_MIN_RECALL=lots`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** it exits with 2 and names the variable
 
 #### Scenario: A role measured over three repetitions
 
 - **GIVEN** three repetitions where `ops` has a recall of 1.00, 0.50 and
   1.00
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** the report gives `ops` a recall of 1.00, from 0.50 to 1.00,
   and `ops` passes a recall threshold of 0.5
 
@@ -217,7 +217,7 @@ repetition, the measures and the verdict SHALL be those of that run.
 
 - **GIVEN** three repetitions of `ops-code-no-timeout`, the second of
   which timed out
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** it exits with 1, naming the case and its second repetition,
   and that repetition's cost is left out of the case's median
 
@@ -241,9 +241,9 @@ Each repetition's observation SHALL be written as
 `<out>/<case>/<n>/observed.json`, `<n>` the repetition's number from 1,
 carrying a format marker. An observation written directly as
 `<out>/<case>/observed.json`, as earlier runs did, SHALL be read as the
-case's only repetition. `codev-evals score <dir>` SHALL score the
+case's only repetition. `compagnon-evals score <dir>` SHALL score the
 observations of a directory again, calling no model, and give the same
-report as the run did. `codev-evals run --out <dir>` SHALL skip a
+report as the run did. `compagnon-evals run --out <dir>` SHALL skip a
 repetition whose observation already exists in `<dir>` and is not in
 error, unless `--rerun` is given — a repetition recorded in error is run
 again — so that an interrupted run is resumed and a run asked for more
@@ -257,28 +257,28 @@ it does not hold being absent.
 #### Scenario: Scoring twice gives the same report
 
 - **GIVEN** a directory of recorded observations
-- **WHEN** the user runs `codev-evals score <dir>` twice
+- **WHEN** the user runs `compagnon-evals score <dir>` twice
 - **THEN** both runs write identical `report.json` and `report.md`
 
 #### Scenario: A resumed run
 
 - **GIVEN** an output directory holding the observations of three cases
   out of five
-- **WHEN** the user runs `codev-evals run --out <dir>`
+- **WHEN** the user runs `compagnon-evals run --out <dir>`
 - **THEN** only the two other cases are run
 
 #### Scenario: More repetitions than recorded
 
 - **GIVEN** an output directory where each case has its repetitions 1
   and 2
-- **WHEN** the user runs `codev-evals run --out <dir> --repeat 5`
+- **WHEN** the user runs `compagnon-evals run --out <dir> --repeat 5`
 - **THEN** only the repetitions 3, 4 and 5 of each case are run
 
 #### Scenario: A repetition recorded in error is run again
 
 - **GIVEN** an output directory where the second repetition of
   `ops-code-no-timeout` timed out and every other repetition succeeded
-- **WHEN** the user runs `codev-evals run --out <dir>` with the same
+- **WHEN** the user runs `compagnon-evals run --out <dir>` with the same
   `--repeat`
 - **THEN** only that repetition is run, and its new observation replaces
   the one in error
@@ -287,21 +287,21 @@ it does not hold being absent.
 
 - **GIVEN** a directory holding `<case>/observed.json` with format 1 and
   no token counts
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** the case is scored as one repetition, its quality measures
   as before and its tokens and turns shown as `—`
 
 #### Scenario: Resuming with another model
 
 - **GIVEN** an output directory recorded with Claude Code's default model
-- **WHEN** the user runs `codev-evals run --out <dir>` with
-  `CODEV_EVAL_MODEL=claude-sonnet-4-5`
+- **WHEN** the user runs `compagnon-evals run --out <dir>` with
+  `COMPAGNON_EVAL_MODEL=claude-sonnet-4-5`
 - **THEN** it exits with code 2 and names both models
 
 #### Scenario: A newer observation
 
 - **GIVEN** an `observed.json` with format 3
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** it exits with 2, naming the case and the format
 
 ### Requirement: A committed baseline is the reference for role changes
@@ -317,26 +317,26 @@ with it.
 #### Scenario: The baseline agrees with the scoring
 
 - **GIVEN** `evals/baseline/`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** scoring its observations gives its committed `report.json`
 
 #### Scenario: A case missing from the baseline
 
 - **GIVEN** a case added to the suite after the baseline was recorded
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails and names the case, so that the baseline is recorded
   again
 
 #### Scenario: A case with too few repetitions
 
 - **GIVEN** a baseline where one case has three repetitions
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails and names the case and its number of repetitions
 
 #### Scenario: A baseline repetition in error
 
 - **GIVEN** a baseline where the fourth repetition of one case timed out
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails and names the case and the repetition
 
 #### Scenario: A raw log in the baseline
@@ -349,24 +349,24 @@ with it.
 
 `CONTRIBUTING.md` and `CONTRIBUTING.fr.md` SHALL say that a pull request
 modifying a file of `assets/roles/` runs the evaluations and pastes the
-output of `codev-evals compare --quality-only` against the baseline;
+output of `compagnon-evals compare --quality-only` against the baseline;
 that a pull request meant to reduce what the skills consume pastes the
-output of `codev-evals compare` against the baseline; that the candidate
+output of `compagnon-evals compare` against the baseline; that the candidate
 of a comparison runs with at least three repetitions (`--repeat 3`); that
 a run confines the agent in Claude Code's sandbox, and what the sandbox
 needs on Linux; and that recording the baseline
-again is followed by `codev-evals docs`, which regenerates the
+again is followed by `compagnon-evals docs`, which regenerates the
 reliability chapter. The Roles chapter of each language SHALL say how
 the built-in roles are measured, where the baseline is, and that a role
-change is judged with `codev-evals compare`.
+change is judged with `compagnon-evals compare`.
 
 #### Scenario: Both languages say it
 
 - **GIVEN** the two contributing guides and the two `roles.md` chapters
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails if one of them does not name `evals/baseline` or
-  `codev-evals compare`, if a contributing guide does not name
-  `assets/roles/`, `codev-evals -- docs` or `--repeat 3`
+  `compagnon-evals compare`, if a contributing guide does not name
+  `assets/roles/`, `compagnon-evals -- docs` or `--repeat 3`
 
 #### Scenario: A guide that forgets the rule
 
@@ -377,12 +377,12 @@ change is judged with `codev-evals compare`.
 
 ### Requirement: A reliability chapter is generated from the committed baseline
 
-`codev-evals docs` SHALL write the chapter `reliability.md` of the English
+`compagnon-evals docs` SHALL write the chapter `reliability.md` of the English
 and the French books from the committed baseline's `report.json` and
 `run.json`, the same scores in both languages. Each page SHALL hold:
 
 - what the suite measures and what it does not;
-- the run: its date, the model, the Claude Code and codev versions, the
+- the run: its date, the model, the Claude Code and compagnon versions, the
   number of cases (seeded and controls), the number of repetitions of
   each case, and the cost;
 - headline figures: recall over every seeded defect, evidence validity
@@ -406,7 +406,7 @@ and the French books from the committed baseline's `report.json` and
 The scores the page shows SHALL be the medians the report gives.
 
 The charts SHALL be drawn without a script, readable in the light and
-the dark themes of the website and of `codev docs`, each with a title
+the dark themes of the website and of `compagnon docs`, each with a title
 and a text description for assistive technologies, and each mark naming
 its role and value on hover. A measure that has no value — recall for a
 role without a seeded case — SHALL show as `—` and draw no mark.
@@ -422,9 +422,9 @@ baseline.
 #### Scenario: The committed pages follow the baseline
 
 - **GIVEN** the committed `evals/baseline/` and both `reliability.md`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails, naming the page, if a committed page differs from
-  what `codev-evals docs` would write
+  what `compagnon-evals docs` would write
 
 #### Scenario: A role over the false-positive threshold
 
@@ -461,7 +461,7 @@ baseline.
 #### Scenario: A report the command cannot read
 
 - **GIVEN** a baseline directory whose `report.json` carries format 3
-- **WHEN** the user runs `codev-evals docs`
+- **WHEN** the user runs `compagnon-evals docs`
 - **THEN** it exits with 2, names `report.json` and the format, and
   writes no page
 
@@ -469,7 +469,7 @@ baseline.
 
 - **GIVEN** a baseline directory whose `report.json` records the date
   2026-10-13 and whose `run.json` records 2026-11-02
-- **WHEN** the user runs `codev-evals docs`
+- **WHEN** the user runs `compagnon-evals docs`
 - **THEN** it exits with 2, names `report.json` and `run.json`, and
   writes no page
 
@@ -477,7 +477,7 @@ baseline.
 
 ### Requirement: Two runs are compared, with a verdict on quality and consumption
 
-`codev-evals compare <baseline> <candidate>` SHALL read two output
+`compagnon-evals compare <baseline> <candidate>` SHALL read two output
 directories, calling no model, and compare them on the cases both hold,
 each run's role measures computed on those cases alone. It SHALL print a
 markdown report on its standard output with, per role, each quality
@@ -521,7 +521,7 @@ same time, and say so when either differs.
   a total cost of 2.04 USD and a floor of 1.95 USD, and a candidate on
   the same cases with a median recall of 1.00 and a total cost of
   1.70 USD
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 0, and the report shows the cost down by about
   17 %
 
@@ -529,21 +529,21 @@ same time, and say so when either differs.
 
 - **GIVEN** a baseline with a total cost of 2.04 USD and a floor of
   1.95 USD, and a candidate of the same quality at 1.99 USD
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 1, naming 1.99 USD and the baseline's floor,
   1.95 USD
 
 #### Scenario: The same code compared with itself
 
 - **GIVEN** a baseline
-- **WHEN** the user runs `codev-evals compare <baseline> <baseline>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <baseline>`
 - **THEN** it fails on consumption and passes on quality
 
 #### Scenario: A cheaper run that misses more
 
 - **GIVEN** a baseline where `ops` has a recall from 0.83 to 1.00, and a
   cheaper candidate where its median recall is 0.67
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 1, naming `ops`, the recall 0.67 and the
   baseline's minimum 0.83
 
@@ -551,7 +551,7 @@ same time, and say so when either differs.
 
 - **GIVEN** a candidate whose role measures stay within the baseline's
   ranges and whose total cost is above the baseline's
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 1 and names the cost of both runs; with
   `--quality-only`, it exits with 0 and still reports both costs
 
@@ -559,13 +559,13 @@ same time, and say so when either differs.
 
 - **GIVEN** a candidate cheaper than the baseline, of the same quality,
   whose API duration is twice the baseline's
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 0 and reports the duration's increase
 
 #### Scenario: A candidate on a subset of the cases
 
 - **GIVEN** a baseline of 40 cases and a candidate that ran 10 of them
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** both runs are measured on those 10 cases, and the report
   lists the 30 others as not compared
 
@@ -573,14 +573,14 @@ same time, and say so when either differs.
 
 - **GIVEN** a baseline of format 1, which records each case's cost but
   no tokens, and a cheaper candidate of format 2 of the same quality
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 0, the costs compared and the baseline's tokens
   and turns shown as `—`
 
 #### Scenario: A baseline without costs
 
 - **GIVEN** a baseline whose observations hold no cost
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 1 and says the consumption cannot be compared;
   with `--quality-only`, the verdict rests on quality alone
 
@@ -588,7 +588,7 @@ same time, and say so when either differs.
 
 - **GIVEN** a baseline recorded with Claude Code's default model and a
   candidate recorded with `claude-sonnet-4-5`
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 2, names both models, and prints no report
 
 #### Scenario: The same default, another model used
@@ -596,18 +596,18 @@ same time, and say so when either differs.
 - **GIVEN** a baseline and a candidate both recorded with Claude Code's
   default model, whose observations record `claude-opus-5-5` and
   `claude-sonnet-5-5` as used
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 2, names both models, and prints no report
 
 #### Scenario: Another Claude Code version
 
 - **GIVEN** a baseline recorded with Claude Code 2.1.289 and a candidate
   with 2.1.301, on the same model
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** the report names both versions and says they differ
 
 #### Scenario: No case in common
 
 - **GIVEN** a baseline and a candidate that share no case
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 2 and says no case is in common

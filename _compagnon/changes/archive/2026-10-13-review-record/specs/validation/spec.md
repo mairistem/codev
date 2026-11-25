@@ -17,14 +17,14 @@ the record. Archived changes MUST NOT be checked.
 #### Scenario: A change without a record
 
 - **GIVEN** an active change without `review.md`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `review_*` finding is reported
 
 #### Scenario: An open high finding is not a validation error
 
 - **GIVEN** an active change whose well-formed record holds a `high`
   finding `open`, its evidence at the cited lines
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `review_*` finding is reported
 - **AND** the exit code is 0
 
@@ -32,7 +32,7 @@ the record. Archived changes MUST NOT be checked.
 
 - **GIVEN** an active change whose record has a finding without
   `evidence`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error is reported with the path of
   `review.md` and its line
 - **AND** the exit code is 1
@@ -41,5 +41,5 @@ the record. Archived changes MUST NOT be checked.
 
 - **GIVEN** a project whose only invalid review record is in an archived
   change
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** no `review_*` finding is reported

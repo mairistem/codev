@@ -6,14 +6,14 @@ Today a role is prose in three places: the `Role:` / `Done when:` block at
 the top of each `instruction` in `assets/schemas/spec-driven/schema.yaml`,
 the steps of `assets/workflows/propose.md` (understand, study, trace,
 challenge) and `assets/workflows/apply.md` (implement, review), and the two
-`roles.md` chapters. `codev instructions` hands the schema text to the skill
+`roles.md` chapters. `compagnon instructions` hands the schema text to the skill
 unchanged; nothing in the binary knows that a role exists.
 
-The configuration is read by `codev-engine::config` (`ProjectConfig`,
+The configuration is read by `compagnon-engine::config` (`ProjectConfig`,
 tolerant top level, strict `inherits` and `changelog`); a change's
-`change.yaml` by `codev-engine::metadata` (`deny_unknown_fields`). Schemas
-are parsed and validated in `codev-core::schema`. The JSON contract lives
-in `codev-cli::contract`.
+`change.yaml` by `compagnon-engine::metadata` (`deny_unknown_fields`). Schemas
+are parsed and validated in `compagnon-core::schema`. The JSON contract lives
+in `compagnon-cli::contract`.
 
 ## Goals / Non-Goals
 
@@ -37,7 +37,7 @@ in `codev-cli::contract`.
 ### Decision: The catalog is data; resolution is a pure function of the core
 
 The built-in step roles live in `assets/roles.yaml`, embedded at compile
-time and parsed by a new `codev-core::roles` module with `serde_norway`
+time and parsed by a new `compagnon-core::roles` module with `serde_norway`
 (decision 0006). The same module holds the setting types, the resolution
 (`catalog + project settings + change settings → resolved roles`) and the
 findings. It touches no file: the engine reads `config.yaml`,
@@ -47,7 +47,7 @@ crate graph; the CLI only translates to the JSON contract).
 
 **Alternatives considered**: hard-coding the step roles as Rust constants
 (a role edit would need a code review of Rust rather than of text, against
-the "schemas are data" principle stated in `codev-core::schema`); resolving
+the "schemas are data" principle stated in `compagnon-core::schema`); resolving
 in the engine (puts decisions next to I/O, against 0001).
 
 ### Decision: Step roles in the catalog, artifact roles in the schema
@@ -63,7 +63,7 @@ declared twice, collides with a built-in step role, or whose `name` lacks
 
 **Alternatives considered**: every role in the catalog, artifacts
 referring to it by id (a custom schema could not define a role without a
-codev release); keeping artifact roles as prose (they could not be
+compagnon release); keeping artifact roles as prose (they could not be
 extended or listed).
 
 ### Decision: Steps are named, artifact roles sit at `plan.write`
@@ -91,25 +91,25 @@ mapping fails the configuration (`invalid`), like `changelog`: a misspelled
 the scalar form only.
 
 `unknown_role`, `invalid_role_activation` and `role_not_disableable` are
-findings, not parse errors: `codev validate` reports them all, at the line
+findings, not parse errors: `compagnon validate` reports them all, at the line
 of the role's key, as errors of the `config` item or of the change's item.
-`codev status`, `codev instructions` and `codev roles` resolve the roles and
+`compagnon status`, `compagnon instructions` and `compagnon roles` resolve the roles and
 fail with the first finding's code, through a dedicated `EngineError`
 variant whose `code()` is that code.
 
 **Alternatives considered**: failing the configuration load on any role
-error (every command, `codev validate` and `codev doctor` included, would
+error (every command, `compagnon validate` and `compagnon doctor` included, would
 stop at the first error instead of reporting them).
 
 ### Decision: Which roles cannot be disabled
 
 Artifact roles cannot be disabled (their artifact is still written), and
 neither can the `developer`, marked `required: true` in the catalog:
-without it `/codev-apply` has nothing to do. Every other step role can be.
+without it `/compagnon-apply` has nothing to do. Every other step role can be.
 
 **Alternatives considered**: every step role disableable, as the request's
 "default for every current role" allows (turning off the developer would
-make `/codev-apply` a no-op, a configuration that is only ever a mistake).
+make `/compagnon-apply` a no-op, a configuration that is only ever a mistake).
 
 ### Decision: Origins and names
 
@@ -123,28 +123,28 @@ context and rules (decision 0005 keeps them read-only and partial).
 **Alternatives considered**: a plain string `name` (the French book could
 not be checked against the data).
 
-### Decision: Serving roles — `codev roles` and `role` in instructions
+### Decision: Serving roles — `compagnon roles` and `role` in instructions
 
-`codev roles` is a new command with a v1 JSON document (`RolesV1`); one
-`RoleV1` shape is shared by `codev roles` and the additive `role` field of
+`compagnon roles` is a new command with a v1 JSON document (`RolesV1`); one
+`RoleV1` shape is shared by `compagnon roles` and the additive `role` field of
 `InstructionsV1`. No new skill and no command file: the skills already
-allow `Bash(codev:*)` (decision 0004).
+allow `Bash(compagnon:*)` (decision 0004).
 
-**Alternatives considered**: roles only through `codev instructions` (step
-roles have no artifact); a `roles` array in `codev status` (status is
+**Alternatives considered**: roles only through `compagnon instructions` (step
+roles have no artifact); a `roles` array in `compagnon status` (status is
 called often, and would carry criteria it does not need).
 
 ### Decision: Skills ask, then apply or skip
 
 `propose.md` and `apply.md` each get one short rule — "at a role step, run
-`codev roles --at <step> …`; apply every criterion returned; no role
+`compagnon roles --at <step> …`; apply every criterion returned; no role
 returned → skip the step and say so in the summary" — and each role step
 names its step id. The criteria leave the skill texts; the procedure
 (outputs, caps, guardrails, the Jira rules, the "never change behavior"
 of the review) stays. `plan.understand` runs before the change exists, so
 it is asked without `--change`.
 
-**Alternatives considered**: one `codev roles --json` call at the start
+**Alternatives considered**: one `compagnon roles --json` call at the start
 (simpler, but a per-step call keeps
 the criteria next to where they are applied).
 
@@ -152,31 +152,31 @@ the criteria next to where they are applied).
 
 The doctor's new `config.roles` check is `ok` with a message listing the
 active and disabled roles; when settings are invalid it is a `warning`
-(`roles_invalid`, fix `codev validate`) — the `validate` check already
+(`roles_invalid`, fix `compagnon validate`) — the `validate` check already
 counts the errors as `missing`, so the strict exit code is driven once.
 
 ### Decision: The documentation is checked against the catalog
 
 `roles.md` gets a "Built-in roles" table (`id`, name, step). A test in
-`codev-cli::docs` reads both embedded editions and compares the table's ids
+`compagnon-cli::docs` reads both embedded editions and compares the table's ids
 and names with the catalog plus the default schema's artifact roles. The
 other skills' stances (explore, onboard, configure, update, sync/archive)
 stay documented but are no longer called roles.
 
 ## Risks / Trade-offs
 
-- [The skills lose their criteria if `codev roles` fails] → it fails only
-  on an invalid setting, which `codev status` (run by both skills first)
-  already reports; the skills stop on a failing `codev` call.
+- [The skills lose their criteria if `compagnon roles` fails] → it fails only
+  on an invalid setting, which `compagnon status` (run by both skills first)
+  already reports; the skills stop on a failing `compagnon` call.
 - [Criteria drift while moving] → texts move verbatim (list punctuation
   aside); tests assert key phrases on the catalog and the schema roles, as
   they did on the skill bodies.
 - [Older installed skills with a newer binary lose the schema's prose role
   block] → the skills' version stamp already triggers the update notice;
-  `codev update` regenerates them.
+  `compagnon update` regenerates them.
 - [A project setting checked against the configured schema while a change
   uses another] → rare; the change's commands report the finding with its
-  code, and `codev validate` names it.
+  code, and `compagnon validate` names it.
 
 ## Open Questions
 

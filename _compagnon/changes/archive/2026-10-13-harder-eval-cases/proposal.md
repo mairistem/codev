@@ -71,13 +71,13 @@ None.
   `docs/fr/src/roles.md` (matching by category).
 - A full run costs about the previous run per case; it is never part of
   regular CI.
-- The roles, the skills and the `codev` binary are unchanged.
+- The roles, the skills and the `compagnon` binary are unchanged.
 
 ## Domains
 
 - [ ] security — the security fixtures hold deliberately vulnerable code that is never run; the runner, its permissions and the workflow's secret handling are unchanged
 - [ ] personal-data — the privacy fixtures hold fictitious personal-data fields only; nothing is stored or sent
-- [ ] user-interface — the accessibility fixtures are evaluation inputs, not an interface of codev
+- [ ] user-interface — the accessibility fixtures are evaluation inputs, not an interface of compagnon
 - [ ] performance — the performance fixtures are evaluation inputs; a run stays bounded per case by its budget and timeout
 - [ ] operations — the workflow is unchanged, and its 240-minute job timeout still covers the larger suite's worst case
 - [ ] migration — `case.yaml` is internal to the repository and loads with the runner of the same commit; `report.json` only gains fields; the baseline is recorded again in the same format

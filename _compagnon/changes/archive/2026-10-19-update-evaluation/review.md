@@ -22,7 +22,7 @@ history:
     by: skeptic
   - status: fixed
     by: architect
-    note: "Five repetitions of the update cases alone, with the pinned Claude Code 2.1.289 and codev 0.6.1 (the baseline's), report.json and report.md regenerated and committed; CONTRIBUTING says a new step's cases may be recorded alone, changed cases or scoring still requiring a full recording."
+    note: "Five repetitions of the update cases alone, with the pinned Claude Code 2.1.289 and compagnon 0.6.1 (the baseline's), report.json and report.md regenerated and committed; CONTRIBUTING says a new step's cases may be recorded alone, changed cases or scoring still requiring a full recording."
     ref: "design.md#Decision: The baseline gains the update runs alone, five of each"
   - status: fixed
     by: skeptic
@@ -68,14 +68,14 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-4 The validity check assumes the unrevised archived change validates with the codev under test, which nothing verifies
+#### R-skeptic-4 The validity check assumes the unrevised archived change validates with the compagnon under test, which nothing verifies
 
 ```yaml
 severity: medium
 confidence: low
 location: "specs/update-evaluation/spec.md#Requirement: An update run is scored by deterministic checks"
 evidence: |
-  - `codev validate` reports no error on the change that it did not report
+  - `compagnon validate` reports no error on the change that it did not report
 recommendation: "Validate the fixture before the run and count only the errors the run adds, with a scenario."
 history:
   - status: open
@@ -164,7 +164,7 @@ severity: low
 confidence: high
 location: "evals/tests/fixture.rs:104-126"
 evidence: |
-  write(&repo.join("_codev/specs/a/spec.md"), "before the change\n");
+  write(&repo.join("_compagnon/specs/a/spec.md"), "before the change\n");
 recommendation: "Reword the texts, extend the module doc, and extract the shared setup."
 history:
   - status: open

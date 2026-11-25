@@ -48,7 +48,7 @@
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "codev review": 2670
+          "compagnon review": 2670
         }
       },
       {
@@ -68,7 +68,7 @@
         "output": 188,
         "toolCalls": 0,
         "sources": {
-          "codev review": 321
+          "compagnon review": 321
         }
       }
     ]
@@ -117,7 +117,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/import-accounts/review.md",
+    "path": "_compagnon/changes/import-accounts/review.md",
     "status": [],
     "steps": [
       {

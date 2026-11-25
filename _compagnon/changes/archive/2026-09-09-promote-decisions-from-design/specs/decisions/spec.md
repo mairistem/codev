@@ -1,9 +1,9 @@
 ## ADDED Requirements
 
-### Requirement: `codev decision promote` command extracts a design block into an ADR
+### Requirement: `compagnon decision promote` command extracts a design block into an ADR
 
-`codev decision promote <change> <title>` MUST create a new local ADR
-under `_codev/decisions/NNNN-<slug>.md`, with `status: accepted`,
+`compagnon decision promote <change> <title>` MUST create a new local ADR
+under `_compagnon/decisions/NNNN-<slug>.md`, with `status: accepted`,
 sealed by K3, whose body reproduces **verbatim** the content of the
 `### Decision: <title>` block found under the `## Decisions` section of
 the change's `design.md`. The new ADR contains a `## Decision` section
@@ -17,7 +17,7 @@ or `## ` (excluded), without normalization.
 
 Explicit refusals — stable codes:
 
-- `unknown_change`: the change is not in `codev list`.
+- `unknown_change`: the change is not in `compagnon list`.
 - `cannot_promote_from_archived`: the target points to a folder under
   `changes/archive/` — an archived design is history.
 - `design_missing`: the change has no `design.md`.
@@ -31,20 +31,20 @@ Explicit refusals — stable codes:
 - **GIVEN** a change `add-auth` whose `design.md` contains, under
   `## Decisions`, a block `### Decision: Use JWT` with two paragraphs
   of rationale
-- **WHEN** the user runs `codev decision promote add-auth
+- **WHEN** the user runs `compagnon decision promote add-auth
   "Use JWT"`
 - **THEN** a new ADR is created under
-  `_codev/decisions/NNNN-use-jwt.md` with `status: accepted`, today's
+  `_compagnon/decisions/NNNN-use-jwt.md` with `status: accepted`, today's
   `date`, and a valid frontmatter
 - **AND** its body contains a `## Decision` section with the two
   paragraphs of rationale, byte for byte
-- **AND** an entry is added to `_codev/decisions/seal.yaml` for this
+- **AND** an entry is added to `_compagnon/decisions/seal.yaml` for this
   ADR — consistent with K3
 
 #### Scenario: Refusal of an archived change
 
-- **GIVEN** a change that lives under `_codev/changes/archive/…-<name>/`
-- **WHEN** the user runs `codev decision promote <name> "..."`
+- **GIVEN** a change that lives under `_compagnon/changes/archive/…-<name>/`
+- **WHEN** the user runs `compagnon decision promote <name> "..."`
 - **THEN** no file is written
 - **AND** the error message names the stable code
   `cannot_promote_from_archived`
@@ -53,7 +53,7 @@ Explicit refusals — stable codes:
 
 - **GIVEN** a change `add-auth` whose `design.md` does not mention a
   "Use Kerberos" block
-- **WHEN** the user runs `codev decision promote add-auth
+- **WHEN** the user runs `compagnon decision promote add-auth
   "Use Kerberos"`
 - **THEN** no file is written
 - **AND** the error message names the stable code
@@ -64,7 +64,7 @@ Explicit refusals — stable codes:
 - **GIVEN** a `design.md` containing **two** blocks
   `### Decision: Library choice` (for example a revised version of the
   first block during the discussion)
-- **WHEN** the user runs `codev decision promote <c> "Library
+- **WHEN** the user runs `compagnon decision promote <c> "Library
   choice"`
 - **THEN** no file is written
 - **AND** the error message names the stable code
@@ -80,7 +80,7 @@ line** of textual quote referencing the new ADR:
 ```
 ### Decision: <title>
 
-> Promoted to ADR **NNNN** — see `_codev/decisions/NNNN-<slug>.md`.
+> Promoted to ADR **NNNN** — see `_compagnon/decisions/NNNN-<slug>.md`.
 ```
 
 The reference is plain text (`` ` `` for the path), not a markdown
@@ -98,7 +98,7 @@ promoted.
   ```
   ### Decision: Use JWT
 
-  > Promoted to ADR **NNNN** — see `_codev/decisions/NNNN-use-jwt.md`.
+  > Promoted to ADR **NNNN** — see `_compagnon/decisions/NNNN-use-jwt.md`.
 
   ```
 - **AND** the rest of the file (other sections, other `###` blocks,
@@ -111,7 +111,7 @@ promoted.
 - **GIVEN** a design containing two distinct blocks:
   `### Decision: A` and `### Decision: B`
 - **AND** the user has already promoted `A` to an ADR
-- **WHEN** the user runs `codev decision promote <c> "B"`
+- **WHEN** the user runs `compagnon decision promote <c> "B"`
 - **THEN** block `B` is promoted in turn
 - **AND** the reference line of `A` is NOT altered by this second
   promotion — each promotion only acts on its own block

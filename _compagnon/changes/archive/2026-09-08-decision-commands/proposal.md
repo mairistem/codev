@@ -11,19 +11,19 @@ change made decisions **usable** by the tool; this change makes them
 
 ## What Changes
 
-- **`codev decision new <title>`** — creates a new ADR under
-  `_codev/decisions/`. Automatically determines the `id` (the largest
+- **`compagnon decision new <title>`** — creates a new ADR under
+  `_compagnon/decisions/`. Automatically determines the `id` (the largest
   integer found + 1, formatted on four digits), derives the file name from
   the title (`0007-title-slug.md`), writes a skeleton with the standard
   sections (Context / Decision / Consequences / Rejected alternatives).
   Default status `accepted` — the repository's documented practice.
-- **`codev decision list`** — lists all local and inherited decisions,
+- **`compagnon decision list`** — lists all local and inherited decisions,
   each with its `id`, its title, its status, its effect state
   (`in_effect` or `superseded_by:<id>`), and its origin.
-- **`codev decision show <id>`** — displays one specific decision, human
+- **`compagnon decision show <id>`** — displays one specific decision, human
   or JSON output. Resolves by local `id` if unambiguous, requires an
   `<origin>/<id>` qualifier in case of a cross-source collision.
-- **`codev decision supersede <old-id> <new-title>`** — creates a new
+- **`compagnon decision supersede <old-id> <new-title>`** — creates a new
   decision that references the old one in its `supersedes`, and rewrites
   the old one's frontmatter to switch its `status` to `superseded`. Both
   writes are in the same `Plan`: atomic.
@@ -44,10 +44,10 @@ None.
 
 ## Impact
 
-- **Code**: new module `codev-engine::decisions::actions` with pure
+- **Code**: new module `compagnon-engine::decisions::actions` with pure
   functions `plan_new(index, title, options) -> Result<Plan, …>` and
   `plan_supersede(index, old_id, new_title) -> Result<Plan, …>`; new
-  `codev decision …` subcommand group in `codev-cli`; new contracts
+  `compagnon decision …` subcommand group in `compagnon-cli`; new contracts
   `DecisionV1`, `DecisionCreatedV1`, `DecisionSupersededV1`.
 - **Dependencies**: none new.
 - **ADR skeleton**: embedded in the binary via `include_str!`, under
@@ -60,7 +60,7 @@ None.
     change, now less blocked since mutations will go through the CLI.
   - **K6 (`deviates-from` deviation)** — a project inheriting a decision
     may want to depart from it locally. A dedicated frontmatter field and
-    a `codev decision deviate <origin/id>` command would be clean
+    a `compagnon decision deviate <origin/id>` command would be clean
     additions, to be handled separately.
   - **K7 (promotion from `design.md`)** — recognizing an architecture
     decision in an archived `design.md` and promoting it to an ADR, next

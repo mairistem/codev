@@ -2,7 +2,7 @@
 
 ## Why
 
-`codev-evals run` builds its fixtures under a default working folder named
+`compagnon-evals run` builds its fixtures under a default working folder named
 after the current second. Two runs started in the same second — a
 reference and a candidate launched together, as for `role-models` on
 2026-10-20 — shared that folder and overwrote each other's fixtures: 63

@@ -1,6 +1,6 @@
 ---
 id: "0010"
-title: "Token savings are sought in the model and the review organization, not in codev's text"
+title: "Token savings are sought in the model and the review organization, not in Compagnon's text"
 status: accepted
 date: 2026-10-20
 ---
@@ -8,7 +8,7 @@ date: 2026-10-20
 ## Context
 
 Between 2026-10-15 and 2026-10-20, the evaluation suite measured several
-ways to make codev's sessions use fewer tokens:
+ways to make Compagnon's sessions use fewer tokens:
 
 | What was tried | Effect on cost | Effect on quality |
 |---|---|---|
@@ -23,7 +23,7 @@ ways to make codev's sessions use fewer tokens:
 | Planning on Sonnet | −59 % | primary recall 0.82 → 0.62 |
 
 A planning run spends 47 % of its cost re-reading its context, 26 % on
-new context and 26 % on output; codev's own text — the skill and its
+new context and 26 % on output; Compagnon's own text — the skill and its
 instructions — is about a tenth of the context written. The branches of
 the changes not merged (`feat/planning-recall`,
 `feat/planning-context-pre-rebase`, `experiment/rtk`) keep their code and
@@ -34,7 +34,7 @@ their measures.
 A change that aims at fewer tokens works on what decides the bill: the
 model a step runs on, and how many review passes and sub-agents a session
 runs, measured as decision 0008 requires. Shortening or lengthening the
-text codev gives the agent is not, on its own, a way to save tokens: it
+text Compagnon gives the agent is not, on its own, a way to save tokens: it
 is judged on quality, and its cost is only checked not to rise.
 
 ## Consequences
@@ -51,7 +51,7 @@ is judged on quality, and its cost is only checked not to rise.
 
 ## Alternatives considered
 
-- Keep trimming codev's text: every measured attempt stayed within ±3 %,
+- Keep trimming Compagnon's text: every measured attempt stayed within ±3 %,
   the run-to-run noise.
 - Compress the agent's tool outputs (RTK): the bulk of what the agent
   reads comes through Claude Code's `Read` tool and `sed`, which it does

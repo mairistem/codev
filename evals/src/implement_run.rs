@@ -525,6 +525,7 @@ pub fn extract(repo: &Path, commit: &str, dir: &Path) -> Result<(), String> {
     if !untar?.status.success() {
         return Err(format!("extracting {commit} failed"));
     }
+    crate::runner::bring_through_rename(dir)?;
     let init = Command::new("git")
         .args(["init", "-q"])
         .current_dir(dir)

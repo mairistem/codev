@@ -1,11 +1,11 @@
 # Tasks
 
-## 1. Pure parser in `codev-core::decisions`
+## 1. Pure parser in `compagnon-core::decisions`
 
-- [x] 1.1 Create `codev-core::decisions` (`decisions/mod.rs`,
+- [x] 1.1 Create `compagnon-core::decisions` (`decisions/mod.rs`,
       `decisions/ast.rs`, `decisions/parser.rs`), expose `Decision`,
       `DecisionStatus`, `parse_decision`. Verified by `cargo build -p
-      codev-core`.
+      compagnon-core`.
 - [x] 1.2 AST types: `Decision { id: String, title: String, status:
       DecisionStatus, date: String, tags: Vec<String>, supersedes:
       Vec<String>, sections: Vec<Section>, span: Span }`, enumeration
@@ -34,16 +34,16 @@
       recognized statuses. Verified by
       `decisions::status_inconnu_est_signale`.
 
-## 2. Index and supersession in `codev-engine::decisions`
+## 2. Index and supersession in `compagnon-engine::decisions`
 
-- [x] 2.1 Create `codev-engine::decisions` (`decisions/mod.rs`). Public
+- [x] 2.1 Create `compagnon-engine::decisions` (`decisions/mod.rs`). Public
       types: `IndexEntry { qualified_id, decision, origin, path }`,
       `Origin { Project, Path(String) }`, `DecisionIndex { entries,
       in_effect, findings }`, `pub fn index(fs, layout, config) ->
       DecisionIndex`. Verified by
       `engine_decisions::index_vide_sur_projet_sans_adr`.
-- [x] 2.2 `index` walks the project's `_codev/decisions/` and, for each
-      `inherits: path:` source, `<path>/_codev/decisions/`. Respective
+- [x] 2.2 `index` walks the project's `_compagnon/decisions/` and, for each
+      `inherits: path:` source, `<path>/_compagnon/decisions/`. Respective
       origin marked. Verified by
       `engine_decisions::adr_du_projet_et_dune_source_apparaissent_avec_leur_origin`.
 - [x] 2.3 Computing `in_effect`: an `accepted` entry not superseded by
@@ -67,7 +67,7 @@
 
 ## 3. Injection into the instructions
 
-- [x] 3.1 Extend `Instructions` (`codev-engine::instructions`) with a
+- [x] 3.1 Extend `Instructions` (`compagnon-engine::instructions`) with a
       `pub decisions: Vec<DecisionRef>` field, with `DecisionRef { id,
       qualified_id, title, status, tags, path: PathBuf, origin }`.
       Verified by
@@ -102,11 +102,11 @@
 ## 6. Dogfooding and workspace integration
 
 - [x] 6.1 Create a small test change `poc-design-with-decisions` (a
-      fictitious capability), run `codev instructions design --change …
+      fictitious capability), run `compagnon instructions design --change …
       --json`, check that the `decisions` array contains the 6 ADRs
       already present in the repository (`0001` to `0006`). Then delete
       this test change — it does not remain in the repository.
 - [x] 6.2 `cargo test --workspace` stays green and counts at least 15
       additional tests (parser + index + injection + contract + rendering).
 - [x] 6.3 `cargo clippy --workspace --all-targets` stays warning-free.
-- [x] 6.4 `codev validate --all` stays green.
+- [x] 6.4 `compagnon validate --all` stays green.

@@ -2,23 +2,23 @@
 
 ## Context
 
-Experts are `on_domain` roles (`codev-core::roles`): active when the
-proposal's `## Domains` ticks their domain (`codev-core::domains`). Role
+Experts are `on_domain` roles (`compagnon-core::roles`): active when the
+proposal's `## Domains` ticks their domain (`compagnon-core::domains`). Role
 files are embedded at build time (`assets/roles/*.md`, strict frontmatter
-with `deny_unknown_fields`). `codev roles` resolves them in
-`codev-engine::roles::resolve` and serves them through `RolesV1`
-(`codev-cli::contract`), knowledge whole.
+with `deny_unknown_fields`). `compagnon roles` resolves them in
+`compagnon-engine::roles::resolve` and serves them through `RolesV1`
+(`compagnon-cli::contract`), knowledge whole.
 
 Git is reached only through the `ProcessRunner` port, for local read-only
-queries (`codev changelog` does `rev-parse`, `tag`, `ls-tree`), with
-`MockProcessRunner` in tests. `codev validate` today reads files only:
+queries (`compagnon changelog` does `rev-parse`, `tag`, `ls-tree`), with
+`MockProcessRunner` in tests. `compagnon validate` today reads files only:
 `engine::validate::validate_change` takes no runner, and is also the
-pre-flight of `sync` and `archive` and the count behind `codev doctor`'s
-`validate` check. Stack detection exists for `codev init`
-(`codev-engine::detect`): root manifests only, first found wins.
+pre-flight of `sync` and `archive` and the count behind `compagnon doctor`'s
+`validate` check. Stack detection exists for `compagnon init`
+(`compagnon-engine::detect`): root manifests only, first found wins.
 
 Decisions in force: 0001 (the core decides on strings, the engine
-reads), 0002 (crate graph; effects through ports), 0003 (`_codev/` is the
+reads), 0002 (crate graph; effects through ports), 0003 (`_compagnon/` is the
 planning root), 0005 (inherited sources are read-only; their `roles:` is
 already ignored), 0006 (`serde_norway` for YAML).
 
@@ -26,24 +26,24 @@ already ignored), 0006 (`serde_norway` for YAML).
 
 **Goals:**
 
-- A trigger match the proposal ignores is visible in `codev roles` and
-  `codev validate`, with the trigger and the file that caused it.
+- A trigger match the proposal ignores is visible in `compagnon roles` and
+  `compagnon validate`, with the trigger and the file that caused it.
 - Everything here is deterministic and checkable: no model, no network.
 - The `By stack` knowledge an expert receives fits the project.
 - Where the check bites: before the code exists, the diff holds mostly
-  planning files, left out, so `/codev-propose` usually sees no
-  suggestion; `/codev-apply`'s review and `codev validate` after the
+  planning files, left out, so `/compagnon-propose` usually sees no
+  suggestion; `/compagnon-apply`'s review and `compagnon validate` after the
   code is written are where an unticked domain is caught.
 
 **Non-Goals:**
 
 - Ticking domains automatically: a suggestion is evidence for a human or
   an agent to judge, never a decision.
-- A diff per change: codev cannot attribute lines to one of several
+- A diff per change: compagnon cannot attribute lines to one of several
   active changes; every active change shares the working tree's diff.
 - Triggers for non-expert roles, or triggers that deactivate an expert.
 - Detecting languages from file extensions, or frameworks.
-- Suggestions in `codev doctor`, `codev status`, or the archive gate.
+- Suggestions in `compagnon doctor`, `compagnon status`, or the archive gate.
 
 ## Decisions
 
@@ -59,9 +59,9 @@ triggers:
 
 A group names its domain, so a role file and the project's `triggers:`
 read alike, and a reader sees what each trigger suggests without knowing
-which role it belongs to. `codev-core::triggers` parses a group from a
+which role it belongs to. `compagnon-core::triggers` parses a group from a
 `serde_norway::Value` field by field: unknown keys are collected rather
-than refused, so an older codev reading a newer project's `triggers:`
+than refused, so an older compagnon reading a newer project's `triggers:`
 warns instead of failing (the configuration's rule for unknown keys). The
 built-in files stay strict: `RoleFrontmatter` gains a `triggers` field
 read by the same parser, and a unit test fails on any problem, at build
@@ -86,7 +86,7 @@ implied by the role (`triggers: { paths: [...] }`) — shorter, but a
 project trigger would need a role to hang from, and a role bound to
 several domains could not say which one a trigger suggests; triggers
 under `roles.<id>` in the configuration — each role entry is strict, so
-an older codev would refuse the whole configuration.
+an older compagnon would refuse the whole configuration.
 
 ### Decision: Globs through `globset`, expressions through `regex-automata`
 
@@ -94,7 +94,7 @@ Globs compile with `globset` (already a dependency), case-insensitive,
 `*` not crossing `/`. Expressions compile with `regex-automata`'s
 `meta::Regex`, which `globset` already pulls in with the features we
 need: no new crate enters `Cargo.lock`. Its matching is linear in the
-input whatever the expression, so a project pattern cannot hang codev
+input whatever the expression, so a project pattern cannot hang compagnon
 (no catastrophic backtracking); compilation is bounded by a size limit
 (1 MiB of compiled program), and a pattern over it is `invalid_trigger`.
 
@@ -103,14 +103,14 @@ friendlier API, but four lines of convenience for a new direct
 dependency and a new crate in the tree); substring lists instead of
 expressions (no word boundaries: `password` would need ten spellings).
 
-### Decision: The diff in `codev-engine::diff`, through `ProcessRunner`
+### Decision: The diff in `compagnon-engine::diff`, through `ProcessRunner`
 
 All commands run in the project root, with
 `git -c core.quotePath=false -c core.fsmonitor=false`: paths come out
 unescaped, and a repository unpacked from an archive with its own
-`.git/config` cannot make codev run its file-system monitor program. The
+`.git/config` cannot make compagnon run its file-system monitor program. The
 patch also passes `--no-textconv` and `--no-ext-diff`: no configured
-program runs on codev's behalf.
+program runs on compagnon's behalf.
 
 1. `rev-parse --is-inside-work-tree` — otherwise *not a git repository*
    (a missing `git` answers 127: same outcome).
@@ -152,7 +152,7 @@ instead of the patch — it cannot tell added lines from existing ones.
 
 ### Decision: The core classifies, caps and matches
 
-`codev-core::triggers` holds the parsing of groups, the noise list
+`compagnon-core::triggers` holds the parsing of groups, the noise list
 (`classify(path) -> Option<Skip>`), the caps, the matching and the
 suggestions — pure functions over the `Diff` value and the proposal's
 text. Classification goes by path only, deterministic and explainable;
@@ -180,7 +180,7 @@ output, and project triggers cover the rest); sniffing generated headers
 
 `- [ ] security — only renames a variable`: the text after the domain
 name, with leading dashes, colons and spaces removed, is the
-justification. `codev-core::domains` already treats it as a free comment;
+justification. `compagnon-core::domains` already treats it as a free comment;
 it now returns, per listed domain, whether it is ticked, its comment and
 its line. `None` justifies nothing: it is one answer for six domains.
 
@@ -190,14 +190,14 @@ rendered proposal, the place a reviewer reads).
 
 ### Decision: Suggestions are computed in the CLI's orchestration, not in `validate_change`
 
-`codev-engine::suggest::for_change(fs, layout, config, ctx, roles,
+`compagnon-engine::suggest::for_change(fs, layout, config, ctx, roles,
 &diff)` combines the triggers of the experts active-or-`on_domain` for
 the change (not `never`) and the project's valid groups, and returns the
 suggestions with their states. The diff is read once per command by
-`codev-engine::diff::read(fs, runner, layout)`. `codev roles --change`
-and `codev validate` (the CLI's `commands::validate`, once for all
+`compagnon-engine::diff::read(fs, runner, layout)`. `compagnon roles --change`
+and `compagnon validate` (the CLI's `commands::validate`, once for all
 active changes) call them; `engine::validate::validate_change` keeps its
-signature, so the `sync` and `archive` pre-flights and `codev doctor`
+signature, so the `sync` and `archive` pre-flights and `compagnon doctor`
 never run git. The warning is located as the spec says.
 
 **Alternatives considered**: a runner parameter on `validate_change`
@@ -207,20 +207,20 @@ not proof; `--strict` turns it into a gate for teams that want one).
 
 ### Decision: Stacks from manifest names over a bounded walk; the filter in the core
 
-`codev-engine::detect::stacks(fs, root)` walks the project breadth-first
+`compagnon-engine::detect::stacks(fs, root)` walks the project breadth-first
 with `list_dir`, three levels deep, skipping hidden directories and
 `node_modules`, `vendor`, `third_party`, `target`, `dist`, `build`, at
-most 2000 directories; `codev-core::detect::stack::languages(names)` maps
+most 2000 directories; `compagnon-core::detect::stack::languages(names)` maps
 manifest names to languages. Presence is enough: a `Cargo.toml` that
-does not parse still says Rust. `codev-core::roles::filter_by_stack(
+does not parse still says Rust. `compagnon-core::roles::filter_by_stack(
 knowledge, languages)` splits the `By stack` section into its `- **Label**:`
 items (each item runs to the next one) and keeps the items as the spec
 says. The CLI applies it to each served role unless `--all-stacks`.
-`codev init`'s detection is unchanged.
+`compagnon init`'s detection is unchanged.
 
 **Alternatives considered**: `git ls-files` for manifests (no answer
 outside git); `walk_files` over the whole tree (a `node_modules` walk
-costs seconds); filtering in the skills, as today (a judgement codev can
+costs seconds); filtering in the skills, as today (a judgement compagnon can
 make exactly, and the source of the noise this change removes).
 
 ### Decision: The contract grows additively
@@ -228,19 +228,19 @@ make exactly, and the source of the noise this change removes).
 `RolesV1` gains `stacks`, `diff` and `suggestions`; `RoleV1` is
 unchanged. A failure keeps the shape with `stacks: null`, `diff: null`,
 `suggestions: []`. `domain_suggested` and `invalid_trigger` join the
-codes of the uniqueness test. Skills generated by an older codev read
-`codev roles --json` and ignore the new fields.
+codes of the uniqueness test. Skills generated by an older compagnon read
+`compagnon roles --json` and ignore the new fields.
 
-**Alternatives considered**: a separate `codev suggest` command (one more
+**Alternatives considered**: a separate `compagnon suggest` command (one more
 call per step in each skill, and the roles a suggestion would activate
-are served by `codev roles` anyway).
+are served by `compagnon roles` anyway).
 
 ### Every case, planned
 
 | Case | Behavior |
 |---|---|
-| No git repository | `diff.available: false`, reason *not a git repository*; no suggestion; `codev validate` reports none and does not fail (scenarios "Not a git repository", "No diff"). |
-| A change with no diff yet | `diff.files: 0`, no suggestion; at `/codev-propose` time the diff usually holds only the planning files, which are `planning` noise: the product owner ticks by judgement (the skill says so when `files` is 0). Scenario "Vendored and planning files suggest nothing". |
+| No git repository | `diff.available: false`, reason *not a git repository*; no suggestion; `compagnon validate` reports none and does not fail (scenarios "Not a git repository", "No diff"). |
+| A change with no diff yet | `diff.files: 0`, no suggestion; at `/compagnon-propose` time the diff usually holds only the planning files, which are `planning` noise: the product owner ticks by judgement (the skill says so when `files` is 0). Scenario "Vendored and planning files suggest nothing". |
 | A docs-only change | Prose files skip the patterns; only `paths` triggers naming docs paths could match, and none of the built-in ones does (scenario "A docs-only change"). |
 | Generated, vendored, binary or very large files | The noise list and the `large` and `binary` categories; binary and large files still meet `paths` and `manifests` (scenarios "A lock file suggests nothing", "Vendored and planning files suggest nothing", "A binary file is matched by its path only"). |
 | Huge diffs | 2000 files in path order, 5000 added lines per file, 2 MiB of added text, 2000 characters per line; `truncated: true` beyond them (scenario "A huge diff is truncated"). Patches are fetched in bounded batches. |
@@ -251,7 +251,7 @@ are served by `codev roles` anyway).
 | A step re-run (idempotence) | Read-only; the same tree gives the same document, sorted (scenario "Run twice, the same answer"). |
 | An interrupted run resumed | Nothing is stored: a new session recomputes the suggestions; justifications live in the proposal. |
 | Inherited sources | Their `triggers:` is ignored, like their `roles:` (scenario "Triggers of an inherited source are ignored"); built-in triggers come with the binary. Out of scope: sharing triggers through an inherited source. |
-| Older binaries reading newer files | A codev without this change warns `unknown_config_key` on `triggers:` and ignores it; it reads `- [ ] security — reason` as a free comment, as today; skills it generated ignore the new JSON fields. A newer codev's unknown key inside a group is a warning here, not a failure. |
+| Older binaries reading newer files | A compagnon without this change warns `unknown_config_key` on `triggers:` and ignores it; it reads `- [ ] security — reason` as a free comment, as today; skills it generated ignore the new JSON fields. A newer compagnon's unknown key inside a group is a warning here, not a failure. |
 | Shallow clones (CI) | Without the merge-base in history, `merge-base` fails: no diff, no warning. Out of scope: deepening the clone; the docs say to use `fetch-depth: 0` for suggestions in CI. |
 | Submodules | `--ignore-submodules`: a submodule's changes are its own repository's. |
 | Hostile input | Project patterns run in linear time with a compile-size cap; untracked symbolic links and devices are never read; a matched line's content is never printed, only its path and number. |
@@ -268,7 +268,7 @@ are served by `codev roles` anyway).
   when there is no diff; the docs give `fetch-depth: 0`.
 - [Two active changes share a diff and get each other's suggestions] →
   a stated non-goal; each justifies what is not its own in one line.
-- [`codev roles --change` gets slower on large repositories] → five git
+- [`compagnon roles --change` gets slower on large repositories] → five git
   calls plus bounded batches, capped scan; measured on this repository in
   the verification task.
 - [The stack filter drops an item a reviewer needed (a TypeScript
@@ -280,9 +280,9 @@ are served by `codev roles` anyway).
 
 Nothing to migrate. Active changes whose diff suggests a domain they
 neither tick nor justify get a `domain_suggested` warning, which fails
-`codev validate --strict` until a line is ticked or justified. A team
-mixing codev versions sees `unknown_config_key` on `triggers:` from the
-older binary; raising `codev_version` makes everyone upgrade together.
+`compagnon validate --strict` until a line is ticked or justified. A team
+mixing compagnon versions sees `unknown_config_key` on `triggers:` from the
+older binary; raising `compagnon_version` makes everyone upgrade together.
 Rollback: revert the commit; justifications stay as free comments.
 
 ## Open Questions

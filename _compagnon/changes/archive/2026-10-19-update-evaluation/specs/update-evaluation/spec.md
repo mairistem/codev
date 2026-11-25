@@ -1,6 +1,6 @@
 ## Purpose
 
-The update evaluation measures the `/codev-update` skill: given an active
+The update evaluation measures the `/compagnon-update` skill: given an active
 change and the author's request to revise one of its artifacts, does the
 agent revise what it should, leave the rest, report the ripple instead of
 applying it, and refuse what the skill must refuse.
@@ -14,7 +14,7 @@ An update case SHALL be a directory of `evals/cases/` holding a
 of this repository), `change` (a change name), `artifact` (`proposal`,
 `specs`, `design` or `tasks`), `request` (the author's words, in any
 language), `summary`, and `expected`; and a folder `change/` holding the
-files of `_codev/changes/<change>/`, laid on the state at `ref`.
+files of `_compagnon/changes/<change>/`, laid on the state at `ref`.
 `expected` SHALL hold `revised` (the paths, relative to the change's
 folder, the revision must change), `kept` (the paths it must leave
 byte-identical), `ripple` (the paths whose consequence the agent must
@@ -25,7 +25,7 @@ refuse the request). A refusing case expects no `revised` path and no
 
 Loading a case SHALL fail, naming the case and the cause, when `ref` is
 not a commit of the repository's history; when the tree at `ref` already
-holds `_codev/changes/<change>/` or `evals/cases/<case id>/`; when
+holds `_compagnon/changes/<change>/` or `evals/cases/<case id>/`; when
 `change/` is missing; when a path of `revised`, `kept` or `ripple` is not
 a file of `change/`; when the request is empty; or when an unknown key is
 found.
@@ -53,11 +53,11 @@ found.
 
 ### Requirement: The runner replays the revision request with the skill under test
 
-For an update case, `codev-evals run` SHALL build the case's directory
-from the tree at `ref`, write `change/` into `_codev/changes/<change>/`,
-install the skills of the codev under test as for a planning case, and
+For an update case, `compagnon-evals run` SHALL build the case's directory
+from the tree at `ref`, write `change/` into `_compagnon/changes/<change>/`,
+install the skills of the compagnon under test as for a planning case, and
 commit. It SHALL then run Claude Code with a prompt that names the
-`codev-update` skill, the change, the artifact and the request, and the
+`compagnon-update` skill, the change, the artifact and the request, and the
 evaluation mode: ask no question — make the most reasonable assumption —;
 report a ripple as the skill says, without applying it, since no one
 will confirm; and modify nothing outside the change's folder. The prompt
@@ -66,11 +66,11 @@ the agent report. It runs under
 the planning cases' budget and timeout. `--step plan.update` SHALL
 select the update cases; `--step review` does not.
 
-Before the run, the runner SHALL record what `codev validate <change>
+Before the run, the runner SHALL record what `compagnon validate <change>
 --json` reports on the fixture. The observation SHALL hold the files of
 the change's folder after the run, the text of every message the agent
 wrote — the skill reports the ripple at its own step, before its
-summary —, and what `codev validate <change> --json` reports after the
+summary —, and what `compagnon validate <change> --json` reports after the
 run. A file modified outside the change's folder SHALL be recorded as
 modified outside the step.
 
@@ -79,7 +79,7 @@ modified outside the step.
 - **GIVEN** an update case for the change `add-auth`, the artifact
   `design` and the request « remplace la décision X par Y »
 - **WHEN** the runner builds its prompt
-- **THEN** it names `codev-update`, the change, the artifact and the
+- **THEN** it names `compagnon-update`, the change, the artifact and the
   request, and says to ask no question, to report a ripple without
   applying it, and to modify nothing outside the change's folder
 
@@ -99,10 +99,10 @@ Scoring an update run SHALL apply these checks, without a model:
   relative to the change's folder;
 - each `contains` text is in one of the `revised` files once revised,
   compared ignoring case and runs of whitespace;
-- `codev validate` reports no error on the change that it did not report
+- `compagnon validate` reports no error on the change that it did not report
   on the fixture before the run;
 - for a refusing case: no file of the change's folder is created, changed
-  or removed, and the agent's messages name `/codev-propose`.
+  or removed, and the agent's messages name `/compagnon-propose`.
 
 A run SHALL be given its checks passed and failed, and it passes when
 every check passes. The update measures SHALL be, per repetition over the
@@ -121,7 +121,7 @@ that modify a file outside the step.
 #### Scenario: A refusal well made
 
 - **GIVEN** a refusing case for a `design` the change does not have, and
-  a run that creates nothing and whose messages point to `/codev-propose`
+  a run that creates nothing and whose messages point to `/compagnon-propose`
 - **WHEN** the run is scored
 - **THEN** every check passes and the run passes
 
@@ -146,7 +146,7 @@ cases, the median, minimum and maximum of the share of runs that pass
 and of the share of checks that pass, and the runs modifying a file
 outside the step; and per update run, its outcome and each check, passed
 or failed. A suite without update case SHALL give no such section.
-`codev-evals compare` SHALL judge the update quality as it judges the
+`compagnon-evals compare` SHALL judge the update quality as it judges the
 planning quality: the candidate's share of runs that pass must not fall
 under the baseline's minimum, and its runs modifying a file outside the
 step must not rise above the baseline's maximum.
@@ -154,7 +154,7 @@ step must not rise above the baseline's maximum.
 #### Scenario: The report of a suite with update cases
 
 - **GIVEN** observations of update cases
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** the report has a `plan.update` section with its measures and,
   per run, each check
 
@@ -162,7 +162,7 @@ step must not rise above the baseline's maximum.
 
 - **GIVEN** a baseline whose update runs pass at 0.83 at least, and a
   candidate at 0.50
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** the verdict fails, naming the update pass rate
 
 ### Requirement: The suite covers the update skill's main behaviors
@@ -177,7 +177,7 @@ Claude Code version the evaluation workflow pins.
 #### Scenario: The update cases of the suite
 
 - **GIVEN** the suite's cases
-- **WHEN** the user runs `codev-evals list`
+- **WHEN** the user runs `compagnon-evals list`
 - **THEN** six `plan.update` cases are listed, covering the behaviors
   above
 

@@ -1540,6 +1540,7 @@ pub fn setup_plan(
             String::from_utf8_lossy(&untar.stderr).trim()
         ));
     }
+    bring_through_rename(dir)?;
     let laid = case
         .update
         .as_ref()
@@ -2483,6 +2484,82 @@ pub fn ensure_run_info(out: &Path, info: &RunInfo) -> std::io::Result<()> {
         path,
         serde_json::to_string_pretty(info).expect("serializes") + "\n",
     )
+}
+
+/// Brings a tree extracted from a commit that predates the product's
+/// rename to the current names, as the repository itself was brought: every
+/// path holding the former name is moved — the planning root, the crates,
+/// the skills — and every text file is read through the rename. A tree
+/// already laid out under the current names is left as it is. The cases
+/// and baselines were renamed with the repository; the history they replay
+/// is renamed when it is replayed, so that both speak the same names.
+pub fn bring_through_rename(dir: &Path) -> Result<(), String> {
+    use compagnon_core::legacy;
+    let io = |e: std::io::Error| format!("renaming the fixture: {e}");
+    if !dir.join(legacy::PLANNING_DIR).exists() {
+        return Ok(());
+    }
+    let mut files = Vec::new();
+    collect_files(dir, dir, &mut files).map_err(io)?;
+    for relative in files {
+        let from = dir.join(&relative);
+        let renamed = legacy::through_rename(&relative.to_string_lossy());
+        let to = dir.join(&renamed);
+        if let Ok(text) = fs::read_to_string(&from) {
+            let through = legacy::through_rename(&text);
+            if through != text {
+                fs::write(&from, through).map_err(io)?;
+            }
+        }
+        if to != from {
+            if let Some(parent) = to.parent() {
+                fs::create_dir_all(parent).map_err(io)?;
+            }
+            fs::rename(&from, &to).map_err(io)?;
+        }
+    }
+    remove_empty_dirs(dir).map_err(io)?;
+    Ok(())
+}
+
+/// The files under `dir`, relative to `root`, `.git` excluded.
+fn collect_files(
+    root: &Path,
+    dir: &Path,
+    out: &mut Vec<std::path::PathBuf>,
+) -> std::io::Result<()> {
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if entry.file_name() == ".git" {
+            continue;
+        }
+        if entry.file_type()?.is_dir() {
+            collect_files(root, &path, out)?;
+        } else {
+            out.push(path.strip_prefix(root).unwrap_or(&path).to_path_buf());
+        }
+    }
+    Ok(())
+}
+
+/// Removes the directories left empty by the moves, `dir` itself kept.
+fn remove_empty_dirs(dir: &Path) -> std::io::Result<bool> {
+    let mut empty = true;
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if entry.file_type()?.is_dir() && entry.file_name() != ".git" {
+            if remove_empty_dirs(&path)? {
+                fs::remove_dir(&path)?;
+            } else {
+                empty = false;
+            }
+        } else {
+            empty = false;
+        }
+    }
+    Ok(empty)
 }
 
 #[cfg(test)]

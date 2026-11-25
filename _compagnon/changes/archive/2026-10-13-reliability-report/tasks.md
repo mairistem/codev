@@ -8,21 +8,21 @@
 
 ## 2. Command and committed pages
 
-- [x] 2.1 `codev-evals docs [--baseline <dir>]`: builds both pages before writing either, exits 2 naming the file on a missing, invalid or newer report, and runs without loading the cases, verified by `docs_refuses_a_newer_report_and_writes_nothing` in `evals/tests/cli.rs`
+- [x] 2.1 `compagnon-evals docs [--baseline <dir>]`: builds both pages before writing either, exits 2 naming the file on a missing, invalid or newer report, and runs without loading the cases, verified by `docs_refuses_a_newer_report_and_writes_nothing` in `evals/tests/cli.rs`
 - [x] 2.2 Generate `docs/en/src/reliability.md` and `docs/fr/src/reliability.md` from `evals/baseline/`, list them in both `SUMMARY.md` after "Roles", verified by `the_reliability_pages_follow_the_baseline` and `both_languages_have_the_same_chapters`
 
 ## 3. Styles and rendering
 
-- [x] 3.1 Chart and tile tokens and styles in `docs/theme/mairistem.css` (`.light`, no-JS default, `.navy`) and `crates/codev-cli/assets/docs.css` (light, `prefers-color-scheme: dark`); run the dataviz validator on the colors in both modes, verified by its output recorded in the design (all PASS)
-- [x] 3.2 `codev docs` keeps the charts, verified by `the_reliability_chapter_renders_its_charts` in `crates/codev-cli/src/docs.rs`
+- [x] 3.1 Chart and tile tokens and styles in `docs/theme/mairistem.css` (`.light`, no-JS default, `.navy`) and `crates/compagnon-cli/assets/docs.css` (light, `prefers-color-scheme: dark`); run the dataviz validator on the colors in both modes, verified by its output recorded in the design (all PASS)
+- [x] 3.2 `compagnon docs` keeps the charts, verified by `the_reliability_chapter_renders_its_charts` in `crates/compagnon-cli/src/docs.rs`
 - [x] 3.3 Build both books into the scratchpad and screenshot the chapter at 1440 px and 390 px, light and dark; fix label collisions and overflow. Manual check: no automated test can judge layout; verified by `mdbook build` with no warning and the screenshots
 
 ## 4. Documentation and links
 
 - [x] 4.1 `docs/en/src/roles.md` and `docs/fr/src/roles.md` link to the chapter at the end of "Measuring the roles", verified by `mdbook build` of both books without warning
-- [x] 4.2 `CONTRIBUTING.md` and `CONTRIBUTING.fr.md` "Changing a role": regenerate the page with `cargo run -p codev-evals -- docs` after recording the baseline, verified by `contributing_and_roles_chapters_name_the_baseline`, extended to require `codev-evals -- docs` in both guides, and by `the_documentation_check_names_the_file_that_forgets`
+- [x] 4.2 `CONTRIBUTING.md` and `CONTRIBUTING.fr.md` "Changing a role": regenerate the page with `cargo run -p compagnon-evals -- docs` after recording the baseline, verified by `contributing_and_roles_chapters_name_the_baseline`, extended to require `compagnon-evals -- docs` in both guides, and by `the_documentation_check_names_the_file_that_forgets`
 - [x] 4.3 `docs/site/index.html`: a "Measured, not assumed" link to the chapter in the Roles section, no figures, verified by reading the page's screenshot at 1440 px and 390 px
 
 ## 5. Done
 
-- [x] 5.1 `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `codev validate --strict` and `codev doctor --strict` all pass
+- [x] 5.1 `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `compagnon validate --strict` and `compagnon doctor --strict` all pass

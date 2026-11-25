@@ -63,6 +63,22 @@ pub fn published_under_former_name(version: &str) -> Option<bool> {
     Some(v < semver::Version::new(major, minor, patch))
 }
 
+/// `text` with the former name replaced by the current one, in its three
+/// spellings — upper case, capitalized, lower case — paths and identifiers
+/// included. What the repository's own rename did to its files; the
+/// evaluation suite applies it to the history it replays, so that a state
+/// pinned before the rename reads like the cases and baselines written
+/// after it. Never applied to a user's project: `compagnon migrate` leaves
+/// prose alone.
+pub fn through_rename(text: &str) -> String {
+    let lower = BINARY_STEM;
+    let mut capitalized = lower.to_string();
+    capitalized[..1].make_ascii_uppercase();
+    text.replace(&lower.to_uppercase(), "COMPAGNON")
+        .replace(&capitalized, "Compagnon")
+        .replace(lower, "compagnon")
+}
+
 /// The notice printed on stderr when the binary runs under its former
 /// name, or `None` when it runs under any other. `exe_stem` is the file
 /// name of the running executable without its extension.
@@ -104,6 +120,20 @@ mod tests {
         assert_eq!(published_under_former_name("0.7.0"), Some(false));
         assert_eq!(published_under_former_name("1.0.0"), Some(false));
         assert_eq!(published_under_former_name("nope"), None);
+    }
+
+    #[test]
+    fn history_reads_through_the_rename() {
+        let stem = BINARY_STEM;
+        let upper = stem.to_uppercase();
+        let mut capitalized = stem.to_string();
+        capitalized[..1].make_ascii_uppercase();
+        let text = format!("{capitalized} reads `_{stem}/`; set {upper}_DIR.");
+        assert_eq!(
+            through_rename(&text),
+            "Compagnon reads `_compagnon/`; set COMPAGNON_DIR."
+        );
+        assert_eq!(through_rename("nothing to rename"), "nothing to rename");
     }
 
     #[test]

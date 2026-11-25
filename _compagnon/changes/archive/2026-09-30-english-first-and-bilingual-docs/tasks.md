@@ -8,15 +8,15 @@
 
 ## 2. Artifact language
 
-- [x] 2.1 `language:` in config, validated, exposed by `codev instructions`; verified by `language_is_read_from_the_project` and `an_invalid_language_is_rejected_with_a_hint`
-- [x] 2.2 `codev init --language` and locale detection; verified by `init_writes_the_language_detected_from_the_locale` and `init_language_flag_wins_over_the_locale`
+- [x] 2.1 `language:` in config, validated, exposed by `compagnon instructions`; verified by `language_is_read_from_the_project` and `an_invalid_language_is_rejected_with_a_hint`
+- [x] 2.2 `compagnon init --language` and locale detection; verified by `init_writes_the_language_detected_from_the_locale` and `init_language_flag_wins_over_the_locale`
 - [x] 2.3 propose, update and configure write prose in `language`; verified by reading the regenerated `.claude/skills/`
 
 ## 3. Documentation
 
 - [x] 3.1 English mdBook under docs/en with outputs from real runs; verified by an mdBook build with no warnings
 - [x] 3.2 French mdBook under docs/fr, README.fr.md, CONTRIBUTING.fr.md; verified by `both_languages_have_the_same_chapters`
-- [x] 3.3 `codev docs --lang`, chapters from SUMMARY.md, in-page anchors; verified by `links_between_chapters_become_in_page_anchors` and a dangling-anchor check on the written HTML
+- [x] 3.3 `compagnon docs --lang`, chapters from SUMMARY.md, in-page anchors; verified by `links_between_chapters_become_in_page_anchors` and a dangling-anchor check on the written HTML
 
 ## 4. Fixes found while documenting
 
@@ -26,4 +26,4 @@
 
 ## 5. Project
 
-- [x] 5.1 CI, docs site and Dependabot workflows; verified by `codev validate --strict` and a local mdBook build
+- [x] 5.1 CI, docs site and Dependabot workflows; verified by `compagnon validate --strict` and a local mdBook build

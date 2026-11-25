@@ -1,12 +1,12 @@
-# Design: Explicit roles, traceability check and contrarian pass in /codev-propose
+# Design: Explicit roles, traceability check and contrarian pass in /compagnon-propose
 
 ## Context
 
 The `spec-driven` schema in `assets/schemas/spec-driven/schema.yaml` is
-embedded in the binary; `codev instructions` returns each artifact's
+embedded in the binary; `compagnon instructions` returns each artifact's
 `instruction` verbatim, with the project's `context` and the artifact's
 `rules` next to it. The `propose` workflow in `assets/workflows/propose.md`
-is rendered into `.claude/skills/codev-propose/SKILL.md` by `codev update`.
+is rendered into `.claude/skills/compagnon-propose/SKILL.md` by `compagnon update`.
 Each instruction already asks one question (WHY, WHAT, HOW, breakdown) but
 names no role and no completion criteria. The workflow ends at "Show the
 final status" with no review of what was written.
@@ -17,7 +17,7 @@ final status" with no review of what was written.
 
 - Make each artifact's owner and its completion criteria explicit and
   checkable, where a custom schema can redefine them.
-- Give `/codev-propose` two review steps that run before the plan is shown,
+- Give `/compagnon-propose` two review steps that run before the plan is shown,
   and a bounded output for what needs a human eye.
 
 **Non-Goals:**
@@ -25,7 +25,7 @@ final status" with no review of what was written.
 - A new CLI command or a machine check of traceability: the check is done by
   the agent, against artifacts it just wrote.
 - Separate agents or skills per role.
-- Changing `codev validate`: the new criteria are guidance, not findings.
+- Changing `compagnon validate`: the new criteria are guidance, not findings.
 
 ## Decisions
 
@@ -33,13 +33,13 @@ final status" with no review of what was written.
 
 Each instruction starts with a `Role: <role> — owns <what>.` line and a
 `Done when:` list, then keeps its existing text. The schema is where a
-project already customizes artifacts (`_codev/schemas/`), so a custom schema
-defines its own roles — or none — without codev imposing them. Roles are
+project already customizes artifacts (`_compagnon/schemas/`), so a custom schema
+defines its own roles — or none — without compagnon imposing them. Roles are
 written as ownership plus checkable criteria, not as role-play: a criterion
 can be verified, a persona cannot.
 
 **Alternatives considered**: roles in `propose.md` (they would apply to any
-schema, including custom artifacts they do not fit, and `/codev-update`
+schema, including custom artifacts they do not fit, and `/compagnon-update`
 would not see them); a new `role:` field in the schema format (a format
 change and a JSON contract change for what is plain guidance); persona
 prompts such as "you are a senior architect" (not checkable, and they add
@@ -67,10 +67,10 @@ no design. The user is not asked mid-way unless scope changes materially —
 the existing rule of step 1. The conditional lenses apply only when the
 proposal's Impact touches them, so a CLI change does not receive an
 accessibility review; project-specific lenses come from `rules:`, which the
-skill already receives through `codev instructions`.
+skill already receives through `compagnon instructions`.
 
 **Alternatives considered**: asking the user about each finding (breaks the
-one-pass promise of `/codev-propose`); a fixed list of every lens on every
+one-pass promise of `/compagnon-propose`); a fixed list of every lens on every
 change (noise that trains the reader to skip the block).
 
 ### Decision: "Points to challenge" is capped at five and may be empty
@@ -84,8 +84,8 @@ output; the artifacts keep following `language`.
 **Alternatives considered**: no cap (the block grows into a second review
 document); a mandatory minimum of points (invites invented findings).
 
-The approach follows `_codev/decisions/0004-single-identity-for-skill-and-command.md`:
-the steps are added to the existing `codev-propose` skill, not shipped as a
+The approach follows `_compagnon/decisions/0004-single-identity-for-skill-and-command.md`:
+the steps are added to the existing `compagnon-propose` skill, not shipped as a
 new skill or command.
 
 ## Risks / Trade-offs

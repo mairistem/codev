@@ -14,7 +14,7 @@ SHALL document the `triggers:` key.
 
 - **GIVEN** the `roles.md` and `reference/configuration.md` chapters of
   `docs/en` and `docs/fr`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if a `roles.md` does not name `paths`, `manifests`,
   `patterns`, `domain_suggested` and `--all-stacks`, or if a
   `configuration.md` has no `triggers` section
@@ -22,5 +22,5 @@ SHALL document the `triggers:` key.
 #### Scenario: A chapter that forgets the flag
 
 - **GIVEN** a French `roles.md` that does not name `--all-stacks`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails and names the French chapter

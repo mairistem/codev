@@ -23,7 +23,7 @@ history:
     by: skeptic
   - status: fixed
     by: architect
-    ref: "design.md (Goals, Non-goals, skills decision), proposal.md, specs/skills/spec.md, tasks.md 3.1: /codev-explore left out until the suite covers it"
+    ref: "design.md (Goals, Non-goals, skills decision), proposal.md, specs/skills/spec.md, tasks.md 3.1: /compagnon-explore left out until the suite covers it"
   - status: fixed
     by: skeptic
 ```
@@ -33,12 +33,12 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "specs/search/spec.md#Requirement: `codev search` ranks the requirements and decisions that match a query"
+location: "specs/search/spec.md#Requirement: `compagnon search` ranks the requirements and decisions that match a query"
 evidence: |
-  `codev search <query>` SHALL rank every requirement of the project's main
+  `compagnon search <query>` SHALL rank every requirement of the project's main
   specs — its name, its description and its scenarios — and every decision of
   the decision index, the inherited ones included, by how well they match the
-recommendation: "The decision index holds every ADR whatever its status; only `in_effect` lists those in force (crates/codev-engine/src/decisions.rs). A superseded or rejected ADR ranked first would be planned from as if in force. Give each decision result its status and whether it is in effect, in the text and the JSON, with a scenario \"A superseded decision is not presented as in effect\" and its test."
+recommendation: "The decision index holds every ADR whatever its status; only `in_effect` lists those in force (crates/compagnon-engine/src/decisions.rs). A superseded or rejected ADR ranked first would be planned from as if in force. Give each decision result its status and whether it is in effect, in the text and the JSON, with a scenario \"A superseded decision is not presented as in effect\" and its test."
 history:
   - status: open
     by: skeptic
@@ -56,7 +56,7 @@ severity: medium
 confidence: high
 location: "tasks.md#5. Measure (decision 0008)"
 evidence: |
-  With the baseline recorded by `evaluate-planning`, run `codev-evals run --step plan.write --repeat 3 --jobs 4` with this branch's binary and compare with `codev-evals compare evals/baseline <out>`
+  With the baseline recorded by `evaluate-planning`, run `compagnon-evals run --step plan.write --repeat 3 --jobs 4` with this branch's binary and compare with `compagnon-evals compare evals/baseline <out>`
 recommendation: "The committed baseline has review cases only; evaluate-planning task 6.2 is unchecked. State that evaluate-planning 6.2 must be done before section 5, and add a first step checking the baseline holds plan.write repetitions recorded with the pinned Claude Code version."
 history:
   - status: open
@@ -73,17 +73,17 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "specs/search/spec.md#Requirement: `codev search` ranks the requirements and decisions that match a query"
+location: "specs/search/spec.md#Requirement: `compagnon search` ranks the requirements and decisions that match a query"
 evidence: |
   only of common words, SHALL fail with `search_query_empty` and exit with
   code 2. A `--limit` outside 1 to 50 SHALL fail with `search_limit_invalid`
-recommendation: "Every codev failure exits with 1 (`fail` in crates/codev-cli/src/main.rs), and this change's own `codev show` errors exit with 1. Use 1, and say `--limit` is validated by codev (so the JSON document carries `search_limit_invalid`), not by clap."
+recommendation: "Every compagnon failure exits with 1 (`fail` in crates/compagnon-cli/src/main.rs), and this change's own `compagnon show` errors exit with 1. Use 1, and say `--limit` is validated by compagnon (so the JSON document carries `search_limit_invalid`), not by clap."
 history:
   - status: open
     by: skeptic
   - status: fixed
     by: qa
-    ref: "specs/search/spec.md: exit code 1 for search_query_empty and search_limit_invalid, --limit checked by codev; tasks.md 2.3"
+    ref: "specs/search/spec.md: exit code 1 for search_query_empty and search_limit_invalid, --limit checked by compagnon; tasks.md 2.3"
   - status: fixed
     by: skeptic
 ```
@@ -117,13 +117,13 @@ evidence: |
   The `propose` skill's paragraph shrinks to: read the requirements the
   instructions list, modify those the change alters, and treat the list as a
   starting point. It names no search command. This follows what ICM
-recommendation: "Nothing tells the agent how to read one listed requirement, so it opens the whole spec as before. Make the skill say to read each with `codev show <capability>::<requirement>` (a whole spec only when the change rewrites much of it), with a scenario and a test, or state the `codev show` form in the human `Existing requirements` line."
+recommendation: "Nothing tells the agent how to read one listed requirement, so it opens the whole spec as before. Make the skill say to read each with `compagnon show <capability>::<requirement>` (a whole spec only when the change rewrites much of it), with a scenario and a test, or state the `compagnon show` form in the human `Existing requirements` line."
 history:
   - status: open
     by: skeptic
   - status: fixed
     by: architect
-    ref: "design.md and specs/instructions/spec.md: the human section names codev show <capability>::<requirement>; the skill still names no search command"
+    ref: "design.md and specs/instructions/spec.md: the human section names compagnon show <capability>::<requirement>; the skill still names no search command"
   - status: fixed
     by: skeptic
 ```
@@ -133,12 +133,12 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "specs/instructions/spec.md#Requirement: `codev instructions` names the existing requirements the change likely touches"
+location: "specs/instructions/spec.md#Requirement: `compagnon instructions` names the existing requirements the change likely touches"
 evidence: |
   Without `--json`, the instructions SHALL print, after `Read before
   writing:` and only when not empty, `Existing requirements this change
   likely touches:`, one line per requirement as `<capability>::<requirement>
-recommendation: "The main spec lists the fields the document carries and the order of the human sections exhaustively; neither has `related` or the new section. Put MODIFIED blocks for \"`codev instructions` describes one artifact of a change\" and \"The human output of `codev instructions` reads top to bottom\", `related` empty on a failure; keep the new requirement for the ranking rules."
+recommendation: "The main spec lists the fields the document carries and the order of the human sections exhaustively; neither has `related` or the new section. Put MODIFIED blocks for \"`compagnon instructions` describes one artifact of a change\" and \"The human output of `compagnon instructions` reads top to bottom\", `related` empty on a failure; keep the new requirement for the ranking rules."
 history:
   - status: open
     by: skeptic
@@ -149,18 +149,18 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-8 The new ranking step has no failure behavior: an empty proposal or an unreadable spec could make `codev instructions` fail
+#### R-skeptic-8 The new ranking step has no failure behavior: an empty proposal or an unreadable spec could make `compagnon instructions` fail
 
 ```yaml
 severity: medium
 confidence: high
-location: "specs/instructions/spec.md#Requirement: `codev instructions` names the existing requirements the change likely touches"
+location: "specs/instructions/spec.md#Requirement: `compagnon instructions` names the existing requirements the change likely touches"
 evidence: |
   `requirement` and `excerpt`, the excerpt at most 160 characters of the
   requirement's description. `related` SHALL be an empty array for the
   proposal itself, when `proposal.md` does not exist yet, when the project
   has no main spec, or when nothing matches. The decisions in effect stay in
-recommendation: "The ranking fails with `search_query_empty` on a query empty after filtering and with `Unreadable` on an unreadable spec, while `codev instructions` reads no spec and exits 0 today. State that an empty query gives an empty `related`, and that an unreadable spec gives a warning in `status` with the rest of `related` (or a named failure); scenarios and tests in 2.5."
+recommendation: "The ranking fails with `search_query_empty` on a query empty after filtering and with `Unreadable` on an unreadable spec, while `compagnon instructions` reads no spec and exits 0 today. State that an empty query gives an empty `related`, and that an unreadable spec gives a warning in `status` with the rest of `related` (or a named failure); scenarios and tests in 2.5."
 history:
   - status: open
     by: skeptic
@@ -171,16 +171,16 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-9 `related` is served to the `tasks` instructions, which `/codev-apply` and the review briefs read, steps nobody asked to change and the suite does not measure
+#### R-skeptic-9 `related` is served to the `tasks` instructions, which `/compagnon-apply` and the review briefs read, steps nobody asked to change and the suite does not measure
 
 ```yaml
 severity: medium
 confidence: high
-location: "specs/instructions/spec.md#Requirement: `codev instructions` names the existing requirements the change likely touches"
+location: "specs/instructions/spec.md#Requirement: `compagnon instructions` names the existing requirements the change likely touches"
 evidence: |
-  Once the change folder holds its `proposal.md`, `codev instructions` SHALL
+  Once the change folder holds its `proposal.md`, `compagnon instructions` SHALL
   give, for every artifact other than the proposal itself, the requirements
-recommendation: "`/codev-apply` reads `codev instructions tasks` at every run and the isolated reviews call `codev instructions` for each artifact, only for `context` and `rules`: each call would parse every main spec and carry about 400 tokens nobody reads (performance: about 3 x 400 tokens per review step). Restrict `related` to the artifacts the list serves (`specs` and `design`), empty for the others; otherwise measure the apply step first, as decision 0008 asks."
+recommendation: "`/compagnon-apply` reads `compagnon instructions tasks` at every run and the isolated reviews call `compagnon instructions` for each artifact, only for `context` and `rules`: each call would parse every main spec and carry about 400 tokens nobody reads (performance: about 3 x 400 tokens per review step). Restrict `related` to the artifacts the list serves (`specs` and `design`), empty for the others; otherwise measure the apply step first, as decision 0008 asks."
 raised_by: [skeptic, performance]
 history:
   - status: open
@@ -199,7 +199,7 @@ severity: medium
 confidence: high
 location: "tasks.md#5. Measure (decision 0008)"
 evidence: |
-  - [ ] 5.1 First arm — the skill of 3.1, telling the agent to run `codev search`: with the baseline recorded by `evaluate-planning`, run `codev-evals run --step plan.write --repeat 3 --jobs 4` with this branch's binary and compare with `codev-evals compare evals/baseline <out>`: planning quality within the baseline's range or better, cost under its floor; verified by the comparison pasted in the pull request, its verdict, and the sources table showing where `search`, `file` and `codev search`/`codev show` moved
+  - [ ] 5.1 First arm — the skill of 3.1, telling the agent to run `compagnon search`: with the baseline recorded by `evaluate-planning`, run `compagnon-evals run --step plan.write --repeat 3 --jobs 4` with this branch's binary and compare with `compagnon-evals compare evals/baseline <out>`: planning quality within the baseline's range or better, cost under its floor; verified by the comparison pasted in the pull request, its verdict, and the sources table showing where `search`, `file` and `compagnon search`/`compagnon show` moved
 recommendation: "Tasks run in file order: after 2.5 and 3.2 \"this branch's binary\" is the second arm. Pin 5.1 to the binary and skills before 2.5 and 3.2, or move it ahead of 2.5, and say where its output lives."
 history:
   - status: open
@@ -230,15 +230,15 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-12 The skills chapter keeps saying the skill runs `codev search`, and the existing docs test requires it to
+#### R-skeptic-12 The skills chapter keeps saying the skill runs `compagnon search`, and the existing docs test requires it to
 
 ```yaml
 severity: medium
 confidence: high
 location: "tasks.md#4. Documentation"
 evidence: |
-  - [ ] 4.2 Document `related` in `docs/{en,fr}/src/reference/json-output.md` (the instructions document) and in the description of `codev instructions` in `docs/{en,fr}/src/reference/cli.md`, and say in `docs/{en,fr}/src/skills.md` that the planning skill reads the existing requirements its instructions list; verified by the unit test `both_languages_document_the_related_requirements` in `crates/codev-cli/src/docs.rs`
-recommendation: "`docs/{en,fr}/src/skills.md` say the skill runs `codev search`, and `both_languages_document_search_and_show` requires skills.md to name it. Make 4.2 replace that paragraph in both editions and narrow the 4.1 test to cli.md and json-output.md."
+  - [ ] 4.2 Document `related` in `docs/{en,fr}/src/reference/json-output.md` (the instructions document) and in the description of `compagnon instructions` in `docs/{en,fr}/src/reference/cli.md`, and say in `docs/{en,fr}/src/skills.md` that the planning skill reads the existing requirements its instructions list; verified by the unit test `both_languages_document_the_related_requirements` in `crates/compagnon-cli/src/docs.rs`
+recommendation: "`docs/{en,fr}/src/skills.md` say the skill runs `compagnon search`, and `both_languages_document_search_and_show` requires skills.md to name it. Make 4.2 replace that paragraph in both editions and narrow the 4.1 test to cli.md and json-output.md."
 history:
   - status: open
     by: skeptic
@@ -256,7 +256,7 @@ severity: medium
 confidence: high
 location: "proposal.md#Domains"
 evidence: |
-  - [ ] migration — suggested by the case format of `evaluate-planning`, which this branch builds on; this change only adds commands and JSON documents, and the skills reach users through the usual `codev update`
+  - [ ] migration — suggested by the case format of `evaluate-planning`, which this branch builds on; this change only adds commands and JSON documents, and the skills reach users through the usual `compagnon update`
 recommendation: "The change now adds `related` to the existing instructions document of `contract::v1`, a public API read by installed skills. Tick migration, or rewrite the reason to address that change and the mix of old skills with a new binary; correct the design's Migration Plan either way."
 history:
   - status: open
@@ -296,8 +296,8 @@ severity: low
 confidence: high
 location: "specs/skills/spec.md#Requirement: The `propose` skill reads the existing requirements its instructions name"
 evidence: |
-  - **GIVEN** a project whose `_codev/specs/` is empty
-  - **WHEN** the `codev-propose` skill writes the delta specs
+  - **GIVEN** a project whose `_compagnon/specs/` is empty
+  - **WHEN** the `compagnon-propose` skill writes the delta specs
   - **THEN** it goes on with the request and the code, the list of existing
     requirements being empty
 recommendation: "Add a sentence to the requirement (with no listed requirement, the skill works from the request and the code) and rewrite the scenario as GIVEN the rendered skill / THEN it says so, so that the named unit test can verify it."
@@ -312,17 +312,17 @@ history:
 ```
 ### security
 
-#### R-security-1 The `codev show` capability argument is not resolved against the list of known capabilities
+#### R-security-1 The `compagnon show` capability argument is not resolved against the list of known capabilities
 
 ```yaml
 severity: low
 confidence: low
-location: "design.md#Decision: `codev show` reads one requirement from the parsed spec"
+location: "design.md#Decision: `compagnon show` reads one requirement from the parsed spec"
 evidence: |
-  `codev show <capability>::<requirement>` slices the requirement from the
+  `compagnon show <capability>::<requirement>` slices the requirement from the
   spec's source by the span the parser gives — heading, description and
   scenarios, byte for byte — so that what an agent copies into a `MODIFIED`
-recommendation: "Joining the argument to `specs/` (Layout::spec_file) lets `codev show \"../../x\"` or an absolute path read any `spec.md` outside `_codev/specs/`, without a prompt since the skills allow `Bash(codev:*)`. Accept a capability only if it is one of the names `codev_engine::specs::list` returns, `unknown_capability` otherwise; add a test `show_refuses_a_capability_outside_the_specs`."
+recommendation: "Joining the argument to `specs/` (Layout::spec_file) lets `compagnon show \"../../x\"` or an absolute path read any `spec.md` outside `_compagnon/specs/`, without a prompt since the skills allow `Bash(compagnon:*)`. Accept a capability only if it is one of the names `compagnon_engine::specs::list` returns, `unknown_capability` otherwise; add a test `show_refuses_a_capability_outside_the_specs`."
 history:
   - status: open
     by: security
@@ -345,10 +345,10 @@ location: "design.md#Decision: The index is rebuilt at each call"
 evidence: |
   The project's specs are a few hundred requirements: building the index in
   memory costs well under 100 ms in Rust (0.4 s in the Python prototype for
-  217 documents), so `codev search` rebuilds it every time and keeps nothing
+  217 documents), so `compagnon search` rebuilds it every time and keeps nothing
   on disk — nothing to invalidate when a spec changes, nothing to commit or
   ignore.
-recommendation: "The Rust figure is an estimate; `--archive` reads every archived proposal and design (53 changes, about 2.4 MB here), and the skills may search several times per run. Time `codev search` with and without `--archive` on this repository with a release build, paste the numbers in the pull request, state the measured figure in the design, and keep one second as the point to revisit."
+recommendation: "The Rust figure is an estimate; `--archive` reads every archived proposal and design (53 changes, about 2.4 MB here), and the skills may search several times per run. Time `compagnon search` with and without `--archive` on this repository with a release build, paste the numbers in the pull request, state the measured figure in the design, and keep one second as the point to revisit."
 history:
   - status: open
     by: performance
@@ -364,8 +364,8 @@ Second pass, on the revised plan: its finding was merged into R-skeptic-9.
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/workflows.rs, crates/codev-cli/src/commands.rs, contract.rs, main.rs, render.rs — over the material limit; summarized by one sub-agent for these five files rather than one per file, to save tokens.
-Summarized: crates/codev-engine/src/instructions.rs, docs/en/src/reference/cli.md, docs/fr/src/reference/cli.md, docs/fr/src/reference/json-output.md — over the material limit; summarized by one sub-agent for these four files.
+Summarized: crates/compagnon-agents/src/workflows.rs, crates/compagnon-cli/src/commands.rs, contract.rs, main.rs, render.rs — over the material limit; summarized by one sub-agent for these five files rather than one per file, to save tokens.
+Summarized: crates/compagnon-engine/src/instructions.rs, docs/en/src/reference/cli.md, docs/fr/src/reference/cli.md, docs/fr/src/reference/json-output.md — over the material limit; summarized by one sub-agent for these four files.
 
 ### security
 
@@ -382,7 +382,7 @@ No finding.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/search.rs:260-275"
+location: "crates/compagnon-engine/src/search.rs:260-275"
 evidence: |
           let status = match &entry.decision.status {
               DecisionStatus::Unknown(raw) => raw.clone(),
@@ -394,7 +394,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/search.rs: add_decisions; status and origin through as_str"
+    ref: "crates/compagnon-engine/src/search.rs: add_decisions; status and origin through as_str"
   - status: fixed
     by: newcomer
 ```
@@ -404,7 +404,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/search.rs:167-175"
+location: "crates/compagnon-engine/src/search.rs:167-175"
 evidence: |
       }) = load_requirements(fs, layout, true)
       else {
@@ -416,7 +416,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/search.rs: the Unreadable enum (Skip, Fail); the skipped path says why it cannot fail; a comment on why hits holds requirements only"
+    ref: "crates/compagnon-engine/src/search.rs: the Unreadable enum (Skip, Fail); the skipped path says why it cannot fail; a comment on why hits holds requirements only"
   - status: fixed
     by: newcomer
 ```
@@ -426,18 +426,18 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/search.rs:323-333"
+location: "crates/compagnon-engine/src/search.rs:323-333"
 evidence: |
           for file in ["proposal.md", "design.md"] {
               if let Ok(content) = fs.read_to_string(&dir.join(&name).join(file)) {
                   if file == "proposal.md" {
-recommendation: "Read the two files with two plain statements, and add a pure `proposal_section(proposal, \"Why\")` in codev-core next to `proposal_query`, used by both, so there is one definition of a proposal's section."
+recommendation: "Read the two files with two plain statements, and add a pure `proposal_section(proposal, \"Why\")` in compagnon-core next to `proposal_query`, used by both, so there is one definition of a proposal's section."
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/search.rs: two plain reads; crates/codev-core/src/search.rs: proposal_section, used by proposal_query and the archive"
+    ref: "crates/compagnon-engine/src/search.rs: two plain reads; crates/compagnon-core/src/search.rs: proposal_section, used by proposal_query and the archive"
   - status: fixed
     by: newcomer
 ```
@@ -447,7 +447,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/search.rs:51"
+location: "crates/compagnon-core/src/search.rs:51"
 evidence: |
           "with", "would", "you", "your", // French
 recommendation: "Split the list into English and French constants, or keep the comment on its own line."
@@ -456,7 +456,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-core/src/search.rs: ENGLISH_COMMON_WORDS and FRENCH_COMMON_WORDS, is_common"
+    ref: "crates/compagnon-core/src/search.rs: ENGLISH_COMMON_WORDS and FRENCH_COMMON_WORDS, is_common"
   - status: fixed
     by: newcomer
 ```
@@ -466,7 +466,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/search.rs:121-164"
+location: "crates/compagnon-core/src/search.rs:121-164"
 evidence: |
       let indexed: Vec<(BTreeMap<&str, f64>, f64)> = documents
 recommendation: "A private `IndexedDocument { frequencies, length }` and names `doc` and `frequency`, so that the IDF table and the BM25 formula read without decoding a tuple."
@@ -475,7 +475,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-core/src/search.rs: IndexedDocument { frequencies, length }; doc and frequency"
+    ref: "crates/compagnon-core/src/search.rs: IndexedDocument { frequencies, length }; doc and frequency"
   - status: fixed
     by: newcomer
 ```
@@ -485,7 +485,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/instructions.rs:207-224"
+location: "crates/compagnon-engine/src/instructions.rs:207-224"
 evidence: |
       let related = match proposal {
           Some(id) if artifact.requires.contains(&id) => {
@@ -496,7 +496,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/instructions.rs: related_for with early returns; the file name from generates"
+    ref: "crates/compagnon-engine/src/instructions.rs: related_for with early returns; the file name from generates"
   - status: fixed
     by: newcomer
 ```
@@ -506,7 +506,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/search.rs:346-355"
+location: "crates/compagnon-core/src/search.rs:346-355"
 evidence: |
       fn the_same_input_ranks_the_same_way() {
 recommendation: "Move the \"a query matching nothing ranks nothing\" assertion into its own test, and split `requirement_document`'s checks out of `a_requirement_is_sliced_verbatim`."
@@ -515,7 +515,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-core/src/search.rs: tests a_query_matching_nothing_ranks_nothing and a_requirement_document_is_named_capability_colon_colon_name"
+    ref: "crates/compagnon-core/src/search.rs: tests a_query_matching_nothing_ranks_nothing and a_requirement_document_is_named_capability_colon_colon_name"
   - status: fixed
     by: newcomer
 ```

@@ -1,4 +1,4 @@
-# Design: distributing codev through prebuilt binaries
+# Design: distributing compagnon through prebuilt binaries
 
 ## Context
 
@@ -81,7 +81,7 @@ systems; possible conflict with Homebrew.
 
 ### Decision: version in the archive name
 
-`codev-0.2.0-aarch64-apple-darwin.tar.gz` — the version is visible
+`compagnon-0.2.0-aarch64-apple-darwin.tar.gz` — the version is visible
 without having to decompress. Useful for a user who keeps several
 versions side by side, and for the `install.sh` script, which builds
 the name from the resolved version.
@@ -111,20 +111,20 @@ locally, tags, pushes the tag, and the workflow publishes the release.
   in 5-10 min end-to-end. Not blocking.
 - **The version in `Cargo.toml` must match the tag** — otherwise
   `install.sh` will not find the archive. A small `xtask
-  release <version>` script or a note in `docs/codev.md` can help. No
+  release <version>` script or a note in `docs/compagnon.md` can help. No
   automatic mechanism for V1 — a human checklist is enough.
 
 ## Migration Plan
 
-For a user who has **already** installed codev via `cargo install`
+For a user who has **already** installed compagnon via `cargo install`
 and wants to migrate to the curl path:
 
-1. `rm ~/.cargo/bin/codev` (optional, replaced at the next
+1. `rm ~/.cargo/bin/compagnon` (optional, replaced at the next
    `cargo install`)
 2. `curl -sSL https://…/install.sh | sh`
-3. Check that `~/.local/bin/codev` is used
-   (`which codev` must return that path, provided the PATH orders
+3. Check that `~/.local/bin/compagnon` is used
+   (`which compagnon` must return that path, provided the PATH orders
    `~/.local/bin` before `~/.cargo/bin`)
 
 For a **new** user: follow the Installation section of
-`codev docs` (recommended: `curl … | sh`).
+`compagnon docs` (recommended: `curl … | sh`).

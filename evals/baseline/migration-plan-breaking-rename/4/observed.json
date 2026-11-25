@@ -58,7 +58,7 @@
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "codev review": 204,
+          "compagnon review": 204,
           "file": 1357
         }
       },
@@ -79,7 +79,7 @@
         "output": 162,
         "toolCalls": 0,
         "sources": {
-          "codev review": 755,
+          "compagnon review": 755,
           "edit": 178
         }
       }
@@ -164,7 +164,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/rename-order-status/review.md",
+    "path": "_compagnon/changes/rename-order-status/review.md",
     "status": [],
     "steps": [
       {

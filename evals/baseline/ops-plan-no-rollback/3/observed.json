@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 3644,
+          "compagnon roles": 3644,
           "skill": 13479
         }
       },
@@ -49,7 +49,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 285
+          "compagnon review": 285
         }
       },
       {
@@ -59,7 +59,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 389
+          "compagnon review": 389
         }
       },
       {
@@ -69,7 +69,7 @@
         "output": 5,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1939
+          "compagnon review": 1939
         }
       },
       {
@@ -89,7 +89,7 @@
         "output": 168,
         "toolCalls": 0,
         "sources": {
-          "codev review": 539,
+          "compagnon review": 539,
           "output": 27
         }
       }
@@ -174,7 +174,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/switch-payment-provider/review.md",
+    "path": "_compagnon/changes/switch-payment-provider/review.md",
     "status": [],
     "steps": [
       {

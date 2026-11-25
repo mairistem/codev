@@ -31,7 +31,7 @@ characters. Rejected — it pushes the problem back, it does not solve
 it. A polyglot project can exceed 1000 chars of detected deps.
 
 **Rejected alternative B**: distinguish auto-detected context from
-user context via a marker (`# written by /codev-configure`). More
+user context via a marker (`# written by /compagnon-configure`). More
 precise, but introduces complexity that brings little: detection on
 `rules_empty` covers the 99th percentile.
 
@@ -62,13 +62,13 @@ corresponds to anything.
 ## Risks / Trade-offs
 
 - **"Permanent" hint for a user who refuses `configure`** — someone
-  who does not want the skill will see the hint on every `codev init`
-  / `codev status`. → **Mitigation**: two ways to make it disappear —
+  who does not want the skill will see the hint on every `compagnon init`
+  / `compagnon status`. → **Mitigation**: two ways to make it disappear —
   either run `configure` once (rules written), or add by hand in the
   YAML a `rules: {}` entry of the "I know what I'm doing" kind. The
   second option is not documented but works mechanically.
 - **Divergence between the old documented threshold and the new
-  behavior** — people who have read `docs/codev.md` expect a threshold
+  behavior** — people who have read `docs/compagnon.md` expect a threshold
   of 200. → **Mitigation**: the documentation is to be updated at the
   same time.
 

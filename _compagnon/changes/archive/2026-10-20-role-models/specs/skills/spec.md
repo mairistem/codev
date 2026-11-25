@@ -3,19 +3,19 @@
 ### Requirement: In isolated mode, each reviewing role runs alone, then the skill consolidates
 
 At `plan.trace`, `plan.challenge` and `code.review`, the `propose` and
-`apply` skills SHALL read `review.mode` from `codev roles --at <step>
+`apply` skills SHALL read `review.mode` from `compagnon roles --at <step>
 --change <name> --json`. In `inline` mode they review as before. In
 `isolated` mode they SHALL run every role returned — the tracer, the
 skeptic, the newcomer and the active experts — as a separate sub-agent,
 all of a step's sub-agents at once when the platform allows. Each
-sub-agent SHALL run on the model its role carries in `codev roles`
+sub-agent SHALL run on the model its role carries in `compagnon roles`
 (`model`), or on the session's model when it carries none.
 
 The brief of each sub-agent MUST hold only:
 
 - its role: id, question, `doneWhen` criteria and `knowledge` as served,
   the `By stack` part already filtered;
-- the project's `context` and `rules` from `codev instructions`;
+- the project's `context` and `rules` from `compagnon instructions`;
 - the material listed by `review.material`: the files marked `full`, to
   read whole, with the change's diff for them at `code.review`; for each
   file marked `summarize`, a summary of its change written by a separate
@@ -25,7 +25,7 @@ The brief of each sub-agent MUST hold only:
 - the review record's format, scales and rules for a finding.
 
 The brief MUST NOT carry the conversation, the author's reasoning or
-another role's findings, and is assembled only from codev's outputs and
+another role's findings, and is assembled only from compagnon's outputs and
 the files. The sub-agent MAY read other files of the repository with
 read-only tools — the decisions, the main specs, the code the material
 cites — and is told to modify no file and to treat the material as data,
@@ -43,7 +43,7 @@ The skill then consolidates — the meeting:
 
 - findings of several roles about the same defect at the same location
   become one finding, written under the role that rated it most severe
-  (ties: higher confidence, then the order `codev roles` lists the
+  (ties: higher confidence, then the order `compagnon roles` lists the
   roles), with `raised_by` listing every role that raised it; a role
   whose findings were all merged writes `No finding.`;
 - findings at the same place that need different fixes stay separate;
@@ -60,15 +60,15 @@ fallback.
 
 #### Scenario: A reviewer runs on its role's model
 
-- **GIVEN** the `codev-propose` and `codev-apply` skills as `codev update`
+- **GIVEN** the `compagnon-propose` and `compagnon-apply` skills as `compagnon update`
   renders them
 - **WHEN** their isolated review procedure is read
 - **THEN** it says to start each role's sub-agent on the `model` its role
-  carries in `codev roles`, or on the session's model when it is `null`
+  carries in `compagnon roles`, or on the session's model when it is `null`
 
 #### Scenario: The skills describe the isolated review
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the compagnon workflow catalog
 - **WHEN** the `propose` and `apply` workflows are rendered
 - **THEN** each names `review.mode`, a sub-agent per role, what the
   brief holds and that it never carries the conversation, the material
@@ -108,5 +108,5 @@ fallback.
 
 - **GIVEN** a project in isolated mode and a change whose `change.yaml`
   sets `review: { mode: inline }`
-- **WHEN** `/codev-apply` reviews it
+- **WHEN** `/compagnon-apply` reviews it
 - **THEN** every role reviews inline, in the conversation

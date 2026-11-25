@@ -2,11 +2,11 @@
 
 ## Context
 
-The evaluation suite lives in the `codev-evals` crate (`evals/`), outside
-codev's four crates. It already separates pure parts from the shell:
+The evaluation suite lives in the `compagnon-evals` crate (`evals/`), outside
+compagnon's four crates. It already separates pure parts from the shell:
 `case.rs`, `score.rs`, `report.rs` and `reliability.rs` are pure; the parts
 of `runner.rs` below the "Shell" comment, `suite.rs` and `main.rs` touch the
-disk and start processes. Decision 0001 governs codev's crates, not this
+disk and start processes. Decision 0001 governs compagnon's crates, not this
 one, but the suite follows the same split and this change keeps to it.
 
 Today, a run writes `<out>/<case>/observed.json` (format 1) and keeps
@@ -19,8 +19,8 @@ cache and 0.11 M output tokens: what a run costs is mostly its context
 re-read on every turn.
 
 The runner calls `claude -p … --permission-mode acceptEdits
---allowedTools "Bash(codev:*) Bash(git diff:*) …"`. Almost every denial in
-the baseline is a compound command (`cd … && codev …`, `cat … | …`) that
+--allowedTools "Bash(compagnon:*) Bash(git diff:*) …"`. Almost every denial in
+the baseline is a compound command (`cd … && compagnon …`, `cat … | …`) that
 the patterns do not match.
 
 ## Goals / Non-Goals
@@ -30,17 +30,17 @@ repetitions; compare two runs with a verdict that is strict on quality and
 decides on cost; run the agent the way a user working with Claude Code's
 sandbox would.
 
-**Non-goals**: cases for writing artifacts or code (`/codev-propose` and
-`/codev-apply` authoring), which come in a separate change; any statistical
+**Non-goals**: cases for writing artifacts or code (`/compagnon-propose` and
+`/compagnon-apply` authoring), which come in a separate change; any statistical
 test beyond the baseline's observed range; changing how a finding is
-matched or classified; any change to codev itself.
+matched or classified; any change to compagnon itself.
 
 ## Decisions
 
 ### Decision: Approve every shell command inside Claude Code's sandbox
 
 The runner keeps `--permission-mode acceptEdits`, narrows `--allowedTools`
-to `Bash(codev:*)` — exactly what the skills grant in their
+to `Bash(compagnon:*)` — exactly what the skills grant in their
 `allowed-tools`, which a user's session applies when the skill is invoked
 and which the evaluation's agent, reading the skill file, would otherwise
 lack — and passes `--settings` with Claude Code's sandbox:
@@ -54,7 +54,7 @@ lack — and passes `--settings` with Claude Code's sandbox:
 
 and `--disallowedTools WebFetch WebSearch`. The shell commands Claude
 Code knows (`ls`, `git`, `cat`, `cd … &&`…), compound or not, are approved
-without a prompt in the sandbox, `codev` through the grant; another
+without a prompt in the sandbox, `compagnon` through the grant; another
 program (`python3`, `curl`) still asks, which a headless run denies and
 counts. Every command runs in the sandbox: it can write only in the working directory (the case's) and the
 temporary directory, reach no host but the API, and not read the key.
@@ -65,7 +65,7 @@ runs with, so the measure is in real conditions.
 
 A run on this machine (Claude Code 2.1.289, macOS) checked it before the
 plan was settled, and a second one, during implementation, showed that
-the sandbox's auto-approval does not cover `codev` itself — hence the
+the sandbox's auto-approval does not cover `compagnon` itself — hence the
 grant: `cd src && cat a.txt | head -1` and
 `X=1; echo $X > out.txt && cat out.txt` ran; `echo … > $HOME/…`, `curl
 https://example.com`, `printenv` and a Write to `$HOME` were each denied
@@ -86,10 +86,10 @@ machine's credentials and the API key in reach (review finding
 R-security-1); Claude Code itself recommends it only for sandboxes
 without internet access. `--permission-mode auto` is realistic too, but
 its classifier is a model call per tool call, which adds consumption
-that has nothing to do with codev to the very measure this change
+that has nothing to do with compagnon to the very measure this change
 introduces. Widening the allowlist (`Bash(*)`) has the power of bypass
 without its name. Keeping today's allowlist keeps a bias unrelated to
-codev: an optimization could "save" tokens merely by triggering fewer
+compagnon: an optimization could "save" tokens merely by triggering fewer
 denials.
 
 ### Decision: One directory per repetition, `<out>/<case>/<n>/`
@@ -154,7 +154,7 @@ instead of the median lets one bad repetition move the result.
 
 ### Decision: `compare` re-scores both directories and uses the baseline's range as the noise band
 
-`codev-evals compare <baseline> <candidate> [--quality-only]` loads both
+`compagnon-evals compare <baseline> <candidate> [--quality-only]` loads both
 directories' observations, keeps the cases both hold, scores each run on
 those cases only — so a candidate run on 10 cases is compared with the
 baseline's same 10 — and hands the two scores to a pure `compare` module
@@ -251,5 +251,5 @@ the better reference.
    old layout: the tests read it as one repetition and its report is
    re-scored into format 2.
 2. Record the new baseline (`run --out evals/baseline --repeat 5`), then
-   regenerate the reliability chapter with `codev-evals docs`.
+   regenerate the reliability chapter with `compagnon-evals docs`.
 3. Rollback is reverting the change: the old baseline comes back with it.

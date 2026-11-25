@@ -2,11 +2,11 @@
 
 ## Context
 
-The reading side is done: `codev-core::keywords` holds the catalog (`en`,
+The reading side is done: `compagnon-core::keywords` holds the catalog (`en`,
 `fr`), every parser recognizes the keywords of both languages, and a merge
 writes a main spec in its own language. The writing side is not:
 
-- `crates/codev-engine/src/schemas.rs` embeds one template per artifact,
+- `crates/compagnon-engine/src/schemas.rs` embeds one template per artifact,
   in English, and reads a project schema's template from
   `templates/<file>`;
 - `instructions.rs` and `contract.rs` document `language` as "prose
@@ -14,8 +14,8 @@ writes a main spec in its own language. The writing side is not:
   keywords stay in English`;
 - `assets/workflows/propose.md` (step 4.d and its guardrails) and
   `update.md` tell the agent the keywords stay in English;
-- the comment that `codev init` writes above `language:` says the same
-  (`crates/codev-core/src/config/mod.rs`).
+- the comment that `compagnon init` writes above `language:` says the same
+  (`crates/compagnon-core/src/config/mod.rs`).
 
 The schema's instructions (`schema.yaml`) name the keywords in English
 (`## ADDED Requirements`, `SHALL`…). They are written for the agent, like
@@ -39,10 +39,10 @@ specs in another language; a third catalog language.
 The French templates are separate files under
 `assets/schemas/spec-driven/templates/fr/`, and the English ones move to
 `templates/en/` unchanged. A template holds more than catalog keywords:
-headings codev never parses (`## Why`, `## Capabilities`, `## Impact`,
+headings compagnon never parses (`## Why`, `## Capabilities`, `## Impact`,
 `## Context`…), guidance comments and the `**WHEN**` / `**THEN**` lines.
 Rendering one template from the catalog would need keys for all of them in
-the catalog, whose purpose is what codev reads (decision of
+the catalog, whose purpose is what compagnon reads (decision of
 `read-french-keywords`), or leave English guidance in a French file.
 
 A test keeps the files honest: for each language, every structural line of
@@ -61,7 +61,7 @@ would still need a per-language source, so two mechanisms instead of one.
 `keywords::Lang::for_setting(language: &str) -> Lang` takes the primary
 subtag of `language:`, compares it with the catalog codes without regard
 to case, and falls back to `Lang::EN`. It is pure and lives next to the
-catalog (decision 0001). `codev-engine::instructions` calls it once and
+catalog (decision 0001). `compagnon-engine::instructions` calls it once and
 carries `keyword_language` with the instructions; `schemas::template`
 takes that language: the built-in schema picks `templates/<lang>/<file>`
 among the embedded files, a project schema tries
@@ -73,7 +73,7 @@ ship regional keywords, and `fr-CA` users write `### Exigence :`.
 ### Decision: The instructions carry the keywords, so the skills never translate
 
 `InstructionsV1` gains `keywordLanguage` and `keywords` (additive fields of
-`contract::v1`): `keywords` maps each catalog key to the text codev writes
+`contract::v1`): `keywords` maps each catalog key to the text compagnon writes
 in that language, `normative` and `none` to the list of their texts. A
 template covers the headings it shows, but not, for example, a
 `## Exigences MODIFIÉES` section the spec template only mentions in a
@@ -83,20 +83,20 @@ instead of translating. The skills (`propose.md` step 4.d and guardrail,
 `template` and `keywords` give them, in `keywordLanguage`; the schema's
 instruction names them in English".
 
-`codev-agents` renders the workflows unchanged; the installed skills of
-this repository are refreshed with `codev update`, whose checksum rule
+`compagnon-agents` renders the workflows unchanged; the installed skills of
+this repository are refreshed with `compagnon update`, whose checksum rule
 (change `fix-merge-and-skill-refresh`) rewrites them.
 
 ### Decision: Evaluation per decision 0008, on the steps the suite covers
 
 The change touches what the planning and update agents read. Before the
-merge, `codev-evals compare` runs the `plan` and `update` steps against
+merge, `compagnon-evals compare` runs the `plan` and `update` steps against
 the committed baseline: the cases are English projects, whose templates
 are byte-identical, so the comparison measures the skills' new wording;
 quality must stay within the baseline's spread. The French path is
-verified without a model: an integration test runs `codev instructions`
+verified without a model: an integration test runs `compagnon instructions`
 on a `language: fr` fixture, and the French templates, filled with a
-sample change, pass `codev validate` and merge with `codev archive`.
+sample change, pass `compagnon validate` and merge with `compagnon archive`.
 
 **Alternatives considered**: a French planning case in the suite before
 this change — decision 0008 asks for a step to be covered first; the
@@ -110,7 +110,7 @@ is recorded as a follow-up under Risks.
   will be French-structured. Two kinds of mixing follow, both valid since
   every parser reads both languages and a document may mix them
   (keyword-languages):
-  - a change already planned before the upgrade: `/codev-update` keeps the
+  - a change already planned before the upgrade: `/compagnon-update` keeps the
     keyword language of the artifact it revises, so its files stay
     English-structured; only a new artifact takes `keywordLanguage`;
   - a main spec: a merge writes the headings in the spec's own language,
@@ -118,7 +118,7 @@ is recorded as a follow-up under Risks.
     `DOIT` or `**QUAND**` lands under an English `### Requirement:`. The
     artifact-language guide says so, and how to avoid it: keep
     `language: en`, or rewrite a main spec's keywords once in French —
-    codev never rewrites a spec on its own.
+    compagnon never rewrites a spec on its own.
   The release note says it. There is no separate setting for the keyword
   language: a team that wants English keywords keeps `language: en`, a
   deliberate choice to keep one setting.
@@ -126,7 +126,7 @@ is recorded as a follow-up under Risks.
   checks every keyword line; a guidance comment can still drift, which a
   reviewer catches in the diff of `templates/`.
 - [The agent still writes English keywords out of habit] → the skill
-  text and the template agree, `codev validate` accepts both languages,
+  text and the template agree, `compagnon validate` accepts both languages,
   so a slip is cosmetic, never a broken artifact.
 - [No model evaluation of French planning] → a planning case may now
   append a configuration and expect the language of the keywords: a
@@ -137,5 +137,5 @@ is recorded as a follow-up under Risks.
 ## Migration Plan
 
 Additive JSON fields, embedded templates, skills refreshed by
-`codev update`. Rollback: revert the commit; artifacts already written in
-French stay readable by any codev since `read-french-keywords`.
+`compagnon update`. Rollback: revert the commit; artifacts already written in
+French stay readable by any compagnon since `read-french-keywords`.

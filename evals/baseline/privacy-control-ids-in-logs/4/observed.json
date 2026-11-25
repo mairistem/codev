@@ -48,7 +48,7 @@
         "output": 6,
         "toolCalls": 1,
         "sources": {
-          "codev review": 3434
+          "compagnon review": 3434
         }
       },
       {
@@ -68,7 +68,7 @@
         "output": 303,
         "toolCalls": 0,
         "sources": {
-          "codev review": 599,
+          "compagnon review": 599,
           "edit": 394
         }
       }
@@ -90,7 +90,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/log-fulfilment-batches/review.md",
+    "path": "_compagnon/changes/log-fulfilment-batches/review.md",
     "status": [],
     "steps": [
       {

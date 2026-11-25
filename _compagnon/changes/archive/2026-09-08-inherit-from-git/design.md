@@ -14,8 +14,8 @@ This design covers:
 
 - the new transport building block (`ProcessRunner` port, calling `git`);
 - the cache layout and the fetch algorithm;
-- the format of `codev.lock` and its integration into `config::resolve`;
-- the three `codev sources` commands and their JSON contract.
+- the format of `compagnon.lock` and its integration into `config::resolve`;
+- the three `compagnon sources` commands and their JSON contract.
 
 It does **not** cover the degraded "no `git` on the PATH" mode, cache
 cleanup, parallelization, or other authentication protocols. Cf. the
@@ -57,8 +57,8 @@ disproportionate implementation and compatibility cost for a need covered
 
 Cache root:
 
-- `$XDG_CACHE_HOME/codev/` if set;
-- otherwise `~/.cache/codev/`.
+- `$XDG_CACHE_HOME/compagnon/` if set;
+- otherwise `~/.cache/compagnon/`.
 
 Subtree:
 
@@ -75,17 +75,17 @@ the same SHA (unlikely in practice) would share the content.
 
 **Rationale**: follows the XDG convention already honored by the Rust
 ecosystem (`cargo`, `rustup`). Rebuilding the cache is cheap, so the user
-can empty `~/.cache/codev/` when in doubt.
+can empty `~/.cache/compagnon/` when in doubt.
 
 ### Decision: TOML lock, an accepted new dependency
 
-`_codev/codev.lock` in TOML:
+`_compagnon/compagnon.lock` in TOML:
 
 ```toml
 version = 1
 
 [[source]]
-git = "git@github.com:acme/codev-shared.git"
+git = "git@github.com:acme/compagnon-shared.git"
 ref = "main"
 subpath = "shared/"                  # optional
 commit = "9f2c1ab77bd3…"
@@ -114,10 +114,10 @@ YAML would force `serde_norway` onto a format it has no business seeing.
   is not exposed.
 
 This is the only way to guarantee that everyday commands stay
-deterministic and offline. `codev sources update` is the single point
+deterministic and offline. `compagnon sources update` is the single point
 where the lock is written.
 
-### Decision: `codev sources update` does everything in a `Plan`
+### Decision: `compagnon sources update` does everything in a `Plan`
 
 Like the rest of the tool: the pure function `plan_sources_update(index,
 lock, remote_resolutions)` produces a `SourcesUpdatePlan` with the fetches
@@ -137,7 +137,7 @@ principle of decision
 `.sh`, a `.py`, a binary, a hook: all ignored by the index, never
 executed.
 
-Filtering happens in `codev-engine::sources::load` — a single place to
+Filtering happens in `compagnon-engine::sources::load` — a single place to
 audit.
 
 **Rejected alternative**: an allowlist of exact names. Too rigid, and
@@ -145,7 +145,7 @@ validation by extension is already used elsewhere in the code.
 
 ## Risks / Trade-offs
 
-- **`git ls-remote` on a slow server blocks `codev sources update`**.
+- **`git ls-remote` on a slow server blocks `compagnon sources update`**.
   → **Accepted trade-off**: the command is explicitly the place that
   touches the network; the user expects some latency.
 - **Two sources sharing the same URL with different `ref`s clone the bare
@@ -155,7 +155,7 @@ validation by extension is already used elsewhere in the code.
 - **Corrupted cache** (SHA locked but `content/<sha>/` folder incomplete
   because a previous command was interrupted).
   → **Mitigation**: the folder's presence is not taken as sufficient
-  proof; the loader checks that it contains at least a `_codev/` or a
+  proof; the loader checks that it contains at least a `_compagnon/` or a
   `.md` — otherwise a `cache_incomplete` warning invites the user to rerun
   `sources update`.
 - **SSH URLs with `~` in the path** are not affected: nothing is expanded
@@ -166,5 +166,5 @@ validation by extension is already used elsewhere in the code.
 
 Not applicable — this is the first version. A project that had declared
 `inherits: git:` previously received a warning; it will now see either the
-content (if a `codev sources update` has been run) or the new
+content (if a `compagnon sources update` has been run) or the new
 `git_source_unlocked` warning, which tells it exactly what to run.

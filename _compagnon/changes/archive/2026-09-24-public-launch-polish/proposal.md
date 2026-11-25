@@ -1,11 +1,11 @@
-# Proposal: polish codev for the public launch
+# Proposal: polish compagnon for the public launch
 
 ## Why
 
-The `mairistem/codev` repo has just gone public. A visitor who lands
+The `mairistem/compagnon` repo has just gone public. A visitor who lands
 on it must **understand within ten seconds**:
 
-- what codev does;
+- what compagnon does;
 - how to install it;
 - how to contribute;
 - that the project is alive, maintained, and follows basic open
@@ -25,9 +25,9 @@ schema through the `skip_specs: true` marker.
 
 **Files added at the root**:
 
-- `CONTRIBUTING.md` — how to contribute through the codev cycle
-  itself (fork, `codev init` if needed, `/codev-propose`,
-  `/codev-apply`, PR). Meta and consistent with the tool.
+- `CONTRIBUTING.md` — how to contribute through the compagnon cycle
+  itself (fork, `compagnon init` if needed, `/compagnon-propose`,
+  `/compagnon-apply`, PR). Meta and consistent with the tool.
 - `CHANGELOG.md` — published versions with their archived changes,
   Keep-a-Changelog format. Points to the GitHub Releases for the
   full notes.
@@ -44,7 +44,7 @@ schema through the `skip_specs: true` marker.
 - `.github/ISSUE_TEMPLATE/config.yml` — disables blank issues,
   points to CONTRIBUTING and Discussions.
 - `.github/PULL_REQUEST_TEMPLATE.md` — PR checklist: associated
-  codev change, green tests, up-to-date docs.
+  compagnon change, green tests, up-to-date docs.
 
 **Files modified**:
 
@@ -55,9 +55,9 @@ schema through the `skip_specs: true` marker.
   - Explicit table of contents for a reader who scrolls.
   - A visual example of the cycle (`ASCII art` of the propose →
     apply → archive cycle).
-  - Link to `docs/codev.md` for the full manual.
-- `docs/codev.md` — new **"Origins"** subsection in section 1
-  (Why codev), which explicitly credits OpenSpec, and lists what
+  - Link to `docs/compagnon.md` for the full manual.
+- `docs/compagnon.md` — new **"Origins"** subsection in section 1
+  (Why compagnon), which explicitly credits OpenSpec, and lists what
   was taken from the idea and what was set aside.
 
 ## Capabilities
@@ -75,7 +75,7 @@ None.
 None.
 
 *(Change marked `skip_specs: true` — pure meta / documentation, no
-new observable requirement on codev's behavior.)*
+new observable requirement on compagnon's behavior.)*
 
 ## Impact
 
@@ -83,16 +83,16 @@ new observable requirement on codev's behavior.)*
   Only markdown files at the root and under `.github/`.
 - **JSON contract**: nothing.
 - **Files written**: 8 new files, 2 modified files (README,
-  docs/codev.md). No tests to write — the docs have no automated
+  docs/compagnon.md). No tests to write — the docs have no automated
   tests.
 - **Migration**: none.
 - **Out of scope**:
   - **`docs.rs`** — requires `crates.io`, potentially later.
-  - **Dedicated website** — `codev docs` is enough for now.
+  - **Dedicated website** — `compagnon docs` is enough for now.
   - **English translation of the README** — can wait for the first
     non-French-speaking user who shows up.
   - **Download / star count badges** — too early; they will be
     added when there are numbers to show.
   - **Automating the CHANGELOG on each tag** — the V1 version is
     edited by hand at bump time; it will be automated from
-    `_codev/changes/archive/` in a dedicated cycle if the need arises.
+    `_compagnon/changes/archive/` in a dedicated cycle if the need arises.

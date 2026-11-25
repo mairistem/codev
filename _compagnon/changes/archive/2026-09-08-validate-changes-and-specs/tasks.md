@@ -1,12 +1,12 @@
 # Tasks
 
-## 1. Foundations in `codev-core`
+## 1. Foundations in `compagnon-core`
 
-- [x] 1.1 Create `codev-core::validate` (module `validate/mod.rs`,
+- [x] 1.1 Create `compagnon-core::validate` (module `validate/mod.rs`,
       `validate/rules.rs`), expose `pub trait Rule` with `code()`,
       `check_spec()`, `check_delta()` (empty defaults), plus
       `pub static RULES: &[&dyn Rule]`. Verified by
-      `cargo build -p codev-core` and a test compiling
+      `cargo build -p compagnon-core` and a test compiling
       `validate::registry_liste_au_moins_une_regle`.
 - [x] 1.2 Invariant test `validate::codes_de_findings_sont_uniques`:
       concatenates all the codes emitted by the parser (constants in the
@@ -49,7 +49,7 @@
 
 ## 4. Zero-delta rule and skip_specs conflict (engine side)
 
-- [x] 4.1 Extend `codev-engine::validate` with `check_change_metadata`,
+- [x] 4.1 Extend `compagnon-engine::validate` with `check_change_metadata`,
       which compares the presence of deltas with the `skip_specs` marker.
       Emits `zero_delta_without_marker` if no delta and marker absent,
       emits `skip_specs_conflict` if marker present and deltas exist.
@@ -60,7 +60,7 @@
 ## 5. Orchestration on the engine side
 
 - [x] 5.1 Type `LocatedFinding { path: PathBuf, kind: ItemKind, ..Finding }`
-      in `codev-engine::validate`, with `From<(&Finding, path, kind)>`.
+      in `compagnon-engine::validate`, with `From<(&Finding, path, kind)>`.
       Verified by `engine_validate::located_conserve_code_line_severite`.
 - [x] 5.2 `validate_change(fs, layout, change) -> ItemReport`: opens each
       delta of the change, calls `parse_delta`, applies the `check_delta`
@@ -76,7 +76,7 @@
 
 ## 6. CLI subcommand
 
-- [x] 6.1 Add the `validate [item]` subcommand to `codev-cli` with
+- [x] 6.1 Add the `validate [item]` subcommand to `compagnon-cli` with
       the flags `--all`, `--changes`, `--specs`, `--json`; exit code `0` if
       no `Finding` of severity `Error`, `1` otherwise. Verified by
       `cli_validate::exit_zero_sur_projet_propre` and
@@ -104,9 +104,9 @@
 
 ## 8. Dogfooding and workspace integration
 
-- [x] 8.1 Run `codev validate --all` on this repository and fix any
+- [x] 8.1 Run `compagnon validate --all` on this repository and fix any
       finding reported; check that the command passes with exit 0. The
-      repository itself is the first consumer, as for `codev init`.
+      repository itself is the first consumer, as for `compagnon init`.
 - [x] 8.2 `cargo test --workspace` stays green and counts at least 20
       additional tests (rules + engine + CLI + contract + rendering).
 - [x] 8.3 `cargo clippy --workspace --all-targets` stays warning-free.

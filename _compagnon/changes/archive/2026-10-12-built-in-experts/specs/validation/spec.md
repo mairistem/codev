@@ -27,20 +27,20 @@ Archived changes MUST NOT be checked: their history is not rewritten.
 - **GIVEN** an active change whose `## Domains` section holds
   `- [x] security`, `- [ ] performance` and `- personal-data — new e-mail
   field`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no domain finding is reported
 
 #### Scenario: No domain
 
 - **GIVEN** an active change whose `## Domains` section is `None`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no domain finding is reported
 
 #### Scenario: Unknown domain
 
 - **GIVEN** an active change whose `## Domains` section holds
   `- [x] securty`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** an `unknown_domain` error names `securty` and its line
 - **AND** the exit code is 1
 
@@ -48,13 +48,13 @@ Archived changes MUST NOT be checked: their history is not rewritten.
 
 - **GIVEN** an active change whose `## Domains` section holds `None` and
   `- [x] security`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `domains_invalid` error is reported
 
 #### Scenario: Missing section
 
 - **GIVEN** an active change whose proposal has no `## Domains` section
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `domains_missing` warning is reported
 - **AND** the exit code is 0 without `--strict`
 
@@ -62,5 +62,5 @@ Archived changes MUST NOT be checked: their history is not rewritten.
 
 - **GIVEN** a project whose only change without a `## Domains` section is
   archived
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** no domain finding is reported

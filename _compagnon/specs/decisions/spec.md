@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Make architecture decisions usable by codev: read them, index them,
+Make architecture decisions usable by Compagnon: read them, index them,
 resolve the chain of supersessions, and inject them into the instructions
 of the `design` artifact so that an agent drafting it sees the choices
 already settled from the outset.
@@ -23,9 +23,9 @@ decision: the decision is read from the fields it knows, and the field is
 reported as a finding of severity `warning` and code
 `decision_unknown_field`, at its line in the ADR's file. Its message MUST
 name the field, say that the decision may have been written by a newer
-codev, quote the project's `codev_version` when set, and point to
-`codev self-update`, or to correcting the field if it is a typo. Like any
-warning, it fails `codev validate --strict` and not `codev validate`. An
+Compagnon, quote the project's `compagnon_version` when set, and point to
+`compagnon self-update`, or to correcting the field if it is a typo. Like any
+warning, it fails `compagnon validate --strict` and not `compagnon validate`. An
 inherited decision is read the same way, but its unknown fields are not
 reported: the source is read-only, and the inheriting project cannot fix
 them.
@@ -53,21 +53,21 @@ them.
 - **THEN** a finding with code `decision_missing_field` names the missing
   field
 
-#### Scenario: A frontmatter field this codev does not know
+#### Scenario: A frontmatter field this Compagnon does not know
 
 - **GIVEN** an accepted, sealed ADR `0007` whose frontmatter holds
   `review_by: 2027-01-01` on line 6, and no other finding
-- **WHEN** the user runs `codev validate --json`
+- **WHEN** the user runs `compagnon validate --json`
 - **THEN** the `decisions` item holds a `warning` finding
   `decision_unknown_field` naming `review_by` at line 6 of the ADR's file,
-  and `codev self-update`
+  and `compagnon self-update`
 - **AND** the exit code is 0
-- **AND** `codev decision list --json` lists `0007` as `accepted`
+- **AND** `compagnon decision list --json` lists `0007` as `accepted`
 
 #### Scenario: Strict validation catches a misspelled field
 
 - **GIVEN** the same project
-- **WHEN** the user runs `codev validate --strict`
+- **WHEN** the user runs `compagnon validate --strict`
 - **THEN** the exit code is 1
 
 #### Scenario: An inherited decision's unknown field is not reported
@@ -75,10 +75,10 @@ them.
 - **GIVEN** a project inheriting from a local source whose accepted ADR
   `0100` holds the frontmatter field `review_by: 2027-01-01`, and no other
   finding
-- **WHEN** the user runs `codev validate --strict --json`
+- **WHEN** the user runs `compagnon validate --strict --json`
 - **THEN** no `decision_unknown_field` finding is reported and the exit
   code is 0
-- **AND** `codev decision list --json` lists `path:<source>/0100` as
+- **AND** `compagnon decision list --json` lists `path:<source>/0100` as
   `accepted`
 
 ### Requirement: Recognized statuses and effect
@@ -144,8 +144,8 @@ has no effect: the decisions it lists keep their place in the index.
 ### Requirement: Inherited decisions taken into account
 
 When a project declares `inherits: path: <path>` in its
-`_codev/config.yaml`, the validator MUST also parse the ADRs of
-`<path>/_codev/decisions/` and merge them into the index with their
+`_compagnon/config.yaml`, the validator MUST also parse the ADRs of
+`<path>/_compagnon/decisions/` and merge them into the index with their
 `origin` visible.
 
 #### Scenario: ADR from an inherited source appears in the index
@@ -167,7 +167,7 @@ When a project declares `inherits: path: <path>` in its
 
 ### Requirement: Injection into the design instructions
 
-The call `codev instructions design --change <name>` MUST enrich its
+The call `compagnon instructions design --change <name>` MUST enrich its
 response with a `decisions[]` field carrying the decisions in effect. Each
 entry exposes `id`, `title`, `status`, `tags`, `path` (relative to the
 project) and `origin`. The full content stays in the file — no
@@ -176,7 +176,7 @@ duplication in the response.
 #### Scenario: Design instructions carry the decisions in effect
 
 - **GIVEN** a project with 6 `accepted` ADRs and no supersession
-- **WHEN** the user runs `codev instructions design --change <name>
+- **WHEN** the user runs `compagnon instructions design --change <name>
   --json`
 - **THEN** the JSON response contains a `decisions` array with exactly
   6 entries, each carrying `id`, `title`, `status`, a `path` relative to
@@ -185,7 +185,7 @@ duplication in the response.
 #### Scenario: Superseded decisions absent from the instructions
 
 - **GIVEN** a project where `0003` is superseded by `0007`
-- **WHEN** the user runs `codev instructions design --change <name>
+- **WHEN** the user runs `compagnon instructions design --change <name>
   --json`
 - **THEN** `0003` does not appear in the `decisions` array
 - **AND** `0007` does appear in it
@@ -193,7 +193,7 @@ duplication in the response.
 #### Scenario: Human rendering lists the decisions
 
 - **GIVEN** the same context
-- **WHEN** the user runs `codev instructions design --change <name>`
+- **WHEN** the user runs `compagnon instructions design --change <name>`
   (without `--json`)
 - **THEN** the output contains a "Decisions in effect" section listing
   each decision on its own line with its `id` and its `title`
@@ -201,56 +201,56 @@ duplication in the response.
 #### Scenario: No decision, no section
 
 - **GIVEN** a new project without any ADR
-- **WHEN** the user runs `codev instructions design --change <name>`
+- **WHEN** the user runs `compagnon instructions design --change <name>`
 - **THEN** no "Decisions in effect" section is added to the output
 - **AND** the `decisions[]` field in the JSON response is present and empty
 
 ### Requirement: Creating a decision through the CLI
 
-`codev decision new <title>` SHALL create a new ADR in the project, with
+`compagnon decision new <title>` SHALL create a new ADR in the project, with
 an automatically generated numeric `id` (the largest numeric `id` found
 in the project + 1, on four digits), a file named `NNNN-<slug>.md` where
 `<slug>` is derived from the title in kebab-case, and a valid frontmatter
 including the status and the current date. Without `--status`, the
 status MUST be `proposed`: the ADR is created unsealed, so that its body
-can be written before it is accepted with `codev decision accept`.
+can be written before it is accepted with `compagnon decision accept`.
 
 #### Scenario: Creation in a project without ADRs
 
-- **GIVEN** a project whose `_codev/decisions/` directory is empty
-- **WHEN** the user runs `codev decision new "A first choice"`
-- **THEN** the file `_codev/decisions/0001-a-first-choice.md` is created
+- **GIVEN** a project whose `_compagnon/decisions/` directory is empty
+- **WHEN** the user runs `compagnon decision new "A first choice"`
+- **THEN** the file `_compagnon/decisions/0001-a-first-choice.md` is created
 - **AND** its frontmatter carries `id: "0001"`, `title: "A first choice"`,
   `status: proposed`, and a date in `YYYY-MM-DD` format
-- **AND** `_codev/decisions/seal.yaml` carries no entry for `0001`
+- **AND** `_compagnon/decisions/seal.yaml` carries no entry for `0001`
 
 #### Scenario: Sequential numbering
 
-- **GIVEN** a project whose `_codev/decisions/` directory already contains
+- **GIVEN** a project whose `_compagnon/decisions/` directory already contains
   six ADRs numbered `0001` to `0006`
-- **WHEN** the user runs `codev decision new "A seventh choice"`
-- **THEN** the file `_codev/decisions/0007-a-seventh-choice.md` is created
+- **WHEN** the user runs `compagnon decision new "A seventh choice"`
+- **THEN** the file `_compagnon/decisions/0007-a-seventh-choice.md` is created
 - **AND** its `id` is `"0007"`
 
 #### Scenario: Customizable status
 
 - **GIVEN** a project
-- **WHEN** the user runs `codev decision new "Settled choice"
+- **WHEN** the user runs `compagnon decision new "Settled choice"
   --status accepted`
 - **THEN** the created ADR carries `status: accepted`
-- **AND** its body is sealed in `_codev/decisions/seal.yaml`
+- **AND** its body is sealed in `_compagnon/decisions/seal.yaml`
 
 #### Scenario: Empty title rejected
 
 - **GIVEN** a project
-- **WHEN** the user runs `codev decision new ""`
+- **WHEN** the user runs `compagnon decision new ""`
 - **THEN** no file is written
 - **AND** an error message names the stable code `empty_title` and
   asks for a non-empty title
 
 ### Requirement: Listing decisions through the CLI
 
-`codev decision list` MUST display all local and inherited decisions,
+`compagnon decision list` MUST display all local and inherited decisions,
 with, for each one, its identifier, its title, its status, its effect
 state, and its origin. The `--json` mode MUST output exactly one JSON
 document whose shape is frozen per version.
@@ -259,7 +259,7 @@ document whose shape is frozen per version.
 
 - **GIVEN** a project containing three `accepted` ADRs where `0007`
   supersedes `0003`
-- **WHEN** the user runs `codev decision list --json`
+- **WHEN** the user runs `compagnon decision list --json`
 - **THEN** the `decisions` array contains the three entries
 - **AND** the `0003` entry carries `inEffect: false` and `supersededBy:
   "project/0007"`
@@ -268,14 +268,14 @@ document whose shape is frozen per version.
 #### Scenario: Concise human rendering
 
 - **GIVEN** the same context
-- **WHEN** the user runs `codev decision list`
+- **WHEN** the user runs `compagnon decision list`
 - **THEN** each decision appears on its own line with, in order, an
   effect marker (`•` for in effect, `–` otherwise), its `id`, its title,
   and its status
 
 ### Requirement: Showing a decision through the CLI
 
-`codev decision show <id>` MUST display the full content of the requested
+`compagnon decision show <id>` MUST display the full content of the requested
 decision. Resolution accepts a short `id` when it is unambiguous, or a
 qualified identifier `<origin>/<id>` in case of collision.
 
@@ -285,15 +285,15 @@ qualified identifier, `Title:`, `Status:`, `Date:`, then `Tags:`,
 `File:` with the decision's path, relative to the project for a file inside
 it and absolute otherwise — followed by a blank line and the file's content,
 verbatim. With `--json`, the document SHALL carry `root`, `decision` — the
-same object as an entry of `codev decision list --json` — and `content`,
+same object as an entry of `compagnon decision list --json` — and `content`,
 the file's full content. An identifier that matches no decision fails with
-`unknown_decision_id`, whose message points to `codev decision list`, and
+`unknown_decision_id`, whose message points to `compagnon decision list`, and
 exits with code 1.
 
 #### Scenario: Show of an id without collision
 
 - **GIVEN** a project containing a unique ADR `0001`
-- **WHEN** the user runs `codev decision show 0001`
+- **WHEN** the user runs `compagnon decision show 0001`
 - **THEN** the output contains the frontmatter header (`id`, `title`,
   `status`, `date`) followed by the markdown body of the decision
 
@@ -301,7 +301,7 @@ exits with code 1.
 
 - **GIVEN** a project containing a local ADR `0007` **and** an ADR `0007`
   in an inherited source `path:~/shared`
-- **WHEN** the user runs `codev decision show 0007`
+- **WHEN** the user runs `compagnon decision show 0007`
 - **THEN** no content is displayed
 - **AND** the `ambiguous_decision_id` error message lists both
   qualified identifiers (`project/0007`, `path:~/shared/0007`) and asks
@@ -310,49 +310,49 @@ exits with code 1.
 #### Scenario: Show with a qualified identifier
 
 - **GIVEN** the same context
-- **WHEN** the user runs `codev decision show path:~/shared/0007`
+- **WHEN** the user runs `compagnon decision show path:~/shared/0007`
 - **THEN** the inherited decision is displayed
 
 #### Scenario: Header of a local decision
 
 - **GIVEN** a local ADR `0001` titled `Foundation`, `accepted`, tagged
-  `arch`, at `_codev/decisions/0001-foundation.md`
-- **WHEN** the user runs `codev decision show 0001`
+  `arch`, at `_compagnon/decisions/0001-foundation.md`
+- **WHEN** the user runs `compagnon decision show 0001`
 - **THEN** the output starts with `ID:     0001 (project/0001)`, then the
   title, status, date and `Tags:   arch` lines
-- **AND** `File:` gives `_codev/decisions/0001-foundation.md`
+- **AND** `File:` gives `_compagnon/decisions/0001-foundation.md`
 - **AND** the file's content follows, unchanged
 
 #### Scenario: An inherited decision
 
 - **GIVEN** a project inheriting from a source `path:/shared` outside the
   project, holding an ADR `0100`
-- **WHEN** the user runs `codev decision show 0100 --json`
+- **WHEN** the user runs `compagnon decision show 0100 --json`
 - **THEN** `decision.origin` is `path:/shared`, `decision.qualifiedId` is
   `path:/shared/0100`, and `decision.path` is the absolute path of the file
 - **AND** `content` is the file's full content
 
 #### Scenario: Unknown identifier
 
-- **WHEN** the user runs `codev decision show 9999`
+- **WHEN** the user runs `compagnon decision show 9999`
 - **THEN** the command fails with `unknown_decision_id` and a message
-  naming `codev decision list`
+  naming `compagnon decision list`
 
 ### Requirement: Superseding a decision through the CLI
 
-`codev decision supersede <old-id> <new-title>` MUST create a new local
+`compagnon decision supersede <old-id> <new-title>` MUST create a new local
 decision with `status: proposed` that references the old one in its
 `supersedes`. The command MUST NOT modify the old decision: its
 frontmatter, its body and its seal entry stay as they are, and it
 remains in effect until the new decision is accepted with
-`codev decision accept`, which marks it `superseded`. The new decision
+`compagnon decision accept`, which marks it `superseded`. The new decision
 is not sealed, so that its body can be written before it is accepted.
 
 The command MUST refuse, without writing anything:
 
 - an unknown identifier, with the stable code `unknown_decision_id`;
 - an inherited decision, with the stable code
-  `cannot_supersede_inherited`, pointing to `codev decision deviate`;
+  `cannot_supersede_inherited`, pointing to `compagnon decision deviate`;
 - a local decision whose status is not `accepted`, with the stable code
   `predecessor_not_accepted` — only a decision in effect can be
   superseded, and the new decision could not be accepted anyway.
@@ -361,36 +361,36 @@ The command MUST refuse, without writing anything:
 
 - **GIVEN** a project containing an ADR `0003 accepted` titled "Old
   choice"
-- **WHEN** the user runs `codev decision supersede 0003 "New
+- **WHEN** the user runs `compagnon decision supersede 0003 "New
   choice"`
 - **THEN** a new ADR `0007-new-choice.md` (or the next available `id`)
   is created with `supersedes: ["0003"]` and `status: proposed`
 - **AND** the `0003` file is identical down to the character, its
   frontmatter still carrying `status: accepted`
 - **AND** `0003` is still among the decisions in effect
-- **AND** the output names `codev decision accept 0007` as the next step
+- **AND** the output names `compagnon decision accept 0007` as the next step
 
 #### Scenario: Superseding an unknown id rejects everything
 
 - **GIVEN** a project in which `9999` does not exist
-- **WHEN** the user runs `codev decision supersede 9999 "X"`
+- **WHEN** the user runs `compagnon decision supersede 9999 "X"`
 - **THEN** no file is written
 - **AND** the `unknown_decision_id` error message names `9999`
 
 #### Scenario: Superseding an inherited decision rejected
 
 - **GIVEN** a project inheriting from a source containing `path:~/shared/0100`
-- **WHEN** the user runs `codev decision supersede path:~/shared/0100
+- **WHEN** the user runs `compagnon decision supersede path:~/shared/0100
   "Our alternative"`
 - **THEN** no file is written
 - **AND** the `cannot_supersede_inherited` error message explains that an
   inherited decision is read-only and suggests deviating from it with
-  `codev decision deviate`
+  `compagnon decision deviate`
 
 #### Scenario: Superseding a decision that is not accepted rejected
 
 - **GIVEN** a project containing an ADR `0004 proposed`
-- **WHEN** the user runs `codev decision supersede 0004 "X"`
+- **WHEN** the user runs `compagnon decision supersede 0004 "X"`
 - **THEN** no file is written
 - **AND** the error names the stable code `predecessor_not_accepted`
   and the status of `0004`
@@ -400,12 +400,12 @@ The command MUST refuse, without writing anything:
 When `--json` is requested, each command MUST write exactly one JSON
 document to stdout whose shape is frozen per version, with a root
 `status` array for execution errors — the same rules as the rest of the
-codev contract.
+Compagnon contract.
 
 #### Scenario: Shape of a `decision new --json`
 
 - **GIVEN** a project
-- **WHEN** the user runs `codev decision new "X" --json`
+- **WHEN** the user runs `compagnon decision new "X" --json`
 - **THEN** stdout carries a JSON document containing `decision: { id:
   "0001", qualifiedId: "project/0001", path: "…", title: "X", status:
   "proposed" }`, the `path` of the created file, and a `status: []`
@@ -415,34 +415,34 @@ codev contract.
 #### Scenario: Shape of a `decision show` failure on an unknown id
 
 - **GIVEN** a project
-- **WHEN** the user runs `codev decision show 9999 --json`
+- **WHEN** the user runs `compagnon decision show 9999 --json`
 - **THEN** stdout carries a single JSON document containing
   `decision: null` and `status: [{ code: "unknown_decision_id", … }]`
 
 ### Requirement: Inheritance from a remote git repository
 
 A project SHALL be able to declare `inherits: git:` in its
-`_codev/config.yaml` to inherit from a remote git repository. The
+`_compagnon/config.yaml` to inherit from a remote git repository. The
 declaration supports the fields `git` (URL, mandatory), `ref` (branch or
 tag, mandatory), and `subpath` (path within the repository, optional).
 
 #### Scenario: Decisions from a git repository inherited and indexed
 
-- **GIVEN** a project whose `_codev/config.yaml` declares `inherits: [{git:
-  "git@github.com:acme/codev-shared.git", ref: main}]`
-- **AND** a `codev.lock` file locking a SHA `9f2c1ab7`
-- **AND** a local cache under `~/.cache/codev/content/9f2c1ab7/` containing
+- **GIVEN** a project whose `_compagnon/config.yaml` declares `inherits: [{git:
+  "git@github.com:acme/compagnon-shared.git", ref: main}]`
+- **AND** a `compagnon.lock` file locking a SHA `9f2c1ab7`
+- **AND** a local cache under `~/.cache/compagnon/content/9f2c1ab7/` containing
   an ADR `0100 accepted`
 - **WHEN** the validator computes the decision index
 - **THEN** the ADR `0100` appears in the index
-- **AND** its `origin` is `git:git@github.com:acme/codev-shared.git`
+- **AND** its `origin` is `git:git@github.com:acme/compagnon-shared.git`
 - **AND** its `qualifiedId` is
-  `git:git@github.com:acme/codev-shared.git/0100`
+  `git:git@github.com:acme/compagnon-shared.git/0100`
 
 #### Scenario: Inherited decisions injected into the design instructions
 
 - **GIVEN** the same project
-- **WHEN** the user runs `codev instructions design --change <name>`
+- **WHEN** the user runs `compagnon instructions design --change <name>`
 - **THEN** the `decisions` array of the response contains the local
   decisions **and** the `accepted` inherited decisions from the locked git
   repository
@@ -450,94 +450,94 @@ tag, mandatory), and `subpath` (path within the repository, optional).
 ### Requirement: A git source is never read from a floating branch
 
 The validator MUST refuse to expose the content of a `git:` source until
-a SHA has been locked in `_codev/codev.lock`. No everyday command
+a SHA has been locked in `_compagnon/compagnon.lock`. No everyday command
 (`list`, `show`, `status`, `instructions`, `validate`, `sync`, `archive`)
-SHALL contact an inherited source's remote — only `codev sources update`
-moves a pin. The daily update check of `codev status`, a request to the
-codev release API that never involves an inherited source, is the only
+SHALL contact an inherited source's remote — only `compagnon sources update`
+moves a pin. The daily update check of `compagnon status`, a request to the
+Compagnon release API that never involves an inherited source, is the only
 network access of an everyday command.
 
 #### Scenario: Git source declared but not locked
 
 - **GIVEN** a project declaring `inherits: [{git: "…", ref: main}]`
-- **AND** a `codev.lock` that is missing or has no entry for this source
-- **WHEN** the user runs `codev instructions design --change <name>`
+- **AND** a `compagnon.lock` that is missing or has no entry for this source
+- **WHEN** the user runs `compagnon instructions design --change <name>`
 - **THEN** the `decisions` array contains only the local decisions
 - **AND** the `status[]` field of the response carries a warning with the
   stable code `git_source_unlocked` inviting the user to run
-  `codev sources update`
+  `compagnon sources update`
 
-#### Scenario: `codev status` does not contact the network
+#### Scenario: `compagnon status` does not contact the network
 
 - **GIVEN** a project declaring a `git:` source with a locked SHA
   that is not in the cache
-- **WHEN** the user runs `codev status --change <name>` while the
+- **WHEN** the user runs `compagnon status --change <name>` while the
   network is unavailable
 - **THEN** the command does not fail for network reasons
 - **AND** no `git` call is made during execution
 
-### Requirement: `codev sources update` resolves and locks
+### Requirement: `compagnon sources update` resolves and locks
 
-The `codev sources update` command MUST, for each declared `git:` source,
+The `compagnon sources update` command MUST, for each declared `git:` source,
 resolve the requested `ref` to a SHA via `git ls-remote`, download the
 content if the SHA is not in the cache, and write a new
-`_codev/codev.lock` in which the SHA of each source matches the current
+`_compagnon/compagnon.lock` in which the SHA of each source matches the current
 resolution. It MUST display a diff of the SHA changes before
 writing.
 
 #### Scenario: First update on a project without a lock
 
-- **GIVEN** a project declaring a `git:` source but without `codev.lock`
-- **WHEN** the user runs `codev sources update`
+- **GIVEN** a project declaring a `git:` source but without `compagnon.lock`
+- **WHEN** the user runs `compagnon sources update`
 - **THEN** `git ls-remote` is called to resolve the `ref`
 - **AND** a cache is populated with the content of the SHA
-- **AND** a new `_codev/codev.lock` is written carrying the resolved
+- **AND** a new `_compagnon/compagnon.lock` is written carrying the resolved
   line
 
 #### Scenario: Update without changes
 
 - **GIVEN** a project whose lock already locks the SHA currently resolved
   by `git ls-remote`
-- **WHEN** the user runs `codev sources update`
+- **WHEN** the user runs `compagnon sources update`
 - **THEN** no additional download is performed
-- **AND** the `codev.lock` file is not rewritten (content-to-content
+- **AND** the `compagnon.lock` file is not rewritten (content-to-content
   comparison)
 
 #### Scenario: Diff before writing a moved pin
 
 - **GIVEN** a project whose lock carries `commit: aaaa1111` but
   `git ls-remote` now returns `bbbb2222`
-- **WHEN** the user runs `codev sources update`
+- **WHEN** the user runs `compagnon sources update`
 - **THEN** the human output shows `aaaa1111 → bbbb2222` for that
   source before the lock is written
 
 #### Scenario: git missing from PATH
 
 - **GIVEN** a system on which the `git` binary cannot be found
-- **WHEN** the user runs `codev sources update`
+- **WHEN** the user runs `compagnon sources update`
 - **THEN** the command fails with the stable code `git_not_found`
-- **AND** the message recalls that `codev sources update` is the only
+- **AND** the message recalls that `compagnon sources update` is the only
   command that needs `git`
 
-### Requirement: `codev sources list` and `codev sources show`
+### Requirement: `compagnon sources list` and `compagnon sources show`
 
-`codev sources list` MUST list all declared sources with their state;
-`codev sources show <ref>` MUST display the details of a specific source,
+`compagnon sources list` MUST list all declared sources with their state;
+`compagnon sources show <ref>` MUST display the details of a specific source,
 identified by its URL (for a `git:` source) or its path (for a `path:`
 source).
 
 #### Scenario: List shows the state of each source
 
 - **GIVEN** a project with a `path:` source and a locked `git:` source
-- **WHEN** the user runs `codev sources list`
+- **WHEN** the user runs `compagnon sources list`
 - **THEN** two entries appear, each with its type (`path` or
   `git`), its address, and its state (`resolved`, `locked`, or `unlocked`)
 
 #### Scenario: Show points to the resolved cache
 
 - **GIVEN** a project with a `git:` source locked on `9f2c1ab7`
-- **WHEN** the user runs `codev sources show
-  "git@github.com:acme/codev-shared.git"`
+- **WHEN** the user runs `compagnon sources show
+  "git@github.com:acme/compagnon-shared.git"`
 - **THEN** the output contains the URL, the requested `ref`, the locked
   SHA, and the resolved path in the cache
 - **AND** lists the exposed files (decisions, inherited specs)
@@ -552,14 +552,14 @@ an inherited source.
 
 #### Scenario: A script in the inherited repository is ignored
 
-- **GIVEN** an inherited git repository that contains `_codev/decisions/hook.sh`
+- **GIVEN** an inherited git repository that contains `_compagnon/decisions/hook.sh`
 - **WHEN** the validator computes the index
 - **THEN** no element of the index references `hook.sh`
-- **AND** no codev command runs that file
+- **AND** no Compagnon command runs that file
 
 ### Requirement: Body seal recorded by the CLI
 
-The CLI SHALL maintain a `_codev/decisions/seal.yaml` file — versioned
+The CLI SHALL maintain a `_compagnon/decisions/seal.yaml` file — versioned
 with the project — that records the sealed local decisions, with, for
 each entry, the `id` of the decision, the SHA-256 hash of the ADR's
 **body** (everything that follows the `---` separator closing the
@@ -573,17 +573,17 @@ a seal is an `id`, a `bodySha256` prefixed with `sha256:`, and a
 
 #### Scenario: Seal written when a decision is created
 
-- **GIVEN** a project in which `_codev/decisions/seal.yaml` does not exist
-- **WHEN** the user runs `codev decision new "A first choice" --status
+- **GIVEN** a project in which `_compagnon/decisions/seal.yaml` does not exist
+- **WHEN** the user runs `compagnon decision new "A first choice" --status
   accepted`
-- **THEN** the file `_codev/decisions/seal.yaml` is created
+- **THEN** the file `_compagnon/decisions/seal.yaml` is created
 - **AND** it contains an entry whose `id` is `"0001"` and whose
   `bodySha256` matches the hexadecimal SHA-256 of the body of the file
   `0001-a-first-choice.md` (prefixed with `sha256:`)
 
 #### Scenario: Seal file format
 
-- **GIVEN** the `_codev/decisions/seal.yaml` file created by the CLI
+- **GIVEN** the `_compagnon/decisions/seal.yaml` file created by the CLI
 - **WHEN** a human opens it
 - **THEN** it contains a `version: 1` key at the top
 - **AND** a `seals` key carrying a list in which each entry has
@@ -592,34 +592,34 @@ a seal is an `id`, a `bodySha256` prefixed with `sha256:`, and a
 
 ### Requirement: `decision new` writes the ADR and the seal in the same plan
 
-When `codev decision new <title>` creates a decision with the status
+When `compagnon decision new <title>` creates a decision with the status
 `accepted` or `superseded`, the operation MUST produce an effect plan
 that writes both the ADR **and** the corresponding entry in
-`_codev/decisions/seal.yaml`. If either one fails, neither is written
+`_compagnon/decisions/seal.yaml`. If either one fails, neither is written
 — the command never leaves an ADR without a seal nor a seal without an
 ADR. A decision created with another status, `proposed` included, is
 written without a seal entry.
 
 #### Scenario: A failed seal write cancels the creation
 
-- **GIVEN** a project in which `_codev/decisions/seal.yaml` is
+- **GIVEN** a project in which `_compagnon/decisions/seal.yaml` is
   write-locked by the system
-- **WHEN** the user runs `codev decision new "Title" --status accepted`
-- **THEN** no ADR file is written to `_codev/decisions/`
+- **WHEN** the user runs `compagnon decision new "Title" --status accepted`
+- **THEN** no ADR file is written to `_compagnon/decisions/`
 - **AND** the `seal.yaml` file remains unchanged
 
 #### Scenario: A proposed decision is created without a seal
 
 - **GIVEN** a project
-- **WHEN** the user runs `codev decision new "Title"`
+- **WHEN** the user runs `compagnon decision new "Title"`
 - **THEN** the ADR is written with `status: proposed`
-- **AND** `_codev/decisions/seal.yaml` is neither created nor modified
+- **AND** `_compagnon/decisions/seal.yaml` is neither created nor modified
 
 ### Requirement: Accepting a supersession seals the new ADR without touching the old one's seal
 
-`codev decision supersede <id> <title>` MUST NOT write
-`_codev/decisions/seal.yaml`: the ADR it creates is `proposed`. When
-that ADR is accepted with `codev decision accept`, the operation MUST
+`compagnon decision supersede <id> <title>` MUST NOT write
+`_compagnon/decisions/seal.yaml`: the ADR it creates is `proposed`. When
+that ADR is accepted with `compagnon decision accept`, the operation MUST
 add a seal entry for it and MUST NOT modify the seal entry of the old
 one — since the old one's body remains identical down to the character
 (a requirement already in effect), its seal remains valid.
@@ -628,14 +628,14 @@ one — since the old one's body remains identical down to the character
 
 - **GIVEN** a project containing a sealed ADR `0003 accepted` referenced
   in `seal.yaml` under `id: "0003"`
-- **WHEN** the user runs `codev decision supersede 0003 "New choice"`
+- **WHEN** the user runs `compagnon decision supersede 0003 "New choice"`
 - **THEN** `seal.yaml` is identical down to the character
 
 #### Scenario: Acceptance seals only the new one
 
-- **GIVEN** the same project, after `codev decision supersede 0003
+- **GIVEN** the same project, after `compagnon decision supersede 0003
   "New choice"` created `0007`
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the `seal.yaml` file now contains two entries: the one for
   `0003` (unchanged) and a new one for `0007`
 - **AND** the `0003` entry has exactly the same `bodySha256` as before the
@@ -643,25 +643,25 @@ one — since the old one's body remains identical down to the character
 
 ### Requirement: `validate` detects body alterations
 
-`codev validate` MUST emit three new findings with stable codes
+`compagnon validate` MUST emit three new findings with stable codes
 to report discrepancies between ADRs and their seal:
 
 - `decision_unsealed` — **warning** emitted for any local ADR with status
   `accepted` or `superseded` that has no entry in `seal.yaml`. The
-  message recalls that migration is done with `codev decision seal`.
+  message recalls that migration is done with `compagnon decision seal`.
 - `decision_seal_mismatch` — **error** emitted for any ADR whose computed
   `bodySha256` no longer matches the one recorded in `seal.yaml`. The
   message names the ADR concerned and recalls that a deliberate
-  modification goes through `codev decision seal --force`.
+  modification goes through `compagnon decision seal --force`.
 - `decision_orphan_seal` — **warning** emitted for any `seal.yaml` entry
-  whose referenced ADR no longer exists in `_codev/decisions/`.
+  whose referenced ADR no longer exists in `_compagnon/decisions/`.
 
 #### Scenario: Detection of a body modified in place
 
 - **GIVEN** a project whose ADR `0001` is sealed
 - **AND** a human has edited the body of the file `0001-*.md` without
   updating `seal.yaml`
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** the output contains a finding with code `decision_seal_mismatch`
   naming `0001`
 - **AND** the exit code of the command is non-zero
@@ -670,7 +670,7 @@ to report discrepancies between ADRs and their seal:
 
 - **GIVEN** a project containing six local `accepted` ADRs, none of which
   has an entry in `seal.yaml` (initial migration state)
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** the output contains six findings with code `decision_unsealed`,
   one per ADR
 - **AND** the exit code of the command is zero (warnings, not errors)
@@ -680,14 +680,14 @@ to report discrepancies between ADRs and their seal:
 - **GIVEN** a project whose `seal.yaml` contains an entry for
   the ADR `0004`
 - **AND** the file `0004-*.md` has been deleted
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** the output contains a `decision_orphan_seal` finding naming
   `0004`
 - **AND** the exit code of the command is zero (warning, not error)
 
 ### Requirement: `decision seal` adds or renews a seal entry
 
-`codev decision seal <id>` MUST create a seal entry for a local ADR that
+`compagnon decision seal <id>` MUST create a seal entry for a local ADR that
 does not have one — this is the migration operation. For an already
 sealed ADR whose body has changed, the command MUST refuse without
 `--force` and recall that immutability is intentional. With `--force`, it
@@ -699,7 +699,7 @@ project).
 
 - **GIVEN** a project containing an ADR `0001 accepted` without an entry in
   `seal.yaml`
-- **WHEN** the user runs `codev decision seal 0001`
+- **WHEN** the user runs `compagnon decision seal 0001`
 - **THEN** `seal.yaml` now carries an entry for `0001` whose
   `bodySha256` matches the current body of the file
 
@@ -707,7 +707,7 @@ project).
 
 - **GIVEN** a project whose ADR `0001` is sealed, and whose body was
   subsequently edited in place
-- **WHEN** the user runs `codev decision seal 0001`
+- **WHEN** the user runs `compagnon decision seal 0001`
 - **THEN** `seal.yaml` remains unchanged
 - **AND** the error message names the stable code `seal_conflict` and
   recalls that `--force` deliberately rewrites the seal
@@ -715,14 +715,14 @@ project).
 #### Scenario: Re-seal with `--force`
 
 - **GIVEN** the same context
-- **WHEN** the user runs `codev decision seal 0001 --force`
+- **WHEN** the user runs `compagnon decision seal 0001 --force`
 - **THEN** the `0001` entry in `seal.yaml` now carries the new
   `bodySha256` and a `sealedAt` date matching the current date
 
 #### Scenario: Refusal to seal an inherited decision
 
 - **GIVEN** a project inheriting from a source containing `path:~/shared/0100`
-- **WHEN** the user runs `codev decision seal path:~/shared/0100`
+- **WHEN** the user runs `compagnon decision seal path:~/shared/0100`
 - **THEN** no write takes place
 - **AND** the error message names the stable code
   `cannot_seal_inherited` and recalls that sealing belongs to the
@@ -753,21 +753,21 @@ reported.
 - **THEN** a finding with code `decision_field_type_mismatch` reports the
   `deviates_from` field
 
-### Requirement: The `codev decision deviate` command creates a deviation ADR
+### Requirement: The `compagnon decision deviate` command creates a deviation ADR
 
-`codev decision deviate <qualified-id> <title>` MUST create a local
+`compagnon decision deviate <qualified-id> <title>` MUST create a local
 `proposed` ADR with `deviates_from: ["<qualified-id>"]` and a valid
 frontmatter (`id`, `title`, `status: proposed`, `date`), without a seal
 entry, so that its body can be written before it is accepted. The
 deviation takes effect — the inherited decision is set aside — only once
-the ADR is accepted with `codev decision accept`, which seals it like
+the ADR is accepted with `compagnon decision accept`, which seals it like
 every accepted decision.
 
 The command MUST refuse:
 
 - if `<qualified-id>` designates a local decision (`project/…`): stable
   code `cannot_deviate_from_local`, with a message pointing to
-  `codev decision supersede`.
+  `compagnon decision supersede`.
 - if `<qualified-id>` matches no indexed decision: stable code
   `unknown_decision_id` (already existing).
 - if `<title>` is empty: stable code `empty_title` (already existing).
@@ -777,37 +777,37 @@ The command MUST refuse:
 - **GIVEN** a project inheriting from a source `path: ~/shared` containing
   an ADR `path:~/shared/0100`
 - **WHEN** the user runs
-  `codev decision deviate path:~/shared/0100 "Our local alternative"`
+  `compagnon decision deviate path:~/shared/0100 "Our local alternative"`
 - **THEN** a new local ADR is created under
-  `_codev/decisions/NNNN-our-local-alternative.md` with
+  `_compagnon/decisions/NNNN-our-local-alternative.md` with
   `deviates_from: ["path:~/shared/0100"]` and `status: proposed`
-- **AND** `_codev/decisions/seal.yaml` is neither created nor modified
+- **AND** `_compagnon/decisions/seal.yaml` is neither created nor modified
 - **AND** `path:~/shared/0100` is still in effect and carries no
   `deviatedBy`
-- **AND** the output names `codev decision accept NNNN` as the next step
+- **AND** the output names `compagnon decision accept NNNN` as the next step
 
 #### Scenario: The deviation takes effect once accepted
 
 - **GIVEN** the same project, after the deviation `NNNN` was created
-- **WHEN** the user runs `codev decision accept NNNN`
+- **WHEN** the user runs `compagnon decision accept NNNN`
 - **THEN** `NNNN` carries `status: accepted` and an entry is added to
-  `_codev/decisions/seal.yaml` for it
-- **AND** `codev decision list --json` shows `path:~/shared/0100` with
+  `_compagnon/decisions/seal.yaml` for it
+- **AND** `compagnon decision list --json` shows `path:~/shared/0100` with
   `deviatedBy: "project/NNNN"` and `inEffect: false`
 
 #### Scenario: Refusal to deviate from a local decision
 
 - **GIVEN** a project containing a local ADR `0003 accepted`
-- **WHEN** the user runs `codev decision deviate project/0003 "…"`
+- **WHEN** the user runs `compagnon decision deviate project/0003 "…"`
 - **THEN** no file is written
 - **AND** the error message names the stable code
-  `cannot_deviate_from_local` and suggests `codev decision supersede`
+  `cannot_deviate_from_local` and suggests `compagnon decision supersede`
 
 #### Scenario: Refusal of an unknown target
 
 - **GIVEN** a project without any inherited source
 - **WHEN** the user runs
-  `codev decision deviate path:~/unknown/0100 "…"`
+  `compagnon decision deviate path:~/unknown/0100 "…"`
 - **THEN** no file is written
 - **AND** the error message names the stable code `unknown_decision_id`
 
@@ -820,7 +820,7 @@ the `in_effect` array, and appear neither in the `decisions[]` array of
 the `design` instructions nor in the human "Decisions in effect" section
 of their rendering.
 
-The inherited entry remains visible in `codev decision list` —
+The inherited entry remains visible in `compagnon decision list` —
 transparency takes precedence over hiding.
 
 #### Scenario: Design instructions do not carry the deviated decision
@@ -829,14 +829,14 @@ transparency takes precedence over hiding.
   `path:~/shared/0100 accepted`, and a local ADR `0007 accepted` whose
   frontmatter carries `deviates_from: ["path:~/shared/0100"]`
 - **WHEN** the user runs
-  `codev instructions design --change <name> --json`
+  `compagnon instructions design --change <name> --json`
 - **THEN** the `decisions` array of the response contains `project/0007`
 - **AND** the `decisions` array does NOT contain `path:~/shared/0100`
 
 #### Scenario: `decision list` exposes the deviation
 
 - **GIVEN** the same context
-- **WHEN** the user runs `codev decision list --json`
+- **WHEN** the user runs `compagnon decision list --json`
 - **THEN** the `path:~/shared/0100` entry carries `deviatedBy:
   "project/0007"` and `inEffect: false`
 - **AND** the `project/0007` entry carries `deviatesFrom:
@@ -853,7 +853,7 @@ transparency takes precedence over hiding.
 
 ### Requirement: `validate` detects degenerate deviations
 
-`codev validate` MUST emit two new findings with stable codes:
+`compagnon validate` MUST emit two new findings with stable codes:
 
 - `decision_dangling_deviation` — **warning** — when a local ADR has a
   `deviates_from: ["<qualified-id>"]` whose target does not exist or no
@@ -867,7 +867,7 @@ transparency takes precedence over hiding.
 - **GIVEN** a project in which a local ADR `0007 accepted` carries
   `deviates_from: ["path:~/unknown/9999"]`, without any source exposing
   that `qualified-id`
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** the output contains a finding with code
   `decision_dangling_deviation` naming `0007` and its missing target
 - **AND** the exit code of the command is zero (warning)
@@ -876,16 +876,16 @@ transparency takes precedence over hiding.
 
 - **GIVEN** a project with two local `accepted` ADRs, `0007` and
   `0008`, both with `deviates_from: ["path:~/shared/0100"]`
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** the output contains a
   `decision_conflicting_deviations` finding that names both ADRs and the
   conflicting target
 - **AND** the exit code of the command is non-zero (error)
 
-### Requirement: The `codev decision promote` command extracts a design block into an ADR
+### Requirement: The `compagnon decision promote` command extracts a design block into an ADR
 
-`codev decision promote <change> <title>` MUST create a new local ADR
-under `_codev/decisions/NNNN-<slug>.md`, with `status: proposed` and
+`compagnon decision promote <change> <title>` MUST create a new local ADR
+under `_compagnon/decisions/NNNN-<slug>.md`, with `status: proposed` and
 without a seal entry, whose body reproduces **verbatim** the content of
 the `### Decision: <title>` block found under the `## Decisions` section
 of the change's `design.md`. The new ADR contains a `## Decision` section
@@ -893,7 +893,7 @@ carrying that body, and the `## Context`, `## Consequences` and
 `## Alternatives considered` sections are emitted with a
 `<!-- placeholder -->` inviting the author to fill them in. The ADR is
 meant to be reviewed and reworked, then accepted — and sealed — with
-`codev decision accept`; the output of the command says so.
+`compagnon decision accept`; the output of the command says so.
 
 The "verbatim" body of the block means: all the text that follows the
 `### Decision: <title>` line up to the next line starting with `### ` or
@@ -901,7 +901,7 @@ The "verbatim" body of the block means: all the text that follows the
 
 Explicit refusals — stable codes:
 
-- `unknown_change`: the change is not in `codev list`.
+- `unknown_change`: the change is not in `compagnon list`.
 - `cannot_promote_from_archived`: the target points to a directory under
   `changes/archive/` — an archived design is history.
 - `design_missing`: the change has no `design.md`.
@@ -915,33 +915,33 @@ Explicit refusals — stable codes:
 - **GIVEN** a change `add-auth` whose `design.md` contains, under
   `## Decisions`, a `### Decision: Use JWT` block with two
   paragraphs of rationale
-- **WHEN** the user runs `codev decision promote add-auth
+- **WHEN** the user runs `compagnon decision promote add-auth
   "Use JWT"`
 - **THEN** a new ADR is created under
-  `_codev/decisions/NNNN-use-jwt.md` with `status: proposed`, the current
+  `_compagnon/decisions/NNNN-use-jwt.md` with `status: proposed`, the current
   `date`, and a valid frontmatter
 - **AND** its body contains a `## Decision` section with the two
   paragraphs of rationale, byte for byte
-- **AND** `_codev/decisions/seal.yaml` is neither created nor modified
+- **AND** `_compagnon/decisions/seal.yaml` is neither created nor modified
 - **AND** the output invites the user to review the ADR, then run
-  `codev decision accept NNNN`
+  `compagnon decision accept NNNN`
 
 #### Scenario: The promoted ADR can be reworked, then accepted
 
 - **GIVEN** the ADR `NNNN` created by the promotion
 - **AND** the user has split its body across Context, Decision,
   Consequences and Alternatives considered
-- **WHEN** the user runs `codev decision accept NNNN`, then
-  `codev validate`
+- **WHEN** the user runs `compagnon decision accept NNNN`, then
+  `compagnon validate`
 - **THEN** `NNNN` carries `status: accepted` and is sealed with its
   reworked body
-- **AND** `codev validate` reports neither `decision_seal_mismatch` nor
+- **AND** `compagnon validate` reports neither `decision_seal_mismatch` nor
   `decision_unsealed` for `NNNN`
 
 #### Scenario: Refusal of an archived change
 
-- **GIVEN** a change that lives under `_codev/changes/archive/…-<name>/`
-- **WHEN** the user runs `codev decision promote <name> "..."`
+- **GIVEN** a change that lives under `_compagnon/changes/archive/…-<name>/`
+- **WHEN** the user runs `compagnon decision promote <name> "..."`
 - **THEN** no file is written
 - **AND** the error message names the stable code
   `cannot_promote_from_archived`
@@ -950,7 +950,7 @@ Explicit refusals — stable codes:
 
 - **GIVEN** a change `add-auth` whose `design.md` does not mention a
   "Use Kerberos" block
-- **WHEN** the user runs `codev decision promote add-auth
+- **WHEN** the user runs `compagnon decision promote add-auth
   "Use Kerberos"`
 - **THEN** no file is written
 - **AND** the error message names the stable code
@@ -961,7 +961,7 @@ Explicit refusals — stable codes:
 - **GIVEN** a `design.md` containing **two**
   `### Decision: Library choice` blocks (for example a revised version
   of the first block written during the discussion)
-- **WHEN** the user runs `codev decision promote <c> "Library
+- **WHEN** the user runs `compagnon decision promote <c> "Library
   choice"`
 - **THEN** no file is written
 - **AND** the error message names the stable code
@@ -977,7 +977,7 @@ line** of textual quotation referencing the new ADR:
 ```
 ### Decision: <title>
 
-> Promoted to ADR **NNNN** — see `_codev/decisions/NNNN-<slug>.md`.
+> Promoted to ADR **NNNN** — see `_compagnon/decisions/NNNN-<slug>.md`.
 ```
 
 The reference is plain text (`` ` `` for the path), not a markdown
@@ -995,7 +995,7 @@ promoted.
   ```
   ### Decision: Use JWT
 
-  > Promoted to ADR **NNNN** — see `_codev/decisions/NNNN-use-jwt.md`.
+  > Promoted to ADR **NNNN** — see `_compagnon/decisions/NNNN-use-jwt.md`.
 
   ```
 - **AND** the rest of the file (other sections, other `###` blocks,
@@ -1008,23 +1008,23 @@ promoted.
 - **GIVEN** a design containing two distinct blocks:
   `### Decision: A` and `### Decision: B`
 - **AND** the user has already promoted `A` to an ADR
-- **WHEN** the user runs `codev decision promote <c> "B"`
+- **WHEN** the user runs `compagnon decision promote <c> "B"`
 - **THEN** block `B` is promoted in turn
 - **AND** the reference line of `A` is NOT altered by this
   second promotion — each promotion acts only on its own block
 
 ### Requirement: `decision accept` accepts and seals a proposed decision
 
-`codev decision accept <id>` SHALL turn a local decision whose status is
+`compagnon decision accept <id>` SHALL turn a local decision whose status is
 `proposed` into an `accepted` decision and seal its body; it is the
 single command through which a decision created by `decision new`,
 `decision supersede`, `decision deviate` or `decision promote` takes
 effect. The operation MUST produce a single effect plan that rewrites
 the frontmatter `status` to `accepted` **and** writes the decision's
-entry in `_codev/decisions/seal.yaml`; if the plan cannot be computed,
+entry in `_compagnon/decisions/seal.yaml`; if the plan cannot be computed,
 nothing is written. The body of the ADR — everything after the
 frontmatter — MUST stay byte for byte identical, so the recorded hash is
-the hash of the text the user wrote. A frontmatter field codev does not
+the hash of the text the user wrote. A frontmatter field Compagnon does not
 know MUST be kept, with its value as written, in every frontmatter the
 command rewrites.
 
@@ -1040,7 +1040,7 @@ The command MUST refuse, without writing anything:
   since inherited decisions are read-only;
 - a decision whose status is not `proposed`, with the stable code
   `decision_not_proposed`; for an `accepted` decision the message says
-  there is nothing to do and points to `codev decision supersede` to
+  there is nothing to do and points to `compagnon decision supersede` to
   replace it;
 - a decision one of whose predecessors cannot be superseded: a
   predecessor that is not indexed, with the stable code
@@ -1059,18 +1059,18 @@ array listing each predecessor marked superseded (its `id`,
 
 - **GIVEN** a project containing a local ADR `0007` with `status:
   proposed` whose body has been written, and no seal entry for `0007`
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the ADR now carries `status: accepted`
 - **AND** its body is identical to what it was before the command
 - **AND** `seal.yaml` carries an entry for `0007` whose `bodySha256`
   matches that body
-- **AND** `codev validate` reports neither `decision_seal_mismatch` nor
+- **AND** `compagnon validate` reports neither `decision_seal_mismatch` nor
   `decision_unsealed` for `0007`
 
 #### Scenario: JSON output of an acceptance
 
 - **GIVEN** the same project
-- **WHEN** the user runs `codev decision accept 0007 --json`
+- **WHEN** the user runs `compagnon decision accept 0007 --json`
 - **THEN** stdout carries a JSON document with `decision.id: "0007"`,
   `decision.status: "accepted"`, the `path` of the file, a `bodySha256`
   prefixed with `sha256:`, `superseded: []`, and `status: []`
@@ -1079,8 +1079,8 @@ array listing each predecessor marked superseded (its `id`,
 
 - **GIVEN** a project containing a sealed ADR `0003 accepted` and a
   `proposed` ADR `0007` with `supersedes: ["0003"]`, created by
-  `codev decision supersede 0003 "New choice"`
-- **WHEN** the user runs `codev decision accept 0007 --json`
+  `compagnon decision supersede 0003 "New choice"`
+- **WHEN** the user runs `compagnon decision accept 0007 --json`
 - **THEN** `0007` carries `status: accepted` and is sealed
 - **AND** the frontmatter of `0003` now carries `status: superseded`,
   its body is identical down to the character, and its seal entry is
@@ -1089,15 +1089,15 @@ array listing each predecessor marked superseded (its `id`,
   in effect
 - **AND** the JSON document carries `superseded: [{ id: "0003",
   qualifiedId: "project/0003", path: "…" }]`
-- **AND** `codev validate` reports no finding for `0003` nor `0007`
+- **AND** `compagnon validate` reports no finding for `0003` nor `0007`
 
 #### Scenario: Refusal when the predecessor is no longer accepted
 
 - **GIVEN** a project containing an ADR `0003 accepted` and two
   `proposed` ADRs `0007` and `0008`, both with `supersedes: ["0003"]`
-- **AND** the user has already run `codev decision accept 0007`, so
+- **AND** the user has already run `compagnon decision accept 0007`, so
   `0003` now carries `status: superseded`
-- **WHEN** the user runs `codev decision accept 0008`
+- **WHEN** the user runs `compagnon decision accept 0008`
 - **THEN** no write takes place: `0008` still carries `status:
   proposed` and `seal.yaml` is unchanged
 - **AND** the error names the stable code `predecessor_not_accepted`,
@@ -1108,7 +1108,7 @@ array listing each predecessor marked superseded (its `id`,
 - **GIVEN** a project inheriting from a source containing
   `path:~/shared/0100`, and a local `proposed` ADR `0007` written by hand
   with `supersedes: ["0100"]`, `0100` existing only in the source
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** no write takes place
 - **AND** the error names the stable code `cannot_supersede_inherited`
 
@@ -1116,7 +1116,7 @@ array listing each predecessor marked superseded (its `id`,
 
 - **GIVEN** a project inheriting from a source containing
   `path:~/shared/0100` with `status: proposed`
-- **WHEN** the user runs `codev decision accept path:~/shared/0100`
+- **WHEN** the user runs `compagnon decision accept path:~/shared/0100`
 - **THEN** no write takes place
 - **AND** the error names the stable code `cannot_accept_inherited`
 
@@ -1124,35 +1124,35 @@ array listing each predecessor marked superseded (its `id`,
 
 - **GIVEN** a project containing a local ADR `0003` with `status:
   accepted`
-- **WHEN** the user runs `codev decision accept 0003`
+- **WHEN** the user runs `compagnon decision accept 0003`
 - **THEN** neither the ADR nor `seal.yaml` is modified
 - **AND** the error names the stable code `decision_not_proposed` and
-  points to `codev decision supersede`
+  points to `compagnon decision supersede`
 
 #### Scenario: Refusal to accept a decision with another status
 
 - **GIVEN** a project containing a local ADR `0004` with `status:
   rejected`
-- **WHEN** the user runs `codev decision accept 0004`
+- **WHEN** the user runs `compagnon decision accept 0004`
 - **THEN** no write takes place
 - **AND** the error names the stable code `decision_not_proposed`
 
 #### Scenario: Status and seal are written together or not at all
 
 - **GIVEN** a project containing a local `proposed` ADR `0007`
-- **AND** a `_codev/decisions/seal.yaml` that cannot be read as a seal
+- **AND** a `_compagnon/decisions/seal.yaml` that cannot be read as a seal
   file
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the command fails
 - **AND** the ADR still carries `status: proposed`
 - **AND** `seal.yaml` is unchanged
 
-#### Scenario: Fields codev does not know survive the acceptance
+#### Scenario: Fields Compagnon does not know survive the acceptance
 
 - **GIVEN** a local `proposed` ADR `0007` whose frontmatter holds
   `review_by: 2027-01-01`, and `supersedes: ["0003"]` where `0003` is an
   accepted ADR whose frontmatter holds `owner: platform-team`
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the frontmatter of `0007` carries `status: accepted` and still
   holds `review_by: 2027-01-01`
 - **AND** the frontmatter of `0003` carries `status: superseded` and still
@@ -1160,7 +1160,7 @@ array listing each predecessor marked superseded (its `id`,
 
 ### Requirement: ADR files with Windows line endings
 
-codev SHALL parse an ADR whose lines end with CRLF exactly like the same
+Compagnon SHALL parse an ADR whose lines end with CRLF exactly like the same
 ADR with LF line endings: same frontmatter fields, same body. When a command
 rewrites a decision's status (`decision accept`, or a predecessor marked
 `superseded`), the body MUST stay byte for byte identical — line endings
@@ -1170,21 +1170,21 @@ MUST use the same line-ending style as the file.
 #### Scenario: A CRLF ADR is parsed like an LF one
 
 - **GIVEN** an ADR saved with CRLF line endings by an editor on Windows
-- **WHEN** codev parses it
+- **WHEN** Compagnon parses it
 - **THEN** its `id`, `title` and `status` are the same as for the LF version
 - **AND** no `decision_missing_frontmatter` finding is reported
 
 #### Scenario: Accepting a CRLF decision keeps its sealed body
 
 - **GIVEN** a `proposed` ADR saved with CRLF line endings
-- **WHEN** the user runs `codev decision accept <id>`
+- **WHEN** the user runs `compagnon decision accept <id>`
 - **THEN** the frontmatter reads `status: accepted` with CRLF line endings
 - **AND** the body is byte for byte identical to the one before
-- **AND** `codev validate` reports no `decision_seal_mismatch`
+- **AND** `compagnon validate` reports no `decision_seal_mismatch`
 
-### Requirement: `codev decision promote` finds a decision written in any catalog language
+### Requirement: `compagnon decision promote` finds a decision written in any catalog language
 
-`codev decision promote <change> <title>` SHALL find the block of the
+`compagnon decision promote <change> <title>` SHALL find the block of the
 given title written with any catalog language's keywords — a
 `### Décision : <title>` block under a `## Décisions` section — and SHALL
 apply to it the same verbatim extraction and the same refusals as to a
@@ -1194,7 +1194,7 @@ apply to it the same verbatim extraction and the same refusals as to a
 
 - **GIVEN** a change `add-auth` whose `design.md` holds, under
   `## Décisions`, a `### Décision : Utiliser JWT` block
-- **WHEN** the user runs `codev decision promote add-auth "Utiliser JWT"`
+- **WHEN** the user runs `compagnon decision promote add-auth "Utiliser JWT"`
 - **THEN** a new ADR is created whose `## Decision` section carries the
   block's body verbatim
 
@@ -1202,36 +1202,36 @@ apply to it the same verbatim extraction and the same refusals as to a
 
 - **GIVEN** a `design.md` holding a `### Decision: Library` block and a
   `### Décision : Library` block
-- **WHEN** the user runs `codev decision promote <change> Library`
+- **WHEN** the user runs `compagnon decision promote <change> Library`
 - **THEN** the command fails with `ambiguous_decision_heading`
 
 ### Requirement: A seal file of a newer format is refused with a way out
 
-`_codev/decisions/seal.yaml` is written by codev, and its `version` is its
-format: a newer codev that adds a field or a value to it raises the
-`version`. Every command that reads `seal.yaml` — `codev validate`,
-`codev decision new`, `codev decision accept`, `codev decision seal` —
+`_compagnon/decisions/seal.yaml` is written by Compagnon, and its `version` is its
+format: a newer Compagnon that adds a field or a value to it raises the
+`version`. Every command that reads `seal.yaml` — `compagnon validate`,
+`compagnon decision new`, `compagnon decision accept`, `compagnon decision seal` —
 SHALL refuse a file whose `version` is greater than the one it reads, with
 exit code 1 and the code `seal_version_unsupported`, writing nothing. The
-message MUST name the version found and the version this codev reads,
-quote the project's `codev_version` when set, and point to
-`codev self-update`. A field the file's version does not define still
+message MUST name the version found and the version this Compagnon reads,
+quote the project's `compagnon_version` when set, and point to
+`compagnon self-update`. A field the file's version does not define still
 makes it unreadable, with the code `seal_invalid`: an unknown field in a
 seal file of a known version is a corruption, not a newer format.
 
-#### Scenario: A seal file from a newer codev
+#### Scenario: A seal file from a newer Compagnon
 
-- **GIVEN** a project whose `_codev/decisions/seal.yaml` holds `version: 2`
-- **WHEN** the user runs `codev validate --json`
+- **GIVEN** a project whose `_compagnon/decisions/seal.yaml` holds `version: 2`
+- **WHEN** the user runs `compagnon validate --json`
 - **THEN** the exit code is 1 and `status[0].code` is
   `seal_version_unsupported`
-- **AND** the message names `2`, `1` and `codev self-update`
+- **AND** the message names `2`, `1` and `compagnon self-update`
 
 #### Scenario: Nothing is sealed against a newer seal file
 
 - **GIVEN** a project whose `seal.yaml` holds `version: 2` and a local
   `proposed` ADR `0007`
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the command fails with `seal_version_unsupported`
 - **AND** the ADR and `seal.yaml` are unchanged
 
@@ -1239,8 +1239,8 @@ seal file of a known version is a corruption, not a newer format.
 
 - **GIVEN** a project whose `seal.yaml` holds `version: 2` and an accepted
   local ADR `0003`
-- **WHEN** the user runs `codev decision seal 0003`, or
-  `codev decision new "A choice" --status accepted`
+- **WHEN** the user runs `compagnon decision seal 0003`, or
+  `compagnon decision new "A choice" --status accepted`
 - **THEN** each command fails with `seal_version_unsupported`
 - **AND** no ADR is created and `seal.yaml` is unchanged
 
@@ -1248,5 +1248,5 @@ seal file of a known version is a corruption, not a newer format.
 
 - **GIVEN** a `seal.yaml` with `version: 1` whose entry holds the field
   `sealedBy`
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the command fails with `seal_invalid` and writes nothing

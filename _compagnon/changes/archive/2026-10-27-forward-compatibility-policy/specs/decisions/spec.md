@@ -14,9 +14,9 @@ decision: the decision is read from the fields it knows, and the field is
 reported as a finding of severity `warning` and code
 `decision_unknown_field`, at its line in the ADR's file. Its message MUST
 name the field, say that the decision may have been written by a newer
-codev, quote the project's `codev_version` when set, and point to
-`codev self-update`, or to correcting the field if it is a typo. Like any
-warning, it fails `codev validate --strict` and not `codev validate`. An
+compagnon, quote the project's `compagnon_version` when set, and point to
+`compagnon self-update`, or to correcting the field if it is a typo. Like any
+warning, it fails `compagnon validate --strict` and not `compagnon validate`. An
 inherited decision is read the same way, but its unknown fields are not
 reported: the source is read-only, and the inheriting project cannot fix
 them.
@@ -44,21 +44,21 @@ them.
 - **THEN** a finding with code `decision_missing_field` names the missing
   field
 
-#### Scenario: A frontmatter field this codev does not know
+#### Scenario: A frontmatter field this compagnon does not know
 
 - **GIVEN** an accepted, sealed ADR `0007` whose frontmatter holds
   `review_by: 2027-01-01` on line 6, and no other finding
-- **WHEN** the user runs `codev validate --json`
+- **WHEN** the user runs `compagnon validate --json`
 - **THEN** the `decisions` item holds a `warning` finding
   `decision_unknown_field` naming `review_by` at line 6 of the ADR's file,
-  and `codev self-update`
+  and `compagnon self-update`
 - **AND** the exit code is 0
-- **AND** `codev decision list --json` lists `0007` as `accepted`
+- **AND** `compagnon decision list --json` lists `0007` as `accepted`
 
 #### Scenario: Strict validation catches a misspelled field
 
 - **GIVEN** the same project
-- **WHEN** the user runs `codev validate --strict`
+- **WHEN** the user runs `compagnon validate --strict`
 - **THEN** the exit code is 1
 
 #### Scenario: An inherited decision's unknown field is not reported
@@ -66,24 +66,24 @@ them.
 - **GIVEN** a project inheriting from a local source whose accepted ADR
   `0100` holds the frontmatter field `review_by: 2027-01-01`, and no other
   finding
-- **WHEN** the user runs `codev validate --strict --json`
+- **WHEN** the user runs `compagnon validate --strict --json`
 - **THEN** no `decision_unknown_field` finding is reported and the exit
   code is 0
-- **AND** `codev decision list --json` lists `path:<source>/0100` as
+- **AND** `compagnon decision list --json` lists `path:<source>/0100` as
   `accepted`
 
 ### Requirement: `decision accept` accepts and seals a proposed decision
 
-`codev decision accept <id>` SHALL turn a local decision whose status is
+`compagnon decision accept <id>` SHALL turn a local decision whose status is
 `proposed` into an `accepted` decision and seal its body; it is the
 single command through which a decision created by `decision new`,
 `decision supersede`, `decision deviate` or `decision promote` takes
 effect. The operation MUST produce a single effect plan that rewrites
 the frontmatter `status` to `accepted` **and** writes the decision's
-entry in `_codev/decisions/seal.yaml`; if the plan cannot be computed,
+entry in `_compagnon/decisions/seal.yaml`; if the plan cannot be computed,
 nothing is written. The body of the ADR — everything after the
 frontmatter — MUST stay byte for byte identical, so the recorded hash is
-the hash of the text the user wrote. A frontmatter field codev does not
+the hash of the text the user wrote. A frontmatter field compagnon does not
 know MUST be kept, with its value as written, in every frontmatter the
 command rewrites.
 
@@ -99,7 +99,7 @@ The command MUST refuse, without writing anything:
   since inherited decisions are read-only;
 - a decision whose status is not `proposed`, with the stable code
   `decision_not_proposed`; for an `accepted` decision the message says
-  there is nothing to do and points to `codev decision supersede` to
+  there is nothing to do and points to `compagnon decision supersede` to
   replace it;
 - a decision one of whose predecessors cannot be superseded: a
   predecessor that is not indexed, with the stable code
@@ -118,18 +118,18 @@ array listing each predecessor marked superseded (its `id`,
 
 - **GIVEN** a project containing a local ADR `0007` with `status:
   proposed` whose body has been written, and no seal entry for `0007`
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the ADR now carries `status: accepted`
 - **AND** its body is identical to what it was before the command
 - **AND** `seal.yaml` carries an entry for `0007` whose `bodySha256`
   matches that body
-- **AND** `codev validate` reports neither `decision_seal_mismatch` nor
+- **AND** `compagnon validate` reports neither `decision_seal_mismatch` nor
   `decision_unsealed` for `0007`
 
 #### Scenario: JSON output of an acceptance
 
 - **GIVEN** the same project
-- **WHEN** the user runs `codev decision accept 0007 --json`
+- **WHEN** the user runs `compagnon decision accept 0007 --json`
 - **THEN** stdout carries a JSON document with `decision.id: "0007"`,
   `decision.status: "accepted"`, the `path` of the file, a `bodySha256`
   prefixed with `sha256:`, `superseded: []`, and `status: []`
@@ -138,8 +138,8 @@ array listing each predecessor marked superseded (its `id`,
 
 - **GIVEN** a project containing a sealed ADR `0003 accepted` and a
   `proposed` ADR `0007` with `supersedes: ["0003"]`, created by
-  `codev decision supersede 0003 "New choice"`
-- **WHEN** the user runs `codev decision accept 0007 --json`
+  `compagnon decision supersede 0003 "New choice"`
+- **WHEN** the user runs `compagnon decision accept 0007 --json`
 - **THEN** `0007` carries `status: accepted` and is sealed
 - **AND** the frontmatter of `0003` now carries `status: superseded`,
   its body is identical down to the character, and its seal entry is
@@ -148,15 +148,15 @@ array listing each predecessor marked superseded (its `id`,
   in effect
 - **AND** the JSON document carries `superseded: [{ id: "0003",
   qualifiedId: "project/0003", path: "…" }]`
-- **AND** `codev validate` reports no finding for `0003` nor `0007`
+- **AND** `compagnon validate` reports no finding for `0003` nor `0007`
 
 #### Scenario: Refusal when the predecessor is no longer accepted
 
 - **GIVEN** a project containing an ADR `0003 accepted` and two
   `proposed` ADRs `0007` and `0008`, both with `supersedes: ["0003"]`
-- **AND** the user has already run `codev decision accept 0007`, so
+- **AND** the user has already run `compagnon decision accept 0007`, so
   `0003` now carries `status: superseded`
-- **WHEN** the user runs `codev decision accept 0008`
+- **WHEN** the user runs `compagnon decision accept 0008`
 - **THEN** no write takes place: `0008` still carries `status:
   proposed` and `seal.yaml` is unchanged
 - **AND** the error names the stable code `predecessor_not_accepted`,
@@ -167,7 +167,7 @@ array listing each predecessor marked superseded (its `id`,
 - **GIVEN** a project inheriting from a source containing
   `path:~/shared/0100`, and a local `proposed` ADR `0007` written by hand
   with `supersedes: ["0100"]`, `0100` existing only in the source
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** no write takes place
 - **AND** the error names the stable code `cannot_supersede_inherited`
 
@@ -175,7 +175,7 @@ array listing each predecessor marked superseded (its `id`,
 
 - **GIVEN** a project inheriting from a source containing
   `path:~/shared/0100` with `status: proposed`
-- **WHEN** the user runs `codev decision accept path:~/shared/0100`
+- **WHEN** the user runs `compagnon decision accept path:~/shared/0100`
 - **THEN** no write takes place
 - **AND** the error names the stable code `cannot_accept_inherited`
 
@@ -183,35 +183,35 @@ array listing each predecessor marked superseded (its `id`,
 
 - **GIVEN** a project containing a local ADR `0003` with `status:
   accepted`
-- **WHEN** the user runs `codev decision accept 0003`
+- **WHEN** the user runs `compagnon decision accept 0003`
 - **THEN** neither the ADR nor `seal.yaml` is modified
 - **AND** the error names the stable code `decision_not_proposed` and
-  points to `codev decision supersede`
+  points to `compagnon decision supersede`
 
 #### Scenario: Refusal to accept a decision with another status
 
 - **GIVEN** a project containing a local ADR `0004` with `status:
   rejected`
-- **WHEN** the user runs `codev decision accept 0004`
+- **WHEN** the user runs `compagnon decision accept 0004`
 - **THEN** no write takes place
 - **AND** the error names the stable code `decision_not_proposed`
 
 #### Scenario: Status and seal are written together or not at all
 
 - **GIVEN** a project containing a local `proposed` ADR `0007`
-- **AND** a `_codev/decisions/seal.yaml` that cannot be read as a seal
+- **AND** a `_compagnon/decisions/seal.yaml` that cannot be read as a seal
   file
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the command fails
 - **AND** the ADR still carries `status: proposed`
 - **AND** `seal.yaml` is unchanged
 
-#### Scenario: Fields codev does not know survive the acceptance
+#### Scenario: Fields compagnon does not know survive the acceptance
 
 - **GIVEN** a local `proposed` ADR `0007` whose frontmatter holds
   `review_by: 2027-01-01`, and `supersedes: ["0003"]` where `0003` is an
   accepted ADR whose frontmatter holds `owner: platform-team`
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the frontmatter of `0007` carries `status: accepted` and still
   holds `review_by: 2027-01-01`
 - **AND** the frontmatter of `0003` carries `status: superseded` and still
@@ -221,31 +221,31 @@ array listing each predecessor marked superseded (its `id`,
 
 ### Requirement: A seal file of a newer format is refused with a way out
 
-`_codev/decisions/seal.yaml` is written by codev, and its `version` is its
-format: a newer codev that adds a field or a value to it raises the
-`version`. Every command that reads `seal.yaml` — `codev validate`,
-`codev decision new`, `codev decision accept`, `codev decision seal` —
+`_compagnon/decisions/seal.yaml` is written by compagnon, and its `version` is its
+format: a newer compagnon that adds a field or a value to it raises the
+`version`. Every command that reads `seal.yaml` — `compagnon validate`,
+`compagnon decision new`, `compagnon decision accept`, `compagnon decision seal` —
 SHALL refuse a file whose `version` is greater than the one it reads, with
 exit code 1 and the code `seal_version_unsupported`, writing nothing. The
-message MUST name the version found and the version this codev reads,
-quote the project's `codev_version` when set, and point to
-`codev self-update`. A field the file's version does not define still
+message MUST name the version found and the version this compagnon reads,
+quote the project's `compagnon_version` when set, and point to
+`compagnon self-update`. A field the file's version does not define still
 makes it unreadable, with the code `seal_invalid`: an unknown field in a
 seal file of a known version is a corruption, not a newer format.
 
-#### Scenario: A seal file from a newer codev
+#### Scenario: A seal file from a newer compagnon
 
-- **GIVEN** a project whose `_codev/decisions/seal.yaml` holds `version: 2`
-- **WHEN** the user runs `codev validate --json`
+- **GIVEN** a project whose `_compagnon/decisions/seal.yaml` holds `version: 2`
+- **WHEN** the user runs `compagnon validate --json`
 - **THEN** the exit code is 1 and `status[0].code` is
   `seal_version_unsupported`
-- **AND** the message names `2`, `1` and `codev self-update`
+- **AND** the message names `2`, `1` and `compagnon self-update`
 
 #### Scenario: Nothing is sealed against a newer seal file
 
 - **GIVEN** a project whose `seal.yaml` holds `version: 2` and a local
   `proposed` ADR `0007`
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the command fails with `seal_version_unsupported`
 - **AND** the ADR and `seal.yaml` are unchanged
 
@@ -253,8 +253,8 @@ seal file of a known version is a corruption, not a newer format.
 
 - **GIVEN** a project whose `seal.yaml` holds `version: 2` and an accepted
   local ADR `0003`
-- **WHEN** the user runs `codev decision seal 0003`, or
-  `codev decision new "A choice" --status accepted`
+- **WHEN** the user runs `compagnon decision seal 0003`, or
+  `compagnon decision new "A choice" --status accepted`
 - **THEN** each command fails with `seal_version_unsupported`
 - **AND** no ADR is created and `seal.yaml` is unchanged
 
@@ -262,5 +262,5 @@ seal file of a known version is a corruption, not a newer format.
 
 - **GIVEN** a `seal.yaml` with `version: 1` whose entry holds the field
   `sealedBy`
-- **WHEN** the user runs `codev decision accept 0007`
+- **WHEN** the user runs `compagnon decision accept 0007`
 - **THEN** the command fails with `seal_invalid` and writes nothing

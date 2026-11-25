@@ -1,11 +1,11 @@
-# Design: `/codev-update`
+# Design: `/compagnon-update`
 
 ## Context
 
 See `proposal.md` for the motivation. The pattern is the one already
 proven by the five existing skills: an entry in the `CATALOG` and a
 markdown file under `assets/workflows/`. The specific point is that
-the skill reads **and** writes under `_codev/changes/`, like `apply`
+the skill reads **and** writes under `_compagnon/changes/`, like `apply`
 — but without ever touching the project's code.
 
 ## Goals / Non-Goals
@@ -17,16 +17,16 @@ editing, nor a `--dry-run` mode, nor adding it to
 
 ## Decisions
 
-### Decision: `allowed-tools` = `Bash(codev:*), Read, Write, Edit, Glob, Grep`
+### Decision: `allowed-tools` = `Bash(compagnon:*), Read, Write, Edit, Glob, Grep`
 
 Three writing tools: `Write` to rewrite an artifact entirely, `Edit`
-for a targeted modification, and `Bash(codev:*)` to rerun
-`codev validate` as the final safeguard. No general `Bash` — the skill
+for a targeted modification, and `Bash(compagnon:*)` to rerun
+`compagnon validate` as the final safeguard. No general `Bash` — the skill
 never runs a verification command on the project side.
 
 **Comparison**:
 
-| Skill | `Bash(codev:*)` | Editing | General `Bash` |
+| Skill | `Bash(compagnon:*)` | Editing | General `Bash` |
 |---|---|---|---|
 | `propose` | ✓ | ✓ | ✗ |
 | `explore` | ✓ | ✗ | ✗ |
@@ -52,7 +52,7 @@ requires (the core does not touch the disk). The skill uses `Edit`
 for a targeted modification and `Write` for a full rewrite — a choice
 left to its judgment depending on the scope of the revision.
 
-**Rejected alternative**: a `codev update <artifact> <revision>`
+**Rejected alternative**: a `compagnon update <artifact> <revision>`
 command that would produce an editing plan. Useful someday, but it
 requires a smarter markdown parser than the one delivered by
 `parse-specs-and-deltas` (which locates blocks but does not replace
@@ -64,7 +64,7 @@ A `Write` on `proposal.md` that removes a capability leaves
 `specs/<capa>/spec.md` orphaned. The skill **detects** it (a simple
 walk of the `specs/` folders before and after), **reports** it to the
 user, and **proposes** the next step (delete the file or run a
-separate `/codev-update specs …`) — but **does not act** without
+separate `/compagnon-update specs …`) — but **does not act** without
 confirmation. Likewise when revising a `design.md` invalidates a task:
 the skill names the task and proposes the action; the user decides.
 
@@ -73,9 +73,9 @@ user did not explicitly ask for ends up producing what the user did
 not expect — a paternalistic pattern we have rejected since `sync`
 (which invites to archive but does not archive).
 
-### Decision: `codev validate` rerun at the end, systematically
+### Decision: `compagnon validate` rerun at the end, systematically
 
-After the last write, the skill runs `codev validate <change>` and
+After the last write, the skill runs `compagnon validate <change>` and
 displays the report as-is. It is the only automatic safeguard — it
 catches what the skill did not see.
 
@@ -84,7 +84,7 @@ room left for "I forgot". The cost of the command is negligible.
 
 ### Decision: the skill refuses an archived change, materially
 
-It lists `codev list` (which only shows active changes) and refuses
+It lists `compagnon list` (which only shows active changes) and refuses
 any name that does not appear there — even if it exists under
 `changes/archive/`. An archived change is **history**; rewriting it
 from a skill would compromise the trail that archiving is precisely
@@ -96,7 +96,7 @@ meant to preserve.
   and design without the skill noticing — especially if the change in
   meaning is subtle ("rephrase" vs "restrict"). → **Mitigation**: the
   skill reads the change's dependencies **first**, before writing, and
-  `codev validate` at the end of processing surfaces structural
+  `compagnon validate` at the end of processing surfaces structural
   defects. The real safety net remains the user reviewing the diff.
 - **A user could make an architecture decision drift through a design
   revision.** → **Accepted trade-off**: the design cites the decisions
@@ -113,5 +113,5 @@ meant to preserve.
 
 Not applicable — new skill. A project that already has
 `workflows: [propose, explore, apply, sync, archive]` in its
-`config.yaml` must add `update` to it and rerun `codev update` to
+`config.yaml` must add `update` to it and rerun `compagnon update` to
 install it.

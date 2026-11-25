@@ -11,7 +11,7 @@ activate it, under `on domain`. A project setting that turns an expert to
 #### Scenario: The experts in the doctor report
 
 - **GIVEN** a project with no `roles:` key
-- **WHEN** the user runs `codev doctor`
+- **WHEN** the user runs `compagnon doctor`
 - **THEN** `config.roles` is `ok` and its message names `security`
   (`security`) and `privacy` (`personal-data`) under `on domain`
 
@@ -19,6 +19,6 @@ activate it, under `on domain`. A project setting that turns an expert to
 
 - **GIVEN** a project whose configuration holds
   `roles: { security: always, ops: never }`
-- **WHEN** the user runs `codev doctor`
+- **WHEN** the user runs `compagnon doctor`
 - **THEN** the message of `config.roles` lists `security` among the active
   roles and `ops` among the disabled ones

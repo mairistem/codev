@@ -2,7 +2,7 @@
 
 ## Context
 
-The evaluation suite (crate `codev-evals`, `evals/`) scores a run into
+The evaluation suite (crate `compagnon-evals`, `evals/`) scores a run into
 `report.json` and `report.md` (`report::json`, `report::markdown`), and
 the committed baseline `evals/baseline/` holds the 40 observations, the
 `run.json` written when the run started, and both reports. The test
@@ -11,7 +11,7 @@ compares the bytes of both reports, so a change to the scoring cannot
 land without its baseline.
 
 The current baseline (2026-10-13, Claude Code 2.1.289, default model,
-codev 0.6.1, 40 cases, 15.18 USD) reads:
+compagnon 0.6.1, 40 cases, 15.18 USD) reads:
 
 | Role | Seeded/control | Found/expected | False positives | Evidence | Severity |
 |---|---|---|---|---|---|
@@ -31,18 +31,18 @@ validity is 1.00 wherever a finding was checked.
 
 The documentation is two mdBooks (`docs/en`, `docs/fr`) sharing the
 Mairistem theme (`docs/theme/mairistem.css`: tokens under `.light` and
-`.navy`, mdBook's class on `<html>`). `codev docs` embeds the chapters
-listed in each `SUMMARY.md` (`crates/codev-cli/build.rs`) and renders
+`.navy`, mdBook's class on `<html>`). `compagnon docs` embeds the chapters
+listed in each `SUMMARY.md` (`crates/compagnon-cli/build.rs`) and renders
 them with pulldown-cmark into one standalone page styled by
-`crates/codev-cli/assets/docs.css` (light, and dark through
+`crates/compagnon-cli/assets/docs.css` (light, and dark through
 `prefers-color-scheme`). Both renderers pass an HTML block through as it
 is, up to the first blank line, and process no markdown inside it.
 
 Decisions that constrain the approach: **0001** (functional core,
 imperative shell) — the page is computed by a pure function, the command
 only reads and writes; **0002** (the crate graph is the dependency rule)
-— the generator lives in `codev-evals`, which no crate depends on, and
-the `codev` binary keeps embedding plain markdown files without knowing
+— the generator lives in `compagnon-evals`, which no crate depends on, and
+the `compagnon` binary keeps embedding plain markdown files without knowing
 where they come from.
 
 ## Goals / Non-Goals
@@ -66,7 +66,7 @@ where they come from.
 
 ## Decisions
 
-### Decision: A pure page builder in `codev-evals`, a `docs` subcommand around it
+### Decision: A pure page builder in `compagnon-evals`, a `docs` subcommand around it
 
 New module `evals/src/reliability.rs`:
 
@@ -91,9 +91,9 @@ only once both are built, to `docs/en/src/reliability.md` and
 `docs/fr/src/reliability.md`. A missing or unreadable file exits with 2
 before anything is written.
 
-**Alternatives considered**: a `codev` subcommand (the binary must never
+**Alternatives considered**: a `compagnon` subcommand (the binary must never
 know about the evaluation suite, decision 0002); an mdBook preprocessor
-reading the JSON at build time (a second toolchain, and `codev docs`
+reading the JSON at build time (a second toolchain, and `compagnon docs`
 would need the same code in its `build.rs`); re-scoring the observations
 instead of reading `report.json` (the report is already checked against
 the scoring by `the_baseline_agrees_with_the_scoring`; reading it keeps
@@ -106,16 +106,16 @@ Test `the_reliability_pages_follow_the_baseline` (in
 `run.json`, builds both pages and compares them with the committed
 files, with a message naming the file and the command to run — the same
 mechanism as the report's. A new baseline therefore fails the tests until
-`cargo run -p codev-evals -- docs` is run.
+`cargo run -p compagnon-evals -- docs` is run.
 
 **Alternatives considered**: a `--check` flag run by CI (a second gate
 to wire; `cargo test` already runs everywhere); generating the pages in
-`codev-cli`'s `build.rs` (the binary would read evaluation files).
+`compagnon-cli`'s `build.rs` (the binary would read evaluation files).
 
 ### Decision: The page's sections and its honest sentences come from the data
 
 Chapter `reliability.md`, title "Reliability of the roles" /
-"Fiabilité des rôles", listed after "Roles" under "Using codev". It
+"Fiabilité des rôles", listed after "Roles" under "Using compagnon". It
 opens with an HTML comment saying it is generated and by which command.
 Sections, in order: what the bench is; what it is not; the run; at a
 glance (the figures, then the verdict); false positives per role (chart);
@@ -255,7 +255,7 @@ the theme's inks: muted `#5f767e` on white is 4.8:1, `#9cbac4` on
 **Alternatives considered**: HTML/CSS bars (responsive text for free,
 but no per-mark `<title>` and no single image with a description);
 an image file (no dark mode, no hover, a binary in the book); a style
-block inside the generated page (mdBook's theme class and `codev docs`'s
+block inside the generated page (mdBook's theme class and `compagnon docs`'s
 media query would both have to be guessed from the page; the theme files
 already own the tokens).
 
@@ -264,7 +264,7 @@ already own the tokens).
 Both `roles.md` link to the chapter at the end of "Measuring the roles".
 `CONTRIBUTING.md` and `CONTRIBUTING.fr.md` say, under "Changing a role",
 that recording the baseline again is followed by
-`cargo run -p codev-evals -- docs`, which the tests check. The landing
+`cargo run -p compagnon-evals -- docs`, which the tests check. The landing
 page's Roles section gains one link, "Measured, not assumed", next to
 "Read about roles": no figure is copied there, so it never goes stale.
 
@@ -284,12 +284,12 @@ landing page (hard-coded numbers that the tests would not check).
 | A role without seeded case or without checked evidence | Its recall or validity reads `—`, draws no mark and fails no threshold, as in the report. |
 | Every role within thresholds | No icon; the verdict says so. |
 | A role disabled by configuration, inherited sources, huge diffs, monorepos | Out of scope: the page reads a report, not a project. |
-| `codev docs` | Embeds the chapter through `SUMMARY.md`; the SVG passes through pulldown-cmark as an HTML block (test `the_reliability_chapter_renders_its_charts`). |
+| `compagnon docs` | Embeds the chapter through `SUMMARY.md`; the SVG passes through pulldown-cmark as an HTML block (test `the_reliability_chapter_renders_its_charts`). |
 
 ## Risks / Trade-offs
 
 - [A chart that looks right in one renderer breaks in the other] → the
-  figure holds no blank line and no markdown; a `codev-cli` test renders
+  figure holds no blank line and no markdown; a `compagnon-cli` test renders
   the embedded chapter and checks the `<svg` survives; both books are
   built and screenshot at 1440 px and 390 px, light and dark.
 - [French typography: a non-breaking space inside generated text could

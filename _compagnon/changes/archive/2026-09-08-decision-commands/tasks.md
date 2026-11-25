@@ -6,11 +6,11 @@
       (Context, Decision, Consequences, Rejected alternatives), plus a
       placeholder for the frontmatter in the form `{{FRONTMATTER}}` that
       `plan_new` will replace. Verified by
-      `codev_engine::decisions::actions::squelette_est_embarque`.
+      `compagnon_engine::decisions::actions::squelette_est_embarque`.
 
 ## 2. `plan_new` — creation on the engine side
 
-- [x] 2.1 Create `codev-engine::decisions::actions` with `pub fn
+- [x] 2.1 Create `compagnon-engine::decisions::actions` with `pub fn
       plan_new(index: &DecisionIndex, title: &str, status: DecisionStatus,
       today: &str, layout: &Layout) -> Result<CreatePlan, ActionError>`
       which returns `CreatePlan { plan: Plan, new_id: String, new_path:
@@ -29,7 +29,7 @@
       `empty_title`), no plan produced. Verified by
       `actions::titre_vide_refuse`.
 - [x] 2.5 The plan produces a single write, `WriteMode::CreateOnly` on
-      `_codev/decisions/<id>-<slug>.md`. If the file already exists, the
+      `_compagnon/decisions/<id>-<slug>.md`. If the file already exists, the
       exec will fail with the port error `already_exists` — handled by the
       existing `apply::execute`. Verified by
       `actions::plan_new_est_create_only`.
@@ -81,20 +81,20 @@
 - [x] 5.1 Add the `Command::Decision` group with subcommands
       `New`, `List`, `Show`, `Supersede`. Verified by
       `cli_decision::sous_commandes_declarees`.
-- [x] 5.2 `codev decision new <title> [--status <s>]`: builds
+- [x] 5.2 `compagnon decision new <title> [--status <s>]`: builds
       `plan_new`, executes, returns `DecisionCreatedV1` or its human
       equivalent. Exit 0 on success. Verified by
       `cli_decision::new_dans_projet_vide_cree_0001` (via the in-memory
       harness).
-- [x] 5.3 `codev decision list [--json]`: reads the index and returns one
+- [x] 5.3 `compagnon decision list [--json]`: reads the index and returns one
       `DecisionV1` per entry. Verified by
       `cli_decision::list_rend_les_decisions_avec_leur_effet`.
-- [x] 5.4 `codev decision show <id> [--json]`: resolves a short or
+- [x] 5.4 `compagnon decision show <id> [--json]`: resolves a short or
       qualified `id`, reads the file, returns its content (JSON =
       `DecisionV1`, human = formatted frontmatter + raw body). Ambiguous →
       `ambiguous_decision_id`. Verified by
       `cli_decision::show_ambigu_liste_les_qualifieurs`.
-- [x] 5.5 `codev decision supersede <old-id> <new-title> [--status
+- [x] 5.5 `compagnon decision supersede <old-id> <new-title> [--status
       <s>]`: builds `plan_supersede`, executes. Verified by
       `cli_decision::supersede_reecrit_lancien_et_cree_le_nouveau`.
 
@@ -113,14 +113,14 @@
 
 ## 7. Dogfooding and integration
 
-- [x] 7.1 Run `codev decision new "A first test of the commands"`
-      in this repository, check that `_codev/decisions/0007-a-first-test-…md`
+- [x] 7.1 Run `compagnon decision new "A first test of the commands"`
+      in this repository, check that `_compagnon/decisions/0007-a-first-test-…md`
       is created with the right frontmatter. **Then delete it** — this
       decision is a test artifact, not a real architecture choice.
-- [x] 7.2 `codev decision list` on this repository shows the six existing
+- [x] 7.2 `compagnon decision list` on this repository shows the six existing
       ADRs with the `•` marker for each.
-- [x] 7.3 `codev decision show 0001` shows ADR 0001 in full.
+- [x] 7.3 `compagnon decision show 0001` shows ADR 0001 in full.
 - [x] 7.4 `cargo test --workspace` stays green and counts at least 20
       additional tests (plans + contract + rendering + CLI).
 - [x] 7.5 `cargo clippy --workspace --all-targets` stays warning-free.
-- [x] 7.6 `codev validate --all` stays green.
+- [x] 7.6 `compagnon validate --all` stays green.

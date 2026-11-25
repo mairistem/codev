@@ -1,14 +1,14 @@
-# Design: Evaluate the implementation of `/codev-apply`
+# Design: Evaluate the implementation of `/compagnon-apply`
 
 ## Context
 
-codev-evals has two families of cases. Review cases build a small
+compagnon-evals has two families of cases. Review cases build a small
 fixture from `base/` and `change/`. Planning (`plan.write`) and update
 (`plan.update`) cases replay this repository's history:
 `Step::replays_history` sends them to `setup_plan`, which extracts the
 tree at `ref` with `git archive`, lays an update case's `change/` into
-`_codev/changes/<change>/`, commits, installs the skills of the codev
-under test with `codev update --force`, and commits again. `run_case`
+`_compagnon/changes/<change>/`, commits, installs the skills of the compagnon
+under test with `compagnon update --force`, and commits again. `run_case`
 then runs Claude Code in the sandbox of `SANDBOX_SETTINGS`. Each case's
 directory and the temporary directory are writable; the only reachable
 host is the Anthropic API. Scoring is pure: `update.rs` turns an
@@ -24,7 +24,7 @@ And it takes many times longer than a planning run.
 
 **Goals**
 
-- A measure of `/codev-apply` precise enough to compare two models, or
+- A measure of `/compagnon-apply` precise enough to compare two models, or
   two versions of the skill, with `compare`.
 - Checks a reader can redo by hand on the run's directory.
 
@@ -55,19 +55,19 @@ run stop on a blocker, whatever the model, and the measure would show
 the environment instead of the implementation. One example is
 `forward-compatible-config`'s "both books building", which needs
 `mdbook`. Such a verification is reworded in the case's `change/` into
-one the sandbox can run, such as `codev validate` or a test, and the
+one the sandbox can run, such as `compagnon validate` or a test, and the
 case's `summary` says so. The smoke run shows whether one was missed.
 
 **Alternatives considered**: writing synthetic changes on a small
 fixture project, as the review cases do. Rejected: the measure must
-reflect the work `/codev-apply` does on a real codebase, with its specs,
+reflect the work `/compagnon-apply` does on a real codebase, with its specs,
 conventions and tests. A change small enough for a synthetic fixture
 would not separate two models.
 
 ### Decision: Quality is judged by a hidden black-box script against the built binary
 
 Each case holds an `acceptance.sh`, written from the scenarios of the
-change's delta specs. It drives `$CODEV` in an empty directory, as a user
+change's delta specs. It drives `$COMPAGNON` in an empty directory, as a user
 would, and prints `ok <name>` / `not ok <name>`. The fixture does not
 hold the script: the case's own folder, `evals/cases/<case id>/`, is
 absent at `ref`, and the loader refuses a case whose `ref` holds it. The
@@ -79,7 +79,7 @@ from fails a check of its own. That is detection, not prevention. It is
 enough for an evaluation the maintainers run on their own cases, where
 cheating can only come from the model, and the record shows it.
 
-`codev-evals calibrate` proves the script on the real change: every
+`compagnon-evals calibrate` proves the script on the real change: every
 assertion passes on `merged` and at least one fails on `ref`. It also
 proves that the project's checks pass on `merged` with the installed
 toolchain. A newer Clippy can reject an older commit, as `7ddb31e`
@@ -124,14 +124,14 @@ each one starts with a cleared environment that keeps only `PATH`,
 `HOME`, the `RUSTUP_*` and `CARGO_*` variables the runner sets, `TMPDIR`
 and `LANG`. The API key and any other secret of the operator's shell
 are therefore out of reach. The existing `tool_command` only removes the
-API key, which is enough for `git` and `codev` but not for code an agent
+API key, which is enough for `git` and `compagnon` but not for code an agent
 wrote.
 
 Each command runs in its own process group, as `run_claude` does, under
 1,200 seconds. A test the agent wrote that never ends then fails its
 check instead of blocking a job forever.
 
-The runner's own `git` and `codev` calls (`tool_command`) get the same
+The runner's own `git` and `compagnon` calls (`tool_command`) get the same
 cleared environment, at every step. Before calling `git` on an
 implementation fixture, the runner compares what git reads under `.git/`
 — `config`, `config.worktree`, `commondir` and `info/` — with what it
@@ -151,9 +151,9 @@ an attribute file changes what git runs without touching it.
 The agent's own report of a passing test is not a measure. After the
 run, the runner runs `cargo fmt --all --check`, `cargo clippy
 --workspace --all-targets --offline -- -D warnings`, `cargo test
---workspace --offline` and `cargo build -p codev-cli --offline` with the
+--workspace --offline` and `cargo build -p compagnon-cli --offline` with the
 same Cargo home. It records each outcome with the last 40 lines of its
-output, then runs `acceptance.sh` against `target/debug/codev`. A check
+output, then runs `acceptance.sh` against `target/debug/compagnon`. A check
 that cannot run, such as a build that fails, fails its own check and
 every acceptance assertion; the run is still scored. Only a failure of
 Claude Code itself, a timeout or the budget make the run an error,
@@ -164,18 +164,18 @@ results. Rejected for the reason above.
 
 ### Decision: The run carries the whole skill, its review included, in the fixture's own review mode
 
-The prompt asks for the whole of `/codev-apply`: the tasks, then the
+The prompt asks for the whole of `/compagnon-apply`: the tasks, then the
 `code.review` step. The run is granted the tools the installed skill's
 `allowed-tools` grants a user who invokes it, the shell and the
 sub-agent tool included: the agent reads the skill file instead of
-invoking it, and the review cases' grant, `codev` alone, would leave
+invoking it, and the review cases' grant, `compagnon` alone, would leave
 every `cargo` command waiting for an approval no one gives, as the
 first smoke run showed. It must ask no question and must not archive or
 sync. The review is part of what a developer pays for and of what may
 change with the model. Its mode is the one the fixture's
-`_codev/config.yaml` holds at `ref`, so a case keeps the review of its
+`_compagnon/config.yaml` holds at `ref`, so a case keeps the review of its
 own time. No role has a model by default (decision 0011), so the
-session's model, chosen with `CODEV_EVAL_MODEL`, does all the work.
+session's model, chosen with `COMPAGNON_EVAL_MODEL`, does all the work.
 That is what comparing Opus and Sonnet needs.
 
 **Alternatives considered**: stopping before `code.review`. Rejected:
@@ -188,7 +188,7 @@ A planning run uses about 2 USD and 10 minutes out of its 6 USD and
 1,800 seconds. Implementing the chosen changes means writing about a
 thousand lines, and several builds and test runs. The defaults leave
 room for the slowest model. A run that hits them is an error, as at
-every step. `CODEV_EVAL_BUDGET_USD` and `CODEV_EVAL_TIMEOUT_SECS` still
+every step. `COMPAGNON_EVAL_BUDGET_USD` and `COMPAGNON_EVAL_TIMEOUT_SECS` still
 override them.
 
 **Alternatives considered**: no budget. Rejected: one stuck run could

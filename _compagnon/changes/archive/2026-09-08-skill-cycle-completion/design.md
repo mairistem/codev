@@ -1,4 +1,4 @@
-# Design: `/codev-sync` and `/codev-archive`
+# Design: `/compagnon-sync` and `/compagnon-archive`
 
 ## Context
 
@@ -6,7 +6,7 @@ See `proposal.md` for the motivation. The pattern is the one already proven
 by `propose`, `explore` and `apply`: two pairs {entry in `CATALOG`,
 markdown file under `assets/workflows/`}. The difference in nature from
 `apply` is that these skills write nothing themselves — they delegate the
-entire effect to the codev binary, whose "plan then execute" pattern,
+entire effect to the compagnon binary, whose "plan then execute" pattern,
 framed by decision
 [0001](../../decisions/0001-functional-core-imperative-shell.md),
 guarantees atomicity on the disk side.
@@ -25,9 +25,9 @@ skill, nor parsing the JSON output of commands.
 
 ## Decisions
 
-### Decision: `allowed-tools` = `Bash(codev:*), Read`
+### Decision: `allowed-tools` = `Bash(compagnon:*), Read`
 
-The only effect of these skills is a `codev sync` or `codev archive` call —
+The only effect of these skills is a `compagnon sync` or `compagnon archive` call —
 the rest is just text displayed to the user. No `Write`, no `Edit`, no
 general `Bash`. `Read` remains useful for answering a context question
 from the user ("what does `tasks.md` say?"), without ever writing.
@@ -44,7 +44,7 @@ before.
 
 ### Decision: the skill reads the JSON, not the human output
 
-`codev sync` and `codev archive` both produce a structured `--json`, a
+`compagnon sync` and `compagnon archive` both produce a structured `--json`, a
 versioned, snapshot-tested contract (`SyncReportV1`, `ArchiveReportV1`).
 The skill invokes it and reads that shape rather than the human text.
 
@@ -58,7 +58,7 @@ The skill invokes it and reads that shape rather than the human text.
    patchy block of text.
 3. The stable code in `status[0].code` is directly testable on the agent
    side — `validation_failed` triggers exactly the "point to
-   `codev validate`" branch, without having to grep the human message.
+   `compagnon validate`" branch, without having to grep the human message.
 
 **Rejected alternative**: read the human text. Appealing for its loose
 coupling, but fragile in practice: any well-meant rewording would make the
@@ -71,14 +71,14 @@ version — which is exactly what versioning guarantees.
 
 ### Decision: `archive` explicitly points to `validate` on refusal
 
-When `codev archive` refuses because of the validate pre-flight, the skill
+When `compagnon archive` refuses because of the validate pre-flight, the skill
 does not retry, does not guess, does not "fix". It says exactly:
-"The change has validation errors; run `codev validate <name>` to see the
+"The change has validation errors; run `compagnon validate <name>` to see the
 details."
 
-This is consistent with the design of `codev archive` itself, which
+This is consistent with the design of `compagnon archive` itself, which
 already refuses to duplicate rule messages. The skill carries on this
-division of labor: `codev archive` handles the action, `codev validate`
+division of labor: `compagnon archive` handles the action, `compagnon validate`
 explains.
 
 ### Decision: `sync` ends with a non-directive invitation to archive
@@ -92,7 +92,7 @@ It **suggests nothing** when the merge is a no-op (all `unchanged`) —
 there is then nothing new to archive beyond what already was.
 
 **Rationale**: archiving is the natural step after a sync that modified
-the main specs, and recalling that `/codev-archive` exists saves the user
+the main specs, and recalling that `/compagnon-archive` exists saves the user
 from having to remember the next verb on their own. The phrasing
 "if you want" removes the paternalism — it is a reminder, not an order.
 
@@ -103,9 +103,9 @@ decision.
 
 ## Risks / Trade-offs
 
-- **A user could invoke `/codev-archive` without having read the result of
-  their `/codev-apply`**. → **Accepted trade-off**: the `validate`
-  pre-flight built into `codev archive` reports the errors, and the refusal
+- **A user could invoke `/compagnon-archive` without having read the result of
+  their `/compagnon-apply`**. → **Accepted trade-off**: the `validate`
+  pre-flight built into `compagnon archive` reports the errors, and the refusal
   to archive interrupts the process. A blind archiving that fails is safer
   than an archiving that would go through silently.
 - **Two active changes declaring `skills` as a "new capability"** —
@@ -117,4 +117,4 @@ decision.
 
 Not applicable — two new skills. An existing project that already has
 `workflows: [propose, explore, apply]` must add `- sync` and `- archive`,
-then rerun `codev update`.
+then rerun `compagnon update`.

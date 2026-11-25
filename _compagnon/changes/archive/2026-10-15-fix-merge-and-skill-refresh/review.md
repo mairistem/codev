@@ -13,7 +13,7 @@ Mode: isolated.
 ```yaml
 severity: medium
 confidence: high
-location: "specs/skills/spec.md#Requirement: `codev update` regenerates the skills of the configured workflows"
+location: "specs/skills/spec.md#Requirement: `compagnon update` regenerates the skills of the configured workflows"
 evidence: |
   - a skill whose content no longer matches its checksum is edited by hand
     and is preserved, unless `--force` is given, in which case it is
@@ -34,10 +34,10 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "specs/skills/spec.md#Requirement: `codev update` regenerates the skills of the configured workflows"
+location: "specs/skills/spec.md#Requirement: `compagnon update` regenerates the skills of the configured workflows"
 evidence: |
-  - a skill without a checksum, rendered by an earlier codev, is rewritten
-    when it is stamped with another codev version and preserved otherwise,
+  - a skill without a checksum, rendered by an earlier compagnon, is rewritten
+    when it is stamped with another compagnon version and preserved otherwise,
     as edited by hand.
 recommendation: "Add the review-mode exception to the legacy rule and to task 2.1, comparing without the checksum line."
 history:
@@ -55,9 +55,9 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "specs/skills/spec.md#Requirement: `codev update` regenerates the skills of the configured workflows"
+location: "specs/skills/spec.md#Requirement: `compagnon update` regenerates the skills of the configured workflows"
 evidence: |
-  - **GIVEN** a project whose `codev-apply` skill was rendered by a build
+  - **GIVEN** a project whose `compagnon-apply` skill was rendered by a build
     of the same version whose skill text differed, untouched since
 recommendation: "Say in that GIVEN that the skill carries a checksum line matching its content."
 history:
@@ -91,7 +91,7 @@ history:
 
 ### migration
 
-#### R-migration-1 Specs already cut by earlier codev archives get no path: nothing tells users, and a re-sync does not repair them
+#### R-migration-1 Specs already cut by earlier compagnon archives get no path: nothing tells users, and a re-sync does not repair them
 
 ```yaml
 severity: medium
@@ -99,7 +99,7 @@ confidence: high
 location: "proposal.md#Release note"
 evidence: |
   - Fixed: Archiving a change that modifies a spec's last requirement and adds requirements no longer cuts that requirement in two: the added ones are written after it.
-recommendation: "Add a release-note item and a line in the docs for existing projects: earlier codev versions could cut a spec's last requirement when one delta modified it and added requirements, `codev validate` does not detect it, re-syncing does not repair it; check each spec archived from such a delta and repair it by hand or with a new MODIFIED delta."
+recommendation: "Add a release-note item and a line in the docs for existing projects: earlier compagnon versions could cut a spec's last requirement when one delta modified it and added requirements, `compagnon validate` does not detect it, re-syncing does not repair it; check each spec archived from such a delta and repair it by hand or with a new MODIFIED delta."
 history:
   - status: open
     by: migration
@@ -117,8 +117,8 @@ severity: low
 confidence: high
 location: "tasks.md#3. Documentation"
 evidence: |
-  in both `reference/cli.md`, say that a skill codev rendered is refreshed whatever its version and only a skill whose content no longer matches its checksum is preserved
-recommendation: "Have the docs state the transitional rule for unchecksummed skills of the running version and the one-time `codev update --force`, and repeat it in the release note."
+  in both `reference/cli.md`, say that a skill compagnon rendered is refreshed whatever its version and only a skill whose content no longer matches its checksum is preserved
+recommendation: "Have the docs state the transitional rule for unchecksummed skills of the running version and the one-time `compagnon update --force`, and repeat it in the release note."
 history:
   - status: open
     by: migration
@@ -132,25 +132,25 @@ history:
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
+Summarized: crates/compagnon-agents/src/claude.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
 Summarized: docs/en/src/reference/cli.md — over the material budget; its diff fit in two hundred lines and was returned verbatim.
 Summarized: docs/fr/src/reference/cli.md — over the material budget; its diff fit in two hundred lines and was returned verbatim.
 
 ### migration
 
-#### R-migration-3 The one-time `codev update --force` step discards the user's real hand edits in skills without a checksum, and the docs do not warn about it
+#### R-migration-3 The one-time `compagnon update --force` step discards the user's real hand edits in skills without a checksum, and the docs do not warn about it
 
 ```yaml
 severity: low
 confidence: low
 location: "docs/en/src/reference/cli.md:183-188"
 evidence: |
-  hashes to its `checksum` — codev's rendering, from an earlier build or for
+  hashes to its `checksum` — compagnon's rendering, from an earlier build or for
   the other review mode — and preserves one that no longer does, edited by
   hand, unless you pass `--force`. A skill without a checksum, rendered
   before checksums existed, is preserved when it carries this version's
   stamp and differs from the rendering by more than the review mode: run
-  `codev update --force` once to bring such skills under the checksum. A preserved skill is
+  `compagnon update --force` once to bring such skills under the checksum. A preserved skill is
 recommendation: "Say wherever the one-time step appears, and in the release note, that `--force` also overwrites real hand edits: check `git diff` first and apply them again after."
 history:
   - status: open
@@ -169,12 +169,12 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-agents/src/claude.rs:235-260"
+location: "crates/compagnon-agents/src/claude.rs:235-260"
 evidence: |
               // Same stamped version, different content: someone edited the
               // file by hand. Overwriting it would lose their work without
               // warning; report it and move on. A skill rendered by this
-              // version for the other review mode is codev's own: the mode
+              // version for the other review mode is compagnon's own: the mode
               // changed, regenerate it.
               let edited_by_hand = !force
                   && fs.exists(&path)
@@ -182,12 +182,12 @@ evidence: |
                       current != desired
                           && stamped_version(&current).as_deref() == Some(version)
                           && match matches_its_checksum(&current) {
-                              // Rendered by codev, by an earlier build of this
+                              // Rendered by compagnon, by an earlier build of this
                               // version or for the other review mode.
                               Some(true) => false,
                               Some(false) => true,
                               // Rendered before checksums: only a difference
-                              // of review mode is codev's own.
+                              // of review mode is compagnon's own.
                               None => {
                                   current
                                       != without_checksum(&Self::render(
@@ -203,7 +203,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs: `is_hand_edited` with early returns and a comment stating the checksum rule; `plan_skills` calls it"
+    ref: "crates/compagnon-agents/src/claude.rs: `is_hand_edited` with early returns and a comment stating the checksum rule; `plan_skills` calls it"
   - status: fixed
     by: newcomer
 ```
@@ -213,7 +213,7 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-agents/src/claude.rs:631-637"
+location: "crates/compagnon-agents/src/claude.rs:631-637"
 evidence: |
       #[test]
       fn a_hand_edit_survives_no_upgrade() {
@@ -238,7 +238,7 @@ history:
 ```yaml
 severity: low
 confidence: low
-location: "crates/codev-agents/src/claude.rs:607-617"
+location: "crates/compagnon-agents/src/claude.rs:607-617"
 evidence: |
       #[test]
       fn a_skill_without_checksum_keeps_the_version_rule() {
@@ -267,7 +267,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:551-560"
+location: "crates/compagnon-agents/src/claude.rs:551-560"
 evidence: |
       fn rendered_by_another_build(rendered: &str, body_edit: &str) -> String {
           let unsealed = format!("{}{body_edit}", without_checksum(rendered));
@@ -295,7 +295,7 @@ history:
 ```yaml
 severity: low
 confidence: low
-location: "crates/codev-agents/src/claude.rs:398-410"
+location: "crates/compagnon-agents/src/claude.rs:398-410"
 evidence: |
   fn without_checksum(contents: &str) -> String {
       let mut out = String::with_capacity(contents.len());
@@ -321,14 +321,14 @@ history:
     by: newcomer
 ```
 
-#### R-newcomer-6 The FAQ says "up to codev 0.6.1" while the fixed build is itself 0.6.1
+#### R-newcomer-6 The FAQ says "up to compagnon 0.6.1" while the fixed build is itself 0.6.1
 
 ```yaml
 severity: low
 confidence: low
 location: "docs/en/src/faq.md:163-164"
 evidence: |
-  Up to codev 0.6.1, archiving a change that both modified the last
+  Up to compagnon 0.6.1, archiving a change that both modified the last
   requirement of a spec and added requirements could write the added ones in
 recommendation: "Say which builds are affected without naming a release that does not exist yet; same in French."
 history:
@@ -336,7 +336,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "the FAQ says codev 0.6.1 and earlier, builds made before this fix, in both languages"
+    ref: "the FAQ says compagnon 0.6.1 and earlier, builds made before this fix, in both languages"
   - status: fixed
     by: newcomer
 ```
@@ -349,8 +349,8 @@ confidence: high
 location: "docs/en/src/reference/file-formats.md:477-480"
 evidence: |
   `metadata.checksum` is the SHA-256 of the whole skill without that line.
-  With `metadata.version`, it is how `codev update` tells codev's renderings
-  from your edits. `codev update` rewrites a skill stamped with another version; among the
+  With `metadata.version`, it is how `compagnon update` tells compagnon's renderings
+  from your edits. `compagnon update` rewrites a skill stamped with another version; among the
   skills stamped with its own version, it rewrites one whose content still
 recommendation: "Rewrap the paragraph to the chapter's width, in both languages."
 history:

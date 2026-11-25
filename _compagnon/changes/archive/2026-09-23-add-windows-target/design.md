@@ -52,7 +52,7 @@ Microsoft headers/libs; no additional installation.
 Symmetry with `install.sh`, which never writes to
 `.zshrc`/`.bashrc`. Automatically modifying the user PATH with
 `setx` or `[Environment]::SetEnvironmentVariable` is **irreversible
-in practice** for the user — if they uninstall codev, the entry
+in practice** for the user — if they uninstall compagnon, the entry
 stays in their registry.
 
 The script prints the exact command to type. That is two more lines
@@ -69,7 +69,7 @@ Alternative: `Set-ExecutionPolicy Bypass -Scope Process -Force ; ...`.
 Not needed — a script piped from stdin runs without any
 `Set-ExecutionPolicy` restriction.
 
-### Decision: destination `$env:LOCALAPPDATA\Programs\codev\`
+### Decision: destination `$env:LOCALAPPDATA\Programs\compagnon\`
 
 `$env:LOCALAPPDATA` is the user's local data folder
 (`C:\Users\<user>\AppData\Local\` typically). `Programs\` in it hosts
@@ -106,9 +106,9 @@ current line `shasum -a 256 *.tar.gz > SHA256SUMS` becomes
 - **Antivirus blocking the downloaded binary** — Windows Defender
   can be overzealous about an `.exe` downloaded and run from
   `%LOCALAPPDATA%`. Documented in the FAQ: "if blocked, mark
-  `codev.exe` as excluded, or sign later."
+  `compagnon.exe` as excluded, or sign later."
 - **Windows code signing (Authenticode)** — not covered in V1. A
-  user who runs `codev.exe` will see an "unknown publisher" warning.
+  user who runs `compagnon.exe` will see an "unknown publisher" warning.
   Can be deferred until requested.
 
 ## Migration Plan
@@ -118,5 +118,5 @@ Windows user who installed via `cargo install` can migrate in one
 command:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```

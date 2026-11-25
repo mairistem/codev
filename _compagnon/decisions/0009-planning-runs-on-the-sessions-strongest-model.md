@@ -7,7 +7,7 @@ date: 2026-10-20
 
 ## Context
 
-The planning step of `/codev-propose` decides which existing requirements
+The planning step of `/compagnon-propose` decides which existing requirements
 a change modifies, which it adds, and which decisions it follows. Measured
 on the evaluation suite (25 planning cases, three repetitions each, on
 2026-10-20), the same skills on Sonnet instead of Opus cost 59 % less
@@ -18,7 +18,7 @@ before `spec-search`.
 
 ## Decision
 
-`/codev-propose` sets no model of its own: planning runs on the session's
+`/compagnon-propose` sets no model of its own: planning runs on the session's
 model, which this project keeps on its strongest one (Opus). A change
 that moves planning to another model is measured on `plan.write` first,
 as decision 0008 requires, and must keep the primary recall within the

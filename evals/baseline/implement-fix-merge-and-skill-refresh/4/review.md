@@ -1,17 +1,17 @@
 # Review record: fix-merge-and-skill-refresh
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — the material exceeds the size limit.
+Summarized: crates/compagnon-agents/src/claude.rs — the material exceeds the size limit.
 Summarized: docs/en/src/reference/cli.md — the material exceeds the size limit.
 Summarized: docs/fr/src/reference/cli.md — the material exceeds the size limit.
 
 ### migration
 
-#### R-migration-1 A change synced with an earlier codev and archived after the upgrade keeps the cut text
+#### R-migration-1 A change synced with an earlier compagnon and archived after the upgrade keeps the cut text
 
 ```yaml
 severity: low
@@ -20,11 +20,11 @@ location: "docs/en/src/faq.md:178-182"
 evidence: |
   To find out whether you are affected, look at the diff of the archive of each
   change that both modified a spec's last requirement and added requirements to
-  that spec (`git log -p -- _codev/specs/`). `codev validate` does not detect
+  that spec (`git log -p -- _compagnon/specs/`). `compagnon validate` does not detect
   it — the cut text is still valid Markdown — and syncing the change again does
   not repair it: its requirements are already in the spec.
 recommendation: >-
-  A change synced with codev 0.6.1 or earlier, not yet archived, whose delta
+  A change synced with compagnon 0.6.1 or earlier, not yet archived, whose delta
   modifies a spec's last requirement and adds requirements, already cut the
   spec. Archiving it after the upgrade replaces the modified requirement
   whole, but skips the ADDED one whose name already exists
@@ -34,7 +34,7 @@ recommendation: >-
   synced but not yet archived, and say to check, after archiving, that the
   added requirement holds no text of the one before it. The third
   release-note item could say the same (the proposal is a planning
-  artifact: `/codev-update`).
+  artifact: `/compagnon-update`).
 history:
   - status: open
     by: migration
@@ -52,7 +52,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:259-265"
+location: "crates/compagnon-agents/src/claude.rs:259-265"
 evidence: |
       fn edited_by_hand(&self, workflow: &Workflow, version: &str, current: &str) -> bool {
           let content = without_checksum(current);
@@ -67,14 +67,14 @@ recommendation: >-
   the caller checked the version and the difference from the rendering. Give
   it a name that states that precondition (`same_version_skill_was_edited`),
   and write the `None` branch as `!…any(|ctx| content == …)` with a comment:
-  a skill without a checksum is codev's when it matches its rendering in
+  a skill without a checksum is compagnon's when it matches its rendering in
   either review mode.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs: renamed same_version_skill_was_edited, its None branch written with any and a comment"
+    ref: "crates/compagnon-agents/src/claude.rs: renamed same_version_skill_was_edited, its None branch written with any and a comment"
   - status: fixed
     by: newcomer
 ```
@@ -84,7 +84,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:400-404"
+location: "crates/compagnon-agents/src/claude.rs:400-404"
 evidence: |
       let mut lines = contents.split_inclusive('\n');
       let mut start = lines.next().map_or(0, str::len);
@@ -101,7 +101,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs: checksum_line names the opening line and says why it is skipped"
+    ref: "crates/compagnon-agents/src/claude.rs: checksum_line names the opening line and says why it is skipped"
   - status: fixed
     by: newcomer
 ```
@@ -111,7 +111,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:390-392"
+location: "crates/compagnon-agents/src/claude.rs:390-392"
 evidence: |
   /// The frontmatter key, under `metadata`, of a skill's checksum: the
   /// SHA-256 of the whole skill without that line.
@@ -125,7 +125,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs: CHECKSUM_KEY renamed CHECKSUM_PREFIX, its comment says it holds the colon"
+    ref: "crates/compagnon-agents/src/claude.rs: CHECKSUM_KEY renamed CHECKSUM_PREFIX, its comment says it holds the colon"
   - status: fixed
     by: newcomer
 ```

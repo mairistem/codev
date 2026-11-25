@@ -3,7 +3,7 @@
 ## 1. Project config — new `mcp:` field
 
 - [x] 1.1 Add the `McpConfig` struct in
-      `codev-engine::config`:
+      `compagnon-engine::config`:
       ```rust
       #[derive(Debug, Clone, Default, Deserialize)]
       #[serde(deny_unknown_fields)]
@@ -23,7 +23,7 @@
 ## 2. Skill rendering — placeholder + substitution
 
 - [x] 2.1 Add `pub struct RenderCtx { pub jira_mcp_tool:
-      Option<String> }` in `codev-agents::claude` (or a dedicated
+      Option<String> }` in `compagnon-agents::claude` (or a dedicated
       module if cleaner).
 - [x] 2.2 Extend `ClaudeCode::render` to accept a `&RenderCtx`
       argument. Signature before:
@@ -44,8 +44,8 @@
 
 ## 3. CATALOG — uses the placeholder
 
-- [x] 3.1 In `codev-agents::workflows::CATALOG`, `propose` entry:
-      `allowed_tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep, {{JIRA_MCP_TOOL}}"`.
+- [x] 3.1 In `compagnon-agents::workflows::CATALOG`, `propose` entry:
+      `allowed_tools: "Bash(compagnon:*), Read, Write, Edit, Glob, Grep, {{JIRA_MCP_TOOL}}"`.
       Remove the hardcoded mention of
       `mcp__claude_ai_Atlassian__getJiraIssue`.
 - [x] 3.2 Edit `assets/workflows/propose.md`: wherever the name
@@ -67,7 +67,7 @@
 - [x] 4.3 Adapt `propose_cite_la_detection_de_ticket_dans_son_body`
       to check for the presence of `{{JIRA_MCP_TOOL}}` in the body
       (instead of the hardcoded name).
-- [x] 4.4 New test in `codev-agents::claude::tests`:
+- [x] 4.4 New test in `compagnon-agents::claude::tests`:
       `render_avec_jira_tool_configure_substitue_partout` — checks
       that after `render` with `RenderCtx { jira_mcp_tool:
       Some("mcp__x__y".into()) }`, neither `{{JIRA_MCP_TOOL}}` nor
@@ -81,10 +81,10 @@
 
 ## 5. Wiring — the CLI passes the context
 
-- [x] 5.1 `codev-cli::commands::update` builds a `RenderCtx`
+- [x] 5.1 `compagnon-cli::commands::update` builds a `RenderCtx`
       from `ResolvedConfig.mcp.jira_tool` and passes it to
       `ClaudeCode::render`.
-- [x] 5.2 `codev-cli::commands::init` does the same (in the
+- [x] 5.2 `compagnon-cli::commands::init` does the same (in the
       scaffolding path that installs the skills).
 - [x] 5.3 Integration test `init_installe_skill_avec_mcp_configure`:
       in a `Harnais::neuf` that writes a `config.yaml` with `mcp:`,
@@ -98,7 +98,7 @@
 
 ## 6. Scaffold — commented example
 
-- [x] 6.1 `DEFAULT_CONFIG` of `codev-engine::scaffold` gains a
+- [x] 6.1 `DEFAULT_CONFIG` of `compagnon-engine::scaffold` gains a
       commented example block:
       ```yaml
       # Name of the Jira MCP tool to use when a ticket is
@@ -112,16 +112,16 @@
 
 ## 7. Repository migration
 
-- [x] 7.1 Edit the repository's `_codev/config.yaml` — add:
+- [x] 7.1 Edit the repository's `_compagnon/config.yaml` — add:
       ```yaml
       mcp:
         jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
       ```
-- [x] 7.2 `cargo install --path crates/codev-cli`
-- [x] 7.3 `codev update --force` — the propose SKILL.md now carries
+- [x] 7.2 `cargo install --path crates/compagnon-cli`
+- [x] 7.3 `compagnon update --force` — the propose SKILL.md now carries
       the Rovo name.
 - [x] 7.4 Manual check: `head -5
-      .claude/skills/codev-propose/SKILL.md` — the `allowed-tools`
+      .claude/skills/compagnon-propose/SKILL.md` — the `allowed-tools`
       does contain `mcp__claude_ai_Atlassian_Rovo__getJiraIssue`,
       and no `{{…}}` remains.
 
@@ -131,4 +131,4 @@
       new tests (config + substitute + render + init integration).
 - [x] 8.2 `cargo clippy --workspace --all-targets` stays free of
       warnings.
-- [x] 8.3 `codev validate --strict --all` stays green.
+- [x] 8.3 `compagnon validate --strict --all` stays green.

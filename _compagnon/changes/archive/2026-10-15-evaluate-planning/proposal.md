@@ -2,11 +2,11 @@
 
 ## Why
 
-The next ways to make codev's skills consume fewer tokens — loading a
-skill's steps on demand, a `codev search` over the specs, a cheaper model
-for the reviewers — change how `/codev-propose` plans, and the evaluation
+The next ways to make compagnon's skills consume fewer tokens — loading a
+skill's steps on demand, a `compagnon search` over the specs, a cheaper model
+for the reviewers — change how `/compagnon-propose` plans, and the evaluation
 suite only measures the review steps. A study (44 headless runs replaying
-this repository's history) found that `/codev-propose` misses about one
+this repository's history) found that `/compagnon-propose` misses about one
 requirement in three that it should modify, and spends about 40 % of its
 input tokens finding its way before writing anything: there is something
 to measure, on both quality and consumption. Without a planning step in
@@ -23,7 +23,7 @@ now asks for — fewer tokens, the same quality of answer.
   (primary ones, and collateral ones counted apart) and the accepted
   decisions it had to follow or supersede.
 - Each planning run is scored without a model: the share of the expected
-  requirements modified by the plan's deltas, read with codev's own
+  requirements modified by the plan's deltas, read with compagnon's own
   parser; the requirements added where one should have been modified;
   the expected decisions the plan ignores; whether the plan validates;
   and what the run consumed, now with the tool calls it made and how many
@@ -31,27 +31,27 @@ now asks for — fewer tokens, the same quality of answer.
 - The suite starts with the 17 historical requests of the study that
   expect a requirement, its 5 cases on decisions and 3 more on
   requirements; the committed baseline gains their runs, five per
-  case, so that `codev-evals compare` judges a change to `/codev-propose`
+  case, so that `compagnon-evals compare` judges a change to `/compagnon-propose`
   the way it judges a change to a role.
 - The runner reads Claude Code's event stream instead of its final
   document, for every case, to count tool calls.
 - The contributing guides extend the rule that a role change shows its
   scores: a pull request meant to reduce consumption pastes the output of
-  `codev-evals compare` — quality within the baseline's range, consumption
+  `compagnon-evals compare` — quality within the baseline's range, consumption
   under its floor —, and any other pull request that changes what a skill
   does (the workflows under `assets/workflows/`, or the JSON a skill
-  reads) pastes `codev-evals compare --quality-only`, which still shows
+  reads) pastes `compagnon-evals compare --quality-only`, which still shows
   its consumption.
 - Every call to the model is accounted for: per call, the tokens written
   to and read from the cache and produced, and where the tokens entering
-  the context come from — the skill read, each `codev` subcommand, the
+  the context come from — the skill read, each `compagnon` subcommand, the
   files, the searches, the model's own output. The report ranks these
   sources by cost and `compare` shows how each one changes, with the
   input and output per call; `compare` also names the measures where the
   quality improved.
 - A new decision, accepted: every change to the workflow is evaluated,
   per call, for quality and tokens, before it is merged.
-- `codev-evals run --step` selects the cases of a step; resuming an
+- `compagnon-evals run --step` selects the cases of a step; resuming an
   output directory refuses another Claude Code version.
 
 ## Capabilities
@@ -72,7 +72,7 @@ now asks for — fewer tokens, the same quality of answer.
   runner (fixture from `git archive`, the prompt, the event stream, the
   plan's files and its validation), the scoring of a plan (new module),
   the report and `compare` by step as well as by role; `evals` gains a
-  dependency on `codev-core`, for its parser.
+  dependency on `compagnon-core`, for its parser.
 - `evals/cases/`: 25 planning cases (a `case.yaml` each, no fixture
   directory); `evals/baseline/`: recorded again in full, review and
   planning cases, every call accounted for.
@@ -82,13 +82,13 @@ now asks for — fewer tokens, the same quality of answer.
   planning run to one repetition.
 - `CONTRIBUTING.md`, `CONTRIBUTING.fr.md`, and the generated
   `docs/{en,fr}/src/reliability.md`, regenerated from the new baseline:
-  it gains the planning figures and where codev's tokens go, by source
+  it gains the planning figures and where compagnon's tokens go, by source
   and per call, in both languages.
-- `_codev/specs/role-evaluation/spec.md`: the scenario "A report of
+- `_compagnon/specs/role-evaluation/spec.md`: the scenario "A report of
   another run", cut by an earlier merge, is restored.
-- `_codev/decisions/0008-*`: the decision above, promoted from the
+- `_compagnon/decisions/0008-*`: the decision above, promoted from the
   design and accepted.
-- No change to codev's own behavior: no crate of `crates/` changes, no
+- No change to compagnon's own behavior: no crate of `crates/` changes, no
   skill, no JSON contract.
 
 ## Domains

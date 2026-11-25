@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 4597,
+          "compagnon roles": 4597,
           "skill": 11363
         }
       },
@@ -49,7 +49,7 @@
         "output": 7,
         "toolCalls": 1,
         "sources": {
-          "codev review": 2356
+          "compagnon review": 2356
         }
       },
       {
@@ -79,7 +79,7 @@
         "output": 7,
         "toolCalls": 0,
         "sources": {
-          "codev review": 425
+          "compagnon review": 425
         }
       }
     ]
@@ -128,7 +128,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-mail-worker/review.md",
+    "path": "_compagnon/changes/add-mail-worker/review.md",
     "status": [],
     "steps": [
       {

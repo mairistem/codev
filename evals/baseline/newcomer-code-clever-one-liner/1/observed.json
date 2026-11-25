@@ -68,7 +68,7 @@
         "output": 189,
         "toolCalls": 0,
         "sources": {
-          "codev review": 320
+          "compagnon review": 320
         }
       }
     ]
@@ -117,7 +117,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/group-prices/review.md",
+    "path": "_compagnon/changes/group-prices/review.md",
     "status": [],
     "steps": [
       {

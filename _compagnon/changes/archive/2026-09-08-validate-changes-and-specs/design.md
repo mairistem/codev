@@ -22,13 +22,13 @@ It does **not** cover `--strict` nor `--archived` nor `--concurrency`
 
 ## Decisions
 
-### Decision: pure rules in `codev-core`, coordination in `codev-engine`
+### Decision: pure rules in `compagnon-core`, coordination in `compagnon-engine`
 
 The additional rules (missing SHALL/MUST, requirement without a scenario,
 cross-section consistency) are pure functions on the AST — same inputs,
 same outputs, with no clock or disk. They therefore live in
-`codev-core::validate`. Coordination — finding the files, reading them,
-grouping them, computing an exit code — lives in `codev-engine::validate`
+`compagnon-core::validate`. Coordination — finding the files, reading them,
+grouping them, computing an exit code — lives in `compagnon-engine::validate`
 behind the `FileSystem` and `Env` ports.
 
 This follows directly from decision
@@ -38,11 +38,11 @@ reading, the CLI formats.
 
 **Alternatives considered**:
 
-- **Everything in `codev-engine`.** Makes the rules opaque to pure unit
+- **Everything in `compagnon-engine`.** Makes the rules opaque to pure unit
   tests — one has to build an in-memory `FileSystem` to test
   "requirement without a scenario", when all we do is inspect a
   `Requirement`.
-- **Everything in `codev-core`.** Forces `codev-core` to know how to walk
+- **Everything in `compagnon-core`.** Forces `compagnon-core` to know how to walk
   a folder, which contradicts the "no I/O" contract of
   [0001](../../decisions/0001-functional-core-imperative-shell.md).
 
@@ -110,7 +110,7 @@ is for the JSON — same "exactly one document on stdout" rule as the
 existing contract.
 
 **Rationale**: a change → file → finding hierarchy looks clean, but a
-`_codev/specs/x/spec.md` has no parent "change". A flat model, with an
+`_compagnon/specs/x/spec.md` has no parent "change". A flat model, with an
 explicit `kind`, serves both cases without a conditional branch in the
 consumer.
 
@@ -141,5 +141,5 @@ that would have to be undone.
 
 Not applicable: new capability, no existing consumer to migrate. The
 `status` field of the JSON contract reuses the shape already held by
-`codev status` and `codev instructions`, so nothing new for an agent that
+`compagnon status` and `compagnon instructions`, so nothing new for an agent that
 already knew the contract.

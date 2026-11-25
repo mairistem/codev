@@ -3,7 +3,7 @@
 ### Requirement: The `propose` and `apply` skills act on suggested domains
 
 Before writing the proposal's `## Domains` section, the `propose` skill
-SHALL run `codev roles --change <name> --json` and, for each entry of
+SHALL run `compagnon roles --change <name> --json` and, for each entry of
 `suggestions`, either tick the domain, or keep it unticked with a reason
 on its line (`- [ ] <domain> — <reason>`) when the match does not mean
 the change touches the domain; it MUST NOT leave a suggestion `unticked`
@@ -26,7 +26,7 @@ served already filtered for the project's languages.
 
 #### Scenario: The skills name the suggestions
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the compagnon workflow catalog
 - **WHEN** the `propose` and `apply` workflows are rendered
 - **THEN** the `propose` body names `suggestions`, `unticked`,
   `justified` and the justified form `- [ ] <domain> — <reason>`, and
@@ -37,13 +37,13 @@ served already filtered for the project's languages.
 #### Scenario: No diff
 
 - **GIVEN** a project outside git
-- **WHEN** `/codev-propose` writes the proposal
+- **WHEN** `/compagnon-propose` writes the proposal
 - **THEN** it says no diff is available and ticks the domains by
   judgement
 
 #### Scenario: The knowledge is not filtered twice
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the compagnon workflow catalog
 - **WHEN** the `propose` and `apply` workflows are rendered
 - **THEN** neither body asks the agent to keep only the project's
   languages of `By stack`

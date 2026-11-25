@@ -47,7 +47,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev status": 5633
+          "compagnon status": 5633
         }
       },
       {
@@ -66,12 +66,12 @@
   "review": null,
   "files": {},
   "messages": [
-    "Here is the proposed patch for `_codev/config.yaml`:\n\n```\n--- context: (current) ---\nRust project.\n\n--- context: (proposed) ---\nSingle-crate Rust library (edition 2021): `slugify` turns a title into a URL slug.\nOnly dependency is unicode-normalization (NFD decomposition, then non-ASCII is dropped,\nnot transliterated). Public API is a single panic-free function `slugify(&str) -> String`\nthat returns no Result. Comments are in English: `//!` for the crate and `///` doc comments\nthat state the output contract (allowed characters, separator).\n```\n\n```\n--- rules: (current) ---\n(empty)\n\n--- rules: (proposed) ---\nspecs:\n  - Each requirement gives at least one input title and its exact expected slug,\n    e.g. \"Été à Paris\" → \"ete-a-paris\".\ndesign:\n  - State how the change affects the output contract of slugify (allowed characters,\n    dash separator, accent handling) and whether it is backward compatible for\n    existing slugs.\ntasks:\n  - Each task names the input → slug example that proves it is done.\n  - \"Unit tests go in the #[cfg(test)] mod tests of src/lib.rs, one #[test] per behavior,\n     named after that behavior (e.g. accents_are_dropped), using assert_eq! on\n     slugify(input). Check with cargo test, cargo clippy -- -D warnings and cargo fmt --check.\"\n```\n\n> Apply this patch to `_codev/config.yaml`? [yes/no]\n\n*(Evaluation run: the answer is « no ».)*\n\nI didn't make any changes. Run `/codev-configure` again whenever you want to retry.\n\nThere was nothing else to read: the project has no CONTRIBUTING, no `docs/` and no CI workflow, so I based the proposal on `README.md`, `Cargo.toml` and `src/lib.rs`."
+    "Here is the proposed patch for `_compagnon/config.yaml`:\n\n```\n--- context: (current) ---\nRust project.\n\n--- context: (proposed) ---\nSingle-crate Rust library (edition 2021): `slugify` turns a title into a URL slug.\nOnly dependency is unicode-normalization (NFD decomposition, then non-ASCII is dropped,\nnot transliterated). Public API is a single panic-free function `slugify(&str) -> String`\nthat returns no Result. Comments are in English: `//!` for the crate and `///` doc comments\nthat state the output contract (allowed characters, separator).\n```\n\n```\n--- rules: (current) ---\n(empty)\n\n--- rules: (proposed) ---\nspecs:\n  - Each requirement gives at least one input title and its exact expected slug,\n    e.g. \"Été à Paris\" → \"ete-a-paris\".\ndesign:\n  - State how the change affects the output contract of slugify (allowed characters,\n    dash separator, accent handling) and whether it is backward compatible for\n    existing slugs.\ntasks:\n  - Each task names the input → slug example that proves it is done.\n  - \"Unit tests go in the #[cfg(test)] mod tests of src/lib.rs, one #[test] per behavior,\n     named after that behavior (e.g. accents_are_dropped), using assert_eq! on\n     slugify(input). Check with cargo test, cargo clippy -- -D warnings and cargo fmt --check.\"\n```\n\n> Apply this patch to `_compagnon/config.yaml`? [yes/no]\n\n*(Evaluation run: the answer is « no ».)*\n\nI didn't make any changes. Run `/compagnon-configure` again whenever you want to retry.\n\nThere was nothing else to read: the project has no CONTRIBUTING, no `docs/` and no CI workflow, so I based the proposal on `README.md`, `Cargo.toml` and `src/lib.rs`."
   ],
   "configure": {
     "before": "schema: spec-driven\nlanguage: en\n\n# detected from Cargo.toml\ncontext: |\n  Rust project.\n",
     "after": "schema: spec-driven\nlanguage: en\n\n# detected from Cargo.toml\ncontext: |\n  Rust project.\n",
-    "codevRoot": true,
+    "compagnonRoot": true,
     "statusError": null
   }
 }

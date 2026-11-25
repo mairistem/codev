@@ -2,7 +2,7 @@
 
 ## Context
 
-See `proposal.md` for the motivation. The `codev-engine::decisions`
+See `proposal.md` for the motivation. The `compagnon-engine::decisions`
 module delivered by the previous change already provides the index with
 `in_effect` and qualified resolution. This change makes it the central
 resolution building block: each command (`new`, `list`, `show`,
@@ -22,7 +22,7 @@ design (K7), or interactive editing in `$EDITOR`.
 
 ## Decisions
 
-### Decision: the `plan_new` and `plan_supersede` functions live in `codev-engine`
+### Decision: the `plan_new` and `plan_supersede` functions live in `compagnon-engine`
 
 They do not write — they produce a `Plan`, like `plan_init` or
 `plan_new_change`. Follows directly from decision
@@ -31,7 +31,7 @@ deciding is not executing. The CLI shell applies the plan via
 `apply::execute`, which puts the idempotence and `--dry-run` mechanism to
 use (the latter will arrive when a consumer asks for it).
 
-**Rejected alternative**: put the computation in `codev-core::decisions`.
+**Rejected alternative**: put the computation in `compagnon-core::decisions`.
 Blocked: generating the next `id` requires knowing the decisions already
 present, hence the result of the index — which is on the engine side
 (disk reads). Impossible to stay pure without going through the port.
@@ -47,7 +47,7 @@ which prefers fixed data over premature extension points.
 
 **Accepted cost**: a project that wants a different decision skeleton will
 have to write it by hand. Templating the file via
-`_codev/templates/decision.md` will be a future change at the first real
+`_compagnon/templates/decision.md` will be a future change at the first real
 need.
 
 ### Decision: `supersede` rewrites the predecessor's frontmatter, never its body
@@ -93,7 +93,7 @@ circulation.
 
 ## Risks / Trade-offs
 
-- **Concurrent id generation**. Two `codev decision new` runs launched at
+- **Concurrent id generation**. Two `compagnon decision new` runs launched at
   the same time would compute the same `id` and one would overwrite the
   other. → **Mitigation**: `plan_new` produces a `WriteMode::CreateOnly`
   on the output file. The second exec fails with `already_exists`. Rare

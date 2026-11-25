@@ -11,12 +11,12 @@ in their config".
 Tested on a real project, **mira** (TypeScript, ~10 dependencies), the
 observed behavior breaks that intent:
 
-- `codev init` detects the stack and writes a context of **280
+- `compagnon init` detects the stack and writes a context of **280
   characters** — made up solely of the list of detected dependencies
   and "CI GitHub Actions active".
 - `is_config_thin` returns `false` — the 200 threshold is crossed.
 - **No hint appears**, even though the config has in fact received no
-  human contribution at all and `/codev-configure` has exactly
+  human contribution at all and `/compagnon-configure` has exactly
   something to offer.
 
 The threshold on the context is the wrong criterion. It does not
@@ -48,8 +48,8 @@ and we do not want to add a marker for a signal that remains
 secondary.
 
 **Observable effect**: on a project that has not yet been enriched by
-`/codev-configure` (or by hand), the hint appears **systematically** —
-in `codev init`, in `codev status`, in `/codev-onboard`. As soon as a
+`/compagnon-configure` (or by hand), the hint appears **systematically** —
+in `compagnon init`, in `compagnon status`, in `/compagnon-onboard`. As soon as a
 rule is written (by `configure` or by hand), the hint disappears.
 
 ## Capabilities
@@ -63,11 +63,11 @@ None.
 - **`configure`** — a sentence of the `## Purpose` mentioned the
   context threshold; to be removed from the skill body only (not from
   the spec, which does not mention it).
-- **`init`** — the Requirement "prompts for `/codev-configure` when the
+- **`init`** — the Requirement "prompts for `/compagnon-configure` when the
   generated config is thin" and its scenario mention "context < 200
   characters AND empty rules". To be rewritten to talk only about an
   empty `rules:` key.
-- **`skills`** — the Requirement "Skill `onboard` presents codev"
+- **`skills`** — the Requirement "Skill `onboard` presents compagnon"
   mentions "context < 200 chars, empty rules". To be rewritten.
 
 ### Removed Capabilities
@@ -77,12 +77,12 @@ None.
 ## Impact
 
 - **Code**:
-  - `codev-core::config::is_config_thin` — simplified signature.
+  - `compagnon-core::config::is_config_thin` — simplified signature.
   - Unit tests — 3 cases rewritten.
   - Three call sites simplified:
-    - `codev-cli::commands::install_skills` (in the computation of
+    - `compagnon-cli::commands::install_skills` (in the computation of
       `SetupOutcome.config_thin`).
-    - `codev-cli::main::config_is_thin` (helper for the `codev status`
+    - `compagnon-cli::main::config_is_thin` (helper for the `compagnon status`
       hint).
     - No other — the `onboard` skill reads the YAML directly, not the
       Rust function.
@@ -99,7 +99,7 @@ None.
   context becomes thin again (that was the bug).
 - **Migration**: none.
 - **Out of scope**:
-  - A `# written by /codev-configure` marker — deferred; the
+  - A `# written by /compagnon-configure` marker — deferred; the
     `rules_empty`-only simplification is enough to fix the observed
     symptom.
   - Introducing a `--force-nudge` flag mode — not useful, the user can

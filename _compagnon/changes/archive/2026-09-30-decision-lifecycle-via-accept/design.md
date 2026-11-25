@@ -5,7 +5,7 @@
 The previous change (`decision-accept-command`) made `decision new` create
 `proposed` decisions and added `plan_accept`, which rewrites the status and
 seals the body in one plan. `plan_supersede`, `plan_deviate` and
-`plan_promote` in `codev-engine::decisions_actions` still render an
+`plan_promote` in `compagnon-engine::decisions_actions` still render an
 `accepted` frontmatter and add a seal entry; `plan_supersede` also rewrites
 the predecessor to `superseded` at creation time, with
 `rewrite_frontmatter_status`, which keeps the body byte for byte so the
@@ -42,7 +42,7 @@ missing is the transition that gives it one.
 
 ### Decision: Creation plans write no seal and never touch the predecessor
 
-Following `_codev/decisions/0001-functional-core-imperative-shell.md`,
+Following `_compagnon/decisions/0001-functional-core-imperative-shell.md`,
 each creation stays a pure plan. `plan_supersede`, `plan_deviate` and
 `plan_promote` render a `proposed` frontmatter and drop the `seal.yaml`
 write; `plan_supersede` also drops the rewrite of the predecessor, so its
@@ -77,7 +77,7 @@ plan:
 - no entry with that id → `unknown_decision_id`, naming the predecessor;
 - the id only exists in an inherited source →
   `cannot_supersede_inherited` — inherited sources are read-only
-  (`_codev/decisions/0005-read-only-inherited-sources.md`), a hand-written
+  (`_compagnon/decisions/0005-read-only-inherited-sources.md`), a hand-written
   `supersedes` cannot reach into them;
 - a local entry whose status is not `accepted` →
   `predecessor_not_accepted`, whose message names the predecessor, its
@@ -103,7 +103,7 @@ would fork without anyone noticing).
 The same code is used by `supersede` (target not `accepted`) and by
 `accept` (predecessor no longer `accepted`): in both cases the decision
 the user wants to replace is not in effect. An agent handles it the same
-way — look at the chain with `codev decision list` and supersede the
+way — look at the chain with `compagnon decision list` and supersede the
 decision that is in effect. `decision_not_proposed` is not reused: it
 describes the decision being accepted, not its predecessor.
 
@@ -149,7 +149,7 @@ decision that will be superseded on acceptance.
   immediately] → Marked **BREAKING** in the CHANGELOG, with the
   `decision accept` step to add; the human output of each command names it.
 - [A forgotten acceptance leaves the old decision in effect] → That is the
-  meaning of `proposed`; `codev decision list` shows the proposed ADR next
+  meaning of `proposed`; `compagnon decision list` shows the proposed ADR next
   to the decision it will replace.
 - [Two proposed supersessions of the same decision] → The first accepted
   wins; the second is refused with `predecessor_not_accepted`, whose

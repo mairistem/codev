@@ -58,7 +58,7 @@
         "output": 2,
         "toolCalls": 1,
         "sources": {
-          "codev review": 276,
+          "compagnon review": 276,
           "file": 1451
         }
       },
@@ -130,7 +130,7 @@
         "output": 187,
         "toolCalls": 0,
         "sources": {
-          "codev review": 651
+          "compagnon review": 651
         }
       }
     ]
@@ -268,7 +268,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/merge-duplicate-customers/review.md",
+    "path": "_compagnon/changes/merge-duplicate-customers/review.md",
     "status": [],
     "steps": [
       {

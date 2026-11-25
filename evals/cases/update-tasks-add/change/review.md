@@ -1,6 +1,6 @@
 # Review record: fewer-review-turns
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## plan.challenge
 
@@ -8,14 +8,14 @@ Mode: isolated.
 
 ### skeptic
 
-#### R-skeptic-1 The procedure switches to the human output of `codev review` but keeps the JSON's field names
+#### R-skeptic-1 The procedure switches to the human output of `compagnon review` but keeps the JSON's field names
 
 ```yaml
 severity: medium
 confidence: high
 location: "tasks.md#2. The skills"
 evidence: |
-  and by the existing test `propose_and_apply_describe_the_record_and_the_loop`, updated to expect `codev review --change "<name>"` without `--json` (scenario "The skills describe the record and the loop")
+  and by the existing test `propose_and_apply_describe_the_record_and_the_loop`, updated to expect `compagnon review --change "<name>"` without `--json` (scenario "The skills describe the record and the loop")
 recommendation: "Have task 2.1 reword steps a, g and h of the review-record procedure in the terms of the human output (its waiting list, its issues, its low-confidence mark) instead of `findings[]`, `awaiting`, `issues[]` and `reported`, and update the test's expected keywords; otherwise the agent looks for `issues[]`, falls back to `--json` and a filter, and spends the turn the change saves."
 history:
   - status: open
@@ -32,7 +32,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "specs/roles/spec.md#Requirement: `codev roles` serves the roles of a step"
+location: "specs/roles/spec.md#Requirement: `compagnon roles` serves the roles of a step"
 evidence: |
   With `--at`, `disabled` SHALL list, in workflow order, the roles that
   serve the step but that the project or the change sets to `never`, each
@@ -76,13 +76,13 @@ confidence: high
 location: "tasks.md#5. Measure"
 evidence: |
   verified by the comparison's verdict: quality within the baseline's range for every role (required), cost under the baseline's floor (the goal), the turns and denials reported
-recommendation: "Add an explicit check to 5.1: the candidate's turns and permission denials against the baseline's, and no `codev review --json | python3` or `codev roles … | python3` left among the denials; word the release note from what the comparison shows."
+recommendation: "Add an explicit check to 5.1: the candidate's turns and permission denials against the baseline's, and no `compagnon review --json | python3` or `compagnon roles … | python3` left among the denials; word the release note from what the comparison shows."
 history:
   - status: open
     by: performance
   - status: fixed
     by: lead
-    ref: "task 5.1 checks the turns and denials against the baseline and that no codev-output filter is left among the denials; the release note is worded from the comparison"
+    ref: "task 5.1 checks the turns and denials against the baseline and that no compagnon-output filter is left among the denials; the release note is worded from the comparison"
   - status: fixed
     by: performance
 ```
@@ -90,12 +90,12 @@ history:
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/workflows.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
-Summarized: crates/codev-cli/src/commands.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
-Summarized: crates/codev-cli/src/contract.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
-Summarized: crates/codev-cli/src/main.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
-Summarized: crates/codev-cli/src/render.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
-Summarized: crates/codev-core/src/roles.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
+Summarized: crates/compagnon-agents/src/workflows.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
+Summarized: crates/compagnon-cli/src/commands.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
+Summarized: crates/compagnon-cli/src/contract.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
+Summarized: crates/compagnon-cli/src/main.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
+Summarized: crates/compagnon-cli/src/render.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
+Summarized: crates/compagnon-core/src/roles.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
 Summarized: docs/fr/src/reference/cli.md — over the material budget; its diff fit in two hundred lines and was returned verbatim.
 Summarized: evals/src/runner.rs — over the material budget; its diff fit in two hundred lines and was returned verbatim.
 
@@ -108,12 +108,12 @@ severity: high
 confidence: low
 location: "assets/workflows/_review-record.md:5-11"
 evidence: |
-  Read codev's output as it prints it: each command gives what the step
+  Read compagnon's output as it prints it: each command gives what the step
   needs, so never filter it through another program (`python3`, `jq`) — a
   command your session may not approve, which costs a turn. Run each
-  `codev` command as a call of its own, never chained after `cd`, `&&` or
-  `;`: the skill's grant covers a command that starts with `codev`, not a
-  chain. Independent calls — `codev` ones, file reads — go together in one
+  `compagnon` command as a call of its own, never chained after `cd`, `&&` or
+  `;`: the skill's grant covers a command that starts with `compagnon`, not a
+  chain. Independent calls — `compagnon` ones, file reads — go together in one
   turn.
 recommendation: "Drop the 'call of its own' half and keep the first run's balance (or reword it and measure again); state the turn count and the right denial ratio in the release note; do not tick 5.1 while its own check fails."
 history:
@@ -131,9 +131,9 @@ history:
 ```yaml
 severity: low
 confidence: low
-location: "_codev/changes/fewer-review-turns/tasks.md:25-25"
+location: "_compagnon/changes/fewer-review-turns/tasks.md:25-25"
 evidence: |
-  - [ ] 5.2 If the change is kept, complete the candidate to five repetitions (`run --repeat 5 --out target/evals/fewer-turns`), make it the new `evals/baseline/`, and regenerate the reliability chapter (`codev-evals docs`); verified by `cargo test -p codev-evals` (five repetitions, none in error, pinned Claude Code, pages follow the baseline)
+  - [ ] 5.2 If the change is kept, complete the candidate to five repetitions (`run --repeat 5 --out target/evals/fewer-turns`), make it the new `evals/baseline/`, and regenerate the reliability chapter (`compagnon-evals docs`); verified by `cargo test -p compagnon-evals` (five repetitions, none in error, pinned Claude Code, pages follow the baseline)
 recommendation: "Point 5.2 at the run that measured the shipped text, and check 'none in error' once its repetitions are complete."
 history:
   - status: open
@@ -163,7 +163,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-cli/src/render.rs: `disabled_line` writes the line last, after the active roles (or after the line saying none is active), as the roles spec and both cli references say; `roles_list_the_roles_disabled_at_the_step` asserts it is the last line."
+    ref: "crates/compagnon-cli/src/render.rs: `disabled_line` writes the line last, after the active roles (or after the line saying none is active), as the roles spec and both cli references say; `roles_list_the_roles_disabled_at_the_step` asserts it is the last line."
   - status: fixed
     by: newcomer
 ```
@@ -173,7 +173,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/roles.rs:40-45"
+location: "crates/compagnon-engine/src/roles.rs:40-45"
 evidence: |
       /// The roles serving `step` that the configuration turned off;
       /// `unknown_step` when `step` is not one of the workflow steps.
@@ -187,7 +187,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/roles.rs: `check_step`, called by `active_at` and `disabled_at`."
+    ref: "crates/compagnon-engine/src/roles.rs: `check_step`, called by `active_at` and `disabled_at`."
   - status: fixed
     by: newcomer
 ```

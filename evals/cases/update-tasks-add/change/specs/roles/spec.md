@@ -1,8 +1,8 @@
 ## MODIFIED Requirements
 
-### Requirement: `codev roles` serves the roles of a step
+### Requirement: `compagnon roles` serves the roles of a step
 
-`codev roles [--at <step>] [--change <name>] [--knowledge] [--all-stacks]
+`compagnon roles [--at <step>] [--change <name>] [--knowledge] [--all-stacks]
 [--json]` SHALL resolve the roles against the change's schema, its
 `change.yaml` and the domains of its proposal with `--change`, otherwise
 against the configured schema and the project configuration alone. With
@@ -58,7 +58,7 @@ shape, with `roles`, `disabled` and `suggestions` empty and `stacks` and
 #### Scenario: The roles of a step, as JSON
 
 - **GIVEN** a project with no `roles:` key and a change `add-auth`
-- **WHEN** the user runs `codev roles --at plan.trace --change add-auth
+- **WHEN** the user runs `compagnon roles --at plan.trace --change add-auth
   --json`
 - **THEN** `roles` holds one entry, `tracer`, with `kind: "step"`,
   `at: "plan.trace"`, `steps: ["plan.trace"]`, `artifact: null`,
@@ -68,7 +68,7 @@ shape, with `roles`, `disabled` and `suggestions` empty and `stacks` and
 
 #### Scenario: Artifact roles at `plan.write`
 
-- **WHEN** the user runs `codev roles --at plan.write --json`
+- **WHEN** the user runs `compagnon roles --at plan.write --json`
 - **THEN** `roles` holds `product`, `qa`, `architect` and `lead`, with
   `artifact` `proposal`, `specs`, `design` and `tasks`, and criteria with
   the origin `schema:spec-driven`
@@ -76,13 +76,13 @@ shape, with `roles`, `disabled` and `suggestions` empty and `stacks` and
 #### Scenario: Display names follow the configured language
 
 - **GIVEN** a configuration with `language: fr`
-- **WHEN** the user runs `codev roles --at plan.challenge --json`
+- **WHEN** the user runs `compagnon roles --at plan.challenge --json`
 - **THEN** the `skeptic` entry has `name: "Contradicteur"`
 - **AND** with `language: de`, it has `name: "Skeptic"`
 
 #### Scenario: An unknown step
 
-- **WHEN** the user runs `codev roles --at plan.review --json`
+- **WHEN** the user runs `compagnon roles --at plan.review --json`
 - **THEN** the exit code is 1 and `status[0].code` is `unknown_step`
 - **AND** its message lists the valid steps, `roles`, `disabled` and
   `suggestions` are empty, and `stacks` and `diff` are `null`
@@ -90,7 +90,7 @@ shape, with `roles`, `disabled` and `suggestions` empty and `stacks` and
 #### Scenario: Human output of every role
 
 - **GIVEN** a configuration with `roles: { newcomer: never }`
-- **WHEN** the user runs `codev roles`
+- **WHEN** the user runs `compagnon roles`
 - **THEN** it prints one line per role, the `newcomer` line saying `never`
   and `project`, the `security` line saying `on_domain`, and the `product`
   line saying it cannot be disabled
@@ -98,7 +98,7 @@ shape, with `roles`, `disabled` and `suggestions` empty and `stacks` and
 #### Scenario: Knowledge in the human output
 
 - **GIVEN** a change `add-auth` whose proposal ticks `security`
-- **WHEN** the user runs `codev roles --at code.review --change add-auth`
+- **WHEN** the user runs `compagnon roles --at code.review --change add-auth`
 - **THEN** it prints the criteria of `newcomer` and `security` without
   their knowledge
 - **AND** with `--knowledge`, it also prints the stacks detected and the
@@ -108,7 +108,7 @@ shape, with `roles`, `disabled` and `suggestions` empty and `stacks` and
 
 - **GIVEN** a project whose configuration sets `newcomer: never` and a
   change `add-auth` whose proposal ticks `security`
-- **WHEN** the user runs `codev roles --at code.review --change add-auth
+- **WHEN** the user runs `compagnon roles --at code.review --change add-auth
   --json`
 - **THEN** `roles` holds `security` and not `newcomer`, and `disabled`
   holds one entry, `newcomer`, with `whenOrigin: "project"`
@@ -119,13 +119,13 @@ shape, with `roles`, `disabled` and `suggestions` empty and `stacks` and
 
 - **GIVEN** a configuration with `newcomer: never` and a change whose
   `change.yaml` sets `newcomer: always`
-- **WHEN** the user runs `codev roles --at code.review --change <change>
+- **WHEN** the user runs `compagnon roles --at code.review --change <change>
   --json`
 - **THEN** `newcomer` is in `roles` and not in `disabled`
 
 #### Scenario: An inactive expert is not disabled
 
 - **GIVEN** a change whose proposal ticks no domain
-- **WHEN** the user runs `codev roles --at code.review --change <change>
+- **WHEN** the user runs `compagnon roles --at code.review --change <change>
   --json`
 - **THEN** `disabled` does not list `security`

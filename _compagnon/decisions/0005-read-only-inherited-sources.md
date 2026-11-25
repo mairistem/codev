@@ -22,28 +22,28 @@ A separate, **read-only** mechanism: inherited sources.
 
 ```yaml
 inherits:
-  - path: ~/codev/shared/back
-  - git: git@github.com:acme/codev-decisions.git
+  - path: ~/compagnon/shared/back
+  - git: git@github.com:acme/compagnon-decisions.git
     ref: main
     subpath: shared/
 ```
 
 - Merge precedence: `git` → local path → project, the project always winning.
-- The `ref` is resolved to a SHA and **pinned** in `_codev/codev.lock`,
+- The `ref` is resolved to a SHA and **pinned** in `_compagnon/compagnon.lock`,
   versioned with the project. Nothing is ever read from a floating branch at
   run time.
 - Git transport: a *bare* repository in a cache, fed by the `git` binary
   through the `ProcessRunner` port (`ls-remote`, then `fetch --depth 1
   --filter=blob:none`, then `archive`). Never a working copy.
 - The provenance of each inherited block is exposed in
-  `codev instructions --json`.
+  `compagnon instructions --json`.
 
 Three safeguards, because this content **is injected into the agent's
 prompt** — whoever controls the shared repository controls part of Claude
 Code's instructions on every inheriting project:
 
 1. mandatory pinning by SHA;
-2. `codev sources update` is the only command that moves a pin, and it shows
+2. `compagnon sources update` is the only command that moves a pin, and it shows
    the diff of the inherited content before writing;
 3. no executable inherited content — markdown and declarative YAML only,
    never a hook or a script.
@@ -51,7 +51,7 @@ Code's instructions on every inheriting project:
 ## Consequences
 
 - `--store` exists on no command, and root resolution stays "walk up until
-  `_codev/`".
+  `_compagnon/`".
 - Offline reading as soon as the SHA is cached.
 - Driving the `git` binary reuses the user's existing authentication (ssh key,
   credential helper), so private GitHub, self-hosted GitLab and Azure DevOps

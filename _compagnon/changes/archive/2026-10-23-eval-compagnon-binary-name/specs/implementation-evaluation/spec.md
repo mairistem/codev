@@ -7,13 +7,13 @@ An implementation case SHALL be a directory of `evals/cases/` holding a
 commit of this repository, the state before the change), `merged` (the
 commit that brought the change to `main`), `change` (a change name),
 `summary`, and `expected`; and a folder `change/` holding the planning
-files of `_codev/changes/<change>/`, as archived at `merged`. They MAY
+files of `_compagnon/changes/<change>/`, as archived at `merged`. They MAY
 differ from the archive only where a task's verification needs a tool
-the run's sandbox does not hold, such as `mdbook`, or the codev the change
-builds — `codev` on the search path is the codev under test, whose
+the run's sandbox does not hold, such as `mdbook`, or the compagnon the change
+builds — `compagnon` on the search path is the compagnon under test, whose
 validation and doctor judge an older change by today's rules —: that
 verification is reworded into one the sandbox can run, such as `cargo run
--p codev-cli -- validate --strict`, and `summary` says so.
+-p compagnon-cli -- validate --strict`, and `summary` says so.
 `expected` SHALL hold `refuse`
 (whether the skill must refuse to implement), `docs` (whether the run
 must touch the documentation of both languages) and `acceptance` (the
@@ -26,7 +26,7 @@ documentation.
 
 Loading a case SHALL fail, naming the case and the cause, when `ref` or
 `merged` is not a commit of the repository's history; when the tree at
-`ref` already holds `_codev/changes/<change>/` or `evals/cases/<case
+`ref` already holds `_compagnon/changes/<change>/` or `evals/cases/<case
 id>/`; when `change/` is missing; when a non-refusing case's `tasks.md`
 has a checked task or none, or its `change/` holds a `review.md`; when
 `acceptance.sh` is missing, or present in a refusing case; when two
@@ -53,11 +53,11 @@ assertions have the same name; or when an unknown key is found.
 - **WHEN** the suite loads its cases
 - **THEN** it fails, naming the case
 
-#### Scenario: A task that validates with the change's own codev
+#### Scenario: A task that validates with the change's own compagnon
 
-- **GIVEN** an archived change whose last task runs `codev validate
-  --strict`, which today's codev fails on its proposal written before the
+- **GIVEN** an archived change whose last task runs `compagnon validate
+  --strict`, which today's compagnon fails on its proposal written before the
   `## Domains` section existed
 - **WHEN** the suite's tests run
 - **THEN** they fail unless that verification is `cargo run -q -p
-  codev-cli -- validate --strict` and the case's `summary` says so
+  compagnon-cli -- validate --strict` and the case's `summary` says so

@@ -7,22 +7,22 @@ compatibility with the main spec; the content below describes
 **four** paths after Windows was added. A clean rename will come in
 a dedicated cycle.
 
-The Installation section of `docs/codev.md` MUST list, in this order:
+The Installation section of `docs/compagnon.md` MUST list, in this order:
 
 1. **Recommended Unix path** — `curl -sSL … | sh` for macOS/Linux.
 2. **Recommended Windows path** — `iwr -useb … | iex` for Windows
    in PowerShell.
 3. **Manual path** — download from GitHub Releases + check with
    `sha256sum -c` (Unix) or `Get-FileHash` (Windows).
-4. **Contributor path** — `cargo install --path crates/codev-cli`
+4. **Contributor path** — `cargo install --path crates/compagnon-cli`
    from a clone of the repository.
 
 The repository README MUST mention at least the first **and** the
 second path (with the one-liners `curl … | sh` and `iwr … | iex`).
 
-#### Scenario: the Installation section of docs/codev.md lists the four paths in order
+#### Scenario: the Installation section of docs/compagnon.md lists the four paths in order
 
-- **GIVEN** a reader who opens `docs/codev.md` at the Installation
+- **GIVEN** a reader who opens `docs/compagnon.md` at the Installation
   section
 - **WHEN** they go through the subsections in order
 - **THEN** they successively encounter the Unix path (`curl | sh`),

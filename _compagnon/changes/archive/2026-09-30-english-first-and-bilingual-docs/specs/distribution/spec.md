@@ -16,14 +16,14 @@ workflow MUST produce a GitHub Release containing:
 - One archive format **per OS family**: `.tar.gz` for macOS and
   Linux (Unix convention, `tar` is universal); `.zip` for Windows
   (Windows convention, native `Expand-Archive` since PowerShell 5.1).
-- File names follow `codev-<version>-<target>.<ext>` — for example
-  `codev-0.2.0-x86_64-pc-windows-msvc.zip`.
+- File names follow `compagnon-<version>-<target>.<ext>` — for example
+  `compagnon-0.2.0-x86_64-pc-windows-msvc.zip`.
 - A `SHA256SUMS` file listing the SHA-256 of **all** the archives
   (all four), in standard `sha256sum` format.
-- The contents of each archive: the binary (`codev` on macOS/Linux,
-  `codev.exe` on Windows), `README.md`, `README.fr.md`, `LICENSE` and
+- The contents of each archive: the binary (`compagnon` on macOS/Linux,
+  `compagnon.exe` on Windows), `README.md`, `README.fr.md`, `LICENSE` and
   `CHANGELOG.md`. The documentation itself is embedded in the binary
-  (`codev docs`).
+  (`compagnon docs`).
 
 The workflow MUST NOT write to the repository.
 
@@ -34,19 +34,19 @@ The workflow MUST NOT write to the repository.
 - **WHEN** the `.github/workflows/release.yml` workflow runs
 - **THEN** a GitHub Release named `v0.2.0` is created
 - **AND** it contains exactly four archives:
-  `codev-0.2.0-aarch64-apple-darwin.tar.gz`,
-  `codev-0.2.0-x86_64-apple-darwin.tar.gz`,
-  `codev-0.2.0-x86_64-unknown-linux-musl.tar.gz`,
-  `codev-0.2.0-x86_64-pc-windows-msvc.zip`
+  `compagnon-0.2.0-aarch64-apple-darwin.tar.gz`,
+  `compagnon-0.2.0-x86_64-apple-darwin.tar.gz`,
+  `compagnon-0.2.0-x86_64-unknown-linux-musl.tar.gz`,
+  `compagnon-0.2.0-x86_64-pc-windows-msvc.zip`
 - **AND** it contains a `SHA256SUMS` file listing the four archives
   with their SHA-256
 
-#### Scenario: The Windows archive contains `codev.exe`
+#### Scenario: The Windows archive contains `compagnon.exe`
 
-- **GIVEN** the `codev-<version>-x86_64-pc-windows-msvc.zip` archive
+- **GIVEN** the `compagnon-<version>-x86_64-pc-windows-msvc.zip` archive
   of the release
 - **WHEN** a user extracts it on Windows
-- **THEN** a `codev.exe` file is present
+- **THEN** a `compagnon.exe` file is present
 - **AND** the files `README.md`, `README.fr.md`, `LICENSE` and
   `CHANGELOG.md` are present as well
 
@@ -67,7 +67,7 @@ The Installation chapter of each language (`docs/en/src/installation.md`,
    in PowerShell.
 3. **Manual path** — download from GitHub Releases + verification with
    `sha256sum -c` (Unix) or `Get-FileHash` (Windows).
-4. **Contributor path** — `cargo install --path crates/codev-cli`
+4. **Contributor path** — `cargo install --path crates/compagnon-cli`
    from a clone of the repository.
 
 The repository README MUST mention at least the first **and** the

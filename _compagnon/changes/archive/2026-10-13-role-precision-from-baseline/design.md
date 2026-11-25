@@ -5,12 +5,12 @@
 A reviewing role is a prompt: `assets/roles/<id>.md`, a frontmatter
 (criteria in `done_when`) and knowledge in the sections Scope, Signals,
 By stack, References, Reporting. The files are embedded in the binary
-(`codev-core::roles`, `include_str!`) and reach the agent through
-`codev roles --json`, never through the skill files. What every role
+(`compagnon-core::roles`, `include_str!`) and reach the agent through
+`compagnon roles --json`, never through the skill files. What every role
 shares — how to write a finding, the severity and confidence scales —
 is `assets/workflows/_review-record.md`, rendered into the `propose` and
-`apply` skills (`codev-agents::workflows::review_record`); it does reach
-the skills, so they are regenerated with `codev update --force`.
+`apply` skills (`compagnon-agents::workflows::review_record`); it does reach
+the skills, so they are regenerated with `compagnon update --force`.
 
 The evaluation suite (`evals/`) runs each case with only its role active
 (`runner::roles_to_disable`) and scores the record (`evals/src/score.rs`):
@@ -18,7 +18,7 @@ a finding pairs with an expected finding when role, location and
 category agree; an unpaired finding is a duplicate or cross-role when it
 names an expected defect, otherwise **unreported when its confidence is
 `low`, a false positive when `high`**, whatever its severity. That rule
-mirrors codev's: only a finding with confidence `high` is presented to
+mirrors compagnon's: only a finding with confidence `high` is presented to
 the human (`ReviewFinding::reported`). It is not a scoring flaw; the
 scorer stays unchanged.
 
@@ -129,7 +129,7 @@ unseen, or a preference, is confidence `low`); what is not a finding
 excludes, a missing test the role's criteria do not ask for, taste); one
 finding per defect (consequences in the recommendation; two fixes, two
 findings). The severity and confidence definitions of
-`codev-core::review` stay as they are: the bullets apply them, they do
+`compagnon-core::review` stay as they are: the bullets apply them, they do
 not change the scales the checks and the docs share.
 
 Why it generalizes: the three rules are what code review guidelines ask
@@ -142,9 +142,9 @@ role are reached by them.
 
 **Alternatives considered**: repeating the rules in every role file
 (eight copies drifting apart); changing the scale definitions in
-`codev-core` (they are a public vocabulary shared with docs and checks,
+`compagnon-core` (they are a public vocabulary shared with docs and checks,
 and they already say the right thing); counting low-severity findings as
-unreported in the scorer (it would hide what codev does present to the
+unreported in the scorer (it would hide what compagnon does present to the
 human: a confident `low` finding is noise in the review too).
 
 ### Decision: Each expert names what it does not report
@@ -279,9 +279,9 @@ measures nothing).
 ### Decision: Measured by one full run, recorded as the new baseline
 
 After the tests pass, `evals/baseline/` is removed and the whole suite
-runs once on Claude Code's default model (`cargo run -p codev-evals --
+runs once on Claude Code's default model (`cargo run -p compagnon-evals --
 run --out evals/baseline`), every role included, then `cargo run -p
-codev-evals -- docs` regenerates the reliability chapter. One extra full
+compagnon-evals -- docs` regenerates the reliability chapter. One extra full
 run is allowed if recall drops and needs a fix; never more than two.
 
 ## Baseline before and after
@@ -354,7 +354,7 @@ What the readings say:
 | Monorepos with several stacks | Unchanged; the By stack sections keep their stacks. |
 | Windows paths and CRLF | Role files are parsed as before (CRLF test kept); no path rule changes. |
 | A role disabled by configuration | The shared rule says another role's concern is not a finding even when that role is not active; the skeptic's Domains check keeps a touched domain from going unreviewed silently. |
-| Older binaries reading newer files | No file format changes; installed skills keep the old guidance until `codev update`. |
+| Older binaries reading newer files | No file format changes; installed skills keep the old guidance until `compagnon update`. |
 | Inherited sources, offline, idempotence | Unaffected. |
 
 ## Risks / Trade-offs
@@ -375,11 +375,11 @@ What the readings say:
   the same model, and the classification above is read finding by
   finding, not inferred from counts.
 - [Real defects become `low` and hidden] → a `low` finding stays in the
-  record and is answered; `codev review` lists it; only its presentation
+  record and is answered; `compagnon review` lists it; only its presentation
   changes.
 
 ## Migration Plan
 
 Projects get the new roles with the next binary, and the new review
-guidance in their skills after `codev update`. Rollback: revert the
+guidance in their skills after `compagnon update`. Rollback: revert the
 commit; the baseline and the chapter revert with it.

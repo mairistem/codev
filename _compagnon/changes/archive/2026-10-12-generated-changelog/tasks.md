@@ -13,19 +13,19 @@ separators or line endings.
 - [x] 1.1 Add the `## Release note` section to
   `assets/schemas/spec-driven/templates/proposal.md`, describe it in the
   proposal instruction of `schema.yaml` and add the product owner's "Done
-  when" criterion, verified by `codev-engine` tests
+  when" criterion, verified by `compagnon-engine` tests
   `spec_driven_instructions_start_with_a_role_block` (criterion mentions the
   release note) and `proposal_template_and_instruction_carry_the_release_note`
   (skills: "The proposal instruction starts with the product owner role").
 - [x] 1.2 Add the release note bullet to step 6 of
-  `assets/workflows/propose.md`, verified by the `codev-agents` test
+  `assets/workflows/propose.md`, verified by the `compagnon-agents` test
   `propose_traceability_checks_the_release_note` (skills: "A breaking change
   missing from the release note is added", "A complete plan is left
   unchanged").
 
 ## 2. Pure core: release note parser and changelog planning
 
-- [x] 2.1 `codev_core::changelog::release_note`: `parse` (sections,
+- [x] 2.1 `compagnon_core::changelog::release_note`: `parse` (sections,
   wrapping, `None`, BREAKING, HTML comments, fences, findings
   `release_note_invalid` with lines) and `what_changes`, verified by unit
   tests `parses_wrapped_and_breaking_items`, `none_is_an_internal_change`,
@@ -46,7 +46,7 @@ separators or line endings.
   `breaking_first_then_archive_order_by_category`,
   `release_heading_carries_version_and_date`,
   `markdown_has_no_version_heading`.
-- [x] 2.4 `CHANGELOG.md` splicing in `codev_core::changelog` on new
+- [x] 2.4 `CHANGELOG.md` splicing in `compagnon_core::changelog` on new
   `managed` helpers, verified by `write_creates_a_missing_file_with_a_header`,
   `write_adopts_a_hand_written_unreleased_heading`,
   `write_keeps_released_sections_and_link_references`,
@@ -58,7 +58,7 @@ separators or line endings.
 ## 3. Validation of active changes
 
 - [x] 3.1 Report `release_note_missing` and `release_note_invalid` for active
-  changes in `codev-engine::validate`, register the codes in the uniqueness
+  changes in `compagnon-engine::validate`, register the codes in the uniqueness
   test, and give existing test proposals a release note, verified by
   `validate_reports_a_missing_release_note_as_a_warning`,
   `validate_accepts_a_valid_or_internal_release_note`,
@@ -70,7 +70,7 @@ separators or line endings.
 
 - [x] 4.1 `changelog.exclude` in `ProjectConfig`, verified by the engine
   config test `changelog_exclude_is_read_and_unknown_keys_still_fail`.
-- [x] 4.2 `codev_engine::changelog::gather` (git detection, `ls-tree`,
+- [x] 4.2 `compagnon_engine::changelog::gather` (git detection, `ls-tree`,
   `git tag`, working tree, deltas with REMOVED requirements, unreadable
   changes), verified by `gather_uses_the_latest_tag_by_default`,
   `gather_between_two_tags`, `gather_without_tag_lists_everything`,
@@ -79,7 +79,7 @@ separators or line endings.
   `gather_unknown_ref_fails`, `gather_skips_a_change_missing_from_the_tree`,
   `gather_flags_removed_requirements`.
 
-## 5. CLI: `codev changelog` and the JSON contract
+## 5. CLI: `compagnon changelog` and the JSON contract
 
 - [x] 5.1 `commands::changelog` (range, formats, `--release`, `--date`,
   `--write` through a plan) and the `Changelog` subcommand, verified by
@@ -95,7 +95,7 @@ separators or line endings.
 
 ## 6. Doctor
 
-- [x] 6.1 `changelog` check in `codev_core::doctor` (facts, codes, order,
+- [x] 6.1 `changelog` check in `compagnon_core::doctor` (facts, codes, order,
   warning only) and its gathering in `commands::doctor_at`, verified by core
   tests `changelog_check_is_a_warning_when_missing_or_outdated` and the
   updated `summary_counts_missing_and_warnings`, and CLI tests
@@ -106,21 +106,21 @@ separators or line endings.
   "CHANGELOG.md up to date", "CHANGELOG.md behind the archive", "Doctor
   writes nothing").
 
-## 7. codev's own repository
+## 7. compagnon's own repository
 
 - [x] 7.1 `.github/workflows/release.yml`: full-depth checkout, run the
   Linux build's binary, `body_path` plus `generate_release_notes`, verified
-  by the CLI test `release_workflow_generates_the_body_with_codev_changelog`
+  by the CLI test `release_workflow_generates_the_body_with_compagnon_changelog`
   (distribution: both scenarios; publishing itself cannot run in CI
   without a tag, hence a static check of the workflow).
-- [x] 7.2 `changelog.exclude` in `_codev/config.yaml` for the five changes
-  described by hand since `v0.4.0`, and `codev changelog --write`, which
+- [x] 7.2 `changelog.exclude` in `_compagnon/config.yaml` for the five changes
+  described by hand since `v0.4.0`, and `compagnon changelog --write`, which
   adopts the hand-written `## [Unreleased]` heading; run it again right
   after archiving this change so the managed section holds its release note
-  (the `[Unreleased]` Added lines), verified by `codev changelog` printing
-  only this change's items and `codev doctor` reporting `changelog` ok.
+  (the `[Unreleased]` Added lines), verified by `compagnon changelog` printing
+  only this change's items and `compagnon doctor` reporting `changelog` ok.
 - [x] 7.3 CONTRIBUTING.md and CONTRIBUTING.fr.md release process:
-  `codev changelog --release X.Y.Z --write` before tagging, verified by
+  `compagnon changelog --release X.Y.Z --write` before tagging, verified by
   reading both files.
 
 ## 8. Documentation (English and French)
@@ -131,12 +131,12 @@ separators or line endings.
   (`ChangelogV1`, new codes, doctor check), `skills.md` (propose),
   `guides/repository-integration.md` (doctor check), and a new
   `guides/release-notes.md` in both `SUMMARY.md`, verified by building both
-  books with mdbook without warnings and by the `codev-cli` docs tests.
+  books with mdbook without warnings and by the `compagnon-cli` docs tests.
 
 ## 9. Finish
 
-- [x] 9.1 Regenerate the skills with `cargo run -q --bin codev -- update
-  --force`; `codev validate --strict` and `codev doctor` clean; fmt, clippy
+- [x] 9.1 Regenerate the skills with `cargo run -q --bin compagnon -- update
+  --force`; `compagnon validate --strict` and `compagnon doctor` clean; fmt, clippy
   `-D warnings --locked`, `cargo test --workspace --locked` green.
 - [x] 9.2 Manual end-to-end check in a scratch git repository with two tags
   and archived changes with and without release notes (default range,

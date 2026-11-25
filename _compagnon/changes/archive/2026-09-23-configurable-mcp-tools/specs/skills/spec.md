@@ -10,12 +10,12 @@ the regular pattern `[A-Z]{2,}-\d+` (for example `PROJ-123`,
 On detection of at least one ticket, the skill MUST:
 
 1. **Attempt to call** the MCP tool whose name is declared at the
-   project level via `_codev/config.yaml.mcp.jira_tool`. This name is
+   project level via `_compagnon/config.yaml.mcp.jira_tool`. This name is
    injected at skill installation time into the `allowed-tools`
    frontmatter and into the body — the user/organization chooses
    **its** MCP (`mcp__claude_ai_Atlassian__getJiraIssue`,
    `mcp__claude_ai_Atlassian_Rovo__getJiraIssue`, or another one)
-   without touching codev's source code.
+   without touching compagnon's source code.
 2. **A single call per invocation**, on the identifier of the ticket
    **mentioned earliest in the prompt**; the others are just named.
 3. **On success**: inject the content (title, description, status,
@@ -36,7 +36,7 @@ The workflow CATALOG MUST use a textual placeholder
 placeholder is substituted when the installation frontmatter is
 rendered by `ClaudeCode::render`.
 
-When `_codev/config.yaml.mcp.jira_tool` is **absent** or empty, the
+When `_compagnon/config.yaml.mcp.jira_tool` is **absent** or empty, the
 rendering MUST:
 
 - cleanly remove `{{JIRA_MCP_TOOL}}` from `allowed_tools` **and** the
@@ -48,11 +48,11 @@ rendering MUST:
 
 #### Scenario: `mcp.jira_tool` configuration present → functional skill
 
-- **GIVEN** a project whose `_codev/config.yaml` declares
+- **GIVEN** a project whose `_compagnon/config.yaml` declares
   `mcp: { jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue }`
-- **WHEN** the user runs `codev update`
-- **THEN** the `.claude/skills/codev-propose/SKILL.md` file carries
-  `allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep, mcp__claude_ai_Atlassian_Rovo__getJiraIssue"`
+- **WHEN** the user runs `compagnon update`
+- **THEN** the `.claude/skills/compagnon-propose/SKILL.md` file carries
+  `allowed-tools: "Bash(compagnon:*), Read, Write, Edit, Glob, Grep, mcp__claude_ai_Atlassian_Rovo__getJiraIssue"`
 - **AND** the skill body cites
   `mcp__claude_ai_Atlassian_Rovo__getJiraIssue` where the CATALOG
   contains `{{JIRA_MCP_TOOL}}`
@@ -60,10 +60,10 @@ rendering MUST:
 
 #### Scenario: `mcp.jira_tool` configuration absent → clean fallback
 
-- **GIVEN** a project whose `_codev/config.yaml` has no `mcp:` block
-- **WHEN** the user runs `codev update`
-- **THEN** the `.claude/skills/codev-propose/SKILL.md` file carries
-  `allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep"`
+- **GIVEN** a project whose `_compagnon/config.yaml` has no `mcp:` block
+- **WHEN** the user runs `compagnon update`
+- **THEN** the `.claude/skills/compagnon-propose/SKILL.md` file carries
+  `allowed-tools: "Bash(compagnon:*), Read, Write, Edit, Glob, Grep"`
   (without the placeholder and without a trailing comma)
 - **AND** the body replaces `{{JIRA_MCP_TOOL}}` with the mention
   `(Jira MCP not configured)`
@@ -71,7 +71,7 @@ rendering MUST:
 
 #### Scenario: Ticket mentioned, MCP configured and available → ticket cited at the top
 
-- **GIVEN** a user types `/codev-propose add JWT for PROJ-123`
+- **GIVEN** a user types `/compagnon-propose add JWT for PROJ-123`
 - **AND** the project has configured `mcp.jira_tool:
   mcp__claude_ai_Atlassian_Rovo__getJiraIssue`
 - **AND** that MCP is available in the Claude Code session
@@ -84,7 +84,7 @@ rendering MUST:
 
 #### Scenario: Ticket mentioned, MCP absent → proposal anyway
 
-- **GIVEN** a user types `/codev-propose fix PROJ-123`
+- **GIVEN** a user types `/compagnon-propose fix PROJ-123`
 - **AND** no Jira MCP is configured (`mcp.jira_tool` absent or
   declared tool unavailable)
 - **WHEN** the skill runs
@@ -95,7 +95,7 @@ rendering MUST:
 
 #### Scenario: No ticket mentioned → unchanged behavior
 
-- **GIVEN** a user types `/codev-propose add
+- **GIVEN** a user types `/compagnon-propose add
   authentication`
 - **WHEN** the skill runs
 - **THEN** no MCP call is made

@@ -17,21 +17,21 @@ when:
 - `apply.tracks` is empty.
 
 `version` defaults to `1`. A command that needs a refused schema fails with
-its code; `codev schemas` reports it as `schema_unusable`.
+its code; `compagnon schemas` reports it as `schema_unusable`.
 
-A key a project schema holds that codev does not know — at the top level,
+A key a project schema holds that compagnon does not know — at the top level,
 in an artifact, in `apply` or in an artifact's `role:` — SHALL be ignored,
 and the rest of the schema used, with a warning `schema_unknown_key` per
 key. The warning MUST name the key, the schema's file and its line, say
-that the schema may be written for a newer codev, quote the project's
-`codev_version` when set, and point to `codev self-update`. Commands that
+that the schema may be written for a newer compagnon, quote the project's
+`compagnon_version` when set, and point to `compagnon self-update`. Commands that
 report configuration warnings MUST report it the same way, in their human
 output and in the `status` array of their JSON output, for the schema
-they use; `codev schemas` lists the schema as usable. When it validates
-the whole project, `codev validate` SHALL add one `warning` finding
+they use; `compagnon schemas` lists the schema as usable. When it validates
+the whole project, `compagnon validate` SHALL add one `warning` finding
 `schema_unknown_key` per key, located at that line of the schema's file,
 to the item of kind `config`, which is then reported. The built-in schema
-holds no key codev does not know.
+holds no key compagnon does not know.
 
 #### Scenario: A minimal valid schema
 
@@ -44,18 +44,18 @@ holds no key codev does not know.
 
 - **GIVEN** a project schema `lite` holding `artifacts`, `apply` and the
   unknown top-level key `gates` on line 12, and a change `quick` using it
-- **WHEN** the user runs `codev status --change quick --json`
+- **WHEN** the user runs `compagnon status --change quick --json`
 - **THEN** the command succeeds and lists the artifacts of `lite`
 - **AND** `status` holds a `schema_unknown_key` warning naming `gates`,
-  `_codev/schemas/lite/schema.yaml` and `codev self-update`
+  `_compagnon/schemas/lite/schema.yaml` and `compagnon self-update`
 
 #### Scenario: A misspelled key in a project schema fails strict validation
 
 - **GIVEN** a project schema `lite` whose artifact `brief` holds the key
   `require` on line 9, and no other finding
-- **WHEN** the user runs `codev validate --strict --json`
+- **WHEN** the user runs `compagnon validate --strict --json`
 - **THEN** the `config` item holds a `warning` finding `schema_unknown_key`
-  naming `require`, located at line 9 of `_codev/schemas/lite/schema.yaml`
+  naming `require`, located at line 9 of `_compagnon/schemas/lite/schema.yaml`
 - **AND** the exit code is 1
 
 #### Scenario: A schema that is not YAML
@@ -93,7 +93,7 @@ unaffected. Another key in the mapping is ignored with a
 
 - **GIVEN** a project schema whose artifact `brief` declares
   `role: { id: editor, name: { en: Editor }, question: "Is the brief clear?", done_when: ["One page at most"] }`
-- **WHEN** the user runs `codev roles --at plan.write --json`
+- **WHEN** the user runs `compagnon roles --at plan.write --json`
 - **THEN** `roles` holds `editor` with `artifact: "brief"` and the criterion
   `One page at most` with the origin `schema:<the schema's name>`
 
@@ -113,6 +113,6 @@ unaffected. Another key in the mapping is ignored with a
 
 - **GIVEN** a project schema whose artifact `brief` declares
   `role: { id: editor, name: { en: Editor }, question: "Is the brief clear?", model: sonnet }`
-- **WHEN** the user runs `codev roles --at plan.write --json`
+- **WHEN** the user runs `compagnon roles --at plan.write --json`
 - **THEN** `roles` holds `editor`
 - **AND** `status` holds a `schema_unknown_key` warning naming `model`

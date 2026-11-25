@@ -1,44 +1,47 @@
-# File maintained by codev — see `codev decision seal`.
+# File maintained by compagnon — see `compagnon decision seal`.
 # The hash of an ADR body is recorded here when it is accepted;
-# `codev validate` compares this hash with the current body.
+# `compagnon validate` compares this hash with the current body.
 version: 1
 seals:
 - id: '0001'
-  bodySha256: sha256:9d46b487285b80ebf5be52a8c0be8679a7c7812610935a1a69ec4d7e27d1a5c2
-  sealedAt: 2026-09-30
+  bodySha256: sha256:9a2a3e5769ecc31663fd3ca97dec66c59ad269ff8e43311e69390471546e96cc
+  sealedAt: 2026-11-25
 - id: '0002'
-  bodySha256: sha256:0661083693ba68c56863999fcd691ac6281a78069654211573aa81b8b31d8205
-  sealedAt: 2026-09-30
+  bodySha256: sha256:82e028a734ac12d878d980201f39c324082ab72934eb3a6de1d9d8d387096f8e
+  sealedAt: 2026-11-25
 - id: '0003'
   bodySha256: sha256:e65ea477b2b4cb98cce7c94460f3d1b49599e4dc823aaaf1871587c1add588da
   sealedAt: 2026-09-30
 - id: '0004'
-  bodySha256: sha256:fd4512794f023b5c95d9f3e1afbea3524f08ce863639dea73b478e7639a8dbb4
-  sealedAt: 2026-09-30
+  bodySha256: sha256:3fd88e6896c8f1c0bef564905c224c605047ed149486c01d1f0a69e4c39b2374
+  sealedAt: 2026-11-25
 - id: '0005'
-  bodySha256: sha256:415d4c39ad3470b7b4f50261c9f4f009b5b142dbdfeb0d2d86f7992eea6fb28f
-  sealedAt: 2026-09-30
+  bodySha256: sha256:cd42be4fbd4a874d36c09bc2327273a14979c3b7a0725fbada07bcb8c50c0ac5
+  sealedAt: 2026-11-25
 - id: '0006'
-  bodySha256: sha256:3405742904b76de931d9094807c89ea03fa67e65ff2ad5a2c979f0cea95d6a81
-  sealedAt: 2026-09-30
+  bodySha256: sha256:e2a8a6a76fb1fe83cc0a4eff02fd05e24a0d6a25038a6690a8c92486f2396020
+  sealedAt: 2026-11-25
 - id: '0007'
-  bodySha256: sha256:c4a8a2846b86581b144cb3ba131ec09430c36d9c1d60ebbcd02455129cbf0d1b
-  sealedAt: 2026-10-13
+  bodySha256: sha256:0fe5c17151db2318cd2af27fab97369efe7d8f0f96a0a52b0e9454e0f4ed3643
+  sealedAt: 2026-11-25
 - id: '0008'
-  bodySha256: sha256:757ce23e33bbb3cfbb5435a0b9ed6e38a28c4d5e38b0ee73a11dbbd0470b5207
-  sealedAt: 2026-10-15
+  bodySha256: sha256:f202377d212fc4519cf4cca4f31f20249dbc8c2b936c6f48c9ec0be5ec514aa6
+  sealedAt: 2026-11-25
 - id: '0009'
-  bodySha256: sha256:f8d9d08ffb104ecd0459a3e525b6c983a376281b07095d93a69dcd00918aed21
-  sealedAt: 2026-10-20
+  bodySha256: sha256:77ffc8ab768eb64d05c74bf27bac8d725e72590983cec661eacaa8cf94d1f5e6
+  sealedAt: 2026-11-25
 - id: '0010'
-  bodySha256: sha256:0db41114a2c7894acfca26e0970c583563160d17978d0ea559853d554c2b85fb
-  sealedAt: 2026-10-20
+  bodySha256: sha256:977940247edb9beaf3ad24ccc5ec3fb933e5590c32013897f841749fce1877f2
+  sealedAt: 2026-11-25
 - id: '0011'
-  bodySha256: sha256:9df80bf8b7df128b4637282b452a193aa3b539b0a7918793ad2d8fcdcc2c7f89
-  sealedAt: 2026-10-20
+  bodySha256: sha256:119b19935317f14ab87f7f16fddcc64512547199a836eed265fc80b853592860
+  sealedAt: 2026-11-25
 - id: '0012'
-  bodySha256: sha256:f1c331adc3a03ec910d0653572cc07e8836d8a657ec83a701ad43e674bc4b812
-  sealedAt: 2026-10-23
+  bodySha256: sha256:9fc7ef7b47e196faa6d37c5557d49c87ed09b09f568960044d7fbaeb5003069b
+  sealedAt: 2026-11-25
 - id: '0013'
-  bodySha256: sha256:a36a4968d364dada1c287f5b6752b409c7284375593ba73ab32a13a216cd4df7
-  sealedAt: 2026-10-27
+  bodySha256: sha256:0d8502f01cab79b1384bf6ee5ecdf060c755c32cc9aeb12ae351b2c8d01ad023
+  sealedAt: 2026-11-25
+- id: '0014'
+  bodySha256: sha256:f17e8cf9ac1520417e26430a86fa6896adce339663a4c4e596c7ed9a0ce4d1ef
+  sealedAt: 2026-11-25

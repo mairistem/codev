@@ -48,7 +48,7 @@
         "output": 4,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1702
+          "compagnon review": 1702
         }
       },
       {
@@ -78,7 +78,7 @@
         "output": 2,
         "toolCalls": 0,
         "sources": {
-          "codev review": 657
+          "compagnon review": 657
         }
       }
     ]
@@ -216,7 +216,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-support-lookup/review.md",
+    "path": "_compagnon/changes/add-support-lookup/review.md",
     "status": [],
     "steps": [
       {

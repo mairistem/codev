@@ -3,7 +3,7 @@
 ## Context
 
 See `proposal.md`. New workflow (the 8th), pure function
-`is_config_thin` in `codev-core`, two hints in `codev-cli`,
+`is_config_thin` in `compagnon-core`, two hints in `compagnon-cli`,
 update of the `onboard` body.
 
 ## Decisions
@@ -15,7 +15,7 @@ or the other is considered "already configured" — the
 `configure` skill has nothing fundamental left to offer.
 
 The 200-character threshold is arbitrary but informed by the minimal
-output of `codev init` on a bare Rust project: `Rust project, 2024.`
+output of `compagnon init` on a bare Rust project: `Rust project, 2024.`
 is 19 characters. The 200 threshold easily lets through a
 detailed `context:` (stack + one sentence of context), and cuts
 stubs short.
@@ -24,18 +24,18 @@ stubs short.
 user who wrote `rules:` without `context:` has explicitly
 chosen their configuration.
 
-**Rejected alternative B**: threshold configurable via `_codev/config.yaml`.
+**Rejected alternative B**: threshold configurable via `_compagnon/config.yaml`.
 Rejected — over-engineering; the threshold is a default, not a policy.
 
-### Decision: `configure` has `Bash(codev:*), Read, Glob, Grep, Write, Edit` — but not general Bash
+### Decision: `configure` has `Bash(compagnon:*), Read, Glob, Grep, Write, Edit` — but not general Bash
 
 The skill must:
 
 - Read files (`Read`, `Glob`, `Grep`).
-- Write a `_codev/config.yaml` (`Write`).
+- Write a `_compagnon/config.yaml` (`Write`).
 - Edit precisely — preserve comments — (`Edit`).
-- Call `codev status`, `codev list --specs` to get its bearings
-  (`Bash(codev:*)`).
+- Call `compagnon status`, `compagnon list --specs` to get its bearings
+  (`Bash(compagnon:*)`).
 
 It **does not have** general `Bash`: it runs no tests, no
 `git`, no external tool. The invariant rule "only `apply` has
@@ -61,30 +61,30 @@ A skill that writes without confirmation would betray trust.
 
 **Rejected alternative**: an `--auto` mode that writes without confirmation
 for scripting. Rejected — this is precisely a skill, not a CLI. A
-user who wants to script edits `_codev/config.yaml` by hand
+user who wants to script edits `_compagnon/config.yaml` by hand
 via a template.
 
-### Decision: the `is_config_thin` function lives in `codev-core::config`
+### Decision: the `is_config_thin` function lives in `compagnon-core::config`
 
 It is a pure function over `ProjectConfig` — no I/O, no
 environment. It belongs to the core.
 
-Having it take a type from `codev-engine` (`ProjectConfig`)
+Having it take a type from `compagnon-engine` (`ProjectConfig`)
 would break the dependency direction. **Solution**: the function takes
 `context: Option<&str>` and `rules_empty: bool` directly as parameters,
 not the whole `ProjectConfig`. Each caller reads these two fields and
 passes them. Simple, testable on its own.
 
-**Rejected alternative**: duplicate `ProjectConfig` in `codev-core`
+**Rejected alternative**: duplicate `ProjectConfig` in `compagnon-core`
 just for this function. Rejected — type duplication is a
 high cost for a tiny gain.
 
-### Decision: the hint in `codev status` appears only when no change is active
+### Decision: the hint in `compagnon status` appears only when no change is active
 
-`codev status` has several output modes — with an active change, without,
+`compagnon status` has several output modes — with an active change, without,
 with several. The hint only makes sense in the "project
 initialized, no active change" case — that is, the typical case after
-a `codev init`. Inserting it in the "active change" case would clutter
+a `compagnon init`. Inserting it in the "active change" case would clutter
 the screen of a user in the middle of their work.
 
 Technically: the hint is shown only in the
@@ -103,7 +103,7 @@ that Claude does not read the whole project:
 - **Source files** — up to 8 files, prioritized by commit
   recency (`git log --since='6 months ago' --pretty=format: --name-only`)
   filtered by the usual extension of the detected language.
-- **Structure** — `ls _codev/`, `ls src/` or equivalent — a single
+- **Structure** — `ls _compagnon/`, `ls src/` or equivalent — a single
   level.
 
 This budget contains the token cost and output variability. Without a
@@ -122,11 +122,11 @@ otherwise we would already be in another branch.
 
 Final order:
 
-1. `_codev/` absent → `codev init`
-2. Thin config, no change → `/codev-configure` then `/codev-propose`
-3. No change → read README then `/codev-propose`
-4. One active change, planning incomplete → `/codev-propose <name>`
-5. One active change, planning complete → `/codev-apply <name>`
+1. `_compagnon/` absent → `compagnon init`
+2. Thin config, no change → `/compagnon-configure` then `/compagnon-propose`
+3. No change → read README then `/compagnon-propose`
+4. One active change, planning incomplete → `/compagnon-propose <name>`
+5. One active change, planning complete → `/compagnon-apply <name>`
 6. Several changes → list
 
 ## Risks / Trade-offs
@@ -144,18 +144,18 @@ Final order:
   skills, an instruction that is too loose produces erratic output.
   → **Mitigation**: the explicit reading budget + the strictly
   described sequence + the typed preserved/forbidden lists.
-- **`Bash(codev:*), Write, Edit` is almost `apply`** — the skill is
+- **`Bash(compagnon:*), Write, Edit` is almost `apply`** — the skill is
   powerful. → **Mitigation**: it touches only one file
-  (`_codev/config.yaml`) and the body states so. An invariant test
+  (`_compagnon/config.yaml`) and the body states so. An invariant test
   checks that the body explicitly cites this constraint.
 
 ## Migration Plan
 
 No migration needed. An existing project:
 
-- Sees the 8th skill appear on the next `codev update`.
-- Receives the hint on its next `codev init` or `codev status`
-  **only** if its `_codev/config.yaml` is thin.
+- Sees the 8th skill appear on the next `compagnon update`.
+- Receives the hint on its next `compagnon init` or `compagnon status`
+  **only** if its `_compagnon/config.yaml` is thin.
 
 A project whose user filled in the config manually will
 never see the hint — the experience is exactly identical to

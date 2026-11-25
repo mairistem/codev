@@ -48,7 +48,7 @@
         "output": 3,
         "toolCalls": 2,
         "sources": {
-          "codev review": 2463
+          "compagnon review": 2463
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 7,
         "toolCalls": 2,
         "sources": {
-          "codev review": 1310,
+          "compagnon review": 1310,
           "edit": 529
         }
       },
@@ -69,7 +69,7 @@
         "output": 3,
         "toolCalls": 2,
         "sources": {
-          "codev review": 783,
+          "compagnon review": 783,
           "edit": 271
         }
       },
@@ -80,7 +80,7 @@
         "output": 3,
         "toolCalls": 0,
         "sources": {
-          "codev review": 564,
+          "compagnon review": 564,
           "edit": 270
         }
       }
@@ -130,7 +130,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/fetch-exchange-rates/review.md",
+    "path": "_compagnon/changes/fetch-exchange-rates/review.md",
     "status": [],
     "steps": [
       {

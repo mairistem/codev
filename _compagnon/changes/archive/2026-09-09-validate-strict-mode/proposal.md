@@ -1,8 +1,8 @@
-# Proposal: `--strict` mode for `codev validate`
+# Proposal: `--strict` mode for `compagnon validate`
 
 ## Why
 
-Today, `codev validate` exits with a **binary exit code**: 0 if there
+Today, `compagnon validate` exits with a **binary exit code**: 0 if there
 is no error, 1 otherwise. **Warnings** — `decision_unsealed`,
 `decision_dangling_deviation`, `git_source_unlocked`, `decision_id_collision`
 and company — pass without influencing the exit code. That is the
@@ -12,7 +12,7 @@ flow), but it is the wrong choice for an **automated** consumer:
 - a CI that wants to reject any `push` that would leave an `unsealed`;
 - a `pre-commit` hook that wants to forbid an orphaned deviation
   before it reaches `main`;
-- a future MCP workflow (Jira → codev, Claude Design → codev) that
+- a future MCP workflow (Jira → compagnon, Claude Design → compagnon) that
   would decide on the exit code rather than on a parser of human
   output.
 
@@ -21,7 +21,7 @@ the severity ⇔ exit code 0" that automated callers expect.
 
 ## What Changes
 
-- **New `--strict` flag** on `codev validate`, applicable to all its
+- **New `--strict` flag** on `compagnon validate`, applicable to all its
   forms (`validate <item>`, `validate --all`, `validate --changes`,
   `validate --specs`).
 - **Effect**: when `--strict` is present, the exit code becomes 1 as
@@ -51,8 +51,8 @@ None.
 ## Impact
 
 - **Code**: add the `strict: bool` flag on `Command::Validate` in
-  `codev-cli::main`, add a `has_warnings()` method on
-  `ValidateReport` in `codev-engine::validate::report`, and a
+  `compagnon-cli::main`, add a `has_warnings()` method on
+  `ValidateReport` in `compagnon-engine::validate::report`, and a
   two-line change in the CLI's exit-code logic.
 - **JSON contract**: `ValidateReportV1` gains `hasWarnings: bool`.
   Additive — earlier consumers ignore the field.

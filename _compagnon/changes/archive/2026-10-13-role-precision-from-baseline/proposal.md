@@ -64,24 +64,24 @@ None.
 
 - `assets/roles/` (every reviewing role but the tracer),
   `assets/workflows/_review-record.md`, and the skills rendered from it
-  (`.claude/skills/`, regenerated with `codev update --force`);
-  `crates/codev-core` and `crates/codev-agents` tests that check the
+  (`.claude/skills/`, regenerated with `compagnon update --force`);
+  `crates/compagnon-core` and `crates/compagnon-agents` tests that check the
   role criteria and the rendered skills.
 - `evals/cases/` (fixture fixes), `evals/baseline/` (recorded again).
 - Documentation: `docs/en/src/roles.md`, `docs/fr/src/roles.md`,
   `docs/en/src/skills.md`, `docs/fr/src/skills.md`, and the generated
   `reliability.md` of both books.
-- Projects pick up the new roles and skills with the next codev release
-  (`codev update`); no file of theirs changes format.
+- Projects pick up the new roles and skills with the next compagnon release
+  (`compagnon update`); no file of theirs changes format.
 
 ## Domains
 
-- [ ] security — the security role's prompt changes, but no input, secret or permission of codev does
-- [ ] personal-data — the matches are evaluation fixtures (a worker's `health` port, never run) and the privacy role's prompt; codev handles no personal data
-- [ ] user-interface — the match is an evaluation fixture's component, never served; no interface of codev changes
-- [ ] performance — no runtime path of codev changes
-- [ ] operations — the matches are evaluation fixtures (timeouts and retries of a worker that is never run) and the ops role's prompt; no log, timeout or rollback of codev changes, and the evaluation run stays manual
-- [ ] migration — the review record's format and the JSON contract are unchanged; installed skills keep working until `codev update` regenerates them
+- [ ] security — the security role's prompt changes, but no input, secret or permission of compagnon does
+- [ ] personal-data — the matches are evaluation fixtures (a worker's `health` port, never run) and the privacy role's prompt; compagnon handles no personal data
+- [ ] user-interface — the match is an evaluation fixture's component, never served; no interface of compagnon changes
+- [ ] performance — no runtime path of compagnon changes
+- [ ] operations — the matches are evaluation fixtures (timeouts and retries of a worker that is never run) and the ops role's prompt; no log, timeout or rollback of compagnon changes, and the evaluation run stays manual
+- [ ] migration — the review record's format and the JSON contract are unchanged; installed skills keep working until `compagnon update` regenerates them
 
 ## Release note
 
@@ -93,4 +93,4 @@ None.
 - Changed: The skeptic no longer reviews security, privacy, migration,
   operations, performance or accessibility itself: it challenges the
   plan's logic and evidence and checks that the proposal's Domains bring
-  the experts who do. Run `codev update` to refresh your skills.
+  the experts who do. Run `compagnon update` to refresh your skills.

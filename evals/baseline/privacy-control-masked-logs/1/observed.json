@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1974
+          "compagnon review": 1974
         }
       },
       {
@@ -58,7 +58,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1428
+          "compagnon review": 1428
         }
       },
       {
@@ -109,7 +109,7 @@
         "output": 8,
         "toolCalls": 0,
         "sources": {
-          "codev review": 518
+          "compagnon review": 518
         }
       }
     ]
@@ -216,7 +216,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/mask-emails-in-logs/review.md",
+    "path": "_compagnon/changes/mask-emails-in-logs/review.md",
     "status": [],
     "steps": [
       {

@@ -4,7 +4,7 @@
 
 Each artifact of the embedded `spec-driven` schema SHALL declare its role as
 data — an id, a display name, the question it owns and a list of "done
-when" criteria — which `codev instructions <artifact> --json` returns in
+when" criteria — which `compagnon instructions <artifact> --json` returns in
 its `role` field, with the origin `schema:spec-driven` on each criterion.
 The roles are:
 
@@ -44,7 +44,7 @@ role only when the schema declares one.
 #### Scenario: The proposal carries the product owner role
 
 - **GIVEN** a change using the `spec-driven` schema
-- **WHEN** the user runs `codev instructions proposal --change <name> --json`
+- **WHEN** the user runs `compagnon instructions proposal --change <name> --json`
 - **THEN** `role.id` is `product` and `role.name` is `Product owner`
 - **AND** `role.doneWhen` includes marking every breaking change with
   **BREAKING**
@@ -57,7 +57,7 @@ role only when the schema declares one.
 #### Scenario: The proposal lists the domains it touches
 
 - **GIVEN** a change using the `spec-driven` schema
-- **WHEN** the user runs `codev instructions proposal --change <name> --json`
+- **WHEN** the user runs `compagnon instructions proposal --change <name> --json`
 - **THEN** `template` has a `## Domains` section between `## Impact` and
   `## Release note`, listing the six domains unticked
 - **AND** `instruction` describes the section and its `None`
@@ -67,7 +67,7 @@ role only when the schema declares one.
 #### Scenario: The tasks criteria cover every spec scenario
 
 - **GIVEN** a change using the `spec-driven` schema
-- **WHEN** the user runs `codev instructions tasks --change <name> --json`
+- **WHEN** the user runs `compagnon instructions tasks --change <name> --json`
 - **THEN** `role.id` is `lead`
 - **AND** `role.doneWhen` requires every spec scenario to be covered by at
   least one task's verification
@@ -75,7 +75,7 @@ role only when the schema declares one.
 #### Scenario: The tasks criteria require documentation and automated tests
 
 - **GIVEN** a change using the `spec-driven` schema
-- **WHEN** the user runs `codev instructions tasks --change <name> --json`
+- **WHEN** the user runs `compagnon instructions tasks --change <name> --json`
 - **THEN** `role.doneWhen` requires the affected documentation to be
   updated in a task, or the plan to state that none is affected
 - **AND** it requires every spec scenario to be covered by an automated
@@ -86,7 +86,7 @@ role only when the schema declares one.
 #### Scenario: The design criteria require the simplest approach
 
 - **GIVEN** a change using the `spec-driven` schema
-- **WHEN** the user runs `codev instructions design --change <name> --json`
+- **WHEN** the user runs `compagnon instructions design --change <name> --json`
 - **THEN** `role.id` is `architect`
 - **AND** `role.doneWhen` requires the approach to be the simplest that
   satisfies the specs, and the design to be followable by a newcomer
@@ -95,7 +95,7 @@ role only when the schema declares one.
 #### Scenario: A custom schema gets no role added
 
 - **GIVEN** a change using a project schema whose artifact declares no role
-- **WHEN** the user runs `codev instructions <artifact> --change <name>
+- **WHEN** the user runs `compagnon instructions <artifact> --change <name>
   --json`
 - **THEN** `instruction` is the schema's text, with no `Role:` line added
 - **AND** `role` is `null`
@@ -104,7 +104,7 @@ role only when the schema declares one.
 
 After the traceability check, the `propose` skill SHALL re-read the
 artifacts as reviewers who did not write them: every role
-`codev roles --at plan.challenge --change <name> --json` returns — the
+`compagnon roles --at plan.challenge --change <name> --json` returns — the
 `skeptic` and the experts the change's domains activate — each along its
 criteria, the project's extra criteria included, and using its
 `knowledge` when it has one. The `skeptic`'s grid covers the need (does
@@ -116,7 +116,7 @@ one that would bring the plan down if wrong) and the tasks (each one
 verifiable). It MUST also apply, only when the proposal's Impact touches
 them, the lenses security & privacy, compatibility & migration,
 operability, performance, and accessibility & UX, as well as the project's
-`rules:` received through `codev instructions`. An expert asks whether
+`rules:` received through `compagnon instructions`. An expert asks whether
 the design addresses its domain.
 
 The pass MUST fix what is unambiguous directly in the artifacts and record
@@ -137,7 +137,7 @@ by configuration instead of listing points.
 #### Scenario: Points to challenge are reported
 
 - **GIVEN** a plan whose design rests on an unverified assumption
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** the summary contains a "Points to challenge" block naming the
   assumption, why it matters and the artifact concerned, tagged `skeptic`
 - **AND** the same point is recorded in the Open Questions of `design.md`
@@ -146,7 +146,7 @@ by configuration instead of listing points.
 
 - **GIVEN** a plan in which the skeptic finds four weak points and the
   `security` expert four more
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** the "Points to challenge" block lists at most five items in
   total, the ones with the highest impact first, each tagged with its role
   id
@@ -155,14 +155,14 @@ by configuration instead of listing points.
 
 - **GIVEN** a change whose proposal ticks `personal-data` and whose design
   stores a new e-mail field with no retention rule
-- **WHEN** `/codev-propose` challenges the plan
+- **WHEN** `/compagnon-propose` challenges the plan
 - **THEN** the missing retention rule is fixed or raised as a point to
   challenge tagged `privacy`
 
 #### Scenario: Nothing to challenge
 
 - **GIVEN** a plan in which the contrarian pass finds nothing worth raising
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** the summary says "No point to challenge found"
 - **AND** lists no invented point
 
@@ -183,7 +183,7 @@ by configuration instead of listing points.
 
 - **GIVEN** a configuration with `roles: { skeptic: never }` and a change
   that ticks no domain
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** no contrarian pass has run
 - **AND** the "Points to challenge" block says the skeptic is disabled by
   configuration
@@ -200,7 +200,7 @@ by configuration instead of listing points.
 
 Once every task is checked and before running the full test suite, the
 `apply` skill SHALL re-read only the code the change added or modified,
-with every role `codev roles --at code.review --change <name> --json`
+with every role `compagnon roles --at code.review --change <name> --json`
 returns — the `newcomer` and the experts the change's domains activate —
 each along its criteria, the project's extra criteria included, and using
 its `knowledge` when it has one. The `newcomer` reads as a developer
@@ -212,7 +212,7 @@ premature genericity and single-use abstractions give way to the simple
 version unless the clever one is justified; comments explain the why where
 it is not obvious and never paraphrase the code; tests read as a
 description of the behavior. It MUST also apply the project's `rules`
-received through `codev instructions`. An expert asks whether the
+received through `compagnon instructions`. An expert asks whether the
 implementation respects its domain.
 
 The skill MUST simplify directly what is unambiguous and re-run the affected
@@ -237,7 +237,7 @@ configuration.
 
 - **GIVEN** a change whose tasks are all checked, and whose code contains a
   dense one-liner with a simple equivalent
-- **WHEN** `/codev-apply` reviews the change as a newcomer
+- **WHEN** `/compagnon-apply` reviews the change as a newcomer
 - **THEN** the one-liner is replaced by the simple version
 - **AND** the affected tests are run again and pass
 
@@ -245,7 +245,7 @@ configuration.
 
 - **GIVEN** a change whose code could be simplified by also changing an edge
   case's behavior, or by adding an unrequested helper
-- **WHEN** `/codev-apply` reviews the change as a newcomer
+- **WHEN** `/compagnon-apply` reviews the change as a newcomer
 - **THEN** the behavior and the scope of the change stay as implemented
 - **AND** the tests that passed before the review still pass
 
@@ -253,7 +253,7 @@ configuration.
 
 - **GIVEN** a review that finds seven concerns it does not fix alone, none
   of them a high-severity security or privacy finding
-- **WHEN** `/codev-apply` presents its final summary
+- **WHEN** `/compagnon-apply` presents its final summary
 - **THEN** the "Review notes" block lists at most five items, each tagged
   with its role id and giving what, where and why
 
@@ -261,14 +261,14 @@ configuration.
 
 - **GIVEN** a review with five readability notes and a `security` finding
   of high severity
-- **WHEN** `/codev-apply` presents its final summary
+- **WHEN** `/compagnon-apply` presents its final summary
 - **THEN** the `security` finding is listed in the "Review notes" block
 
 #### Scenario: An expert reports a behavior-changing fix
 
 - **GIVEN** a change whose proposal ticks `performance`, and whose code
   could be made faster by changing the order of its results
-- **WHEN** `/codev-apply` reviews the change
+- **WHEN** `/compagnon-apply` reviews the change
 - **THEN** the order of results is unchanged
 - **AND** the suggestion appears as a review note tagged `performance`
 
@@ -276,21 +276,21 @@ configuration.
 
 - **GIVEN** a change whose proposal ticks `security`, and whose new
   endpoint builds an SQL query by concatenating a request parameter
-- **WHEN** `/codev-apply` reviews the change
+- **WHEN** `/compagnon-apply` reviews the change
 - **THEN** the query is parameterized, a test covers the hostile input,
   and the summary names the fix
 
 #### Scenario: Nothing to note
 
 - **GIVEN** a change whose code raises no review concern
-- **WHEN** `/codev-apply` presents its final summary
+- **WHEN** `/compagnon-apply` presents its final summary
 - **THEN** the summary says "No review concern found"
 - **AND** lists no invented note
 
 #### Scenario: Code outside the change is untouched
 
 - **GIVEN** a change that calls an obscure function it did not modify
-- **WHEN** `/codev-apply` reviews the change as a newcomer
+- **WHEN** `/compagnon-apply` reviews the change as a newcomer
 - **THEN** that function is left unchanged
 - **AND** it appears, at most, as a review note
 
@@ -298,7 +298,7 @@ configuration.
 
 - **GIVEN** a change whose `change.yaml` holds `roles: { newcomer: never }`
   and whose proposal ticks no domain
-- **WHEN** `/codev-apply` has checked every task
+- **WHEN** `/compagnon-apply` has checked every task
 - **THEN** no review runs and the full test suite runs next
 - **AND** the "Review notes" block says the review is disabled by
   configuration

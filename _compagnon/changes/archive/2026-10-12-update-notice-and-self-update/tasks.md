@@ -12,15 +12,15 @@ endings.
 
 ## 1. Pure core: versions, check policy, cache, release, install decisions
 
-- [x] 1.1 Add `semver` to the workspace and `codev-core`; create
-  `codev_core::update` with version parsing (leading `v` dropped),
+- [x] 1.1 Add `semver` to the workspace and `compagnon-core`; create
+  `compagnon_core::update` with version parsing (leading `v` dropped),
   requirement parsing and matching, verified by unit tests
   `versions_parse_with_or_without_a_leading_v`,
   `requirements_use_cargo_syntax`, `an_invalid_requirement_is_refused`
   (self-update: "Requirement satisfied", "Requirement not satisfied",
   "Invalid requirement").
 - [x] 1.2 Check policy and cache model: `CheckEnv`, `should_check`
-  (`Disabled` under `CI` or `CODEV_NO_UPDATE_CHECK=1`, `UseCache` under 24
+  (`Disabled` under `CI` or `COMPAGNON_NO_UPDATE_CHECK=1`, `UseCache` under 24
   hours, `Refresh` otherwise), `UpdateCache` JSON parse/render (unreadable
   → none), `record_check` keeping the previous release on failure, verified
   by `ci_or_opt_out_disables_the_check`, `a_recent_check_is_reused`,
@@ -71,7 +71,7 @@ endings.
   `curl_http_passes_the_timeout_and_returns_stdout_bytes`,
   `curl_http_reports_a_failed_request`,
   `memory_executable_replaces_and_keeps_the_previous_binary_aside`.
-- [x] 2.2 `codev_engine::update`: cache path under the codev cache root,
+- [x] 2.2 `compagnon_engine::update`: cache path under the compagnon cache root,
   `status_notice` (refresh when due, one request, silent failure recorded),
   `cached_notice` (never requests), `snooze`, `fetch_latest`, verified by
   `status_notice_reuses_a_recent_cache_without_a_request`,
@@ -79,7 +79,7 @@ endings.
   `status_notice_offline_records_the_attempt_and_stays_silent`,
   `status_notice_is_disabled_in_ci_and_on_opt_out`,
   `cached_notice_never_requests`.
-- [x] 2.3 `codev_engine::update::self_update`: method gate, target
+- [x] 2.3 `compagnon_engine::update::self_update`: method gate, target
   resolution (always fresh), decision, `--check`, download, checksum,
   extraction with `tar`, staged write (`update_not_writable`), swap,
   temporary folder cleanup, cache refresh, project refresh by running the
@@ -103,31 +103,31 @@ endings.
   after the update", "Latest release older than the running binary",
   "Explicit downgrade", "Installed with cargo", "Check with an update
   available", "Check offline").
-- [x] 2.4 `codev_version` in `ProjectConfig`, validated at load with
-  `EngineError::InvalidCodevVersion` (`invalid_codev_version`), project
-  only, verified by `codev_version_is_read_from_the_project_config`,
-  `an_invalid_codev_version_fails_with_its_code` (self-update: "Invalid
+- [x] 2.4 `compagnon_version` in `ProjectConfig`, validated at load with
+  `EngineError::InvalidCompagnonVersion` (`invalid_compagnon_version`), project
+  only, verified by `compagnon_version_is_read_from_the_project_config`,
+  `an_invalid_compagnon_version_fails_with_its_code` (self-update: "Invalid
   requirement").
 
 ## 3. Doctor check
 
-- [x] 3.1 `codev_core::doctor`: `codev_version` check after `sources`
-  (`codev_version_unsatisfied` missing, `update_available` warning, fix
-  `codev self-update`), facts gathered by the CLI from the config and the
+- [x] 3.1 `compagnon_core::doctor`: `compagnon_version` check after `sources`
+  (`compagnon_version_unsatisfied` missing, `update_available` warning, fix
+  `compagnon self-update`), facts gathered by the CLI from the config and the
   cache only, verified by core tests
-  `codev_version_unsatisfied_is_missing`,
+  `compagnon_version_unsatisfied_is_missing`,
   `a_known_newer_release_is_a_warning`, the updated
   `a_complete_project_is_all_ok_in_the_stable_order` and
   `summary_counts_missing_and_warnings`, and CLI tests
-  `doctor_reports_an_unsatisfied_codev_version`,
+  `doctor_reports_an_unsatisfied_compagnon_version`,
   `doctor_warns_about_a_cached_newer_release_without_a_request`, the
   updated `doctor_on_a_fresh_project_reports_the_expected_statuses` (doctor:
-  "A freshly initialized project", "Running codev below the project's
+  "A freshly initialized project", "Running compagnon below the project's
   requirement", "A newer release is known").
 
 ## 4. CLI: status, self-update, contract
 
-- [x] 4.1 `Ctx` gains `http` and `exe`; `codev status` computes the notice
+- [x] 4.1 `Ctx` gains `http` and `exe`; `compagnon status` computes the notice
   and the requirement; `StatusV1` gains optional `update` and
   `versionRequirement`; human status prints the update line on stderr;
   the doctor hint stays out of the JSON, verified by
@@ -138,10 +138,10 @@ endings.
   `other_commands_never_request_the_release_api` (self-update: "Update
   available", "Snoozed update", "Other commands never check"; doctor:
   "The hint stays out of the JSON").
-- [x] 4.2 `codev self-update [--version] [--check] [--snooze] [--yes]
+- [x] 4.2 `compagnon self-update [--version] [--check] [--snooze] [--yes]
   [--json]`: target triple embedded by `build.rs`, confirmation on a TTY
   without `--yes`, human rendering, `SelfUpdateV1` and its failure shape,
-  Windows startup cleanup of `codev.old.exe`, verified by
+  Windows startup cleanup of `compagnon.old.exe`, verified by
   `self_update_json_reports_the_action`,
   `self_update_json_failure_keeps_the_shape`,
   `self_update_snooze_records_and_silences_the_notice`,
@@ -149,48 +149,48 @@ endings.
   `self_update_flags_parse` (self-update: "JSON after an update", "JSON
   failure keeps the shape", "Previous Windows binary cleaned up").
 - [x] 4.3 Real end-to-end run against the published v0.5.0 release: a
-  scratch copy of codev built as 0.4.9 runs `codev self-update --yes` in a
-  scratch codev project and becomes 0.5.0 (download, `SHA256SUMS`
-  verification, swap, project refresh), and `codev self-update --check`
+  scratch copy of compagnon built as 0.4.9 runs `compagnon self-update --yes` in a
+  scratch compagnon project and becomes 0.5.0 (download, `SHA256SUMS`
+  verification, swap, project refresh), and `compagnon self-update --check`
   reports the release, verified by the commands' output and
-  `<scratch>/codev --version`. Manual: it needs the real network and a
+  `<scratch>/compagnon --version`. Manual: it needs the real network and a
   published release, which the test suite must never depend on; the
-  developer's `~/.local/bin/codev` is never touched.
+  developer's `~/.local/bin/compagnon` is never touched.
 
 ## 5. Skills
 
 - [x] 5.1 `assets/workflows/_update-notice.md` and the `{{UPDATE_NOTICE}}`
-  substitution in `codev-agents::claude`; the placeholder after the first
-  `codev status --json` of `propose`, `apply`, `update`, `sync` and
-  `archive`; `configure` lists `codev_version` among preserved fields,
-  verified by `codev-agents` tests
+  substitution in `compagnon-agents::claude`; the placeholder after the first
+  `compagnon status --json` of `propose`, `apply`, `update`, `sync` and
+  `archive`; `configure` lists `compagnon_version` among preserved fields,
+  verified by `compagnon-agents` tests
   `action_skills_carry_the_update_notice_once`,
   `read_only_skills_never_offer_an_update`,
   `update_notice_offers_now_and_later_with_self_update`,
   `allowed_tools_are_unchanged_by_the_notice`,
-  `configure_preserves_codev_version` (skills: all six scenarios of "Skills
-  offer to update codev at the start of an action"; configure: "Role
+  `configure_preserves_compagnon_version` (skills: all six scenarios of "Skills
+  offer to update compagnon at the start of an action"; configure: "Role
   documented in the catalog").
 - [x] 5.2 Regenerate this repository's skills, verified by
-  `cargo run --bin codev -- update --force` and the diff of
+  `cargo run --bin compagnon -- update --force` and the diff of
   `.claude/skills/`.
 
 ## 6. Documentation, configuration, release note
 
 - [x] 6.1 Docs EN and FR (vouvoiement, non-breaking spaces in French
-  prose only): installation (upgrading with `codev self-update`), CLI
+  prose only): installation (upgrading with `compagnon self-update`), CLI
   reference (`self-update`, help from the real binary), configuration
-  (`codev_version`), JSON output (`update`, `versionRequirement`,
+  (`compagnon_version`), JSON output (`update`, `versionRequirement`,
   `SelfUpdateV1`), skills (the notice), FAQ (privacy, CI, disabling the
-  check), repository integration (doctor `codev_version`), verified by
-  both mdBook builds without warnings and `codev docs --print` containing
+  check), repository integration (doctor `compagnon_version`), verified by
+  both mdBook builds without warnings and `compagnon docs --print` containing
   `self-update` in both languages.
-- [x] 6.2 This repository: `codev_version: ">=0.5"` in
-  `_codev/config.yaml`, and `codev doctor` with nothing missing, verified by
-  `cargo run --bin codev -- doctor` (`12 check(s), 0 to fix`). `codev
+- [x] 6.2 This repository: `compagnon_version: ">=0.5"` in
+  `_compagnon/config.yaml`, and `compagnon doctor` with nothing missing, verified by
+  `cargo run --bin compagnon -- doctor` (`12 check(s), 0 to fix`). `compagnon
   changelog --write` reads archived changes only, so `[Unreleased]` is
-  regenerated right after `codev archive`, and checked in the commit's
+  regenerated right after `compagnon archive`, and checked in the commit's
   `CHANGELOG.md` diff.
 - [x] 6.3 Final verification: `cargo fmt --all --check`, `cargo clippy
   --workspace --all-targets --locked -- -D warnings`, `cargo test
-  --workspace --locked`, `codev validate --strict`, all green.
+  --workspace --locked`, `compagnon validate --strict`, all green.

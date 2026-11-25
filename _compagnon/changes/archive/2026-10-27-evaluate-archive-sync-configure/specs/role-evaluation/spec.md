@@ -2,13 +2,13 @@
 
 ### Requirement: The runner can play the review cases in the isolated mode
 
-`codev-evals run --review-mode isolated` SHALL write `review: { mode:
-isolated }` into each review case's `_codev/config.yaml` before the
-skills of the codev under test are rendered, so that the skill runs the
+`compagnon-evals run --review-mode isolated` SHALL write `review: { mode:
+isolated }` into each review case's `_compagnon/config.yaml` before the
+skills of the compagnon under test are rendered, so that the skill runs the
 evaluated role as its own sub-agent, as a project in that mode does; the
-sub-agent tool is then granted like `codev`. `--fixture-config <file>`
+sub-agent tool is then granted like `compagnon`. `--fixture-config <file>`
 SHALL append the YAML of `<file>` to each review case's
-`_codev/config.yaml` at the same moment, for a setting a measure needs,
+`_compagnon/config.yaml` at the same moment, for a setting a measure needs,
 and to each implementation case's, as the `implementation-evaluation`
 capability says. Planning, update, sync, archive and configure cases
 ignore both options; implementation cases ignore `--review-mode`. `--review-mode` accepts
@@ -39,7 +39,7 @@ ends in error.
 #### Scenario: A review case in the isolated mode
 
 - **GIVEN** a review case of the `skeptic` at `plan.challenge`
-- **WHEN** the user runs `codev-evals run --case <it> --review-mode
+- **WHEN** the user runs `compagnon-evals run --case <it> --review-mode
   isolated`
 - **THEN** the case's configuration holds `review: { mode: isolated }`,
   and `run.json` records `isolated`
@@ -62,7 +62,7 @@ ends in error.
 
 - **GIVEN** a file holding `roles: { skeptic: { done_when: ["The rollback
   plan is stated"] } }`
-- **WHEN** the user runs `codev-evals run --step review --fixture-config
+- **WHEN** the user runs `compagnon-evals run --step review --fixture-config
   <file>`
 - **THEN** each review case's configuration ends with that text, and
   `run.json` records it
@@ -71,13 +71,13 @@ ends in error.
 
 - **GIVEN** `--review-mode sometimes`, or a `--fixture-config` file that
   does not exist, or one holding `review:`
-- **WHEN** the user runs `codev-evals run`
+- **WHEN** the user runs `compagnon-evals run`
 - **THEN** it exits with code 2 before any case runs, naming the cause
 
 #### Scenario: Resuming in another mode
 
 - **GIVEN** an output directory recorded in the `inline` mode
-- **WHEN** the user runs `codev-evals run --out <it> --review-mode
+- **WHEN** the user runs `compagnon-evals run --out <it> --review-mode
   isolated`
 - **THEN** it exits with code 2, naming both modes
 
@@ -98,7 +98,7 @@ ends in error.
 #### Scenario: A sync, archive or configure case ignores both options
 
 - **GIVEN** a `change.archive` case and a `configure.enrich` case
-- **WHEN** the user runs `codev-evals run --review-mode isolated
+- **WHEN** the user runs `compagnon-evals run --review-mode isolated
   --fixture-config <file>` on them
-- **THEN** neither case's `_codev/config.yaml` gains `review:` nor the
+- **THEN** neither case's `_compagnon/config.yaml` gains `review:` nor the
   file's text

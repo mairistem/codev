@@ -2,11 +2,11 @@
 
 ### Requirement: The runner runs each case alone, headlessly, with Claude Code
 
-`codev-evals run` SHALL, for each selected case, in a new directory
+`compagnon-evals run` SHALL, for each selected case, in a new directory
 outside the repository:
 
 - for a review case, create a git repository whose branch `main` holds
-  `base/` with codev initialized (configuration and skills,
+  `base/` with compagnon initialized (configuration and skills,
   non-interactive), and a branch holding `change/` on top of it, both
   committed; a planning case builds its fixture as the
   `planning-evaluation` capability says;
@@ -21,7 +21,7 @@ outside the repository:
   without modifying any other file; at `plan.trace`, fix the gaps in the
   plan as the step says;
 - run it as a user who works with Claude Code's sandbox would: the
-  shell commands Claude Code approves in its sandbox, and `codev`, which
+  shell commands Claude Code approves in its sandbox, and `compagnon`, which
   the skills grant, run without a prompt, in a sandbox that lets them
   write only in the case's directory and the temporary directory and
   reach no host but the Anthropic API; file edits inside the case's
@@ -30,7 +30,7 @@ outside the repository:
   the runner SHALL check, before any case runs, that the sandbox can
   run on the machine — on Linux, `bubblewrap` and `socat` — and exit with
   code 2 naming what is missing, rather than run without it;
-- record what it observed: the review record as `codev review --json`
+- record what it observed: the review record as `compagnon review --json`
   reports it, the files the case checks, the files the run modified
   outside what the step allows, what the run consumed as Claude Code
   reports it — the cost, the duration and the API duration, the number
@@ -38,7 +38,7 @@ outside the repository:
   cache and read from the cache, and the output tokens, each summed over
   every model the run used, the models it used, the number of
   permission denials, the number of tool calls, and how many of them
-  came before the run first wrote a file under `_codev/changes/` (its
+  came before the run first wrote a file under `_compagnon/changes/` (its
   orientation; absent when it wrote none), and every call to the model —
   or the error that stopped it. For each call, the observation SHALL hold
   the tokens it wrote to the cache, read from it, read without it and
@@ -46,8 +46,8 @@ outside the repository:
   came from: each tool result returned since the previous call, and the
   previous call's own output, gets a share of the call's cache writes in
   proportion to its length, under its source — `skill` (a file under
-  `.claude/skills/`), `codev <subcommand>` (a shell command that runs
-  codev), `file` (another file read), `search` (a search over files),
+  `.claude/skills/`), `compagnon <subcommand>` (a shell command that runs
+  compagnon), `file` (another file read), `search` (a search over files),
   `shell` (another shell command), `edit` (the result of a write or an
   edit), `output` (the model's previous output) — and the first call's
   writes go to `prompt` (Claude Code's own prompt and the request). A measure Claude
@@ -60,18 +60,18 @@ that is not a whole number of at least 1 SHALL exit with code 2 before
 any case runs, naming the flag.
 
 The model SHALL be the one named by the environment variable
-`CODEV_EVAL_MODEL`, else Claude Code's default. Each case SHALL run under
-a budget (`CODEV_EVAL_BUDGET_USD`, default 3 for a review case) and a
-timeout (`CODEV_EVAL_TIMEOUT_SECS`, default 600 for a review case); a
+`COMPAGNON_EVAL_MODEL`, else Claude Code's default. Each case SHALL run under
+a budget (`COMPAGNON_EVAL_BUDGET_USD`, default 3 for a review case) and a
+timeout (`COMPAGNON_EVAL_TIMEOUT_SECS`, default 600 for a review case); a
 planning case's defaults are given by the `planning-evaluation`
 capability. Before any case runs, the
-runner SHALL check that `claude`, `git` and the `codev` binary can be
+runner SHALL check that `claude`, `git` and the `compagnon` binary can be
 executed, and exit with code 2 naming the missing one otherwise; and that
-the `codev` binary's file is named `codev` (`codev.exe` on Windows),
-exiting with code 2 naming the file otherwise: the agent calls codev by
+the `compagnon` binary's file is named `compagnon` (`compagnon.exe` on Windows),
+exiting with code 2 naming the file otherwise: the agent calls compagnon by
 name, through the search path whose first folder is the binary's, so a
 binary under another name would leave the agent running whatever other
-`codev` the search path holds. A case
+`compagnon` the search path holds. A case
 that fails or times out is recorded as an error; the others still run —
 except when Claude Code reports that the account's usage limit is reached:
 the runner then records that run as an error, starts no other run, lets
@@ -91,14 +91,14 @@ stopped.
 
 - **GIVEN** a `plan.challenge` case on the change `add-sessions`
 - **WHEN** the runner builds its prompt
-- **THEN** the prompt names the `codev-propose` skill, its
+- **THEN** the prompt names the `compagnon-propose` skill, its
   `plan.challenge` step, the change `add-sessions`, and says to leave
   every finding `open` and to modify no file but the review record
 
 #### Scenario: The model and the budget come from the environment
 
-- **GIVEN** `CODEV_EVAL_MODEL=claude-sonnet-4-5` and
-  `CODEV_EVAL_BUDGET_USD=1.5`
+- **GIVEN** `COMPAGNON_EVAL_MODEL=claude-sonnet-4-5` and
+  `COMPAGNON_EVAL_BUDGET_USD=1.5`
 - **WHEN** the runner builds the Claude Code command
 - **THEN** it passes that model and that budget; without the variables,
   it passes no model and a budget of 3
@@ -114,7 +114,7 @@ stopped.
 #### Scenario: Claude Code is not installed
 
 - **GIVEN** a `claude` command that cannot be executed
-- **WHEN** the user runs `codev-evals run`
+- **WHEN** the user runs `compagnon-evals run`
 - **THEN** it exits with code 2 before setting up any case, and the
   message names `claude`
 
@@ -137,7 +137,7 @@ stopped.
 #### Scenario: A machine without the sandbox
 
 - **GIVEN** a Linux machine where `socat` is not installed
-- **WHEN** the user runs `codev-evals run`
+- **WHEN** the user runs `compagnon-evals run`
 - **THEN** it exits with code 2 before setting up any case, and the
   message names the sandbox and `socat`
 
@@ -172,41 +172,41 @@ stopped.
 #### Scenario: Each case repeated
 
 - **GIVEN** two selected cases
-- **WHEN** the user runs `codev-evals run --repeat 3`
+- **WHEN** the user runs `compagnon-evals run --repeat 3`
 - **THEN** six runs are made, and each case holds three observations
 
 #### Scenario: An invalid repetition count
 
-- **WHEN** the user runs `codev-evals run --repeat 0`
+- **WHEN** the user runs `compagnon-evals run --repeat 0`
 - **THEN** it exits with code 2 before setting up any case, and the
   message names `--repeat`
 
 #### Scenario: Tool calls and orientation are recorded
 
 - **GIVEN** a run whose events hold 27 tool calls, the twelfth of which
-  writes `_codev/changes/add-search/proposal.md`
+  writes `_compagnon/changes/add-search/proposal.md`
 - **WHEN** its observation is recorded
 - **THEN** it holds 27 tool calls and an orientation of 11
 
 #### Scenario: Where a call's tokens come from
 
 - **GIVEN** a call that wrote 6,000 tokens to the cache after two tool
-  results: `codev roles --at code.review --json`, 9,000 characters long,
+  results: `compagnon roles --at code.review --json`, 9,000 characters long,
   and a read of `src/users.ts`, 3,000 characters long, the previous call
   having produced no text
 - **WHEN** its observation is recorded
-- **THEN** the call attributes 4,500 tokens to `codev roles` and 1,500 to
+- **THEN** the call attributes 4,500 tokens to `compagnon roles` and 1,500 to
   `file`
 
 #### Scenario: A run that writes nothing under the changes
 
-- **GIVEN** a run whose agent writes no file under `_codev/changes/`
+- **GIVEN** a run whose agent writes no file under `_compagnon/changes/`
 - **WHEN** its observation is recorded
 - **THEN** its orientation is absent, not zero
 
-#### Scenario: A codev binary under another name
+#### Scenario: A compagnon binary under another name
 
-- **GIVEN** `--codev /tmp/frozen/codev-candidate`
-- **WHEN** the user runs `codev-evals run`
+- **GIVEN** `--compagnon /tmp/frozen/compagnon-candidate`
+- **WHEN** the user runs `compagnon-evals run`
 - **THEN** it exits with code 2 before any case runs, naming
-  `codev-candidate` and saying the file must be named `codev`
+  `compagnon-candidate` and saying the file must be named `compagnon`

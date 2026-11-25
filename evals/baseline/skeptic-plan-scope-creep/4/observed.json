@@ -109,7 +109,7 @@
         "output": 163,
         "toolCalls": 0,
         "sources": {
-          "codev review": 440
+          "compagnon review": 440
         }
       }
     ]
@@ -212,7 +212,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-csv-export/review.md",
+    "path": "_compagnon/changes/add-csv-export/review.md",
     "status": [],
     "steps": [
       {

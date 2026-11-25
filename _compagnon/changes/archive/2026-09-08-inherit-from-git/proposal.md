@@ -19,41 +19,41 @@ by SHA, read-only, aligned with decision
 
   ```yaml
   inherits:
-    - git: git@github.com:my-org/codev-decisions.git
+    - git: git@github.com:my-org/compagnon-decisions.git
       ref: main
       subpath: shared/           # optional
   ```
 
-- **New `ProcessRunner` port** in `codev-engine`, with a real
+- **New `ProcessRunner` port** in `compagnon-engine`, with a real
   implementation that runs `git` via `std::process::Command` and an
   in-memory implementation for tests. This is the fourth port announced by
   the architecture — this change is its first consumer.
 
-- **SHA-addressed cache** under `~/.cache/codev/`
+- **SHA-addressed cache** under `~/.cache/compagnon/`
   (honoring `XDG_CACHE_HOME`): one *bare* repository per URL in
   `git/<url-hash>/`, the content extracted per SHA in `content/<sha>/`.
   Reads are fully offline as soon as the SHA is cached.
 
-- **Lock file `_codev/codev.lock`** versioned with the project, in TOML
+- **Lock file `_compagnon/compagnon.lock`** versioned with the project, in TOML
   format — like the `Cargo.lock` convention. Each `git:` entry carries the
   URL, the requested `ref`, the `subpath`, the resolved SHA, and the
-  resolution time. `codev sources update` is **the only command that
+  resolution time. `compagnon sources update` is **the only command that
   moves a pin**.
 
 - **Lazy resolution in `config::resolve`**: when an `inherits: git:` is
   declared, `resolve` looks up the matching entry in the lock. Found → the
   resolved path points to the cache content for the locked SHA. Missing →
   a `git_source_unlocked` warning inviting the user to run
-  `codev sources update`. Nothing is fetched at run time; `sources update`
+  `compagnon sources update`. Nothing is fetched at run time; `sources update`
   is what touches the network, nothing else.
 
-- **Three new `codev sources` commands**:
-  - `codev sources list [--json]`: lists all declared sources with their
+- **Three new `compagnon sources` commands**:
+  - `compagnon sources list [--json]`: lists all declared sources with their
     state (local resolved, git locked, git unlocked);
-  - `codev sources update [--json]`: resolves each `git:` via
+  - `compagnon sources update [--json]`: resolves each `git:` via
     `git ls-remote`, downloads if the SHA is new, shows the diff of SHA
     changes before writing the lock, writes;
-  - `codev sources show <ref> [--json]`: details of a source (URL, ref,
+  - `compagnon sources show <ref> [--json]`: details of a source (URL, ref,
     locked SHA, path in the cache, inherited content).
 
 - **Safeguards** — decision 0005 states them; they become concrete:
@@ -77,18 +77,18 @@ None.
 
 ## Impact
 
-- **Code**: new `ProcessRunner` port (`codev-engine::ports`), new module
-  `codev-engine::sources` with the resolution and cache functions, new
-  module `codev-engine::lockfile` for reading/writing the TOML, extension
-  of `codev-engine::config` to use the lock, new group
-  `codev-cli::commands::sources` with its human renderings and its
+- **Code**: new `ProcessRunner` port (`compagnon-engine::ports`), new module
+  `compagnon-engine::sources` with the resolution and cache functions, new
+  module `compagnon-engine::lockfile` for reading/writing the TOML, extension
+  of `compagnon-engine::config` to use the lock, new group
+  `compagnon-cli::commands::sources` with its human renderings and its
   versioned JSON shapes.
 - **Dependencies**: new dependency `toml = "0.8"` for the lock —
   consistent with the `<tool>.lock` convention (`Cargo.lock`,
   `poetry.lock`, `uv.lock`). Rejected alternative (keep YAML for
   everything) in the design.
 - **External binary**: `git` must be on the PATH for
-  `codev sources update`. Missing → `codev sources update` fails with a
+  `compagnon sources update`. Missing → `compagnon sources update` fails with a
   stable code `git_not_found` and an explicit message. The other commands
   need neither `git` nor the network.
 - **Out of scope**:
@@ -100,7 +100,7 @@ None.
     by a `git worktree add` in the cache; switching to `git archive` may
     come after real-world feedback.
   - **Automatic cache cleanup** — the cache grows as SHAs change; a
-    `codev sources gc` command (or equivalent) will be useful later but
+    `compagnon sources gc` command (or equivalent) will be useful later but
     not here.
   - **Writable git sources** — decision 0005: read-only, period.
   - **Authentication other than `git`'s** — no PAT token handling, no

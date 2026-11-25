@@ -23,7 +23,7 @@ scales, that:
 
 #### Scenario: The evidence rule reaches the skills
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the compagnon workflow catalog
 - **WHEN** the `propose` and `apply` skills are rendered
 - **THEN** each says that a `medium` or `high` finding with confidence
   `high` quotes the line and states the scenario that fails
@@ -32,7 +32,7 @@ scales, that:
 
 #### Scenario: What is not a finding reaches the skills
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the compagnon workflow catalog
 - **WHEN** the `propose` and `apply` skills are rendered
 - **THEN** each lists as not a finding a concern another role owns, code
   the change does not touch, what the plan excludes, a missing test the
@@ -40,7 +40,7 @@ scales, that:
 
 #### Scenario: One finding per defect
 
-- **GIVEN** the codev workflow catalog
+- **GIVEN** the compagnon workflow catalog
 - **WHEN** the `propose` and `apply` skills are rendered
 - **THEN** each says that a defect is reported once with its consequences
   in its recommendation, and that two defects needing two fixes are two

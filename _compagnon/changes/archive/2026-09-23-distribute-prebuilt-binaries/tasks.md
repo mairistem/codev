@@ -11,7 +11,7 @@
       - Steps per job: checkout, install the Rust toolchain with the
         target (via `dtolnay/rust-toolchain@stable`), cargo build
         release with `--target <target>`, packaging
-        `codev-<version>-<target>.tar.gz`, upload artifact.
+        `compagnon-<version>-<target>.tar.gz`, upload artifact.
 - [x] 1.2 On the Linux musl runner: install
       `musl-tools` (`apt install -y musl-tools`) before the build.
 - [x] 1.3 Final `release` job that:
@@ -34,14 +34,14 @@
       - `detect_target()`: combines `uname -s` (Darwin/Linux) and
         `uname -m` (arm64/aarch64/x86_64) to return one of the
         three supported targets, or fails with a message.
-      - `resolve_version()`: `${CODEV_VERSION:-$(curl -s
-        https://api.github.com/repos/mairistem/codev/releases/latest |
+      - `resolve_version()`: `${COMPAGNON_VERSION:-$(curl -s
+        https://api.github.com/repos/mairistem/compagnon/releases/latest |
         grep '"tag_name"' | head -1 | cut -d '"' -f 4)}`. Strips the
         leading `v`.
       - `download_and_verify()`: downloads tarball + `SHA256SUMS`,
         verifies via `sha256sum` (Linux) or `shasum -a 256` (macOS).
       - `install_binary()`: extracts into a tempdir, `mkdir -p
-        ~/.local/bin`, `cp <tempdir>/codev ~/.local/bin/codev`,
+        ~/.local/bin`, `cp <tempdir>/compagnon ~/.local/bin/compagnon`,
         `chmod 755`, cleanup.
       - `check_path()`: tests whether `~/.local/bin` is in `$PATH`.
 - [x] 2.3 Main body chaining these functions, with clear messages
@@ -56,7 +56,7 @@
 ## 3. Installation section of the docs
 
 - [x] 3.1 Rework section 2 ("Installation") of
-      `docs/codev.md` with the three paths in order:
+      `docs/compagnon.md` with the three paths in order:
       recommended (curl), alternative (manual download), and
       contributor (cargo).
 - [x] 3.2 Detail the manual path: link to releases, `tar xzf`,
@@ -71,8 +71,8 @@
 
 - [x] 4.1 Add at the top of `README.md` (after any
       description) a "Quick install" block with the
-      command `curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh`.
-- [x] 4.2 Point to `docs/codev.md` (or `codev docs`) for the
+      command `curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh`.
+- [x] 4.2 Point to `docs/compagnon.md` (or `compagnon docs`) for the
       details.
 
 ## 5. Manual validation
@@ -81,13 +81,13 @@
       documentation to avoid syntax mistakes (finicky YAML
       indentation).
 - [x] 5.2 Local test of the script (partial): run
-      `install.sh` with `CODEV_VERSION=0.1.0` **once a
+      `install.sh` with `COMPAGNON_VERSION=0.1.0` **once a
       release exists for that tag**. Refuse to install if the SHA
       differs (manual test: tamper with the downloaded file).
 - [x] 5.3 If no release exists yet: manual dry-run of the
       script by commenting out the `curl` calls and working on a
       local tarball.
-- [x] 5.4 `codev validate --strict` stays green.
+- [x] 5.4 `compagnon validate --strict` stays green.
 
 ## 6. Delivery
 
@@ -97,7 +97,7 @@
 - [x] 6.2 Check the release on GitHub: three tar.gz assets + one
       `SHA256SUMS`.
 - [x] 6.3 Full-scale test:
-      `curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh`
+      `curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh`
       on a Linux VM or a clean Mac (without Rust). Check:
-      `codev --version` returns `0.2.0`, `codev docs` opens, `codev
+      `compagnon --version` returns `0.2.0`, `compagnon docs` opens, `compagnon
       list` works in an initialized repository.

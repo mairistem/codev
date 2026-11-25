@@ -1,7 +1,7 @@
 step: plan.write
 kind: seeded
 ref: da6e0223bd27d58e005d34d5732fed71f3ba78d9
-request: "Je voudrais que codev lance lui-même les relectures en appelant l'API Claude, en parallèle, pour aller plus vite qu'avec les skills."
+request: "Je voudrais que compagnon lance lui-même les relectures en appelant l'API Claude, en parallèle, pour aller plus vite qu'avec les skills."
 summary: "A request written against decision 0007."
 expected:
   modified:

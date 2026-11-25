@@ -4,7 +4,7 @@
 
 After the traceability check, the `propose` skill SHALL re-read the
 artifacts as reviewers who did not write them: every role
-`codev roles --at plan.challenge --change <name> --json` returns — the
+`compagnon roles --at plan.challenge --change <name> --json` returns — the
 `skeptic` and the experts the change's domains activate — each along its
 criteria, the project's extra criteria included, and using its
 `knowledge` when it has one. The `skeptic`'s grid covers the need (does
@@ -15,7 +15,7 @@ specs (error and edge cases, each requirement verifiable), the decisions
 one that would bring the plan down if wrong) and the tasks (each one
 verifiable), the domains (every domain the plan touches is ticked in the
 proposal's `## Domains`, so that its expert reviews it), as well as the
-project's `rules:` received through `codev instructions`. The `skeptic`
+project's `rules:` received through `compagnon instructions`. The `skeptic`
 challenges the plan's logic and evidence; it MUST NOT review a domain
 itself — security, privacy, compatibility and migration, operations,
 performance, accessibility — which belongs to the expert that domain
@@ -42,7 +42,7 @@ by configuration instead of listing points.
 #### Scenario: Points to challenge are reported
 
 - **GIVEN** a plan whose design rests on an unverified assumption
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** the summary contains a "Points to challenge" block naming the
   assumption, why it matters and the artifact concerned, tagged `skeptic`
 - **AND** the same point is a finding of `review.md` under
@@ -52,7 +52,7 @@ by configuration instead of listing points.
 
 - **GIVEN** a plan in which the skeptic finds four weak points and the
   `security` expert four more
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** the "Points to challenge" block lists at most five items in
   total, the most severe first, each tagged with its role id
 - **AND** all eight are findings of the record
@@ -61,14 +61,14 @@ by configuration instead of listing points.
 
 - **GIVEN** a change whose proposal ticks `personal-data` and whose design
   stores a new e-mail field with no retention rule
-- **WHEN** `/codev-propose` challenges the plan
+- **WHEN** `/compagnon-propose` challenges the plan
 - **THEN** the missing retention rule is a finding of the record under
   `### privacy`, fixed in the design or raised as a point to challenge
 
 #### Scenario: Nothing to challenge
 
 - **GIVEN** a plan in which the contrarian pass finds nothing worth raising
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** the summary says "No point to challenge found"
 - **AND** lists no invented point
 - **AND** each role's section of the record says `No finding.`
@@ -100,7 +100,7 @@ by configuration instead of listing points.
 
 - **GIVEN** a configuration with `roles: { skeptic: never }` and a change
   that ticks no domain
-- **WHEN** `/codev-propose` presents the plan
+- **WHEN** `/compagnon-propose` presents the plan
 - **THEN** no contrarian pass has run
 - **AND** the "Points to challenge" block says the skeptic is disabled by
   configuration

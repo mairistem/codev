@@ -20,7 +20,7 @@ A module's layer is **its position in the crate graph**, and Cargo refuses to
 compile a cycle. The dependency rule is therefore checked by the compiler:
 
 ```
-codev-cli → codev-agents → codev-engine → codev-core
+compagnon-cli → compagnon-agents → compagnon-engine → compagnon-core
 ```
 
 Dependency inversion only applies to **effects**, through four ports:

@@ -15,7 +15,7 @@ severity: medium
 confidence: high
 location: "design.md#Goals / Non-Goals"
 evidence: |
-  written once, in the change, in a format a later codev step can read. The
+  written once, in the change, in a format a later compagnon step can read. The
   capture adds no reading, and only a short text to three skills. Quality
 recommendation: "Decide whether corrections are review material; if not, filter `corrections.md` out next to `review.md`, with a scenario and a test such as `plan_material_skips_corrections_md`."
 history:
@@ -29,7 +29,7 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-3 Making unknown fields warnings does not protect older codevs under `--strict`, which is the reason the design gives for it
+#### R-skeptic-3 Making unknown fields warnings does not protect older compagnons under `--strict`, which is the reason the design gives for it
 
 ```yaml
 severity: medium
@@ -43,13 +43,13 @@ history:
     by: skeptic
   - status: fixed
     by: architect
-    note: "Kept as warnings, like the review record and the configuration; the design now states that an older codev never errors nor misreads, that --strict fails until it updates, which codev_version and the update notice tell, and why exempting them from --strict is rejected."
+    note: "Kept as warnings, like the review record and the configuration; the design now states that an older compagnon never errors nor misreads, that --strict fails until it updates, which compagnon_version and the update notice tell, and why exempting them from --strict is rejected."
     ref: "design.md#Decision: The review record's format, with four fields and tolerant unknown fields"
   - status: fixed
     by: skeptic
 ```
 
-#### R-skeptic-1 The measurement leaves `codev-update` and the capture during `/codev-apply` unevaluated, which decision 0008 does not allow
+#### R-skeptic-1 The measurement leaves `compagnon-update` and the capture during `/compagnon-apply` unevaluated, which decision 0008 does not allow
 
 ```yaml
 severity: medium
@@ -58,21 +58,21 @@ location: "design.md#Decision: Measured against the current planning and reviews
 evidence: |
   Following decision 0008, the change adds text to three skills read on
   every call, so it must show no quality loss and a bounded cost. The
-recommendation: "Cover codev-update (and apply beyond code.review) first, in a separate change, as 0008 requires; or state explicitly that those steps are not measured and get that exception accepted. Add a cost bound for the apply skill at code.review. (performance) Only plan.write checks cost; code.review reads codev-apply and has no cost check, and no step reads codev-update: report the skill source at code.review, and bound update by the fragment's measured token size or record it as unmeasured."
+recommendation: "Cover compagnon-update (and apply beyond code.review) first, in a separate change, as 0008 requires; or state explicitly that those steps are not measured and get that exception accepted. Add a cost bound for the apply skill at code.review. (performance) Only plan.write checks cost; code.review reads compagnon-apply and has no cost check, and no step reads compagnon-update: report the skill source at code.review, and bound update by the fragment's measured token size or record it as unmeasured."
 raised_by: [skeptic, performance]
 history:
   - status: open
     by: skeptic
   - status: disputed
     by: architect
-    note: "The fragment is the same text in the three skills, so its cost per call is now measured exactly for all three (task 6.1, at most 400 tokens per rendered skill), and the skill source of code.review is reported (6.3). What stays unmeasured is the quality of codev-update and of apply outside code.review, a gap that predates this change; the design states it and leaves the choice to the author."
+    note: "The fragment is the same text in the three skills, so its cost per call is now measured exactly for all three (task 6.1, at most 400 tokens per rendered skill), and the skill source of code.review is reported (6.3). What stays unmeasured is the quality of compagnon-update and of apply outside code.review, a gap that predates this change; the design states it and leaves the choice to the author."
     ref: "design.md#Decision: Measured against the current planning and reviews"
   - status: disputed
     by: skeptic
     note: "Decision 0008 says a step the suite does not cover is covered first, by its own change; shipping before that is an exception only a person can accept."
   - status: fixed
     by: human:Ludovic
-    note: "The author chose to cover /codev-update first: #49 adds its cases and baseline; this change passes them (18/18 runs, cost -2.4 %)."
+    note: "The author chose to cover /compagnon-update first: #49 adds its cases and baseline; this change passes them (18/18 runs, cost -2.4 %)."
     ref: "#49"
 ```
 
@@ -105,7 +105,7 @@ severity: medium
 confidence: low
 location: "specs/corrections/spec.md#Requirement: The corrections file is not a planning artifact"
 evidence: |
-  changelog` SHALL NOT read it. `codev archive` moves it with the change.
+  changelog` SHALL NOT read it. `compagnon archive` moves it with the change.
 recommendation: "State that corrections.md is kept as long as the archive, and how an author removes an entry with personal data or a secret; document it in the reference page of task 5.1."
 history:
   - status: open
@@ -167,7 +167,7 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "specs/review-record/spec.md#Requirement: `codev review` shows the record and what is left to decide"
+location: "specs/review-record/spec.md#Requirement: `compagnon review` shows the record and what is left to decide"
 evidence: |
   location and what the author asked, under a section `Corrections`
 recommendation: "List corrections defects in their own section and in a separate JSON field so that issues keeps its v1 meaning, or update the review-record fragment to fix each issue in its own file."
@@ -205,14 +205,14 @@ history:
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
-Summarized: crates/codev-agents/src/workflows.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
-Summarized: crates/codev-cli/src/commands.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
-Summarized: crates/codev-cli/src/contract.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
-Summarized: crates/codev-cli/src/docs.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
-Summarized: crates/codev-cli/src/main.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
-Summarized: crates/codev-cli/src/render.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
-Summarized: crates/codev-engine/src/validate/mod.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
+Summarized: crates/compagnon-agents/src/claude.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
+Summarized: crates/compagnon-agents/src/workflows.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
+Summarized: crates/compagnon-cli/src/commands.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
+Summarized: crates/compagnon-cli/src/contract.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
+Summarized: crates/compagnon-cli/src/docs.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
+Summarized: crates/compagnon-cli/src/main.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
+Summarized: crates/compagnon-cli/src/render.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
+Summarized: crates/compagnon-engine/src/validate/mod.rs — over the material limit with the whole change (1,112,760 bytes against 163,840).
 Summarized: docs/en/src/reference/cli.md — over the material limit with the whole change (1,112,760 bytes against 163,840).
 Summarized: docs/en/src/reference/file-formats.md — over the material limit with the whole change (1,112,760 bytes against 163,840).
 Summarized: docs/en/src/reference/json-output.md — over the material limit with the whole change (1,112,760 bytes against 163,840).
@@ -239,8 +239,8 @@ confidence: low
 location: "assets/workflows/fragments/memory-capture.md:5-7"
 evidence: |
   an artifact — note it once in the change's `corrections.md`: the line
-  `<!-- codev-corrections: 1 -->` first when the file is new, then
-recommendation: "Add one sentence: when corrections.md exists without the marker, it is not codev's file; do not write to it nor add the marker, and tell the author the correction could not be noted; assert it in a codev-agents test."
+  `<!-- compagnon-corrections: 1 -->` first when the file is new, then
+recommendation: "Add one sentence: when corrections.md exists without the marker, it is not compagnon's file; do not write to it nor add the marker, and tell the author the correction could not be noted; assert it in a compagnon-agents test."
 history:
   - status: open
     by: migration
@@ -257,7 +257,7 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-core/src/corrections.rs:264-278"
+location: "crates/compagnon-core/src/corrections.rs:264-278"
 evidence: |
   let [step, r#where, did, asked] = match <[String; 4]>::try_from(values) {
 recommendation: "Read each field by name through a helper, combine with let-else, and move the unknown-field and length checks into their own functions."
@@ -267,7 +267,7 @@ history:
   - status: fixed
     by: developer
     note: "required_text, warn_unknown_fields and warn_long_text; the fields are bound by name, with a comment on the early return."
-    ref: "crates/codev-core/src/corrections.rs"
+    ref: "crates/compagnon-core/src/corrections.rs"
   - status: fixed
     by: newcomer
 ```
@@ -277,7 +277,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/corrections.rs:367-377"
+location: "crates/compagnon-core/src/corrections.rs:367-377"
 evidence: |
   fn an_unknown_step_names_the_accepted_ones() {
 recommendation: "Bind the source once, as the neighbouring tests do."
@@ -286,7 +286,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-core/src/corrections.rs"
+    ref: "crates/compagnon-core/src/corrections.rs"
   - status: fixed
     by: newcomer
 ```
@@ -296,7 +296,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/archive.rs:241-244"
+location: "crates/compagnon-engine/src/archive.rs:241-244"
 evidence: |
   let fs = well_formed_project().with_file(
 recommendation: "Declare one CORRECTIONS constant in the test module and name the broken variant at the call site."
@@ -306,7 +306,7 @@ history:
   - status: fixed
     by: developer
     note: "A CORRECTIONS constant in the archive tests, and a named missing_asked variant."
-    ref: "crates/codev-engine/src/archive.rs"
+    ref: "crates/compagnon-engine/src/archive.rs"
   - status: fixed
     by: newcomer
 ```
@@ -316,7 +316,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/changelog.rs:314-317"
+location: "crates/compagnon-engine/src/changelog.rs:314-317"
 evidence: |
   let with_corrections = project().with_file(
 recommendation: "Add a one-line comment saying the content is shaped like a release note on purpose."
@@ -325,7 +325,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/changelog.rs"
+    ref: "crates/compagnon-engine/src/changelog.rs"
   - status: fixed
     by: newcomer
 ```

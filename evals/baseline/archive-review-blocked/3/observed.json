@@ -47,7 +47,7 @@
         "output": 32,
         "toolCalls": 1,
         "sources": {
-          "codev status": 5581
+          "compagnon status": 5581
         }
       },
       {
@@ -57,7 +57,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev archive": 123,
+          "compagnon archive": 123,
           "output": 53
         }
       },
@@ -68,7 +68,7 @@
         "output": 33,
         "toolCalls": 0,
         "sources": {
-          "codev archive": 334
+          "compagnon archive": 334
         }
       }
     ]
@@ -78,7 +78,7 @@
   "files": {},
   "messages": [
     "No update prompt needed; planning complete.",
-    "The review record blocks archiving. Run `codev review --change role-models` to see what is left to decide."
+    "The review record blocks archiving. Run `compagnon review --change role-models` to see what is left to decide."
   ],
   "merge": {
     "changed": {},
@@ -93,7 +93,7 @@
           {
             "code": "review_blocked",
             "level": "error",
-            "message": "change `role-models` cannot be archived yet: R-migration-1 (A shared source that sets `model:` silently drops its context and rules in consumer projects still on an older codev) is high and still open; fix it, or a human accepts the risk or defers it (review_unresolved); run `codev review --change role-models` for details"
+            "message": "change `role-models` cannot be archived yet: R-migration-1 (A shared source that sets `model:` silently drops its context and rules in consumer projects still on an older compagnon) is high and still open; fix it, or a human accepts the risk or defers it (review_unresolved); run `compagnon review --change role-models` for details"
           }
         ],
         "unchanged": [],

@@ -108,7 +108,7 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-6 The scenario's example setting is rejected by today's codev
+#### R-skeptic-6 The scenario's example setting is rejected by today's compagnon
 
 ```yaml
 severity: low
@@ -230,7 +230,7 @@ history:
     by: newcomer
   - status: deferred
     by: developer
-    to: "the next change to codev-evals"
+    to: "the next change to compagnon-evals"
     note: "Readability only; left out to keep this diff small."
 ```
 
@@ -248,7 +248,7 @@ history:
     by: newcomer
   - status: deferred
     by: developer
-    to: "the next change to codev-evals"
+    to: "the next change to compagnon-evals"
     note: "Readability only; left out to keep this diff small."
 ```
 
@@ -266,6 +266,6 @@ history:
     by: newcomer
   - status: deferred
     by: developer
-    to: "the next change to codev-evals"
+    to: "the next change to compagnon-evals"
     note: "Readability only; left out to keep this diff small."
 ```

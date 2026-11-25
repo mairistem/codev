@@ -2,7 +2,7 @@
 
 ### Requirement: The `propose`, `apply` and `update` skills note the author's corrections
 
-The `codev-propose`, `codev-apply` and `codev-update` skills SHALL tell
+The `compagnon-propose`, `compagnon-apply` and `compagnon-update` skills SHALL tell
 the agent that, when the author corrects what it did with an instruction
 about how the project does things — a convention, a technical choice, an
 expectation on an artifact — it appends one entry to the change's
@@ -32,8 +32,8 @@ it states the instruction, not who gave it.
 
 #### Scenario: The skills tell the agent to note a correction
 
-- **GIVEN** the `codev-propose`, `codev-apply` and `codev-update` skills
-  as `codev update` renders them
+- **GIVEN** the `compagnon-propose`, `compagnon-apply` and `compagnon-update` skills
+  as `compagnon update` renders them
 - **WHEN** their text is read
 - **THEN** each tells the agent to append an entry to `corrections.md`
   when the author corrects how the project does things, with `step`,
@@ -59,14 +59,14 @@ it states the instruction, not who gave it.
 
 #### Scenario: A run without correction writes no file
 
-- **GIVEN** a `codev-evals` planning run, in which no author corrects
+- **GIVEN** a `compagnon-evals` planning run, in which no author corrects
   the agent
 - **WHEN** the run ends
 - **THEN** the change holds no `corrections.md`
 
 #### Scenario: Other skills do not note corrections
 
-- **GIVEN** the `codev-archive`, `codev-sync` and `codev-explore` skills
-  as `codev update` renders them
+- **GIVEN** the `compagnon-archive`, `compagnon-sync` and `compagnon-explore` skills
+  as `compagnon update` renders them
 - **WHEN** their text is read
 - **THEN** none mentions `corrections.md`

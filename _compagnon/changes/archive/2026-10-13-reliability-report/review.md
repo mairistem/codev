@@ -11,7 +11,7 @@
 ```yaml
 severity: medium
 confidence: high
-location: "design.md#Decision: A pure page builder in `codev-evals`, a `docs` subcommand around it"
+location: "design.md#Decision: A pure page builder in `compagnon-evals`, a `docs` subcommand around it"
 evidence: |
   reads only the fields the page shows — `thresholds`, `costUsd`, the
 recommendation: >-

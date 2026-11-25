@@ -2,13 +2,13 @@
 
 ### Requirement: The runner can play the review cases in the isolated mode
 
-`codev-evals run --review-mode isolated` SHALL write `review: { mode:
-isolated }` into each review case's `_codev/config.yaml` before the
-skills of the codev under test are rendered, so that the skill runs the
+`compagnon-evals run --review-mode isolated` SHALL write `review: { mode:
+isolated }` into each review case's `_compagnon/config.yaml` before the
+skills of the compagnon under test are rendered, so that the skill runs the
 evaluated role as its own sub-agent, as a project in that mode does; the
-sub-agent tool is then granted like `codev`. `--fixture-config <file>`
+sub-agent tool is then granted like `compagnon`. `--fixture-config <file>`
 SHALL append the YAML of `<file>` to each review case's
-`_codev/config.yaml` at the same moment, for a setting a measure needs.
+`_compagnon/config.yaml` at the same moment, for a setting a measure needs.
 Planning and update cases ignore both options. `--review-mode` accepts
 `inline` (the default) and `isolated`; an unknown mode, a
 `--fixture-config` file that is missing or not a YAML mapping, or one
@@ -37,7 +37,7 @@ ends in error.
 #### Scenario: A review case in the isolated mode
 
 - **GIVEN** a review case of the `skeptic` at `plan.challenge`
-- **WHEN** the user runs `codev-evals run --case <it> --review-mode
+- **WHEN** the user runs `compagnon-evals run --case <it> --review-mode
   isolated`
 - **THEN** the case's configuration holds `review: { mode: isolated }`,
   and `run.json` records `isolated`
@@ -60,7 +60,7 @@ ends in error.
 
 - **GIVEN** a file holding `roles: { skeptic: { done_when: ["The rollback
   plan is stated"] } }`
-- **WHEN** the user runs `codev-evals run --step review --fixture-config
+- **WHEN** the user runs `compagnon-evals run --step review --fixture-config
   <file>`
 - **THEN** each review case's configuration ends with that text, and
   `run.json` records it
@@ -69,13 +69,13 @@ ends in error.
 
 - **GIVEN** `--review-mode sometimes`, or a `--fixture-config` file that
   does not exist, or one holding `review:`
-- **WHEN** the user runs `codev-evals run`
+- **WHEN** the user runs `compagnon-evals run`
 - **THEN** it exits with code 2 before any case runs, naming the cause
 
 #### Scenario: Resuming in another mode
 
 - **GIVEN** an output directory recorded in the `inline` mode
-- **WHEN** the user runs `codev-evals run --out <it> --review-mode
+- **WHEN** the user runs `compagnon-evals run --out <it> --review-mode
   isolated`
 - **THEN** it exits with code 2, naming both modes
 
@@ -97,7 +97,7 @@ ends in error.
 
 ### Requirement: Two runs are compared, with a verdict on quality and consumption
 
-`codev-evals compare <baseline> <candidate>` SHALL read two output
+`compagnon-evals compare <baseline> <candidate>` SHALL read two output
 directories, calling no model, and compare them on the cases both hold,
 each run's role measures computed on those cases alone. It SHALL print a
 markdown report on its standard output with, per role, each quality
@@ -160,7 +160,7 @@ same time, and say so when either differs.
   a total cost of 2.04 USD and a floor of 1.95 USD, and a candidate on
   the same cases with a median recall of 1.00 and a total cost of
   1.70 USD
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 0, and the report shows the cost down by about
   17 %
 
@@ -168,21 +168,21 @@ same time, and say so when either differs.
 
 - **GIVEN** a baseline with a total cost of 2.04 USD and a floor of
   1.95 USD, and a candidate of the same quality at 1.99 USD
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 1, naming 1.99 USD and the baseline's floor,
   1.95 USD
 
 #### Scenario: The same code compared with itself
 
 - **GIVEN** a baseline
-- **WHEN** the user runs `codev-evals compare <baseline> <baseline>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <baseline>`
 - **THEN** it fails on consumption and passes on quality
 
 #### Scenario: A cheaper run that misses more
 
 - **GIVEN** a baseline where `ops` has a recall from 0.83 to 1.00, and a
   cheaper candidate where its median recall is 0.67
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 1, naming `ops`, the recall 0.67 and the
   baseline's minimum 0.83
 
@@ -190,7 +190,7 @@ same time, and say so when either differs.
 
 - **GIVEN** a candidate whose role measures stay within the baseline's
   ranges and whose total cost is above the baseline's
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 1 and names the cost of both runs; with
   `--quality-only`, it exits with 0 and still reports both costs
 
@@ -198,13 +198,13 @@ same time, and say so when either differs.
 
 - **GIVEN** a candidate cheaper than the baseline, of the same quality,
   whose API duration is twice the baseline's
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 0 and reports the duration's increase
 
 #### Scenario: A candidate on a subset of the cases
 
 - **GIVEN** a baseline of 40 cases and a candidate that ran 10 of them
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** both runs are measured on those 10 cases, and the report
   lists the 30 others as not compared
 
@@ -212,14 +212,14 @@ same time, and say so when either differs.
 
 - **GIVEN** a baseline of format 1, which records each case's cost but
   no tokens, and a cheaper candidate of format 2 of the same quality
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 0, the costs compared and the baseline's tokens
   and turns shown as `—`
 
 #### Scenario: A baseline without costs
 
 - **GIVEN** a baseline whose observations hold no cost
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 1 and says the consumption cannot be compared;
   with `--quality-only`, the verdict rests on quality alone
 
@@ -227,7 +227,7 @@ same time, and say so when either differs.
 
 - **GIVEN** a baseline recorded with Claude Code's default model and a
   candidate recorded with `claude-sonnet-4-5`
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 2, names both models, and prints no report
 
 #### Scenario: The same default, another model used
@@ -235,7 +235,7 @@ same time, and say so when either differs.
 - **GIVEN** a baseline and a candidate both recorded with Claude Code's
   default model, whose observations record `claude-opus-5-5` and
   `claude-sonnet-5-5` as used
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 2, names both models, and prints no report
 
 #### Scenario: Comparing across models on purpose
@@ -243,7 +243,7 @@ same time, and say so when either differs.
 - **GIVEN** a baseline whose observations record `claude-opus-5-5` and a
   candidate whose observations record `claude-opus-5-5` and
   `claude-sonnet-5-5`
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>
   --across-models`
 - **THEN** it compares them, and the report names both runs' models at
   its top
@@ -252,34 +252,34 @@ same time, and say so when either differs.
 
 - **GIVEN** a baseline and a candidate recorded with different
   `--fixture-config` texts
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** the report names both texts and says they differ
 
 #### Scenario: Two review modes
 
 - **GIVEN** a baseline recorded in the `inline` review mode and a
   candidate in the `isolated` mode
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 2, names both modes, and prints no report
 
 #### Scenario: Another Claude Code version
 
 - **GIVEN** a baseline recorded with Claude Code 2.1.289 and a candidate
   with 2.1.301, on the same model
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** the report names both versions and says they differ
 
 #### Scenario: No case in common
 
 - **GIVEN** a baseline and a candidate that share no case
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 2 and says no case is in common
 
 #### Scenario: Quality improved
 
 - **GIVEN** a baseline whose `skeptic` has from 3 to 6 false positives,
   and a candidate whose median is 2
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** the report says the quality of `skeptic` improved on false
   positives, from 3 at best to 2
 
@@ -287,7 +287,7 @@ same time, and say so when either differs.
 
 - **GIVEN** a candidate whose input per call falls from 38,000 to 31,000
   tokens and whose `skill` source falls by half
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** the report shows both changes, the input per call at −18 %
   and the `skill` source at −50 %
 
@@ -295,6 +295,6 @@ same time, and say so when either differs.
 
 - **GIVEN** a baseline whose planning cases have a primary recall from
   0.60 to 0.75, and a cheaper candidate whose median is 0.50
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** it exits with 1, naming `plan.write`, the recall 0.50 and the
   baseline's minimum 0.60

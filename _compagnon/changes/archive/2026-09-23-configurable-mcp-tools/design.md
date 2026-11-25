@@ -4,7 +4,7 @@
 
 See `proposal.md`. The first real use showed that MCP names are
 **specific to the Claude Code environment**. This change removes the
-names from the source code and moves them to `_codev/config.yaml`.
+names from the source code and moves them to `_compagnon/config.yaml`.
 
 ## Goals / Non-Goals
 
@@ -23,7 +23,7 @@ Two options:
 | Option | Pro | Con |
 |---|---|---|
 | **A. Free-form `HashMap<String, String>`** | Zero-cost extension, each skill reads its key | Invites putting anything in; silent naming errors; `deny_unknown_fields` useless |
-| **B. `struct McpConfig { jira_tool: Option<String>, … }`** | Known fields, serde validation, IDE autocompletion, warnings on typos | Each new MCP requires a PR on the codev side |
+| **B. `struct McpConfig { jira_tool: Option<String>, … }`** | Known fields, serde validation, IDE autocompletion, warnings on typos | Each new MCP requires a PR on the compagnon side |
 
 **Chosen: B.** Consistent with the philosophy of the rest of
 `ProjectConfig` (`inherits`, `rules`) — typed fields,
@@ -117,18 +117,18 @@ point and could hallucinate a tool name.
 
 For this repository:
 
-1. Edit `_codev/config.yaml` — add:
+1. Edit `_compagnon/config.yaml` — add:
    ```yaml
    mcp:
      jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
    ```
-2. `cargo install --path crates/codev-cli`
-3. `codev update --force` — the installed SKILL.md now carries the
+2. `cargo install --path crates/compagnon-cli`
+3. `compagnon update --force` — the installed SKILL.md now carries the
    Rovo name.
-4. Check: `head -5 .claude/skills/codev-propose/SKILL.md` shows
+4. Check: `head -5 .claude/skills/compagnon-propose/SKILL.md` shows
    `allowed-tools: "..., mcp__claude_ai_Atlassian_Rovo__getJiraIssue"`.
 
-For a project discovering codev:
+For a project discovering compagnon:
 
 - With no MCP connected or configured: the skill installs with
   `allowed-tools` without an MCP and a body that says "(Jira MCP not
@@ -136,4 +136,4 @@ For a project discovering codev:
   `propose-detects-jira-tickets`.
 - With an MCP connected: add the `mcp:` block in `config.yaml` (the
   scaffold's `DEFAULT_CONFIG` contains a commented example), rerun
-  `codev update --force`.
+  `compagnon update --force`.

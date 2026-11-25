@@ -2,12 +2,12 @@
 
 ### Requirement: A reliability chapter is generated from the committed baseline
 
-`codev-evals docs` SHALL write the chapter `reliability.md` of the English
+`compagnon-evals docs` SHALL write the chapter `reliability.md` of the English
 and the French books from the committed baseline's `report.json` and
 `run.json`, the same scores in both languages. Each page SHALL hold:
 
 - what the suite measures and what it does not;
-- the run: its date, the model, the Claude Code and codev versions, the
+- the run: its date, the model, the Claude Code and compagnon versions, the
   number of cases (seeded and controls) and the cost;
 - headline figures: recall over every seeded defect, evidence validity
   over every checked finding, the false positives and their number per
@@ -27,7 +27,7 @@ and the French books from the committed baseline's `report.json` and
   `evals/baseline` in the repository.
 
 The charts SHALL be drawn without a script, readable in the light and
-the dark themes of the website and of `codev docs`, each with a title
+the dark themes of the website and of `compagnon docs`, each with a title
 and a text description for assistive technologies, and each mark naming
 its role and value on hover. A measure that has no value — recall for a
 role without a seeded case — SHALL show as `—` and draw no mark.
@@ -43,9 +43,9 @@ baseline.
 #### Scenario: The committed pages follow the baseline
 
 - **GIVEN** the committed `evals/baseline/` and both `reliability.md`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails, naming the page, if a committed page differs from
-  what `codev-evals docs` would write
+  what `compagnon-evals docs` would write
 
 #### Scenario: A role over the false-positive threshold
 
@@ -82,7 +82,7 @@ baseline.
 #### Scenario: A report the command cannot read
 
 - **GIVEN** a baseline directory whose `report.json` carries format 2
-- **WHEN** the user runs `codev-evals docs`
+- **WHEN** the user runs `compagnon-evals docs`
 - **THEN** it exits with 2, names `report.json` and the format, and
   writes no page
 
@@ -90,7 +90,7 @@ baseline.
 
 - **GIVEN** a baseline directory whose `report.json` records the date
   2026-10-13 and whose `run.json` records 2026-11-02
-- **WHEN** the user runs `codev-evals docs`
+- **WHEN** the user runs `compagnon-evals docs`
 - **THEN** it exits with 2, names `report.json` and `run.json`, and
   writes no page
 
@@ -101,17 +101,17 @@ baseline.
 `CONTRIBUTING.md` and `CONTRIBUTING.fr.md` SHALL say that a pull request
 modifying a file of `assets/roles/` runs the evaluations and pastes the
 scores before and after the change, and that recording the baseline
-again is followed by `codev-evals docs`, which regenerates the
+again is followed by `compagnon-evals docs`, which regenerates the
 reliability chapter. The Roles chapter of each language SHALL say how
 the built-in roles are measured and where the baseline is.
 
 #### Scenario: Both languages say it
 
 - **GIVEN** the two contributing guides and the two `roles.md` chapters
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails if one of them does not name `evals/baseline`, if
   a contributing guide does not name `assets/roles/`, or if a
-  contributing guide does not name `codev-evals -- docs`
+  contributing guide does not name `compagnon-evals -- docs`
 
 #### Scenario: A guide that forgets the rule
 

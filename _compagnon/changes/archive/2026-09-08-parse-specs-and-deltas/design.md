@@ -2,11 +2,11 @@
 
 ## Context
 
-See `proposal.md` for the motivation. The parser lives in `codev-core`, so
+See `proposal.md` for the motivation. The parser lives in `compagnon-core`, so
 it is pure — no `std::fs`, no clock — in line with decision
 [0001 — Functional core, imperative shell](../../decisions/0001-functional-core-imperative-shell.md).
 
-It will be consumed by `codev-engine` (through upcoming modules: `validate`,
+It will be consumed by `compagnon-engine` (through upcoming modules: `validate`,
 `sync`, `archive`), not by the CLI directly. The crate graph is enough to
 enforce the direction of the flow, cf.
 [0002 — The crate graph enforces the dependency rule](../../decisions/0002-crate-graph-as-dependency-rule.md).
@@ -16,7 +16,7 @@ enforce the direction of the flow, cf.
 This design covers only the parser — the shape of its AST, its error
 boundaries, its handling of literal zones. Semantic merging
 (`sync`/`archive`) and cross-file validation rules remain out of scope:
-they will live in their own modules in `codev-engine`, each with its own
+they will live in their own modules in `compagnon-engine`, each with its own
 design.
 
 ## Decisions
@@ -29,7 +29,7 @@ The OpenSpec reference does all its parsing in ~1,200 lines of TypeScript
 with no markdown dependency.
 
 A line-by-line pass, with a precomputed fence mask, covers 100% of the need
-and keeps `codev-core` free of any new dependency.
+and keeps `compagnon-core` free of any new dependency.
 
 **Alternatives considered**:
 
@@ -88,7 +88,7 @@ be `Send + 'static` — a necessary condition for crossing a function
 boundary without lifetimes in the public signatures.
 
 **Alternative**: borrow the source (`Spec<'a>`). Zero copy, but it forces
-lifetimes on everything that handles an AST — including `codev-engine`,
+lifetimes on everything that handles an AST — including `compagnon-engine`,
 which would become generic over lifetimes for a negligible gain, since a
 `Requirement` is a few hundred bytes and there are a few dozen per file.
 
@@ -119,7 +119,7 @@ literal).
 - **Delta extensibility** — Adding a fifth operation would require
   modifying the enumeration. → **Accepted trade-off**: the four operations
   are set in stone in the format; a fifth would deserve a decision in the
-  `_codev/decisions/` sense, not a mere added `enum` variant.
+  `_compagnon/decisions/` sense, not a mere added `enum` variant.
 
 ## Migration Plan
 

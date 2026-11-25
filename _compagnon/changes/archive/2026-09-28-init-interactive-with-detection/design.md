@@ -1,11 +1,11 @@
-# Design: interactive codev init with detection
+# Design: interactive compagnon init with detection
 
 ## Context
 
 See `proposal.md`. New `init` capability, modification of `skills` to
-reverse `DEFAULT_WORKFLOWS`, rework of `codev-cli::commands::init`,
-new module `codev-core::detect`, new module
-`codev-core::config::generate`. New dependency `dialoguer`.
+reverse `DEFAULT_WORKFLOWS`, rework of `compagnon-cli::commands::init`,
+new module `compagnon-core::detect`, new module
+`compagnon-core::config::generate`. New dependency `dialoguer`.
 
 ## Decisions
 
@@ -17,7 +17,7 @@ ten dependencies, no tokio), stable since 2018, used by `cargo`,
 autocomplete) but those features are of no use to us here — two
 questions, no sophisticated validation.
 
-Cost for codev: ~10 additional transitive dependencies. Cost of
+Cost for compagnon: ~10 additional transitive dependencies. Cost of
 `inquire`: ~20. For a dev-tool CLI, `dialoguer` wins.
 
 **Rejected alternative A**: `inquire`. Rejected on the grounds of
@@ -28,34 +28,34 @@ weight disproportionate to the needs.
 keyboard selection, of redraw on backspace, costs more than a
 battle-tested dependency.
 
-### Decision: detection in `codev-core`, prompts in `codev-cli`
+### Decision: detection in `compagnon-core`, prompts in `compagnon-cli`
 
 Detection is **pure** — it transforms `&[u8]` (manifest contents) into
 a `struct Detected`. It needs no I/O beyond reading the files, which
 goes through the existing `FileSystem` port. It lives in
-`codev-core::detect` (submodules `stack`, `mcp`, `license`, `ci`,
+`compagnon-core::detect` (submodules `stack`, `mcp`, `license`, `ci`,
 `git`).
 
 Prompts are **impure** — they read stdin, write stdout, probe the TTY
-state. They live in `codev-cli::init_prompts` (new module).
+state. They live in `compagnon-cli::init_prompts` (new module).
 
 The orchestration (sniff → prompt → generate → scaffold → install)
-lives in `codev-cli::commands::init`.
+lives in `compagnon-cli::commands::init`.
 
-**Rejected alternative**: put detection in `codev-engine` because it
+**Rejected alternative**: put detection in `compagnon-engine` because it
 "does I/O". Rejected — reading a `Cargo.toml` through the
 `FileSystem` port is pure reading as seen from the domain. Placed in
-`codev-engine`, it would mix detection and effects, whereas detection
+`compagnon-engine`, it would mix detection and effects, whereas detection
 is precisely the kind of computation a pure core knows how to do.
 
-### Decision: generating `_codev/config.yaml` is a **manual YAML rendering**, not `serde_norway::to_string`
+### Decision: generating `_compagnon/config.yaml` is a **manual YAML rendering**, not `serde_norway::to_string`
 
 The generated file carries **provenance comments** above certain keys
 (`# detected from Cargo.toml`). No YAML serialization library
 preserves comments — a non-issue for reading (they ignore them), but
 an insurmountable problem for writing.
 
-The `codev-core::config::generate` function MUST therefore render the
+The `compagnon-core::config::generate` function MUST therefore render the
 YAML **character by character**: it assembles a string from a typed
 `GeneratedConfig` that carries, for each field, its value AND its
 optional provenance comment.
@@ -69,7 +69,7 @@ Rejected — too fragile and no shorter than manual rendering.
 
 **Cross-check**: the generated YAML MUST go through
 `serde_norway::from_str::<ProjectConfig>()` in a unit test, to
-guarantee that it stays readable by the rest of codev. We generate by
+guarantee that it stays readable by the rest of compagnon. We generate by
 hand, we read back with the library.
 
 ### Decision: `Detected` contains `Option`s — never invention
@@ -141,7 +141,7 @@ with exactly 3 workflows) becomes false. The spec is therefore
 **MODIFIED**, not supplemented by an ADDED — the contract changes, it
 is not an extension. The corresponding test is rewritten.
 
-Side effect for existing projects: `codev update` on a project that
+Side effect for existing projects: `compagnon update` on a project that
 has no explicit `workflows:` key installs the 4 missing skills all at
 once. This is the intended behavior — an under-configured project
 catches up on what it should have had. A project that insists on
@@ -177,9 +177,9 @@ declaration).
 
 No migration tool needed. An existing project that has no explicit
 `workflows:` key will see its skills completed on the next
-`codev update`. A project that has one may want to add the missing
+`compagnon update`. A project that has one may want to add the missing
 workflows (internal ADR — no constraint).
 
 `CHANGELOG.md` documents the change with a short sentence:
-"The default of `codev init`/`update` goes from 3 to 7 skills —
+"The default of `compagnon init`/`update` goes from 3 to 7 skills —
 projects that want fewer declare an explicit `workflows:`."

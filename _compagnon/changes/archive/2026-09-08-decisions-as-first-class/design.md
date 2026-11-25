@@ -12,21 +12,21 @@ decision [0006](../../decisions/0006-serde-norway-for-yaml.md).
 
 This design covers:
 
-- the core / engine split — pure parser in `codev-core::decisions`, index
-  and merging of sources in `codev-engine::decisions`;
+- the core / engine split — pure parser in `compagnon-core::decisions`, index
+  and merging of sources in `compagnon-engine::decisions`;
 - the public shape of the JSON contract for decisions;
 - the injection strategy into `instructions design`, without breaking what
   exists.
 
-It does **not** cover the `codev decision …` CLI commands (K5), immutability
+It does **not** cover the `compagnon decision …` CLI commands (K5), immutability
 detection (K3), deviation (K6), or promotion from design (K7). These four
 points form a coherent batch to be handled next.
 
 ## Decisions
 
-### Decision: pure parser in `codev-core::decisions`
+### Decision: pure parser in `compagnon-core::decisions`
 
-Like `parser`, `validate`, `merge` — one more module in `codev-core`,
+Like `parser`, `validate`, `merge` — one more module in `compagnon-core`,
 without I/O. It exposes `parse_decision(source: &str) -> Parsed<Decision>`
 which returns a `Decision { id, title, status, date, tags, supersedes,
 sections, span }` along with the list of structural `Finding`s encountered.
@@ -40,10 +40,10 @@ pure core — and the crate graph of decision
 [0002](../../decisions/0002-crate-graph-as-dependency-rule.md).
 
 **Rejected alternative**: a dedicated ADR parser in a new crate. The
-volume is too small to justify one more boundary, and `codev-core` stays
+volume is too small to justify one more boundary, and `compagnon-core` stays
 free of new dependencies.
 
-### Decision: index and supersession in `codev-engine::decisions`
+### Decision: index and supersession in `compagnon-engine::decisions`
 
 The engine coordinates reading the disk and merging with inherited
 sources. It exposes `pub fn index(fs, layout, config) -> DecisionIndex`
@@ -103,7 +103,7 @@ A new dedicated field at the root level:
   "decisions": [
     { "id": "0007", "qualifiedId": "project/0007",
       "title": "…", "status": "accepted", "tags": ["architecture"],
-      "path": "_codev/decisions/0007-….md", "origin": "project" }
+      "path": "_compagnon/decisions/0007-….md", "origin": "project" }
   ],
   …
 }
@@ -152,6 +152,6 @@ rendered. A consumer who wants more has `--json`.
 ## Migration Plan
 
 Not applicable — new capability. The 6 ADRs already present in the
-repository will be indexed by the first `codev instructions design` call
+repository will be indexed by the first `compagnon instructions design` call
 after compilation, with no manual intervention. This is the change's first
 real test.

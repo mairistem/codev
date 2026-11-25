@@ -2,11 +2,11 @@
 
 ## Context
 
-Everything codev produced was French, from CLI messages to template
+Everything compagnon produced was French, from CLI messages to template
 headings, and parsers recognized French headings. No external project
 depends on those forms yet, which makes this the cheapest moment to switch.
 The constraint that shapes the design: artifacts are read and approved by a
-team that may not work in English, while codev must keep parsing them.
+team that may not work in English, while compagnon must keep parsing them.
 
 ## Goals / Non-Goals
 
@@ -28,7 +28,7 @@ team that may not work in English, while codev must keep parsing them.
 Headings, delta sections and `**WHEN**` / `SHALL` markers are what the
 parsers read; keeping a single English set keeps the parsers simple and the
 files portable between teams. Only prose is localized, like Gherkin keywords
-in many projects. The language lives in `_codev/config.yaml` rather than
+in many projects. The language lives in `_compagnon/config.yaml` rather than
 following the conversation: it is a team choice, versioned with the
 repository, and two developers get the same result. Like `mcp`, it is not
 inherited from sources — it belongs to the team writing in this repository.
@@ -40,7 +40,7 @@ same change).
 
 ### Decision: `language` is detected at init, never guessed later
 
-`codev init` writes the value once, with its provenance (`--language`, the
+`compagnon init` writes the value once, with its provenance (`--language`, the
 POSIX locale precedence `LC_ALL` → `LC_MESSAGES` → `LANG`, or `en`). The
 region is dropped except where it changes the written language (`pt-BR`,
 `zh-Hant`, `zh-Hans`). No extra init question is asked, to keep the
@@ -49,19 +49,19 @@ region is dropped except where it changes the written language (`pt-BR`,
 ### Decision: One table of contents per language drives both the site and the binary
 
 `build.rs` reads each `docs/<lang>/src/SUMMARY.md` and embeds the listed
-chapters with `include_str!`, so `codev docs` and the mdBook site always
+chapters with `include_str!`, so `compagnon docs` and the mdBook site always
 agree. A test enforces identical chapter paths across languages, which is
 what keeps the two editions from drifting. Links between chapters are
 rewritten to in-page anchors and headings get mdBook-style ids, so an
 anchor that works on the site works on the single page. This follows the
-functional-core rule of `_codev/decisions/0001-functional-core-imperative-shell.md`:
+functional-core rule of `_compagnon/decisions/0001-functional-core-imperative-shell.md`:
 the docs module only transforms strings; reading files happens at build time.
 
 ### Decision: Accepted ADRs and the project context stay as they are
 
 Accepted decisions are sealed; rewriting their bodies to translate them
-would contradict the immutability codev enforces, so they are kept in French
-as dated records. `_codev/config.yaml` is left to the maintainers, since its
+would contradict the immutability compagnon enforces, so they are kept in French
+as dated records. `_compagnon/config.yaml` is left to the maintainers, since its
 `context:` and `rules:` are injected into every agent prompt.
 
 ## Risks / Trade-offs

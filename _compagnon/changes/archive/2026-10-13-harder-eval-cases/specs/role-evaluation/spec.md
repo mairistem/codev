@@ -19,7 +19,7 @@ directory per case, named by the case's id. A case holds:
   contain yet;
 - `base/` — the fixture project as it is on its default branch;
 - `change/` — the files the change adds or modifies, its planning
-  artifacts under `_codev/changes/<change>/` included.
+  artifacts under `_compagnon/changes/<change>/` included.
 
 An expected finding states its `id`, `severity`, `category` and one or
 more `locations`, in the review record's location syntax: `path:line` or
@@ -34,7 +34,7 @@ fixture and a text it must contain after the run) and `unchanged` paths
 (files the run must leave as they were).
 
 The planning artifacts of a case — every markdown file under
-`_codev/changes/<change>/` in the fixture — SHALL cite only what the
+`_compagnon/changes/<change>/` in the fixture — SHALL cite only what the
 fixture contains:
 
 - a file path between backquotes — a path with a `/` whose last part has
@@ -50,7 +50,7 @@ fixture contains:
   by the word "test" or "tests" (with those listed after it: "tests `a`
   and `b`"), or the filter a backquoted `cargo test`, `npm test --` or
   `pytest -k` command selects — SHALL appear in a test
-  file of the fixture: a file outside `_codev/` whose path contains
+  file of the fixture: a file outside `_compagnon/` whose path contains
   `test` or `spec`, or a Rust file holding a `#[test]`;
 - unless the case lists it under `planned`. A `code.review` case, whose
   tasks are all done, SHALL list nothing under `planned`; a `planned`
@@ -70,7 +70,7 @@ category, when a category has no term or a key is unknown.
 #### Scenario: The repository's suite is well formed
 
 - **GIVEN** the cases under `evals/cases/`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** every case loads, every expected location exists in its
   fixture, and no planning artifact cites a file or a test the fixture
   lacks
@@ -146,7 +146,7 @@ Python case.
 #### Scenario: The repository's suite meets the minimum
 
 - **GIVEN** the cases under `evals/cases/`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it passes
 
 #### Scenario: A role without a control

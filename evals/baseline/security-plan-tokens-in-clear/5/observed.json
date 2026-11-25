@@ -68,7 +68,7 @@
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "codev review": 182,
+          "compagnon review": 182,
           "file": 1956
         }
       },
@@ -100,7 +100,7 @@
         "output": 132,
         "toolCalls": 0,
         "sources": {
-          "codev review": 821,
+          "compagnon review": 821,
           "edit": 159
         }
       }
@@ -212,7 +212,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-api-tokens/review.md",
+    "path": "_compagnon/changes/add-api-tokens/review.md",
     "status": [],
     "steps": [
       {

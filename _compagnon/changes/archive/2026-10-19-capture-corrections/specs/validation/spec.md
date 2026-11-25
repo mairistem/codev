@@ -13,14 +13,14 @@ MUST NOT be checked.
 #### Scenario: A change without corrections
 
 - **GIVEN** an active change without `corrections.md`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `corrections_*` finding is reported
 
 #### Scenario: A corrections error fails validation
 
 - **GIVEN** an active change whose `corrections.md` holds an entry
   without `did`
-- **WHEN** the user runs `codev validate <change> --json`
+- **WHEN** the user runs `compagnon validate <change> --json`
 - **THEN** a `corrections_invalid` error is reported with the path of
   `corrections.md` and its line
 - **AND** the exit code is 1
@@ -29,5 +29,5 @@ MUST NOT be checked.
 
 - **GIVEN** an active change whose only finding is a
   `corrections_unknown_field` warning
-- **WHEN** the user runs `codev validate <change> --strict`
+- **WHEN** the user runs `compagnon validate <change> --strict`
 - **THEN** the exit code is 1

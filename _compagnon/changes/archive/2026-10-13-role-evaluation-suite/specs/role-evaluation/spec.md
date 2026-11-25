@@ -18,7 +18,7 @@ directory per case, named by the case's id. A case holds:
   `code.review`) or `checks` (for `plan.trace`);
 - `base/` — the fixture project as it is on its default branch;
 - `change/` — the files the change adds or modifies, its planning
-  artifacts under `_codev/changes/<change>/` included.
+  artifacts under `_compagnon/changes/<change>/` included.
 
 An expected finding states its `id`, `severity`, `category` and one or
 more `locations`, in the review record's location syntax: `path:line` or
@@ -37,7 +37,7 @@ not have; a fixture file is not UTF-8 text or is larger than 64 KiB.
 #### Scenario: The repository's suite is well formed
 
 - **GIVEN** the cases under `evals/cases/`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** every case loads, and every expected location exists in its
   fixture
 
@@ -72,7 +72,7 @@ TypeScript and Python.
 #### Scenario: The repository's suite meets the minimum
 
 - **GIVEN** the cases under `evals/cases/`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it passes
 
 #### Scenario: A role without a control
@@ -84,10 +84,10 @@ TypeScript and Python.
 
 ### Requirement: The runner runs each case alone, headlessly, with Claude Code
 
-`codev-evals run` SHALL, for each selected case, in a new directory
+`compagnon-evals run` SHALL, for each selected case, in a new directory
 outside the repository:
 
-- create a git repository whose branch `main` holds `base/` with codev
+- create a git repository whose branch `main` holds `base/` with compagnon
   initialized (configuration and skills, non-interactive), and a branch
   holding `change/` on top of it, both committed;
 - write the change's `change.yaml` so that every reviewing role serving
@@ -99,16 +99,16 @@ outside the repository:
   record and leave every finding `open`, without the author's answer and
   without modifying any other file; at `plan.trace`, fix the gaps in the
   plan as the step says;
-- record what it observed: the review record as `codev review --json`
+- record what it observed: the review record as `compagnon review --json`
   reports it, the files the case checks, the files the run modified
   outside what the step allows, the cost and duration the run reports,
   or the error that stopped it.
 
 The model SHALL be the one named by the environment variable
-`CODEV_EVAL_MODEL`, else Claude Code's default. Each case SHALL run under
-a budget (`CODEV_EVAL_BUDGET_USD`, default 3) and a timeout
-(`CODEV_EVAL_TIMEOUT_SECS`, default 600). Before any case runs, the
-runner SHALL check that `claude`, `git` and the `codev` binary can be
+`COMPAGNON_EVAL_MODEL`, else Claude Code's default. Each case SHALL run under
+a budget (`COMPAGNON_EVAL_BUDGET_USD`, default 3) and a timeout
+(`COMPAGNON_EVAL_TIMEOUT_SECS`, default 600). Before any case runs, the
+runner SHALL check that `claude`, `git` and the `compagnon` binary can be
 executed, and exit with code 2 naming the missing one otherwise. A case
 that fails or times out is recorded as an error; the others still run.
 
@@ -124,14 +124,14 @@ that fails or times out is recorded as an error; the others still run.
 
 - **GIVEN** a `plan.challenge` case on the change `add-sessions`
 - **WHEN** the runner builds its prompt
-- **THEN** the prompt names the `codev-propose` skill, its
+- **THEN** the prompt names the `compagnon-propose` skill, its
   `plan.challenge` step, the change `add-sessions`, and says to leave
   every finding `open` and to modify no file but the review record
 
 #### Scenario: The model and the budget come from the environment
 
-- **GIVEN** `CODEV_EVAL_MODEL=claude-sonnet-4-5` and
-  `CODEV_EVAL_BUDGET_USD=1.5`
+- **GIVEN** `COMPAGNON_EVAL_MODEL=claude-sonnet-4-5` and
+  `COMPAGNON_EVAL_BUDGET_USD=1.5`
 - **WHEN** the runner builds the Claude Code command
 - **THEN** it passes that model and that budget; without the variables,
   it passes no model and a budget of 3
@@ -147,7 +147,7 @@ that fails or times out is recorded as an error; the others still run.
 #### Scenario: Claude Code is not installed
 
 - **GIVEN** a `claude` command that cannot be executed
-- **WHEN** the user runs `codev-evals run`
+- **WHEN** the user runs `compagnon-evals run`
 - **THEN** it exits with code 2 before setting up any case, and the
   message names `claude`
 
@@ -230,10 +230,10 @@ positive.
 - **THEN** there is one true positive, one duplicate, and no false
   positive
 
-### Requirement: Evidence validity comes from codev's own check
+### Requirement: Evidence validity comes from compagnon's own check
 
 For each finding, the evidence SHALL be counted as `found` when
-`codev review` reports no evidence or location issue for it, `moved` when
+`compagnon review` reports no evidence or location issue for it, `moved` when
 it reports `review_evidence_moved`, `invalid` when it reports
 `review_evidence_not_found` or `review_location_missing`, and `unchecked`
 when it reports `review_evidence_unchecked`. A role's evidence validity
@@ -243,14 +243,14 @@ fails.
 
 #### Scenario: A quote that is not in the code
 
-- **GIVEN** a finding for which `codev review` reports
+- **GIVEN** a finding for which `compagnon review` reports
   `review_evidence_not_found`
 - **WHEN** the case is scored
 - **THEN** its evidence is `invalid`, and its role's validity counts it
 
 #### Scenario: A quote a few lines away
 
-- **GIVEN** a finding for which `codev review` reports
+- **GIVEN** a finding for which `compagnon review` reports
   `review_evidence_moved`
 - **WHEN** the case is scored
 - **THEN** its evidence is `moved` and counts as valid
@@ -259,7 +259,7 @@ fails.
 
 A case SHALL be marked with its reason, and every expected finding
 counted as a miss, when the run stopped with an error, when the record is
-missing, when the record has an error that keeps codev from reading it,
+missing, when the record has an error that keeps compagnon from reading it,
 or when the evaluated role's section is missing or reads `Disabled by
 configuration.` Such a case is never counted as a clean control.
 
@@ -303,7 +303,7 @@ ignoring line endings.
 
 ### Requirement: The report is per role, in markdown and JSON, and the exit code follows thresholds
 
-`codev-evals run` and `codev-evals score` SHALL write `report.md` and
+`compagnon-evals run` and `compagnon-evals score` SHALL write `report.md` and
 `report.json` in their output directory, with, per role: the cases, the
 expected findings, true positives, misses, false positives, unreported,
 duplicates, cross-role findings, recall (true positives over expected),
@@ -316,8 +316,8 @@ id — so that the same observations give the same bytes.
 A role SHALL fail when its recall is under `--min-recall` (default 0.5),
 its false positives exceed `--max-false-positives` (default 2), or its
 evidence validity is under `--min-evidence` (default 0.8); each threshold
-can also be set by `CODEV_EVAL_MIN_RECALL`,
-`CODEV_EVAL_MAX_FALSE_POSITIVES` and `CODEV_EVAL_MIN_EVIDENCE`, the flag
+can also be set by `COMPAGNON_EVAL_MIN_RECALL`,
+`COMPAGNON_EVAL_MAX_FALSE_POSITIVES` and `COMPAGNON_EVAL_MIN_EVIDENCE`, the flag
 winning. The command SHALL exit with 0 when every role passes and no case
 is in error, 1 otherwise, naming each failing role and measure, and 2 on
 an invalid threshold, an invalid case or a missing tool.
@@ -326,28 +326,28 @@ an invalid threshold, an invalid case or a missing tool.
 
 - **GIVEN** observations where each role's recall, false positives and
   evidence validity meet the thresholds
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** it exits with 0 and writes both reports
 
 #### Scenario: A role under the recall threshold
 
 - **GIVEN** observations where `ops` finds one of four expected findings
-- **WHEN** the user runs `codev-evals score <dir> --min-recall 0.5`
+- **WHEN** the user runs `compagnon-evals score <dir> --min-recall 0.5`
 - **THEN** it exits with 1, and the message names `ops`, its recall
   0.25 and the threshold
 
 #### Scenario: An invalid threshold
 
-- **GIVEN** `CODEV_EVAL_MIN_RECALL=lots`
-- **WHEN** the user runs `codev-evals score <dir>`
+- **GIVEN** `COMPAGNON_EVAL_MIN_RECALL=lots`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** it exits with 2 and names the variable
 
 ### Requirement: Recorded runs are scored again without a model, and resumed
 
 Each case's observation SHALL be written as `<out>/<case>/observed.json`,
-carrying a format marker. `codev-evals score <dir>` SHALL score the
+carrying a format marker. `compagnon-evals score <dir>` SHALL score the
 observations of a directory again, calling no model, and give the same
-report as the run did. `codev-evals run --out <dir>` SHALL skip a case
+report as the run did. `compagnon-evals run --out <dir>` SHALL skip a case
 whose observation already exists in `<dir>`, unless `--rerun` is given,
 so that an interrupted run is resumed; it SHALL refuse, with code 2 and
 naming both models, to resume a directory recorded with another model than
@@ -358,27 +358,27 @@ the case.
 #### Scenario: Scoring twice gives the same report
 
 - **GIVEN** a directory of recorded observations
-- **WHEN** the user runs `codev-evals score <dir>` twice
+- **WHEN** the user runs `compagnon-evals score <dir>` twice
 - **THEN** both runs write identical `report.json` and `report.md`
 
 #### Scenario: A resumed run
 
 - **GIVEN** an output directory holding the observations of three cases
   out of five
-- **WHEN** the user runs `codev-evals run --out <dir>`
+- **WHEN** the user runs `compagnon-evals run --out <dir>`
 - **THEN** only the two other cases are run
 
 #### Scenario: Resuming with another model
 
 - **GIVEN** an output directory recorded with Claude Code's default model
-- **WHEN** the user runs `codev-evals run --out <dir>` with
-  `CODEV_EVAL_MODEL=claude-sonnet-4-5`
+- **WHEN** the user runs `compagnon-evals run --out <dir>` with
+  `COMPAGNON_EVAL_MODEL=claude-sonnet-4-5`
 - **THEN** it exits with code 2 and names both models
 
 #### Scenario: A newer observation
 
 - **GIVEN** an `observed.json` with format 2
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** it exits with 2, naming the case and the format
 
 ### Requirement: A committed baseline is the reference for role changes
@@ -392,13 +392,13 @@ report.
 #### Scenario: The baseline agrees with the scoring
 
 - **GIVEN** `evals/baseline/`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** scoring its observations gives its committed `report.json`
 
 #### Scenario: A case missing from the baseline
 
 - **GIVEN** a case added to the suite after the baseline was recorded
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails and names the case, so that the baseline is recorded
   again
 
@@ -413,14 +413,14 @@ printing that the evaluations were skipped and why.
 #### Scenario: Never on a pull request
 
 - **GIVEN** `.github/workflows/evals.yml`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails if the workflow has a trigger other than
   `workflow_dispatch`
 
 #### Scenario: No secret
 
 - **GIVEN** the workflow and a repository without `ANTHROPIC_API_KEY`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails unless the workflow tests the secret before running
   the suite and prints a skip message
 
@@ -434,7 +434,7 @@ SHALL say how the built-in roles are measured and where the baseline is.
 #### Scenario: Both languages say it
 
 - **GIVEN** the two contributing guides and the two `roles.md` chapters
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails if one of them does not name `evals/baseline`, or if
   a contributing guide does not name `assets/roles/`
 

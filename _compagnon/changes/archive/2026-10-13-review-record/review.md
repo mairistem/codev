@@ -13,7 +13,7 @@ severity: medium
 confidence: high
 location: "proposal.md#Release note"
 evidence: |
-  started with an earlier codev, run the review again or turn its review
+  started with an earlier compagnon, run the review again or turn its review
   roles off in its `change.yaml`.
 recommendation: >-
   Say what a team that archives by hand, without the skills, must do:
@@ -24,7 +24,7 @@ history:
     by: skeptic
   - status: fixed
     by: product
-    ref: proposal.md release note and design.md Migration Plan name `skeptic` and `newcomer` set to `never` in `_codev/config.yaml`
+    ref: proposal.md release note and design.md Migration Plan name `skeptic` and `newcomer` set to `never` in `_compagnon/config.yaml`
   - status: fixed
     by: skeptic
     note: verified in both artifacts
@@ -55,7 +55,7 @@ history:
 
 ### security
 
-#### R-security-1 "Absolute" depends on the OS running codev
+#### R-security-1 "Absolute" depends on the OS running compagnon
 
 ```yaml
 severity: medium
@@ -82,7 +82,7 @@ history:
 
 ### migration
 
-#### R-migration-1 A teammate on an older codev archives past the gate
+#### R-migration-1 A teammate on an older compagnon archives past the gate
 
 ```yaml
 severity: medium
@@ -91,14 +91,14 @@ location: "design.md#Migration Plan"
 evidence: |
   Nothing is migrated: archived changes are never checked. An active change
 recommendation: >-
-  Raise `codev_version` in this repository's `_codev/config.yaml` to the
+  Raise `compagnon_version` in this repository's `_compagnon/config.yaml` to the
   release that ships the record, and document the advice for teams.
 history:
   - status: open
     by: migration
   - status: deferred
     by: architect
-    to: the release that ships this change (bump `codev_version` to it in `_codev/config.yaml`); the dev binary is 0.6.1, so raising it now fails `codev doctor --strict`
+    to: the release that ships this change (bump `compagnon_version` to it in `_compagnon/config.yaml`); the dev binary is 0.6.1, so raising it now fails `compagnon doctor --strict`
 ```
 
 ## code.review
@@ -110,7 +110,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/review/parse.rs:438-446"
+location: "crates/compagnon-core/src/review/parse.rs:438-446"
 evidence: |
   fn finding(
       &mut self,
@@ -127,7 +127,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: crates/codev-core/src/review/parse.rs, `Fields::finding(&mut self, mapping, heading)` takes a `Heading` value
+    ref: crates/compagnon-core/src/review/parse.rs, `Fields::finding(&mut self, mapping, heading)` takes a `Heading` value
   - status: fixed
     by: newcomer
     note: verified, two parameters and a named type
@@ -138,7 +138,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/archive.rs:191"
+location: "crates/compagnon-engine/src/archive.rs:191"
 evidence: |
   .replacen("### newcomer\n\nNo finding.\n\n", "", 1),
 recommendation: >-
@@ -150,7 +150,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: crates/codev-engine/src/review.rs tests, `record(code_review)`, `record_with(plan, code_review)` and `NEWCOMER_NO_FINDING`; no test patches the helper's output any more
+    ref: crates/compagnon-engine/src/review.rs tests, `record(code_review)`, `record_with(plan, code_review)` and `NEWCOMER_NO_FINDING`; no test patches the helper's output any more
   - status: fixed
     by: newcomer
     note: verified in archive, sync, validate and review tests
@@ -161,7 +161,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-cli/src/contract.rs:1069"
+location: "crates/compagnon-cli/src/contract.rs:1069"
 evidence: |
   impl From<&crate::commands::ReviewOutcome> for ReviewV1 {
 recommendation: >-
@@ -172,7 +172,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: crates/codev-cli/src/contract.rs, `review_step`, `review_finding` and `severity_label` extracted
+    ref: crates/compagnon-cli/src/contract.rs, `review_step`, `review_finding` and `severity_label` extracted
   - status: fixed
     by: newcomer
     note: verified, the conversion reads as its fields
@@ -185,7 +185,7 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-engine/src/review.rs:154-156"
+location: "crates/compagnon-engine/src/review.rs:154-156"
 evidence: |
   match fs.read_to_string(path) {
       Err(_) => Cited::Unchecked("it is not UTF-8 text"),
@@ -193,14 +193,14 @@ evidence: |
 recommendation: >-
   Ask the file system for the size first and skip the read above 4 MiB: a
   record citing a multi-gigabyte file (a dump, a build artifact) would
-  otherwise load it whole into memory on every `codev validate`
+  otherwise load it whole into memory on every `compagnon validate`
   (CWE-400, uncontrolled resource consumption).
 history:
   - status: open
     by: security
   - status: fixed
     by: developer
-    ref: crates/codev-engine/src/ports.rs `FileSystem::len` (metadata on disk); review.rs asks it before reading; test `a_file_over_the_size_cap_is_not_compared` fails if the file is read
+    ref: crates/compagnon-engine/src/ports.rs `FileSystem::len` (metadata on disk); review.rs asks it before reading; test `a_file_over_the_size_cap_is_not_compared` fails if the file is read
   - status: fixed
     by: security
     note: verified, the read happens only under the cap
@@ -211,7 +211,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/review.rs:168"
+location: "crates/compagnon-engine/src/review.rs:168"
 evidence: |
   fn join(base: &Path, relative: &str) -> PathBuf {
 recommendation: >-
@@ -226,7 +226,7 @@ history:
     note: >-
       Whoever can commit a symlink and a review.md to the repository can
       already run code on the reader's machine through the build and the
-      tests the skills run; codev's answer only reaches the local user who
+      tests the skills run; compagnon's answer only reaches the local user who
       runs it, who can read that file anyway, and no content is printed.
       Canonicalizing would need a new port and would also refuse the
       symlinks monorepos use on purpose.

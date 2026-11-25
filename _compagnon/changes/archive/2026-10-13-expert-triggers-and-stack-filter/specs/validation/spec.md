@@ -2,7 +2,7 @@
 
 ### Requirement: The suggested domains of an active change are checked
 
-`codev validate` SHALL read the diff once, as the `domain-suggestions`
+`compagnon validate` SHALL read the diff once, as the `domain-suggestions`
 capability defines it, and, for each active change whose `proposal.md`
 exists, report the warning `domain_suggested` for each suggested domain
 whose state is `unticked`. The warning SHALL be located in `proposal.md`,
@@ -16,15 +16,15 @@ keep it unticked with a reason on its line. A domain that is `ticked` or
 The diff is the working tree's: every active change is compared to the
 same diff. Without a diff — outside git, without a default branch — no
 `domain_suggested` is reported and validation does not fail because of
-it. The pre-flight of `codev sync` and `codev archive`, and the
-validation `codev doctor` counts, MUST NOT read the diff. Archived
+it. The pre-flight of `compagnon sync` and `compagnon archive`, and the
+validation `compagnon doctor` counts, MUST NOT read the diff. Archived
 changes MUST NOT be checked.
 
 #### Scenario: An unticked suggestion
 
 - **GIVEN** an active change whose proposal lists `- [ ] security` and
   whose diff adds `src/auth/session.rs`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `domain_suggested` warning on `proposal.md`, at the line of
   `- [ ] security`, names `security`, `**/auth/**` and
   `src/auth/session.rs`
@@ -35,7 +35,7 @@ changes MUST NOT be checked.
 - **GIVEN** an active change whose proposal lists
   `- [ ] security — only renames a variable` and whose diff adds
   `src/auth/session.rs`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `domain_suggested` warning is reported
 - **AND** none either once the line becomes `- [x] security`
 
@@ -43,7 +43,7 @@ changes MUST NOT be checked.
 
 - **GIVEN** a project outside any git repository with an active change
   whose proposal says `None`
-- **WHEN** the user runs `codev validate --strict`
+- **WHEN** the user runs `compagnon validate --strict`
 - **THEN** no `domain_suggested` warning is reported and the exit code
   is 0
 
@@ -51,5 +51,5 @@ changes MUST NOT be checked.
 
 - **GIVEN** an active change with an unticked suggested domain and no
   other finding
-- **WHEN** the user runs `codev archive <change>`
+- **WHEN** the user runs `compagnon archive <change>`
 - **THEN** the change is archived and git was not asked for a diff

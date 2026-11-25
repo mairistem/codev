@@ -48,7 +48,7 @@
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "codev review": 1037
+          "compagnon review": 1037
         }
       },
       {
@@ -78,7 +78,7 @@
         "output": 9,
         "toolCalls": 0,
         "sources": {
-          "codev review": 662
+          "compagnon review": 662
         }
       }
     ]
@@ -216,7 +216,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-toolbar/review.md",
+    "path": "_compagnon/changes/add-toolbar/review.md",
     "status": [],
     "steps": [
       {

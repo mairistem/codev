@@ -4,12 +4,12 @@
 
 A change folder holds the planning artifacts, and `review.md` when roles
 reviewed it. The review record already has a layout that both humans and
-codev read: a format marker, level-headed entries, and one YAML block per
+compagnon read: a format marker, level-headed entries, and one YAML block per
 entry, parsed with `serde-norway` (decision 0006). It is checked only
-while the change is active, and moved by `codev archive`. Validation reads
+while the change is active, and moved by `compagnon archive`. Validation reads
 only the files it knows in a change folder. An unknown file is neither
 reported nor read. The skills share text through fragments rendered at
-install time (`_review-record.md`, `_update-notice.md`). `codev-evals`
+install time (`_review-record.md`, `_update-notice.md`). `compagnon-evals`
 replays planning and review cases headlessly. In an evaluation run, no
 author is there to correct the agent.
 
@@ -18,7 +18,7 @@ This change is the first of two (see "The second change" below).
 ## Goals / Non-Goals
 
 **Goals**: a correction given during `propose`, `apply` or `update` is
-written once, in the change, in a format a later codev step can read. The
+written once, in the change, in a format a later compagnon step can read. The
 capture adds no reading, and only a short text to three skills. Quality
 and tokens are measured per decision 0008.
 
@@ -35,14 +35,14 @@ Corrections live in their own file in the change folder. The review
 record is the reviewers' record: its steps are `plan.challenge` and
 `code.review`, its sections are roles, and it exists only when roles are
 active. A correction comes from the author, at any step, in any change. A
-new step in `review.md` would also break older codevs. They report an
+new step in `review.md` would also break older compagnons. They report an
 unknown step as the warning `review_unknown_section`, and this project's
-CI runs `codev validate --strict`, which fails on any warning. A new file
-is ignored by every codev that predates it, because validation reads only
+CI runs `compagnon validate --strict`, which fails on any warning. A new file
+is ignored by every compagnon that predates it, because validation reads only
 the files it knows.
 
 **Alternatives considered**: a `## corrections` step in `review.md` —
-rejected for the strict-mode failure on older codevs and the mismatch
+rejected for the strict-mode failure on older compagnons and the mismatch
 with the record's role structure. A YAML file (`corrections.yaml`) —
 rejected: entries are prose read by people in a pull request, and the
 review record already sets the house format of markdown headings with
@@ -52,11 +52,11 @@ YAML blocks.
 
 Each entry is a `### C-<n> <title>` heading and a YAML block with `step`,
 `where`, `did` and `asked`, behind a format marker
-`<!-- codev-corrections: 1 -->`. The marker is required: a project may
-already keep a file of that name in a change, and codev never existed to
-read it. A file without the marker is not a corrections file, and codev
+`<!-- compagnon-corrections: 1 -->`. The marker is required: a project may
+already keep a file of that name in a change, and compagnon never existed to
+read it. A file without the marker is not a corrections file, and compagnon
 neither checks nor lists it. The parser mirrors the review record's,
-in `codev-core`, pure (decision 0001). An unknown field is a warning, not
+in `compagnon-core`, pure (decision 0001). An unknown field is a warning, not
 an error. This follows the criterion of `forward-compatible-config`: a
 section is tolerant when ignoring an unknown key only means "this feature
 is absent". A newer format marker makes the file unchecked, with a
@@ -64,18 +64,18 @@ warning, as for the review record. A `did` or `asked` over 300 characters
 is a warning, `corrections_too_long`. It is the one guard the binary can
 give that an entry is an instruction, not a transcript.
 
-An older codev that meets a newer field or format never fails with an
+An older compagnon that meets a newer field or format never fails with an
 error and never misreads the file. It reports a warning, so a run under
-`--strict` fails until that codev is updated, as for an unknown key of
-`_codev/config.yaml` or of the review record. The project's
-`codev_version` and the update notice of the skills already tell such a
+`--strict` fails until that compagnon is updated, as for an unknown key of
+`_compagnon/config.yaml` or of the review record. The project's
+`compagnon_version` and the update notice of the skills already tell such a
 contributor to update.
 
 **Alternatives considered**: a free-text list — rejected: the second change
 must read entries without guessing their shape. Strict unknown fields —
-rejected: an older codev would report an error, failing even without
+rejected: an older compagnon would report an error, failing even without
 `--strict`. Exempting these warnings from `--strict` — rejected: a
-newer file the running codev does not fully check should not pass a gate
+newer file the running compagnon does not fully check should not pass a gate
 silently, and the review record and the configuration already set this
 rule. A `category` field — rejected (see Non-goals). `category:`
 also raises `review_unknown_field` in the review record today, a sign the
@@ -104,13 +104,13 @@ identifier. Then it quotes the entry it wrote to the author: `where`,
 committed, and can have it changed or removed.
 
 **Alternatives considered**: capturing in the binary, for example through
-a `codev correction add` command — rejected: the binary cannot tell a
+a `compagnon correction add` command — rejected: the binary cannot tell a
 correction from a request, and a command costs a permission prompt where
 a file write does not. A summary of corrections at the end of the
 session — rejected: it needs the agent to re-read the conversation, which
 costs tokens and loses precision.
 
-### Decision: Project knowledge in codev, personal preferences in the personal memory
+### Decision: Project knowledge in compagnon, personal preferences in the personal memory
 
 An instruction about the project — how its code, specs, tests or
 documents are written — belongs to the team and goes to `corrections.md`,
@@ -119,7 +119,7 @@ the agent works with one author, such as tone, language of the
 conversation or personal tooling, stays in Claude Code's personal memory.
 The skill says so in both directions, so that one instruction is never
 written in both places. The second change will offer to bring the
-project instructions already in the personal memory into codev. This one
+project instructions already in the personal memory into compagnon. This one
 reads no memory.
 
 **Alternatives considered**: writing to both — rejected: two copies drift
@@ -152,12 +152,12 @@ taken over three repetitions moves by more than that from noise alone:
 the baseline's repetitions of one planning case range from 1.46 to
 2.53 USD. Quality is measured with the suite:
 
-- `codev-evals run --step plan.write --repeat 3 --jobs 4` with this
-  branch's frozen binary, compared with `codev-evals compare` against
+- `compagnon-evals run --step plan.write --repeat 3 --jobs 4` with this
+  branch's frozen binary, compared with `compagnon-evals compare` against
   `evals/baseline` and against the latest main runs (`spec-search`'s
   second arm), quality-only, since the baseline's cost floor already
   sits below the current main;
-- `--step review`, compared quality-only, which reads `codev-apply` at
+- `--step review`, compared quality-only, which reads `compagnon-apply` at
   `code.review`;
 - no run writes a `corrections.md`, which the runner now records as a
   file modified outside the step, so a capture the agent invents shows up
@@ -166,7 +166,7 @@ the baseline's repetitions of one planning case range from 1.46 to
   against the spread of the baseline's repetitions, never credited as a
   gain or a loss inside that spread.
 
-No step of the suite runs `codev-update`, and `codev-apply` runs only at
+No step of the suite runs `compagnon-update`, and `compagnon-apply` runs only at
 `code.review`. Decision 0008 asks that a step the suite does not cover be
 covered first, by its own change. Whether this change waits for that, or
 ships with those steps measured by token size alone, is left to the
@@ -184,21 +184,21 @@ correction written into the request is a request, not a correction.
 
 Planned separately, once this one is archived. In outline:
 
-- **Serving the history**: `codev review --archived --json` serves the
+- **Serving the history**: `compagnon review --archived --json` serves the
   findings and corrections of archived changes. It covers findings
   `fixed` or `accepted-risk` only, never `rejected` or still disputed,
   and does not check evidence, since the tree has changed. The binary
   serves the data. Grouping and classifying are judgement, in the skill.
-- **A `/codev-configure` mode, on demand**: it reads the last N archived
+- **A `/compagnon-configure` mode, on demand**: it reads the last N archived
   changes (proposed default: 10), groups what recurs, and proposes each
   lesson for one destination, in this order: an automatable check (a task
-  or a change); a decision (`codev decision new`, never an edit of an
+  or a change); a decision (`compagnon decision new`, never an edit of an
   accepted ADR, and a superseding decision when a sealed one proved too
   vague); a rule in `rules:` (specs, design or tasks only; a lesson about
   code is rephrased as a design or tasks rule, or classed as
   automatable) or a line of `context:`; or nothing, when it is general
-  expertise that belongs to codev's built-in roles. A rule never restates
-  a decision in effect (`codev decision list`). The mode reuses
+  expertise that belongs to compagnon's built-in roles. A rule never restates
+  a decision in effect (`compagnon decision list`). The mode reuses
   configure's diff and confirmation, and nothing is written without
   explicit agreement. The user can change the destination.
 - **Thresholds, proposed**: a review finding becomes a lesson when it
@@ -212,22 +212,22 @@ Planned separately, once this one is archived. In outline:
 - **Budget**: past ten rules on one artifact, the mode proposes merging
   rather than adding, since each rule weighs on every planning and every
   reviewer brief.
-- **`/codev-archive`**: no new step and no new tool. At most one line of
+- **`/compagnon-archive`**: no new step and no new tool. At most one line of
   invitation in its report when lessons are waiting.
 - **One-time catch-up, on this repository only**: a task of that change,
-  not a feature. It runs the mode once over all of `_codev/changes/archive/`
+  not a feature. It runs the mode once over all of `_compagnon/changes/archive/`
   and records, for each lesson, whether it is proposed (with its
   destination), already covered (by which decision or rule), or set
   aside, with the reason. It never recreates what exists (decisions,
   including proposed ones; `rules:`; `context:`; active changes). At
   least one outcome is expected for each known recurrence: compatibility
-  with older codevs, symbolic links leaving the project, workflow input
+  with older compagnons, symbolic links leaving the project, workflow input
   reaching the shell, and long functions. With the author's explicit
   agreement, it reads the feedback entries of this project's Claude Code
-  memory and proposes to bring the project instructions into codev,
+  memory and proposes to bring the project instructions into compagnon,
   deleting nothing. Each write is confirmed by the author.
 - **Measure**: the number of findings and corrections per change over the
-  following changes, computed from `codev review --archived --json`. The
+  following changes, computed from `compagnon review --archived --json`. The
   cost of the mode is paid only when it runs.
 
 ## Risks / Trade-offs
@@ -245,23 +245,23 @@ Planned separately, once this one is archived. In outline:
   secrets, the entry states an instruction in one or two lines, and the
   agent quotes the entry to the author before it is committed. An entry
   is kept as long as the archive. One that slipped through is edited or
-  deleted in its change, archived or not, since codev never checks
+  deleted in its change, archived or not, since compagnon never checks
   archived changes again. History is rewritten if it was pushed. The
   reference page says so.
 - [Three skills grow on every call] → One short fragment, measured
   exactly: at most 400 tokens per rendered skill.
-- [Mixed codev versions in a team] → An older codev ignores the file. A
+- [Mixed compagnon versions in a team] → An older compagnon ignores the file. A
   newer format is reported, not misread.
 
 ## Migration Plan
 
 Nothing to migrate: the file is new and optional, and a file of the same
-name without the format marker is left alone. An older codev ignores
+name without the format marker is left alone. An older compagnon ignores
 `corrections.md`: validation reads only the files it knows in a change
-folder, and `codev archive` moves the folder whole. A future format
-raises `corrections_format_unsupported` instead of being misread. `codev
+folder, and `compagnon archive` moves the folder whole. A future format
+raises `corrections_format_unsupported` instead of being misread. `compagnon
 update` brings the new skill text. It never rewrites the project's files.
 The `ReviewV1` document gains `corrections` and `correctionsIssues`
 arrays, additions installed skills ignore. The meaning of `issues`, which
 the review skills fix in `review.md`, is unchanged, and so is the exit
-code of `codev review`.
+code of `compagnon review`.

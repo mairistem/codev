@@ -24,7 +24,7 @@ now publishes its version as `0.9.34+deprecated`: it is archived upstream.
   which remain valid.
 - A single crate covers deserialization, serialization and frontmatter.
 - The choice is contained: YAML is only read at the boundaries
-  (`codev-core::schema`, `codev-engine::config`). Changing it later touches a
+  (`compagnon-core::schema`, `compagnon-engine::config`). Changing it later touches a
   few modules, not the domain.
 
 ## Alternatives considered

@@ -1,4 +1,4 @@
-# Design: `/codev-onboard`
+# Design: `/compagnon-onboard`
 
 ## Context
 
@@ -24,13 +24,13 @@ it.
 **Rejected alternative**: keep `DEFAULT_WORKFLOWS = ["propose",
 "explore"]` and leave `onboard` as opt-in. Rejected — it breaks the
 very principle of the skill. A new user does not think of editing
-`_codev/config.yaml` before invoking a skill.
+`_compagnon/config.yaml` before invoking a skill.
 
-### Decision: `allowed-tools = Bash(codev:*), Read, Glob`
+### Decision: `allowed-tools = Bash(compagnon:*), Read, Glob`
 
 Comparison with the six others:
 
-| Skill | `Bash(codev:*)` | `Read` | `Glob` | `Grep` | `Write` | `Edit` | General `Bash` |
+| Skill | `Bash(compagnon:*)` | `Read` | `Glob` | `Grep` | `Write` | `Edit` | General `Bash` |
 |---|---|---|---|---|---|---|---|
 | `propose` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
 | `explore` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ |
@@ -41,13 +41,13 @@ Comparison with the six others:
 | **`onboard`** | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ |
 
 `Read` + `Glob` without `Grep`: the skill does not search for patterns
-in code — it looks at well-known paths (`_codev/config.yaml`,
-`_codev/decisions/`, listing of active changes). No need for grep.
+in code — it looks at well-known paths (`_compagnon/config.yaml`,
+`_compagnon/decisions/`, listing of active changes). No need for grep.
 **The rule "only `apply` has general `Bash`"** is preserved.
 
 ### Decision: the skill reads the CLI's **human** output
 
-`codev list`, `codev list --specs`, `codev status <change>` — without
+`compagnon list`, `compagnon list --specs`, `compagnon status <change>` — without
 `--json`. Consistent with `apply` and `update`: these skills are
 conversational, they do not consume a structured contract. The human
 output is shorter, more readable for the agent, and introduces no
@@ -58,12 +58,12 @@ output ever changed without warning — but it is stable in practice,
 and the other "guide" skills (`apply`, `update`) do not consume JSON
 either.
 
-### Decision: the skill **never runs** `codev init`
+### Decision: the skill **never runs** `compagnon init`
 
-A user discovering codev on an uninitialized repository might expect
+A user discovering compagnon on an uninitialized repository might expect
 the skill to do it for them. It **refuses**: `init` is a disk write,
 non-trivial (full scaffolding), and requires an explicit intention from
-the user. The skill therefore displays `codev init` as a
+the user. The skill therefore displays `compagnon init` as a
 **suggestion**, not an action.
 
 **Aligned** with the decision to separate gesture and action — the
@@ -72,20 +72,20 @@ archive.
 
 ### Decision: the skill copes with an uninitialized repository
 
-A `codev list` on a folder without `_codev/` surfaces an error with a
-known stable code (`no_codev_root`). The skill intercepts this case as
+A `compagnon list` on a folder without `_compagnon/` surfaces an error with a
+known stable code (`no_compagnon_root`). The skill intercepts this case as
 **information** — not an error — and switches to the "suggest
-`codev init`" branch. The final rendering stays useful.
+`compagnon init`" branch. The final rendering stays useful.
 
 ### Decision: the action recommendation depends on a simple case tree
 
 Five branches, mutually exclusive, resolved in order:
 
 ```
-no _codev/             → codev init
-no active change       → /codev-propose <idea>
-1 change, planning OK  → /codev-apply <name>
-1 change, planning KO  → /codev-propose <name> (continue)
+no _compagnon/             → compagnon init
+no active change       → /compagnon-propose <idea>
+1 change, planning OK  → /compagnon-apply <name>
+1 change, planning KO  → /compagnon-propose <name> (continue)
 ≥ 2 active changes     → list them, let the user choose
 ```
 
@@ -95,15 +95,15 @@ recommend accordingly**, the agent looks, chooses, answers.
 
 ## Risks / Trade-offs
 
-- **The skill says "run `codev init`" but the user has not installed
-  the binary.** → **Accepted trade-off**: without `codev` in the PATH,
-  the skill could not have been installed by a `codev update`.
+- **The skill says "run `compagnon init`" but the user has not installed
+  the binary.** → **Accepted trade-off**: without `compagnon` in the PATH,
+  the skill could not have been installed by a `compagnon update`.
   Improbable edge case, not handled.
 - **The skill becomes dense when the project has many specs and
   changes.** → **Mitigation**: the rendering does **not** list each
   spec or each decision individually — it gives **counts** ("5 specs",
-  "6 decisions"). A user who wants the detail runs `/codev-explore` or
-  the commands `codev list --specs` / `codev decision list`.
+  "6 decisions"). A user who wants the detail runs `/compagnon-explore` or
+  the commands `compagnon list --specs` / `compagnon decision list`.
 - **A future evolution of the catalog breaks the invariant contract
   "the body cites the three blocks".** → **Handled** by a dedicated
   test `onboard_cite_ses_trois_blocs` that checks the presence of the
@@ -115,4 +115,4 @@ recommend accordingly**, the agent looks, chooses, answers.
 None. Projects that explicitly declare `workflows:` in their
 `config.yaml` keep their list; they add `onboard` when they want. New
 projects (without a `workflows:` key) get the skill on the first
-`codev init` / `codev update`.
+`compagnon init` / `compagnon update`.

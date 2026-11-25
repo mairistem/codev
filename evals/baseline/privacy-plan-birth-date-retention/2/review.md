@@ -1,6 +1,6 @@
 # Review record: add-birthday-greetings
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## plan.challenge
 

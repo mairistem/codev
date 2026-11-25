@@ -33,7 +33,7 @@ extractable requirement.
 
 #### Scenario: Main spec without a requirement
 
-- **GIVEN** a main spec `_codev/specs/x/spec.md` with `## Purpose`
+- **GIVEN** a main spec `_compagnon/specs/x/spec.md` with `## Purpose`
   but whose `## Requirements` is empty
 - **WHEN** the validator inspects the spec
 - **THEN** a finding with code `spec_no_requirement` reports that the spec
@@ -103,26 +103,26 @@ without any error from a run that reports some.
 #### Scenario: Validation of a named item
 
 - **GIVEN** an initialized project with a change `add-auth`
-- **WHEN** the user runs `codev validate add-auth`
+- **WHEN** the user runs `compagnon validate add-auth`
 - **THEN** the report concerns only this change and its exit code reflects
   the presence or absence of errors
 
 #### Scenario: Batch validation
 
 - **GIVEN** a project containing two changes and one main spec
-- **WHEN** the user runs `codev validate --all`
+- **WHEN** the user runs `compagnon validate --all`
 - **THEN** the report covers the three items in a single document
 
 #### Scenario: No error, exit code zero
 
 - **GIVEN** a well-formed change, without an error finding
-- **WHEN** the user runs `codev validate add-auth`
+- **WHEN** the user runs `compagnon validate add-auth`
 - **THEN** the process exits with code `0`
 
 #### Scenario: At least one error, non-zero exit code
 
 - **GIVEN** a change containing at least one finding of severity `Error`
-- **WHEN** the user runs `codev validate add-auth`
+- **WHEN** the user runs `compagnon validate add-auth`
 - **THEN** the process exits with code `1`
 
 ### Requirement: JSON report with a stable contract
@@ -136,14 +136,14 @@ for each its list of findings with `code`, `severity`, `path`, `line`,
 #### Scenario: JSON output of a successful run
 
 - **GIVEN** a well-formed change
-- **WHEN** the user runs `codev validate add-auth --json`
+- **WHEN** the user runs `compagnon validate add-auth --json`
 - **THEN** stdout carries a single JSON document containing the list of
   items, each with an empty `findings` array, and an empty root `status`
 
 #### Scenario: JSON output when the root cannot be found
 
-- **GIVEN** a folder outside any `_codev/` root
-- **WHEN** the user runs `codev validate --json`
+- **GIVEN** a folder outside any `_compagnon/` root
+- **WHEN** the user runs `compagnon validate --json`
 - **THEN** stdout carries a single JSON document with the report's shape,
   with its item lists empty, and a root `status` carrying an error entry
   with a stable code

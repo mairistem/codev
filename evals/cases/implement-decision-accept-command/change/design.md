@@ -3,7 +3,7 @@
 ## Context
 
 Every command that creates a decision computes a pure plan in
-`codev-engine::decisions_actions` (`plan_new`, `plan_supersede`,
+`compagnon-engine::decisions_actions` (`plan_new`, `plan_supersede`,
 `plan_seal`, `plan_deviate`, `plan_promote`), and the CLI executes it with
 `apply::execute`. `plan_new` already skips the seal for statuses other than
 `accepted` and `superseded`, and `rewrite_frontmatter_status` already
@@ -29,7 +29,7 @@ never the frontmatter.
 
 ### Decision: `plan_accept` is a pure plan, like the other decision actions
 
-Following `_codev/decisions/0001-functional-core-imperative-shell.md`,
+Following `_compagnon/decisions/0001-functional-core-imperative-shell.md`,
 `plan_accept` takes the index, the current seal file and a reader for the
 ADR's source, and returns a plan with two writes: the ADR rewritten by
 `rewrite_frontmatter_status` (`Overwrite`) and `seal.yaml` (`Overwrite`).
@@ -47,7 +47,7 @@ intentions in one command, and `seal` works on already accepted decisions).
 
 ### Decision: Inherited decisions are refused with their own code
 
-Inherited sources are read-only (`_codev/decisions/0005-read-only-inherited-sources.md`).
+Inherited sources are read-only (`_compagnon/decisions/0005-read-only-inherited-sources.md`).
 Each decision command refusing an inherited target has its own code
 (`cannot_supersede_inherited`, `cannot_seal_inherited`), so an agent can
 tell which command it called wrongly; `decision accept` follows the pattern

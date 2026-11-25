@@ -3,14 +3,14 @@
 ## Context
 
 The `declarative-roles` change (archived 2026-10-12) made roles data:
-`assets/roles.yaml` holds the six step roles, `codev-core::roles` parses
+`assets/roles.yaml` holds the six step roles, `compagnon-core::roles` parses
 it, merges the schema's artifact roles, checks settings and resolves the
-activation (`always` / `never`); `codev-engine::roles` reads the files and
-calls the core; `codev-cli` serves `RolesV1` / `RoleV1`. That design
+activation (`always` / `never`); `compagnon-engine::roles` reads the files and
+calls the core; `compagnon-cli` serves `RolesV1` / `RoleV1`. That design
 deferred experts and `on_domain` to this change. A role serves exactly one
 step (`Role.at: String`), and the proposal is only read for its release
-note (`codev-core::changelog::release_note`, checked in
-`codev-engine::validate::check_release_note`).
+note (`compagnon-core::changelog::release_note`, checked in
+`compagnon-engine::validate::check_release_note`).
 
 ## Goals / Non-Goals
 
@@ -36,7 +36,7 @@ note (`codev-core::changelog::release_note`, checked in
 
 `assets/roles/<id>.md` starts with a YAML frontmatter between `---` lines
 (`id`, `name`, `at`, `question`, `required`, `done_when`, `domains`), then
-the knowledge as markdown. `codev-core::roles` embeds the files with
+the knowledge as markdown. `compagnon-core::roles` embeds the files with
 `include_str!` in a fixed list, which gives the catalog order, and parses
 them with a pure `parse_role_file(&str)`: split the frontmatter, parse it
 with `serde_norway` (decision 0006, `deny_unknown_fields`), trim the body.
@@ -66,16 +66,16 @@ the v1 contract).
 
 ### Decision: Domains are a closed list parsed from the proposal by the core
 
-A new `codev-core::domains` module holds `DOMAINS` and
+A new `compagnon-core::domains` module holds `DOMAINS` and
 `parse(proposal) -> Parsed<Domains>` (`Absent`, or the ticked domains; an
 explicit `None` and an all-unticked list both give an empty list), with
 the codes `unknown_domain`, `domains_invalid` (both errors) and
 `domains_missing` (warning, emitted by the engine as for
 `release_note_missing`). The section reader of `release_note` — level-2
 section, literal zones masked — moves to `parser::section` and is shared.
-`codev-engine::validate` reads `proposal.md` once for both checks; archived
+`compagnon-engine::validate` reads `proposal.md` once for both checks; archived
 changes are never validated, as today. The codes join the uniqueness test
-of `codev-core::validate`.
+of `compagnon-core::validate`.
 
 `domains_invalid` is not in the request: it separates a malformed line or
 `None` next to a ticked domain from a misspelled domain, so the message can
@@ -97,7 +97,7 @@ domains, `always` otherwise — no extra key in the role file.
 `activated_by: Option<ActivatedBy>` (`Always`, `Project`, `Change`,
 `Domain(name)`); `is_active` is `activated_by.is_some()`. The engine
 reads the proposal of the change, if any, and ignores its findings
-(`codev validate` reports them). The order of precedence stays: role
+(`compagnon validate` reports them). The order of precedence stays: role
 default, then project, then change (from the `declarative-roles` design).
 
 **Alternatives considered**: a separate `domains` filter next to
@@ -110,11 +110,11 @@ of the Impact section (guesswork, not reviewable).
 when the role is active and has one, else `null`). A role listed without
 `--at` is served the same way, so the shape never depends on the flag. The
 human output prints the knowledge only with `--knowledge`: it runs to
-dozens of lines per expert. The skills keep `Bash(codev:*)` and get no new
-command (decision 0004); `codev-cli` maps the domain types to the contract
+dozens of lines per expert. The skills keep `Bash(compagnon:*)` and get no new
+command (decision 0004); `compagnon-cli` maps the domain types to the contract
 (decision 0002: the core does not derive `Serialize`).
 
-**Alternatives considered**: knowledge in a separate `codev roles
+**Alternatives considered**: knowledge in a separate `compagnon roles
 knowledge <id>` command (one more call per role, per step).
 
 ### Decision: The skills keep the procedure, the caps and the severity rule
@@ -149,7 +149,7 @@ an expert's row names its domain.
   experts are inactive unless a domain is ticked.
 - [`analyst: never` in an existing configuration now fails] → marked
   **BREAKING** in the release note; the message says to remove `never`.
-- [Active changes without `## Domains` fail `codev validate --strict`] →
+- [Active changes without `## Domains` fail `compagnon validate --strict`] →
   a warning only; adding the section is one line (`None`).
 - [`when: "on_domain"` surprises a consumer that only knew two values] →
   the skills only read active roles; the JSON reference documents it.

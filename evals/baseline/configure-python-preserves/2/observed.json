@@ -57,7 +57,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev status": 944
+          "compagnon status": 944
         }
       },
       {
@@ -109,7 +109,7 @@
         "output": 2,
         "toolCalls": 0,
         "sources": {
-          "codev validate": 216
+          "compagnon validate": 216
         }
       }
     ]
@@ -118,12 +118,12 @@
   "review": null,
   "files": {},
   "messages": [
-    "✓ `_codev/config.yaml` est enrichi : `context:` décrit maintenant le projet en détail et `rules:` est ajouté. La réponse « yes » a été supposée, comme prévu pour cette évaluation sans auteur.\n\n- **Champs conservés :** `schema`, `language`, `codev_version`, `mcp` et tous les commentaires restent tels quels. Seul le commentaire `# detected from pyproject.toml` est devenu `# written by /codev-configure`.\n- **Sources lues :** le README, `pyproject.toml`, les 4 fichiers de `rendezvous/` et les 2 fichiers de `tests/`. Le projet n'a ni CONTRIBUTING, ni `docs/`, ni CI : les règles de test se basent donc sur les tests existants et sur les commandes du README (`pytest`, `ruff check .`).\n- **Vérification :** `codev validate` ne signale aucun problème, mais il n'a contrôlé que `_codev/decisions`. Il ne prouve donc pas que le nouveau YAML est correct, et je n'ai pas pu le relire avec Python (permission refusée)."
+    "✓ `_compagnon/config.yaml` est enrichi : `context:` décrit maintenant le projet en détail et `rules:` est ajouté. La réponse « yes » a été supposée, comme prévu pour cette évaluation sans auteur.\n\n- **Champs conservés :** `schema`, `language`, `compagnon_version`, `mcp` et tous les commentaires restent tels quels. Seul le commentaire `# detected from pyproject.toml` est devenu `# written by /compagnon-configure`.\n- **Sources lues :** le README, `pyproject.toml`, les 4 fichiers de `rendezvous/` et les 2 fichiers de `tests/`. Le projet n'a ni CONTRIBUTING, ni `docs/`, ni CI : les règles de test se basent donc sur les tests existants et sur les commandes du README (`pytest`, `ruff check .`).\n- **Vérification :** `compagnon validate` ne signale aucun problème, mais il n'a contrôlé que `_compagnon/decisions`. Il ne prouve donc pas que le nouveau YAML est correct, et je n'ai pas pu le relire avec Python (permission refusée)."
   ],
   "configure": {
-    "before": "# Configuration codev du service rendezvous.\nschema: spec-driven\n\n# Les artefacts sont rédigés en français.\nlanguage: fr\n\n# Toute l'équipe utilise une version de codev qui lit ce format.\ncodev_version: \">=0.6\"\n\n# Le MCP Jira de l'équipe, injecté dans les skills à l'installation.\nmcp:\n  jira_tool: mcp__jira__getIssue\n\n# detected from pyproject.toml\ncontext: |\n  Python project.\n",
-    "after": "# Configuration codev du service rendezvous.\nschema: spec-driven\n\n# Les artefacts sont rédigés en français.\nlanguage: fr\n\n# Toute l'équipe utilise une version de codev qui lit ce format.\ncodev_version: \">=0.6\"\n\n# Le MCP Jira de l'équipe, injecté dans les skills à l'installation.\nmcp:\n  jira_tool: mcp__jira__getIssue\n\n# written by /codev-configure\ncontext: |\n  Service FastAPI (Python ≥ 3.11, Pydantic v2) de prise de rendez-vous pour cabinets médicaux.\n  Les erreurs métier sont des sous-classes de DomainError (rendezvous/errors.py) qui portent leur\n  code HTTP dans `status` ; un seul gestionnaire (app.handle_domain_error) les traduit en JSON\n  {\"error\": <NomDeLaClasse>}. La logique métier (Agenda, slots.py) ne dépend pas de FastAPI.\n  Docstrings et commentaires en français ; ils expliquent le pourquoi. Code typé, lignes ≤ 100.\n\nrules:\n  specs:\n    - Décrire chaque comportement de l'API par la route, l'entrée et le code HTTP attendu\n      (200, 404, 409…).\n  design:\n    - Nommer la sous-classe de DomainError et son `status` pour chaque nouvel échec métier,\n      et la placer dans rendezvous/errors.py.\n  tasks:\n    - Chaque tâche indique comment vérifier qu'elle est faite (test ou commande).\n    - \"Tests pytest dans tests/, en miroir de rendezvous/ (test_<module>.py), fonctions\n      test_<comportement> typées -> None ; fixtures et parametrize pour la logique métier,\n      TestClient pour les routes ; vérifier avec pytest et ruff check .\"\n",
-    "codevRoot": true,
+    "before": "# Configuration compagnon du service rendezvous.\nschema: spec-driven\n\n# Les artefacts sont rédigés en français.\nlanguage: fr\n\n# Toute l'équipe utilise une version de compagnon qui lit ce format.\ncompagnon_version: \">=0.6\"\n\n# Le MCP Jira de l'équipe, injecté dans les skills à l'installation.\nmcp:\n  jira_tool: mcp__jira__getIssue\n\n# detected from pyproject.toml\ncontext: |\n  Python project.\n",
+    "after": "# Configuration compagnon du service rendezvous.\nschema: spec-driven\n\n# Les artefacts sont rédigés en français.\nlanguage: fr\n\n# Toute l'équipe utilise une version de compagnon qui lit ce format.\ncompagnon_version: \">=0.6\"\n\n# Le MCP Jira de l'équipe, injecté dans les skills à l'installation.\nmcp:\n  jira_tool: mcp__jira__getIssue\n\n# written by /compagnon-configure\ncontext: |\n  Service FastAPI (Python ≥ 3.11, Pydantic v2) de prise de rendez-vous pour cabinets médicaux.\n  Les erreurs métier sont des sous-classes de DomainError (rendezvous/errors.py) qui portent leur\n  code HTTP dans `status` ; un seul gestionnaire (app.handle_domain_error) les traduit en JSON\n  {\"error\": <NomDeLaClasse>}. La logique métier (Agenda, slots.py) ne dépend pas de FastAPI.\n  Docstrings et commentaires en français ; ils expliquent le pourquoi. Code typé, lignes ≤ 100.\n\nrules:\n  specs:\n    - Décrire chaque comportement de l'API par la route, l'entrée et le code HTTP attendu\n      (200, 404, 409…).\n  design:\n    - Nommer la sous-classe de DomainError et son `status` pour chaque nouvel échec métier,\n      et la placer dans rendezvous/errors.py.\n  tasks:\n    - Chaque tâche indique comment vérifier qu'elle est faite (test ou commande).\n    - \"Tests pytest dans tests/, en miroir de rendezvous/ (test_<module>.py), fonctions\n      test_<comportement> typées -> None ; fixtures et parametrize pour la logique métier,\n      TestClient pour les routes ; vérifier avec pytest et ruff check .\"\n",
+    "compagnonRoot": true,
     "statusError": null
   }
 }

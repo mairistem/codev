@@ -19,15 +19,15 @@
       - Option **A** preferred for readability.
 - [x] 1.3 Adapt the "Upload artifact" step so that the pattern
       matches `.zip` or `.tar.gz` depending on the job. Today:
-      `path: codev-${{ steps.version.outputs.version }}-${{
+      `path: compagnon-${{ steps.version.outputs.version }}-${{
       matrix.target }}.tar.gz`. Make it parametric via
       `ext: tar.gz` / `zip` in the matrix, or two conditional
       uploads.
 - [x] 1.4 Adapt the "Compute SHA-256 sums" step of the `release` job:
       `shasum -a 256 *.tar.gz > SHA256SUMS` →
       `shasum -a 256 *.tar.gz *.zip > SHA256SUMS`.
-- [x] 1.5 The binary name on Windows is `codev.exe`. The packaging
-      step must copy `target/<target>/release/codev.exe` (with the
+- [x] 1.5 The binary name on Windows is `compagnon.exe`. The packaging
+      step must copy `target/<target>/release/compagnon.exe` (with the
       `.exe`) — otherwise the file will not exist.
 
 ## 2. New `install.ps1` script
@@ -37,26 +37,26 @@
       accepts both, LF more git-portable).
 - [x] 2.2 Script sections, in order:
       - Header with description, usage
-        (`iwr -useb … | iex`, `CODEV_VERSION` env var).
+        (`iwr -useb … | iex`, `COMPAGNON_VERSION` env var).
       - `$ErrorActionPreference = 'Stop'` to stop hard on any
         exception.
       - Architecture detection: `$env:PROCESSOR_ARCHITECTURE` →
         `AMD64` = `x86_64-pc-windows-msvc`. Any other value = refusal.
-      - Version resolution: `$env:CODEV_VERSION` or GitHub API
-        (`Invoke-RestMethod https://api.github.com/repos/mairistem/codev/releases/latest`).
+      - Version resolution: `$env:COMPAGNON_VERSION` or GitHub API
+        (`Invoke-RestMethod https://api.github.com/repos/mairistem/compagnon/releases/latest`).
       - Download of the archive and of `SHA256SUMS` via
         `Invoke-WebRequest`.
       - SHA-256 verification: `(Get-FileHash <archive> -Algorithm
         SHA256).Hash` compared (case-insensitively) to the sha listed
         in `SHA256SUMS`.
       - Extraction via `Expand-Archive`.
-      - Copy of `codev.exe` into
-        `$env:LOCALAPPDATA\Programs\codev\`, with `New-Item -ItemType
+      - Copy of `compagnon.exe` into
+        `$env:LOCALAPPDATA\Programs\compagnon\`, with `New-Item -ItemType
         Directory -Force` if missing.
       - PATH check: `$env:PATH -split ';' -contains
-        '$env:LOCALAPPDATA\Programs\codev'`.
+        '$env:LOCALAPPDATA\Programs\compagnon'`.
       - Final message: instructions for adding to the PATH via
-        `setx PATH "$env:PATH;$env:LOCALAPPDATA\Programs\codev"` (to
+        `setx PATH "$env:PATH;$env:LOCALAPPDATA\Programs\compagnon"` (to
         be run in a separate shell), or System UI → Environment
         Variables.
 - [x] 2.3 No `Set-ExecutionPolicy` — a script piped from stdin runs
@@ -64,7 +64,7 @@
 
 ## 3. Documentation
 
-- [x] 3.1 Rework the "Installation" section of `docs/codev.md`
+- [x] 3.1 Rework the "Installation" section of `docs/compagnon.md`
       with **4 paths** in order:
       1. **Recommended Unix** — `curl … | sh` (already there).
       2. **Recommended Windows** — `iwr -useb … | iex` (new).
@@ -73,9 +73,9 @@
       4. **Contributor path** — `cargo install` (already there).
 - [x] 3.2 Complete the manual path for Windows:
       `Expand-Archive`, `Get-FileHash`, copy into
-      `%LOCALAPPDATA%\Programs\codev\`.
+      `%LOCALAPPDATA%\Programs\compagnon\`.
 - [x] 3.3 Add a short "PATH on Windows" paragraph: how to check, how
-      to add `%LOCALAPPDATA%\Programs\codev\` (via `setx`, via
+      to add `%LOCALAPPDATA%\Programs\compagnon\` (via `setx`, via
       System UI).
 
 ## 4. README
@@ -84,14 +84,14 @@
       right after the Unix curl:
       ```powershell
       # Windows
-      iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+      iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
       ```
 - [x] 4.2 Possibly rename the Unix curl comment to
       "# macOS or Linux" to clarify the distinction.
 
 ## 5. Validation
 
-- [x] 5.1 `codev validate --strict` stays green.
+- [x] 5.1 `compagnon validate --strict` stays green.
 - [x] 5.2 `cargo test --workspace` stays green (nothing Rust has
       changed, but we check).
 - [x] 5.3 Manual YAML lint of the workflow (matrix indentation,
@@ -109,4 +109,4 @@
         3 former targets).
       - On Windows (VM or physical machine): `iwr … | iex` must
         install, the suggested PATH command must work, then
-        `codev --version` must return `0.2.0`.
+        `compagnon --version` must return `0.2.0`.

@@ -1,23 +1,23 @@
-# Design: Release notes generated from archived changes — `codev changelog`
+# Design: Release notes generated from archived changes — `compagnon changelog`
 
 ## Context
 
-An archived change lives in `_codev/changes/archive/<date>-<name>/` with its
+An archived change lives in `_compagnon/changes/archive/<date>-<name>/` with its
 `proposal.md` (`## Why`, `## What Changes`, …) and its spec deltas under
-`specs/**/spec.md`, parsed by `codev_core::parser::parse_delta`. Nothing
-parses a proposal today. `codev validate` checks active changes only
-(`change::list`), through `codev-engine::validate`, which reads files and
-lets pure rules in `codev-core` decide.
+`specs/**/spec.md`, parsed by `compagnon_core::parser::parse_delta`. Nothing
+parses a proposal today. `compagnon validate` checks active changes only
+(`change::list`), through `compagnon-engine::validate`, which reads files and
+lets pure rules in `compagnon-core` decide.
 
-`codev_core::managed` splices a section between `<!-- codev:begin` and
-`<!-- codev:end -->` markers, appending it at the end of a file when absent;
-`CLAUDE.md` and the pull request template use it. `codev doctor` gathers
-facts in `codev-cli::commands::doctor_at` and lets
-`codev_core::doctor::evaluate` judge them; it never spawns a process today,
+`compagnon_core::managed` splices a section between `<!-- compagnon:begin` and
+`<!-- compagnon:end -->` markers, appending it at the end of a file when absent;
+`CLAUDE.md` and the pull request template use it. `compagnon doctor` gathers
+facts in `compagnon-cli::commands::doctor_at` and lets
+`compagnon_core::doctor::evaluate` judge them; it never spawns a process today,
 and its spec says so. The only code that spawns `git` is
-`codev-engine::sources`, through the `ProcessRunner` port carried by `Ctx`.
+`compagnon-engine::sources`, through the `ProcessRunner` port carried by `Ctx`.
 
-codev's own `CHANGELOG.md` is hand-written, Keep a Changelog style, with a
+compagnon's own `CHANGELOG.md` is hand-written, Keep a Changelog style, with a
 curated `## [Unreleased]` covering the four changes archived since
 `v0.4.0`, none of which has a release note. The release workflow publishes
 with `generate_release_notes: true` only.
@@ -27,10 +27,10 @@ with `generate_release_notes: true` only.
 **Goals:**
 
 - Every decision about content, range, ordering, rendering and file
-  splicing is a pure function of `codev-core`, tested without I/O.
+  splicing is a pure function of `compagnon-core`, tested without I/O.
 - Git is queried through `ProcessRunner`; engine and CLI tests use the
   in-memory `FileSystem`, `FixedEnv` and `MockProcessRunner`.
-- `codev changelog --write` is idempotent and never rewrites hand-written
+- `compagnon changelog --write` is idempotent and never rewrites hand-written
   text, apart from adopting an existing `## [Unreleased]` heading once.
 
 **Non-Goals:**
@@ -44,10 +44,10 @@ with `generate_release_notes: true` only.
 
 ## Decisions
 
-### Decision: A pure `codev_core::changelog` module decides everything
+### Decision: A pure `compagnon_core::changelog` module decides everything
 
-Following `_codev/decisions/0001-functional-core-imperative-shell.md`,
-`codev_core::changelog` holds:
+Following `_compagnon/decisions/0001-functional-core-imperative-shell.md`,
+`compagnon_core::changelog` holds:
 
 - `release_note::parse(proposal) -> Parsed<ReleaseNote>` (`Absent`,
   `Internal` for `None`, `Items(Vec<NoteItem>)`), tolerant of wrapping,
@@ -77,9 +77,9 @@ not testable without a file system, against 0001); reusing the spec parser
 
 ### Decision: The range comes from `git ls-tree` through `ProcessRunner`
 
-`codev_engine::changelog::gather` runs, with the project root as working
+`compagnon_engine::changelog::gather` runs, with the project root as working
 directory: `git rev-parse --is-inside-work-tree`; then, for each explicit
-ref, `git ls-tree -d --name-only <ref> -- _codev/changes/archive/` (`-d`
+ref, `git ls-tree -d --name-only <ref> -- _compagnon/changes/archive/` (`-d`
 keeps folders only, so the archive's `.gitkeep` is not a change; paths are
 relative to the working directory, so a project nested in a repository
 works); and, when `--since` is absent, `git tag --list v*`, handing the
@@ -88,8 +88,8 @@ names to `default_since`. `--until` absent means the working tree
 `unknown_ref`. Outside a git repository, every archived change is listed
 with the `not_a_git_repository` warning, and explicit refs fail. The
 `ProcessRunner` port is the one of
-`_codev/decisions/0002-crate-graph-as-dependency-rule.md`; the crate graph is
-unchanged (`codev-engine` reads, `codev-core` decides, `codev-cli` renders
+`_compagnon/decisions/0002-crate-graph-as-dependency-rule.md`; the crate graph is
+unchanged (`compagnon-engine` reads, `compagnon-core` decides, `compagnon-cli` renders
 and writes).
 
 **Alternatives considered**: archive dates against tag dates (a change
@@ -103,7 +103,7 @@ for content that does not change after archive).
 `managed` gains `render_section_with(begin_line, body)`,
 `section_range(text)` and `section_body(text)`; its
 `splice` stays as it is for `CLAUDE.md`. The changelog begin line says the
-block is generated by `codev changelog --write`. The header is everything
+block is generated by `compagnon changelog --write`. The header is everything
 before the first line starting with `## `. On first write, when that line is
 `## [Unreleased]`, it is replaced by the managed section (whose own heading
 is `## [Unreleased]`), so the hand-written entries below it continue the
@@ -120,15 +120,15 @@ file (it would destroy curated history); keeping the dated block inside
 the markers (two managed blocks after the next release, which `splice`
 refuses as malformed).
 
-### Decision: codev's own repository excludes the hand-described changes
+### Decision: compagnon's own repository excludes the hand-described changes
 
 The four changes archived since `v0.4.0` have no release note; the fallback
 would turn their What Changes into `Changed` items duplicating the curated
-`[Unreleased]` entries. `_codev/config.yaml` lists them under
+`[Unreleased]` entries. `_compagnon/config.yaml` lists them under
 `changelog.exclude` (project-only, like `mcp:`, not inherited). Running
-`codev changelog --write` then adopts the hand-written `## [Unreleased]`
+`compagnon changelog --write` then adopts the hand-written `## [Unreleased]`
 heading: the managed section holds this change's items, the curated
-entries follow untouched, and `codev doctor` is clean because the managed
+entries follow untouched, and `compagnon doctor` is clean because the managed
 section matches the generated one. Once `v0.5.0` is tagged, the excluded
 changes fall out of range and the list can be emptied.
 
@@ -136,35 +136,35 @@ changes fall out of range and the list can be emptied.
 history is not rewritten); letting the fallback duplicate the curated text
 (duplicates, and worse wording); a `--since` stored in the file (a second
 source of truth for the range); a doctor exception for the fallback (the
-check would no longer mean "matches what `codev changelog` generates").
+check would no longer mean "matches what `compagnon changelog` generates").
 
 ### Decision: Doctor runs local, read-only git for the `changelog` check
 
 The `changelog` fact is computed by the same `gather` + `collect` +
-`render` as `codev changelog --write` with default arguments, then compared
+`render` as `compagnon changelog --write` with default arguments, then compared
 with `managed::section_body` of `CHANGELOG.md` (whitespace-trimmed). It needs
 `git tag` and `git ls-tree`: local, read-only, offline. The doctor spec is
-modified accordingly; the `codev status` hint, which runs doctor, inherits
+modified accordingly; the `compagnon status` hint, which runs doctor, inherits
 those calls. Any failure gathering the facts makes the check a warning
 rather than failing doctor.
 
 **Alternatives considered**: comparing without git (the expected content
-depends on the latest tag); a separate `codev changelog --check` (two places
+depends on the latest tag); a separate `compagnon changelog --check` (two places
 to look; doctor is where adoption gaps are reported).
 
 ### Decision: Release workflow runs the Linux build's binary
 
 The `release` job already downloads every archive; it checks out with
-`fetch-depth: 0` (tags and history for `ls-tree`), extracts `codev` from
+`fetch-depth: 0` (tags and history for `ls-tree`), extracts `compagnon` from
 the `x86_64-unknown-linux-musl` tarball (static, runs on the Ubuntu runner),
-runs `codev changelog --until "$GITHUB_REF_NAME" --format markdown >
+runs `compagnon changelog --until "$GITHUB_REF_NAME" --format markdown >
 release-notes.md` — the default `--since` is the previous version tag — and
 passes `body_path: release-notes.md` while keeping
 `generate_release_notes: true`, which `softprops/action-gh-release` appends
 below the body.
 
 **Alternatives considered**: `cargo run` in the release job (a second full
-compile); the latest published codev (would not know a format introduced by
+compile); the latest published compagnon (would not know a format introduced by
 the tag being released); dropping GitHub's notes (they credit contributors
 and pull requests, which release notes do not).
 
@@ -176,7 +176,7 @@ and pull requests, which release notes do not).
 - [A fresh project now has a doctor warning until it writes a
   `CHANGELOG.md`] → Warning only, never fails `--strict`; the fix is one
   command.
-- [`codev status` now spawns `git` through its doctor hint] → Local,
+- [`compagnon status` now spawns `git` through its doctor hint] → Local,
   read-only, a few milliseconds; the hint is skipped when doctor fails.
 - [The working tree may lack a change present at `--until` (deleted since)]
   → It is skipped with an `archived_change_unreadable` warning.
@@ -190,12 +190,12 @@ and pull requests, which release notes do not).
 ## Migration Plan
 
 No migration for users: the `## Release note` section is new in proposals,
-missing sections only warn on active changes, and `codev update`
-regenerates the skills. On codev's repository: `changelog.exclude` and one
-`codev changelog --write`.
+missing sections only warn on active changes, and `compagnon update`
+regenerates the skills. On compagnon's repository: `changelog.exclude` and one
+`compagnon changelog --write`.
 
 ## Open Questions
 
 - Should `changelog.exclude` warn on a name that is not an archived change?
   Deferred: a typo today shows up as the change's fallback items and its
-  `release_note_missing` warning in `codev changelog`.
+  `release_note_missing` warning in `compagnon changelog`.

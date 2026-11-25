@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Acceptance of fix-merge-and-skill-refresh: drives $CODEV as a user would.
+# Acceptance of fix-merge-and-skill-refresh: drives $COMPAGNON as a user would.
 set -u
-export CODEV_NO_UPDATE_CHECK=1
+export COMPAGNON_NO_UPDATE_CHECK=1
 check() { if "$@" >/dev/null 2>&1; then echo "ok $NAME"; else echo "not ok $NAME"; fi; }
 
 git init -q . && git config user.email e@x && git config user.name e
-"$CODEV" init --yes --no-detect >/dev/null 2>&1
+"$COMPAGNON" init --yes --no-detect >/dev/null 2>&1
 
-mkdir -p _codev/specs/auth
-cat > _codev/specs/auth/spec.md <<'S'
+mkdir -p _compagnon/specs/auth
+cat > _compagnon/specs/auth/spec.md <<'S'
 # Auth Specification
 
 ## Purpose
@@ -35,8 +35,8 @@ The system SHALL sign a user in.
 - **WHEN** the user gives valid credentials
 - **THEN** they are signed in
 S
-"$CODEV" new change login-export >/dev/null 2>&1
-C=_codev/changes/login-export
+"$COMPAGNON" new change login-export >/dev/null 2>&1
+C=_compagnon/changes/login-export
 cat > $C/proposal.md <<'S'
 # Proposal: Login and export
 
@@ -102,8 +102,8 @@ The system SHALL export a user's data on request.
 - **THEN** they receive their data
 S
 printf '# Tasks\n\n## 1. Do\n\n- [x] 1.1 Done, verified by a test\n' > $C/tasks.md
-"$CODEV" sync --change login-export >/dev/null 2>&1
-SPEC=_codev/specs/auth/spec.md
+"$COMPAGNON" sync --change login-export >/dev/null 2>&1
+SPEC=_compagnon/specs/auth/spec.md
 NAME=last-requirement-modified-kept-whole
 if grep -q "an inactive account with a message that names the reason." "$SPEC" \
   && grep -q -- "- \*\*THEN\*\* they are refused, with the reason" "$SPEC" \
@@ -112,11 +112,11 @@ if grep -q "an inactive account with a message that names the reason." "$SPEC" \
   && [ "$(grep -v '^[[:space:]]*$' "$SPEC" | tail -1)" = "- **THEN** they receive their data" ]; then
   echo "ok $NAME"; else echo "not ok $NAME"; fi
 cp "$SPEC" "$SPEC.first"
-"$CODEV" sync --change login-export >/dev/null 2>&1
+"$COMPAGNON" sync --change login-export >/dev/null 2>&1
 NAME=second-sync-changes-nothing check cmp -s "$SPEC" "$SPEC.first"
 rm -f "$SPEC.first"
 
-F=.claude/skills/codev-apply/SKILL.md
+F=.claude/skills/compagnon-apply/SKILL.md
 stamped() { sed -n 's/^  checksum: "\(.*\)"$/\1/p' "$F" | head -1; }
 # The SHA-256 of the skill without its (first) checksum line, byte for byte.
 unsealed_hash() { perl -0pe 's/^  checksum: .*\n//m' "$F" | shasum -a 256 | cut -d' ' -f1; }
@@ -124,12 +124,12 @@ NAME=skill-carries-a-checksum check test -n "$(stamped)"
 NAME=checksum-matches-the-content check test "$(stamped)" = "$(unsealed_hash)"
 
 echo "A line added by hand." >> "$F"
-"$CODEV" update --json > update.json 2>/dev/null
+"$COMPAGNON" update --json > update.json 2>/dev/null
 NAME=hand-edit-of-a-checksummed-skill-preserved check grep -q "A line added by hand." "$F"
 
 sed -i.bak 's/^  version: ".*"$/  version: "0.0.1"/' "$F" && rm -f "$F.bak"
-"$CODEV" update >/dev/null 2>&1
+"$COMPAGNON" update >/dev/null 2>&1
 NAME=hand-edit-on-another-version-rewritten check test "$(grep -c 'A line added by hand.' "$F")" = 0
 
-"$CODEV" update > second.txt 2>&1
+"$COMPAGNON" update > second.txt 2>&1
 NAME=second-update-writes-nothing check grep -q "Nothing to do" second.txt

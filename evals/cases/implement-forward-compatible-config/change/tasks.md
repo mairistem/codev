@@ -10,7 +10,7 @@ temporary directory, no assumption about path separators or line endings.
 
 ## 1. Core: downgrade target and doctor checks
 
-- [ ] 1.1 In `codev_core::update`, add `RequirementSide` and
+- [ ] 1.1 In `compagnon_core::update`, add `RequirementSide` and
   `requirement_side(requirement, current)` (`Above` for a failing upper
   bound, `Below` otherwise, `None` when satisfied or unparsable), and
   `downgrade_target(requirement, latest_known)` (cached latest when it
@@ -22,20 +22,20 @@ temporary directory, no assumption about path separators or line endings.
   `the_downgrade_target_falls_back_to_an_exact_upper_bound`,
   `the_downgrade_target_falls_back_to_the_lowest_admitted_version`,
   `no_downgrade_target_without_any_bound`.
-- [ ] 1.2 In `codev_core::doctor`, add `latest_known` to `VersionFacts` and
-  give the `codev_version` check the fix `codev self-update --version
+- [ ] 1.2 In `compagnon_core::doctor`, add `latest_known` to `VersionFacts` and
+  give the `compagnon_version` check the fix `compagnon self-update --version
   <target>` (or the placeholder naming the requirement) when the running
-  codev is above, `codev self-update` when below, verified by unit tests
-  `codev_version_above_the_bound_fixes_with_an_explicit_version`
-  (doctor: "Running codev above the project's requirement", "Running codev
-  above an exact upper bound, no usable cache", "Running codev above a
+  compagnon is above, `compagnon self-update` when below, verified by unit tests
+  `compagnon_version_above_the_bound_fixes_with_an_explicit_version`
+  (doctor: "Running compagnon above the project's requirement", "Running compagnon
+  above an exact upper bound, no usable cache", "Running compagnon above a
   requirement with no exact bound"),
-  `codev_version_above_without_any_target_names_the_requirement` and the
-  existing `codev_version_unsatisfied_is_missing` (doctor: "Running codev
+  `compagnon_version_above_without_any_target_names_the_requirement` and the
+  existing `compagnon_version_unsatisfied_is_missing` (doctor: "Running compagnon
   below the project's requirement").
 - [ ] 1.3 Add the `config.keys` check after `config.language` (fact
   `unknown_config_keys`): `ok`, or `warning` `unknown_config_key` naming
-  the keys, with the fix `codev self-update` when the requirement is not
+  the keys, with the fix `compagnon self-update` when the requirement is not
   satisfied, otherwise "correct or remove"; update `CHECK_IDS` and the
   summary count, verified by unit tests `unknown_config_keys_are_a_warning`,
   `unknown_config_keys_with_an_unsatisfied_requirement_fix_with_self_update`,
@@ -44,7 +44,7 @@ temporary directory, no assumption about path separators or line endings.
 
 ## 2. Engine: tolerant configuration loading
 
-- [ ] 2.1 In `codev_engine::config`, drop `deny_unknown_fields` from
+- [ ] 2.1 In `compagnon_engine::config`, drop `deny_unknown_fields` from
   `ProjectConfig` and `McpConfig`, keep it on `InheritSource` and
   `ChangelogConfig`; add `PROJECT_KEYS`, `MCP_KEYS` and the detection of
   unknown keys with their line into `ProjectConfig::unknown_keys`, verified
@@ -55,17 +55,17 @@ temporary directory, no assumption about path separators or line endings.
   `changelog_exclude_is_read_and_unknown_keys_still_fail`),
   `an_unknown_inherits_key_still_fails`, `mcp_config_unknown_field_is_tolerated`
   (replacing `mcp_config_unknown_field_is_rejected`).
-- [ ] 2.2 Enrich the strict parse error with the lenient `codev_version`
-  (quote it, name `codev self-update`), verified by unit tests
-  `a_strict_section_error_quotes_codev_version` (configuration: "Unknown
+- [ ] 2.2 Enrich the strict parse error with the lenient `compagnon_version`
+  (quote it, name `compagnon self-update`), verified by unit tests
+  `a_strict_section_error_quotes_compagnon_version` (configuration: "Unknown
   key of the `changelog` section") and
-  `a_strict_section_error_without_codev_version_names_the_key`
+  `a_strict_section_error_without_compagnon_version_names_the_key`
   (configuration: "Unknown key of an `inherits` entry").
 - [ ] 2.3 In `config::resolve`, turn each project unknown key into a
-  `unknown_config_key` warning (key, newer codev, `codev_version` when set,
-  `codev self-update`), expose `unknown_keys` on `ResolvedConfig`, ignore
+  `unknown_config_key` warning (key, newer compagnon, `compagnon_version` when set,
+  `compagnon self-update`), expose `unknown_keys` on `ResolvedConfig`, ignore
   inherited sources' unknown keys, verified by unit tests
-  `an_unknown_top_level_key_warns_and_quotes_codev_version`,
+  `an_unknown_top_level_key_warns_and_quotes_compagnon_version`,
   `an_unknown_top_level_key_without_requirement_warns` (replacing
   `reports_an_unknown_key_in_the_config`),
   `an_inherited_source_unknown_key_is_ignored_silently` (configuration:
@@ -93,7 +93,7 @@ temporary directory, no assumption about path separators or line endings.
   exit code reads), `validate_has_no_config_item_when_clean`
   (configuration: "Clean configuration"),
   `doctor_reports_an_unknown_config_key`,
-  `doctor_fixes_a_codev_above_the_requirement_with_an_explicit_version`,
+  `doctor_fixes_a_compagnon_above_the_requirement_with_an_explicit_version`,
   and the existing doctor tests updated for the new check.
 - [ ] 3.2 Contract test: the `config` kind serializes as `"config"` in
   `ValidateReportV1`, verified by `validate_report_v1_carries_the_config_kind`.
@@ -102,20 +102,20 @@ temporary directory, no assumption about path separators or line endings.
 
 - [ ] 4.1 `reference/configuration.md`: unknown keys (warning at the top
   level and in `mcp`, error in `inherits` entries and `changelog`, why),
-  forward compatibility, codev 0.5 and earlier still rejecting unknown keys;
-  verified by the docs tests of `cargo test -p codev-cli`.
-- [ ] 4.2 `faq.md`: "A teammate's codev fails on the configuration" and
+  forward compatibility, compagnon 0.5 and earlier still rejecting unknown keys;
+  verified by the docs tests of `cargo test -p compagnon-cli`.
+- [ ] 4.2 `faq.md`: "A teammate's compagnon fails on the configuration" and
   "`unknown_config_key`"; `reference/cli.md` and `reference/json-output.md`
-  doctor tables (`config.keys`, the `codev_version` fix) and the validate
+  doctor tables (`config.keys`, the `compagnon_version` fix) and the validate
   `config` kind; `guides/repository-integration.md` and `quickstart.md`
-  doctor samples regenerated from a real `codev doctor` run; verified by
-  the docs tests of `cargo test -p codev-cli` and `grep config.keys` in
+  doctor samples regenerated from a real `compagnon doctor` run; verified by
+  the docs tests of `cargo test -p compagnon-cli` and `grep config.keys` in
   both editions.
 
 ## 5. Verification
 
 - [ ] 5.1 `cargo fmt --all --check`, `cargo clippy --workspace
   --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`
-  green; `cargo run -q -p codev-cli -- validate --strict` reports no issue,
-  and `cargo run -q -p codev-cli -- doctor` reports nothing missing but
-  `skills`, which the evaluation installed from another codev.
+  green; `cargo run -q -p compagnon-cli -- validate --strict` reports no issue,
+  and `cargo run -q -p compagnon-cli -- doctor` reports nothing missing but
+  `skills`, which the evaluation installed from another compagnon.

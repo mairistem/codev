@@ -2,7 +2,7 @@
 
 ## 1. Extending `Plan` with `Move`
 
-- [x] 1.1 Add to `codev-core::plan` a struct `Move { from: PathBuf, to:
+- [x] 1.1 Add to `compagnon-core::plan` a struct `Move { from: PathBuf, to:
       PathBuf }` and a field `pub moves: Vec<Move>` on `Plan`, plus a
       method `Plan::move_dir(&mut self, from, to)`. Verified by
       `plan::move_est_planifiable_et_deduplicable` (two identical moves are
@@ -19,15 +19,15 @@
       fallback) and in memory (`MemoryFileSystem`: moves files and
       dirs). Verified by `ports::memory_rename_deplace_un_arbre_entier`.
 
-## 2. Pure merge in `codev-core::merge`
+## 2. Pure merge in `compagnon-core::merge`
 
-- [x] 2.1 Create `codev-core::merge` (module `merge/mod.rs`,
+- [x] 2.1 Create `compagnon-core::merge` (module `merge/mod.rs`,
       `merge/edits.rs`, `merge/render.rs`) and expose:
       - `pub struct Edit { byte_range: Range<usize>, replacement: String }`
       - `pub struct MergePlan { edits: Vec<Edit>, /* ... */ }`
       - `pub fn merge_into_existing(spec_source, spec_ast, delta) -> Result<MergePlan, MergeError>`
       - `pub fn build_new_spec(capability_path, delta) -> Result<String, MergeError>`
-      Verified by `cargo build -p codev-core` and a test compiling
+      Verified by `cargo build -p compagnon-core` and a test compiling
       `merge::edit_construction_est_stable`.
 - [x] 2.2 Markdown rendering of a `Requirement`: `### Requirement: <name>` +
       blank line + `description` + `\n\n` for each `Scenario`, each
@@ -73,7 +73,7 @@
 
 ## 3. `sync` orchestration on the engine side
 
-- [x] 3.1 Create `codev-engine::sync` with `pub fn plan_sync(fs, layout,
+- [x] 3.1 Create `compagnon-engine::sync` with `pub fn plan_sync(fs, layout,
       change_id) -> Result<SyncPlan, EngineError>`. The `SyncPlan` carries
       the `Plan` (dirs + writes) and a report under construction (new files
       vs updated vs unchanged). Verified by
@@ -90,7 +90,7 @@
 
 ## 4. `archive` orchestration on the engine side
 
-- [x] 4.1 Create `codev-engine::archive` with `pub fn plan_archive(fs,
+- [x] 4.1 Create `compagnon-engine::archive` with `pub fn plan_archive(fs,
       layout, clock, change_id) -> Result<ArchivePlan, EngineError>`.
       Calls `validate_change` as pre-flight; returns an `EngineError` with
       code `validation_failed` if `has_errors()`. Verified by
@@ -107,7 +107,7 @@
 ## 5. CLI subcommands
 
 - [x] 5.1 Add `Command::Sync { change: Option<String>, json: bool }`
-      in `codev-cli`, with change resolution identical to `status` (only
+      in `compagnon-cli`, with change resolution identical to `status` (only
       one active → implicit, otherwise ambiguous or unknown). Exit code: `0`
       on success, `1` otherwise. Verified by
       `cli_sync::sync_un_seul_change_actif_est_implicite`.
@@ -134,8 +134,8 @@
 
 ## 7. Merge golden tests
 
-- [x] 7.1 Create `crates/codev-engine/tests/sync_golden.rs` with
-      representative fixtures under `crates/codev-engine/tests/fixtures/sync/`:
+- [x] 7.1 Create `crates/compagnon-engine/tests/sync_golden.rs` with
+      representative fixtures under `crates/compagnon-engine/tests/fixtures/sync/`:
       existing main spec + ADDED delta, spec + MODIFIED delta, spec +
       REMOVED delta, spec + RENAMED delta, multi-operation delta. Verified
       by one test per fixture (`sync_golden::added_ajoute`,
@@ -153,13 +153,13 @@
 
 ## 8. Dogfooding and workspace integration
 
-- [x] 8.1 After implementation, run `codev archive
-      parse-specs-and-deltas` then `codev archive validate-changes-and-specs`
-      on this repository. Check that `_codev/specs/spec-parsing/spec.md` and
-      `_codev/specs/validation/spec.md` are created from the deltas'
+- [x] 8.1 After implementation, run `compagnon archive
+      parse-specs-and-deltas` then `compagnon archive validate-changes-and-specs`
+      on this repository. Check that `_compagnon/specs/spec-parsing/spec.md` and
+      `_compagnon/specs/validation/spec.md` are created from the deltas'
       Purpose, and that both change folders are under
-      `_codev/changes/archive/`.
-- [x] 8.2 After archiving both, run `codev validate --all`: must exit 0
+      `_compagnon/changes/archive/`.
+- [x] 8.2 After archiving both, run `compagnon validate --all`: must exit 0
       and list the two newly created main specs.
 - [x] 8.3 `cargo test --workspace` stays green and counts at least 30
       additional tests (merge, engine sync/archive, CLI, contract,

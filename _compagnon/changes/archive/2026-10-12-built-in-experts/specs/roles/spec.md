@@ -1,8 +1,8 @@
 ## MODIFIED Requirements
 
-### Requirement: codev knows a catalog of roles bound to workflow steps
+### Requirement: compagnon knows a catalog of roles bound to workflow steps
 
-codev SHALL know a catalog of roles. Each role has an id, a display name in
+compagnon SHALL know a catalog of roles. Each role has an id, a display name in
 English and in French, the question it owns, its "done when" criteria, and
 the workflow step or steps it serves. The steps, in workflow order, are
 `plan.understand`, `plan.investigate`, `plan.write`, `plan.trace`,
@@ -10,11 +10,11 @@ the workflow step or steps it serves. The steps, in workflow order, are
 
 The catalog is made of:
 
-- the built-in step roles, embedded in codev: `analyst`
+- the built-in step roles, embedded in compagnon: `analyst`
   (`plan.understand`), `investigator` (`plan.investigate`), `tracer`
   (`plan.trace`), `skeptic` (`plan.challenge`), `developer`
   (`code.implement`) and `newcomer` (`code.review`);
-- the built-in experts, embedded in codev, each at `plan.challenge` and
+- the built-in experts, embedded in compagnon, each at `plan.challenge` and
   `code.review`: `security`, `privacy`, `accessibility`, `performance`,
   `ops` and `migration`;
 - the artifact roles declared by the schema in use, all at `plan.write`:
@@ -37,7 +37,7 @@ Développeur, Newcomer / Nouvel arrivant. The experts are active
 #### Scenario: The default catalog
 
 - **GIVEN** a project using the `spec-driven` schema and no `roles:` key
-- **WHEN** the user runs `codev roles --json`
+- **WHEN** the user runs `compagnon roles --json`
 - **THEN** `roles` lists `analyst`, `investigator`, `product`, `qa`,
   `architect`, `lead`, `tracer`, `skeptic`, `security`, `privacy`,
   `accessibility`, `performance`, `ops`, `migration`, `developer` and
@@ -50,13 +50,13 @@ Développeur, Newcomer / Nouvel arrivant. The experts are active
 #### Scenario: A custom schema without roles
 
 - **GIVEN** a project whose schema declares no artifact role
-- **WHEN** the user runs `codev roles --json`
+- **WHEN** the user runs `compagnon roles --json`
 - **THEN** `roles` lists only the six built-in step roles and the six
   experts
 
 ### Requirement: The project configures roles under `roles:`
 
-`_codev/config.yaml` SHALL accept a top-level `roles:` mapping from a role
+`_compagnon/config.yaml` SHALL accept a top-level `roles:` mapping from a role
 id to either an activation (`always`, `never` or `on_domain`), or a mapping
 with an optional `when:` (the same values, the role's default when absent)
 and an optional `done_when:` list. The `done_when:` entries SHALL be added
@@ -72,16 +72,16 @@ this change only.
 #### Scenario: A role disabled by the project
 
 - **GIVEN** a configuration with `roles: { newcomer: never }`
-- **WHEN** the user runs `codev roles --at code.review --json`
+- **WHEN** the user runs `compagnon roles --at code.review --json`
 - **THEN** `roles` holds no `newcomer`
-- **AND** `codev roles --json` lists `newcomer` with `when: "never"` and
+- **AND** `compagnon roles --json` lists `newcomer` with `when: "never"` and
   `whenOrigin: "project"`
 
 #### Scenario: Extra criteria are added after the role's own
 
 - **GIVEN** a configuration where `skeptic` has `done_when:` with the entry
   `The rollback plan is stated`
-- **WHEN** the user runs `codev roles --at plan.challenge --json`
+- **WHEN** the user runs `compagnon roles --at plan.challenge --json`
 - **THEN** the `skeptic` entry's `doneWhen` holds its built-in criteria,
   each with the origin `built-in`, followed by `The rollback plan is
   stated` with the origin `project`
@@ -90,7 +90,7 @@ this change only.
 
 - **GIVEN** a configuration with `roles: { newcomer: never }` and a change
   `add-auth` whose `change.yaml` holds `roles: { newcomer: always }`
-- **WHEN** the user runs `codev roles --at code.review --change add-auth
+- **WHEN** the user runs `compagnon roles --at code.review --change add-auth
   --json`
 - **THEN** `roles` holds `newcomer` with `whenOrigin: "change"`
 - **AND** without `--change`, `roles` holds no `newcomer`
@@ -98,19 +98,19 @@ this change only.
 #### Scenario: An unknown key inside a role
 
 - **GIVEN** a configuration where `skeptic` holds the key `done-when`
-- **WHEN** the user runs `codev status`
+- **WHEN** the user runs `compagnon status`
 - **THEN** the command fails with the code `invalid`, naming the key
 
 #### Scenario: Roles of an inherited source are ignored
 
 - **GIVEN** a project inheriting from a source whose configuration holds
   `roles: { skeptic: never }`
-- **WHEN** the user runs `codev roles --at plan.challenge --json`
+- **WHEN** the user runs `compagnon roles --at plan.challenge --json`
 - **THEN** `roles` holds `skeptic`
 
 ### Requirement: Invalid role settings are reported with stable codes
 
-A role setting, in `_codev/config.yaml` or in a change's `change.yaml`,
+A role setting, in `_compagnon/config.yaml` or in a change's `change.yaml`,
 SHALL be reported:
 
 - with `unknown_role` when its id is neither a built-in role nor an
@@ -121,61 +121,61 @@ SHALL be reported:
 - with `role_not_disableable` when it sets `never` on an artifact role, on
   the `analyst` or on the `developer`.
 
-The message MUST name the role and the file. `codev validate` SHALL report
+The message MUST name the role and the file. `compagnon validate` SHALL report
 each one as an error finding with its code — under the `config` item for
-`_codev/config.yaml`, under the change's item for its `change.yaml`. Project
+`_compagnon/config.yaml`, under the change's item for its `change.yaml`. Project
 settings are checked against the configured schema; a change's settings
-against the change's schema. `codev status`, `codev instructions` and
-`codev roles` SHALL fail with exit code 1 and the code of the first
+against the change's schema. `compagnon status`, `compagnon instructions` and
+`compagnon roles` SHALL fail with exit code 1 and the code of the first
 invalid setting, the project's before the change's.
 
 #### Scenario: An unknown role id
 
 - **GIVEN** a configuration with `roles: { reviewer: never }`
-- **WHEN** the user runs `codev validate --json`
+- **WHEN** the user runs `compagnon validate --json`
 - **THEN** the `config` item holds an error `unknown_role` naming
   `reviewer`
-- **AND** `codev status --change add-auth --json` fails with
+- **AND** `compagnon status --change add-auth --json` fails with
   `status[0].code` `unknown_role`
 
 #### Scenario: An invalid activation
 
 - **GIVEN** a configuration with `roles: { skeptic: sometimes }`
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** it reports the error `invalid_role_activation` naming `skeptic`
   and the accepted values `always`, `never` and `on_domain`
 
 #### Scenario: `on_domain` on a role without domains
 
 - **GIVEN** a configuration with `roles: { skeptic: on_domain }`
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** it reports the error `invalid_role_activation` naming `skeptic`
   and saying it is bound to no domain
 
 #### Scenario: Disabling an artifact role
 
 - **GIVEN** a configuration with `roles: { qa: never }`
-- **WHEN** the user runs `codev instructions specs --change add-auth`
+- **WHEN** the user runs `compagnon instructions specs --change add-auth`
 - **THEN** the command fails with `role_not_disableable` naming `qa`
 - **AND** `roles: { qa: { done_when: ["..."] } }` is accepted
 
 #### Scenario: Disabling the analyst
 
 - **GIVEN** a configuration with `roles: { analyst: never }`
-- **WHEN** the user runs `codev roles --at plan.understand`
+- **WHEN** the user runs `compagnon roles --at plan.understand`
 - **THEN** the command fails with `role_not_disableable` naming `analyst`
 
 #### Scenario: An invalid setting in a change
 
 - **GIVEN** a change `add-auth` whose `change.yaml` holds
   `roles: { developer: never }`
-- **WHEN** the user runs `codev validate add-auth --json`
+- **WHEN** the user runs `compagnon validate add-auth --json`
 - **THEN** the item of `add-auth` holds an error `role_not_disableable`
   naming `developer` and `change.yaml`
 
-### Requirement: `codev roles` serves the roles of a step
+### Requirement: `compagnon roles` serves the roles of a step
 
-`codev roles [--at <step>] [--change <name>] [--knowledge] [--json]` SHALL
+`compagnon roles [--at <step>] [--change <name>] [--knowledge] [--json]` SHALL
 resolve the roles against the change's schema, its `change.yaml` and the
 domains of its proposal with `--change`, otherwise against the configured
 schema and the project configuration alone. With `--at`, it SHALL list the
@@ -217,7 +217,7 @@ shape, with `roles` empty.
 #### Scenario: The roles of a step, as JSON
 
 - **GIVEN** a project with no `roles:` key and a change `add-auth`
-- **WHEN** the user runs `codev roles --at plan.trace --change add-auth
+- **WHEN** the user runs `compagnon roles --at plan.trace --change add-auth
   --json`
 - **THEN** `roles` holds one entry, `tracer`, with `kind: "step"`,
   `at: "plan.trace"`, `steps: ["plan.trace"]`, `artifact: null`,
@@ -227,7 +227,7 @@ shape, with `roles` empty.
 
 #### Scenario: Artifact roles at `plan.write`
 
-- **WHEN** the user runs `codev roles --at plan.write --json`
+- **WHEN** the user runs `compagnon roles --at plan.write --json`
 - **THEN** `roles` holds `product`, `qa`, `architect` and `lead`, with
   `artifact` `proposal`, `specs`, `design` and `tasks`, and criteria with
   the origin `schema:spec-driven`
@@ -235,20 +235,20 @@ shape, with `roles` empty.
 #### Scenario: Display names follow the configured language
 
 - **GIVEN** a configuration with `language: fr`
-- **WHEN** the user runs `codev roles --at plan.challenge --json`
+- **WHEN** the user runs `compagnon roles --at plan.challenge --json`
 - **THEN** the `skeptic` entry has `name: "Contradicteur"`
 - **AND** with `language: de`, it has `name: "Skeptic"`
 
 #### Scenario: An unknown step
 
-- **WHEN** the user runs `codev roles --at plan.review --json`
+- **WHEN** the user runs `compagnon roles --at plan.review --json`
 - **THEN** the exit code is 1 and `status[0].code` is `unknown_step`
 - **AND** its message lists the valid steps and `roles` is empty
 
 #### Scenario: Human output of every role
 
 - **GIVEN** a configuration with `roles: { newcomer: never }`
-- **WHEN** the user runs `codev roles`
+- **WHEN** the user runs `compagnon roles`
 - **THEN** it prints one line per role, the `newcomer` line saying `never`
   and `project`, the `security` line saying `on_domain`, and the `product`
   line saying it cannot be disabled
@@ -256,7 +256,7 @@ shape, with `roles` empty.
 #### Scenario: Knowledge in the human output
 
 - **GIVEN** a change `add-auth` whose proposal ticks `security`
-- **WHEN** the user runs `codev roles --at code.review --change add-auth`
+- **WHEN** the user runs `compagnon roles --at code.review --change add-auth`
 - **THEN** it prints the criteria of `newcomer` and `security` without
   their knowledge
 - **AND** with `--knowledge`, it also prints the knowledge of each
@@ -266,7 +266,7 @@ shape, with `roles` empty.
 ### Requirement: Each built-in role may carry knowledge
 
 A built-in role SHALL be able to carry knowledge: a text that gives the
-role what it needs to check its criteria well, served by `codev roles` to
+role what it needs to check its criteria well, served by `compagnon roles` to
 the active roles only. The knowledge of a role is organized in sections,
 always in this order and using only these: **Scope** (what the role looks
 at, and what it leaves aside), **Signals** (concrete patterns to spot,
@@ -282,7 +282,7 @@ number, is cited only when it is the standard's own.
 #### Scenario: An expert's knowledge
 
 - **GIVEN** a change `add-auth` whose proposal ticks `security`
-- **WHEN** the user runs `codev roles --at code.review --change add-auth
+- **WHEN** the user runs `compagnon roles --at code.review --change add-auth
   --json`
 - **THEN** the `security` entry's `knowledge` holds the sections Scope,
   Signals, By stack, References and Reporting, in that order
@@ -290,13 +290,13 @@ number, is cited only when it is the standard's own.
 
 #### Scenario: A role without knowledge
 
-- **WHEN** the user runs `codev roles --at plan.trace --json`
+- **WHEN** the user runs `compagnon roles --at plan.trace --json`
 - **THEN** the `tracer` entry has `knowledge: null`
 
 #### Scenario: Knowledge is not served to an inactive role
 
 - **GIVEN** a configuration with `roles: { newcomer: never }`
-- **WHEN** the user runs `codev roles --json`
+- **WHEN** the user runs `compagnon roles --json`
 - **THEN** the `newcomer` entry has `knowledge: null` and
   `activatedBy: null`
 
@@ -316,7 +316,7 @@ An `always` or `never` set by the project or the change overrides
 
 - **GIVEN** a change `add-auth` whose proposal ticks `security` and
   `personal-data`
-- **WHEN** the user runs `codev roles --at plan.challenge --change add-auth
+- **WHEN** the user runs `compagnon roles --at plan.challenge --change add-auth
   --json`
 - **THEN** `roles` holds `skeptic`, `security` with
   `activatedBy: "domain:security"` and `privacy` with
@@ -324,13 +324,13 @@ An `always` or `never` set by the project or the change overrides
 
 #### Scenario: Without a change, experts stay inactive
 
-- **WHEN** the user runs `codev roles --at code.review --json`
+- **WHEN** the user runs `compagnon roles --at code.review --json`
 - **THEN** `roles` holds only `newcomer`
 
 #### Scenario: A proposal that says `None`
 
 - **GIVEN** a change `add-auth` whose `## Domains` section says `None`
-- **WHEN** the user runs `codev roles --at plan.challenge --change add-auth
+- **WHEN** the user runs `compagnon roles --at plan.challenge --change add-auth
   --json`
 - **THEN** `roles` holds only `skeptic`
 
@@ -338,7 +338,7 @@ An `always` or `never` set by the project or the change overrides
 
 - **GIVEN** a change `add-auth` whose proposal ticks no domain and whose
   `change.yaml` holds `roles: { performance: always }`
-- **WHEN** the user runs `codev roles --at code.review --change add-auth
+- **WHEN** the user runs `compagnon roles --at code.review --change add-auth
   --json`
 - **THEN** `roles` holds `performance` with `activatedBy: "change"`
 
@@ -346,6 +346,6 @@ An `always` or `never` set by the project or the change overrides
 
 - **GIVEN** a configuration with `roles: { accessibility: never }` and a
   change whose proposal ticks `user-interface`
-- **WHEN** the user runs `codev roles --at code.review --change <name>
+- **WHEN** the user runs `compagnon roles --at code.review --change <name>
   --json`
 - **THEN** `roles` holds no `accessibility`

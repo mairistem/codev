@@ -1,4 +1,4 @@
-# Design: refine the output of `/codev-onboard`
+# Design: refine the output of `/compagnon-onboard`
 
 ## Context
 
@@ -9,17 +9,17 @@ body; no code structure is touched.
 
 ### Decision: the "archived changes" line is **conditional**
 
-On a freshly initialized project, `_codev/changes/archive/` may be
+On a freshly initialized project, `_compagnon/changes/archive/` may be
 empty (or contain only `.gitkeep`). Displaying "0 archived changes"
 would be noise — the line is displayed **only if the count is
 strictly positive**. Consistent with the skill's principle of compact
 output.
 
-### Decision: the reading is done via a filtered `ls`, not a codev CLI
+### Decision: the reading is done via a filtered `ls`, not a compagnon CLI
 
-`codev list --archived` does not exist (E6 in the roadmap, not
+`compagnon list --archived` does not exist (E6 in the roadmap, not
 delivered). The skill therefore counts the folders directly via a
-shell command equivalent to `ls _codev/changes/archive/ | grep -v '^\.'`.
+shell command equivalent to `ls _compagnon/changes/archive/ | grep -v '^\.'`.
 It is robust: it filters out hidden files (`.gitkeep`), and the other
 folders have the form `<date>-<name>/`. Deferrable until E6 ships —
 the substitution will then be trivial.
@@ -34,5 +34,5 @@ detection. Rejected for simplicity.
 
 ## Migration Plan
 
-None. The new behavior applies from the next `codev update` + restart
+None. The new behavior applies from the next `compagnon update` + restart
 of the Claude Code session.

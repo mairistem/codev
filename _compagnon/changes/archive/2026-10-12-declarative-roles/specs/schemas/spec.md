@@ -20,7 +20,7 @@ unaffected.
 
 - **GIVEN** a project schema whose artifact `brief` declares
   `role: { id: editor, name: { en: Editor }, question: "Is the brief clear?", done_when: ["One page at most"] }`
-- **WHEN** the user runs `codev roles --at plan.write --json`
+- **WHEN** the user runs `compagnon roles --at plan.write --json`
 - **THEN** `roles` holds `editor` with `artifact: "brief"` and the criterion
   `One page at most` with the origin `schema:<the schema's name>`
 

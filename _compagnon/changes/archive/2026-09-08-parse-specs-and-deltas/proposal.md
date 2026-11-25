@@ -2,7 +2,7 @@
 
 ## Why
 
-Today codev can create and list changes, but nothing can read a
+Today compagnon can create and list changes, but nothing can read a
 hand-written spec or delta. The three batch-1 commands still missing —
 `validate`, `sync`, `archive` — all depend on it.
 
@@ -21,7 +21,7 @@ hand-written spec or delta. The three batch-1 commands still missing —
   source text. This is the building block that will make the `MODIFIED`
   merge non-destructive: rewrite one block without reformatting the rest of
   the file.
-- Pure API in `codev-core`: the function takes a `&str`, returns a typed
+- Pure API in `compagnon-core`: the function takes a `&str`, returns a typed
   AST, and never touches the disk.
 
 ## Capabilities
@@ -36,9 +36,9 @@ None — the project has no main spec yet.
 
 ## Impact
 
-- **Code**: new module `codev-core::parser` (`spec.rs`, `delta.rs`,
-  `fence.rs`, `ast.rs`). No changes to `codev-engine`, `codev-agents`
-  or `codev-cli` in this change — the consumers (`validate`, `sync`,
+- **Code**: new module `compagnon-core::parser` (`spec.rs`, `delta.rs`,
+  `fence.rs`, `ast.rs`). No changes to `compagnon-engine`, `compagnon-agents`
+  or `compagnon-cli` in this change — the consumers (`validate`, `sync`,
   `archive`) will each get their own change.
 - **Dependencies**: the design will decide between a hand-written
   line-by-line parser (OpenSpec's approach, ~1,200 lines in total) and an
@@ -46,4 +46,4 @@ None — the project has no main spec yet.
 - **Out of scope**: the `tasks.md` parser (enabled once `validate --archived`
   is implemented) and the `proposal.md` parser (enabled once proposal
   validation needs it). Today these two artifacts serve the human and the
-  agent, not codev, and no batch-1 command requires parsing them.
+  agent, not compagnon, and no batch-1 command requires parsing them.

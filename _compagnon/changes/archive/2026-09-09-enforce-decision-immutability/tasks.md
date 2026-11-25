@@ -2,7 +2,7 @@
 
 ## 1. Core — `seal` module and hash
 
-- [x] 1.1 Create `crates/codev-core/src/decisions/seal.rs` — types:
+- [x] 1.1 Create `crates/compagnon-core/src/decisions/seal.rs` — types:
       `Seal { id: DecisionId, body_sha256: String, sealed_at: NaiveDate }`,
       `SealFile { version: u32, seals: Vec<Seal> }`. Frontmatter attributed
       `#[serde(deny_unknown_fields)]` on both. `version` fixed at `1`
@@ -58,7 +58,7 @@
 
 ## 3. Shell — engine and coordination
 
-- [x] 3.1 `crates/codev-engine/src/decisions_actions.rs`: the function
+- [x] 3.1 `crates/compagnon-engine/src/decisions_actions.rs`: the function
       that builds the `new` plan must first read `seal.yaml` via the
       `FileSystem` port, call `plan_new_decision` passing it the parsed
       content, then execute the plan. Same for `supersede`.
@@ -67,13 +67,13 @@
       `plan_seal`, then execution. Errors remapped to the stable codes
       `seal_conflict`, `cannot_seal_inherited`,
       `unknown_decision_id`.
-- [x] 3.3 Extension of `crates/codev-engine/src/validate.rs`: after
+- [x] 3.3 Extension of `crates/compagnon-engine/src/validate.rs`: after
       loading the decision index, read `seal.yaml` via the `FileSystem`
       port, call `verify`, add its findings to the validation report.
       Tests: project where seal.yaml is absent → every ADR surfaces
       `decision_unsealed`; project where seal.yaml was filled by hand
       but an ADR was modified → `decision_seal_mismatch`.
-- [x] 3.4 `_codev/decisions/seal.yaml` must be **created in the layout**
+- [x] 3.4 `_compagnon/decisions/seal.yaml` must be **created in the layout**
       on the engine side — list it as a known source-of-truth file,
       avoid it being mistakenly interpreted as an ADR (`.yaml` extension,
       so ignored anyway by the ADR reader which filters `.md`, but
@@ -81,7 +81,7 @@
 
 ## 4. CLI — `decision seal` command
 
-- [x] 4.1 New subcommand `codev decision seal <id> [--force]
+- [x] 4.1 New subcommand `compagnon decision seal <id> [--force]
       [--json]`. Routes to the engine action. `--json` produces
       `{ "decision": { "id": …, "bodySha256": …, "sealedAt": … },
       "status": [] }` on success, `{ "decision": null, "status": [{code,
@@ -90,7 +90,7 @@
       re-seal → `Resealed 0001 (sha256:…)`; no-op → `Already up to date:
       0001`; conflict without force → message with the code
       `seal_conflict` recalling the use of `--force`.
-- [x] 4.3 `codev decision new --json` gains a `bodySha256` field in its
+- [x] 4.3 `compagnon decision new --json` gains a `bodySha256` field in its
       `decision` entry. The field also appears in the human output on
       its own line (`Hash: sha256:…`) — useful for copy-paste during
       migration.
@@ -100,26 +100,26 @@
 ## 5. JSON contract
 
 - [x] 5.1 Add the struct `SealEntryV1 { id, bodySha256, sealedAt }`
-      in `codev-cli::contract::v1`. The struct `DecisionEntryV1` (used
+      in `compagnon-cli::contract::v1`. The struct `DecisionEntryV1` (used
       by `decision new`) gains an optional `bodySha256: Option<String>`
       — additive, never breaking.
 - [x] 5.2 Document the new finding codes in the module
-      `codev-cli::contract::v1::status`: `decision_unsealed`,
+      `compagnon-cli::contract::v1::status`: `decision_unsealed`,
       `decision_seal_mismatch`, `decision_orphan_seal`, `seal_conflict`,
       `cannot_seal_inherited`, `seal_version_unsupported`,
       `unknown_decision_id` (already exists).
 
 ## 6. Migration of the repository itself
 
-- [x] 6.1 After implementation and `cargo install`, run `codev
+- [x] 6.1 After implementation and `cargo install`, run `compagnon
       validate` — check that the 6 `decision_unsealed` warnings
       surface.
-- [x] 6.2 Loop `codev decision seal <id>` over the 6 ADRs; single
-      commit carrying `_codev/decisions/seal.yaml`.
-- [x] 6.3 Check that a post-migration `codev validate` is completely
+- [x] 6.2 Loop `compagnon decision seal <id>` over the 6 ADRs; single
+      commit carrying `_compagnon/decisions/seal.yaml`.
+- [x] 6.3 Check that a post-migration `compagnon validate` is completely
       green on the decisions side.
 - [x] 6.4 Deliberately edit the body of an ADR (for example add
-      "TEST-TO-DELETE" in the context), rerun `codev validate` —
+      "TEST-TO-DELETE" in the context), rerun `compagnon validate` —
       check that `decision_seal_mismatch` is indeed emitted with a
       non-zero exit code. Remove the test edit before the commit.
 
@@ -129,5 +129,5 @@
       tests (seal module + integrations).
 - [x] 7.2 `cargo clippy --workspace --all-targets` stays free of
       warnings.
-- [x] 7.3 `codev validate --all` stays green (once the migration of
+- [x] 7.3 `compagnon validate --all` stays green (once the migration of
       item 6 is done).

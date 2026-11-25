@@ -3,13 +3,13 @@
 ## 1. Core — extended ADR parser
 
 - [x] 1.1 Add the `deviates_from: Vec<String>` field to
-      `codev_core::decisions::Decision` (next to `supersedes:
+      `compagnon_core::decisions::Decision` (next to `supersedes:
       Vec<String>`, same conventions).
 - [x] 1.2 Extend `parse_decision` to read `deviates_from` from the YAML
       frontmatter: optional list, each entry must be a string. Field
       absent → empty list.
 - [x] 1.3 New stable finding `decision_field_type_mismatch` (warning on
-      the parser side, code exposed in `codev_core::parser::codes` if
+      the parser side, code exposed in `compagnon_core::parser::codes` if
       that module is the right place; otherwise in the decisions
       module) — emitted when `deviates_from` is not a list or carries a
       non-string entry.
@@ -21,13 +21,13 @@
 
 - [x] 2.1 New pure function `plan_deviate(index, existing_seal,
       qualified_target, title, today, layout) -> Result<DeviatePlan,
-      ActionError>` in `codev-engine::decisions_actions`. Produces a
+      ActionError>` in `compagnon-engine::decisions_actions`. Produces a
       plan that writes the local ADR (`deviates_from: ["<qualified>"]`,
       `status: accepted`) **and** the seal entry, in a single atomic
       plan.
 - [x] 2.2 Explicit refusals — stable codes:
       - `cannot_deviate_from_local` if `qualified_target` starts with
-        `project/` — message pointing to `codev decision supersede`;
+        `project/` — message pointing to `compagnon decision supersede`;
       - `unknown_decision_id` if the target is not indexed;
       - `ambiguous_decision_id` if two sources expose the same
         qualified id;
@@ -44,7 +44,7 @@
 - [x] 3.1 Extend `IndexEntry` with a derived field `deviated_by:
       Option<QualifiedId>`. Computed, not persisted.
 - [x] 3.2 New pass `resolve_deviations(&mut entries, &mut findings)` in
-      `codev-engine::decisions`, called after supersession resolution.
+      `compagnon-engine::decisions`, called after supersession resolution.
       Two effects:
       - For each local `accepted` ADR with `deviates_from`, mark each
         inherited target with `deviated_by = <qualified-local>`;
@@ -75,7 +75,7 @@
 
 ## 5. Shell — `decision deviate` CLI
 
-- [x] 5.1 New subcommand `codev decision deviate
+- [x] 5.1 New subcommand `compagnon decision deviate
       <qualified-id> <title> [--json]`. Routes to the engine action.
 - [x] 5.2 Human success rendering: `✓ Created local deviation from
       "<qualified>": <local-id> <title>` + `  File: <path>`.
@@ -91,7 +91,7 @@
 
 - [x] 6.1 `DecisionV1` gains `deviatesFrom: Vec<String>` (additive —
       ADRs without the field output `[]`).
-- [x] 6.2 The entries of `codev decision list --json` (from
+- [x] 6.2 The entries of `compagnon decision list --json` (from
       `build_summaries`) gain `deviatedBy: Option<String>`, serialized
       only when not `None`
       (`skip_serializing_if = "Option::is_none"`).
@@ -115,5 +115,5 @@
       tests (parser + plan_deviate + index + CLI).
 - [x] 8.2 `cargo clippy --workspace --all-targets` stays free of
       warnings.
-- [x] 8.3 `codev validate --all` stays green on this repository (no
+- [x] 8.3 `compagnon validate --all` stays green on this repository (no
       local deviation, no inherited source declared).

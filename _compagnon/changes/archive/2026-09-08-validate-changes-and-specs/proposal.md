@@ -2,7 +2,7 @@
 
 ## Why
 
-The `codev-core` parser already produces structural `Finding`s at the
+The `compagnon-core` parser already produces structural `Finding`s at the
 level of an isolated file — missing Purpose, requirement outside a
 section, scenario with three hashes, duplicate within a section. What the
 tool lacks is checking a change or a spec as a whole, on demand, with a
@@ -12,7 +12,7 @@ consistent delta.
 
 ## What Changes
 
-- **New command** `codev validate [item]`, with `--all` / `--changes` /
+- **New command** `compagnon validate [item]`, with `--all` / `--changes` /
   `--specs` for batch runs, and `--json` for a machine report.
 - **Additional structural rules**, pure, run on the parser's AST:
   requirement without `SHALL`/`MUST`, requirement without a scenario, main
@@ -45,11 +45,11 @@ consistent delta.
 
 ## Impact
 
-- **Code**: new module `codev-core::validate` for the pure rules
+- **Code**: new module `compagnon-core::validate` for the pure rules
   (input: AST + change metadata; output: `Vec<Finding>`), new
-  module `codev-engine::validate` for coordination
+  module `compagnon-engine::validate` for coordination
   (reading the disk, grouping by file, exit code), new subcommand
-  in `codev-cli`, frozen shape `contract::v1::ValidateReport`.
+  in `compagnon-cli`, frozen shape `contract::v1::ValidateReport`.
 - **Dependencies**: none new — everything relies on what exists.
 - **Out of scope**: `--strict` (E5, promotion of warnings to errors),
   merge pre-flight of `MODIFIED` against the main spec (E6),

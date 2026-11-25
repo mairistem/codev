@@ -4,13 +4,13 @@
 
 The five defects are independent and each touches a different layer:
 
-- the capability listing (`codev-engine::specs::list`) derives a capability
+- the capability listing (`compagnon-engine::specs::list`) derives a capability
   from any walked file whose path ends with the text `spec.md`;
   `validate --all/--specs` and `validate <name>` iterate that list, then read
   `<capability>/spec.md`, which does not exist for `notes/myspec.md`;
-- `codev new change` records `ResolvedSchema::name()`, the `name:` inside
-  `schema.yaml`, while resolution goes by folder; `codev status` and
-  `codev instructions` also print that internal name (`schemaName`, the
+- `compagnon new change` records `ResolvedSchema::name()`, the `name:` inside
+  `schema.yaml`, while resolution goes by folder; `compagnon status` and
+  `compagnon instructions` also print that internal name (`schemaName`, the
   `unknown_artifact` message), because the core status takes it from the
   parsed graph;
 - `ChangeId::parse` accepts `archive`, and `change::load` only checks that
@@ -18,15 +18,15 @@ The five defects are independent and each touches a different layer:
 - the failure shape of `instructions` is a static JSON value without
   `language`;
 - JSON documents are filled in two places — the `From` conversions of
-  `codev-cli::contract` and the `emit` calls of `main.rs` — and about forty
+  `compagnon-cli::contract` and the `emit` calls of `main.rs` — and about forty
   path fields go through `display().to_string()`, keeping `\` on Windows.
   `contract.rs` already has a private `to_slash` used by `validate`, `sync`
   and `archive`, and `commands.rs` a `portable` doing the same for the paths
-  written into `config.yaml`; `codev-engine::changelog` repeats it inline.
+  written into `config.yaml`; `compagnon-engine::changelog` repeats it inline.
 
 Constraints: decision 0001 (the core stays pure — a string transformation
 of a path is pure) and 0002 (the crate graph is the dependency rule: a
-helper shared by the engine and the CLI lives in `codev-core`). The JSON
+helper shared by the engine and the CLI lives in `compagnon-core`). The JSON
 contract v1 only evolves additively.
 
 ## Goals / Non-Goals
@@ -34,8 +34,8 @@ contract v1 only evolves additively.
 Goals: fix the five defects with a regression test each, written first and
 seen failing; make the JSON path rule hard to break again.
 
-Non-goals: validating project schemas in `codev validate`; reporting stray
-files under `_codev/specs/`; reworking the human output's paths (they stay
+Non-goals: validating project schemas in `compagnon validate`; reporting stray
+files under `_compagnon/specs/`; reworking the human output's paths (they stay
 native, which is what a person expects to copy into their shell);
 re-parsing `change.yaml` files already written with a wrong schema name
 (see Migration Plan).
@@ -51,8 +51,8 @@ same list, so both commands agree by construction.
 
 A stray file is ignored without a finding. A `README.md` or notes kept next
 to the specs are legitimate — the existing spec already says a `README.md`
-is not a spec — and a warning would make `codev validate --strict` and
-`codev doctor --strict` fail in CI for them, with no way to silence it short
+is not a spec — and a warning would make `compagnon validate --strict` and
+`compagnon doctor --strict` fail in CI for them, with no way to silence it short
 of deleting the file. Main specs are written by `sync`/`archive`, always as
 `spec.md`, so a misnamed spec is unlikely to need a warning to be noticed.
 
@@ -60,7 +60,7 @@ of deleting the file. Main specs are written by `sync`/`archive`, always as
 rejected for the CI noise above; listing every `*.md` as a capability —
 rejected, it contradicts the spec-merge layout (`<capability>/spec.md`).
 
-### Decision: The folder is the schema's name everywhere; a differing `name:` is a `codev schemas` warning
+### Decision: The folder is the schema's name everywhere; a differing `name:` is a `compagnon schemas` warning
 
 `ResolvedSchema` carries the name it was resolved by, and `name()` returns
 it. `new change` records it, `instructions` uses it, and `change::status`
@@ -68,7 +68,7 @@ sets it as the status' schema name instead of the graph's `name:`. One
 source of truth, so `change.yaml`, `schemaName` and the messages can no
 longer disagree with what resolution accepts.
 
-`codev schemas` adds a `schema_name_mismatch` warning when a resolved
+`compagnon schemas` adds a `schema_name_mismatch` warning when a resolved
 project schema's `name:` differs from its folder — the command people run to
 understand their schemas, and the guide already says the two should match.
 The schema is still listed and usable: after this fix the mismatch is only
@@ -93,7 +93,7 @@ all refuse it with the same code, and `change::list` no longer needs its own
 `archive` filter to be correct (it keeps it, harmless).
 
 **Alternatives considered**: `unknown_change` for `--change archive` —
-rejected: the folder exists, so "does not exist, see `codev list`" would be
+rejected: the folder exists, so "does not exist, see `compagnon list`" would be
 false, and it would leave `new change archive` and `--change archive` with
 two codes for one rule; a dedicated `reserved_change_name` code — rejected:
 the existing spec already maps every name breaking the naming rule to
@@ -113,13 +113,13 @@ brief asks for the configured one when resolvable and a skill would
 otherwise switch languages on an error; carrying the language inside the
 `Failure` — rejected, it couples every failure type to one command's field.
 
-### Decision: One path helper in `codev-core`, used by every JSON field
+### Decision: One path helper in `compagnon-core`, used by every JSON field
 
-`codev_core::layout::slashed(&Path) -> String` writes a path with `/`
+`compagnon_core::layout::slashed(&Path) -> String` writes a path with `/`
 separators (`to_string_lossy` then `\` → `/`, which keeps a single leading
 `/` on Unix). It replaces `contract::to_slash`, `contract::paths_slash`,
 `main::paths`, `commands::portable` and the inline copy in
-`codev-engine::changelog`. Every `display().to_string()` feeding a JSON
+`compagnon-engine::changelog`. Every `display().to_string()` feeding a JSON
 field in `contract.rs` and `main.rs` goes through it, and `StatusV1::new`
 takes `&Path` arguments so the conversion lives in the contract layer.
 
@@ -154,5 +154,5 @@ rejected, the documentation promises `/` for every path.
 
 No migration step. A change created before this fix with a schema whose
 `name:` differs from its folder keeps the wrong name in `change.yaml`;
-`codev status` fails with `schema_not_found` as before, and the user edits
-`schema:` to the folder name. `codev schemas` now points the mismatch out.
+`compagnon status` fails with `schema_not_found` as before, and the user edits
+`schema:` to the folder name. `compagnon schemas` now points the mismatch out.

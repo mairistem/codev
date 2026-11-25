@@ -13,7 +13,7 @@ This design covers:
 
 - the semantic merge as a **pure function** producing a list of point
   edits on the main spec;
-- the extension of the [`Plan`](../../../crates/codev-core/src/plan.rs)
+- the extension of the [`Plan`](../../../crates/compagnon-core/src/plan.rs)
   type to also carry a move;
 - the orchestration on the engine side (validate → merge → plan) and the
   CLI shell (sync/archive with a binary exit code).
@@ -83,9 +83,9 @@ that this whole project was designed to eliminate.
 
 ### Decision: `archive` refuses to act if `validate` has the slightest error
 
-`codev archive` internally calls `codev_engine::validate::validate_change`
+`compagnon archive` internally calls `compagnon_engine::validate::validate_change`
 and refuses if `has_errors()`. No merge, no write, no move. The only
-dialogue with the user is a pointer to `codev validate <change>` to see
+dialogue with the user is a pointer to `compagnon validate <change>` to see
 the details.
 
 **Rationale**: the validator (previous change) already delivers all the
@@ -93,7 +93,7 @@ useful codes. Duplicating the messages in `archive` would create two
 wordings of the same error, to maintain in parallel. A pointer is shorter
 to write, easier to read, and impossible to contradict.
 
-`codev sync`, on the other hand, settles for the invariants **strictly
+`compagnon sync`, on the other hand, settles for the invariants **strictly
 necessary for the merge**: `MODIFIED` target present, `REMOVED` target
 present, `Purpose` required if new capability, last requirement not
 removed. A delta that has a `requirement_no_shall` can be synced — the
@@ -107,7 +107,7 @@ An already merged delta (for example: `sync` then rerunning `sync` without
 modifying the change) must not appear as a change — same reasoning as
 `apply::execute` on identical files. The report therefore distinguishes
 `updated` (file actually modified) from `unchanged` (file identical after
-merge). Useful in pre-commit, and makes `codev sync` idempotent in the
+merge). Useful in pre-commit, and makes `compagnon sync` idempotent in the
 strict sense.
 
 ### Decision: format of new main spec files
@@ -181,4 +181,4 @@ Not applicable — new capability, no existing consumer. The
 `parse-specs-and-deltas` and `validate-changes-and-specs` changes already
 present in this repository will become the first **archive candidates**
 once this change itself is applied: they already pass
-`codev validate --all`.
+`compagnon validate --all`.

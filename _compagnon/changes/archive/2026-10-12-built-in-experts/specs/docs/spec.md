@@ -16,7 +16,7 @@ activation, and the sections of a role's knowledge.
 
 - **GIVEN** the role catalog and the `roles.md` chapters of `docs/en` and
   `docs/fr`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if a role of the catalog is missing from either table,
   or listed without its display name in that language
 
@@ -24,12 +24,12 @@ activation, and the sections of a role's knowledge.
 
 - **GIVEN** a `roles.md` whose table of built-in roles lists an id the
   catalog does not hold
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails and names that id
 
 #### Scenario: Every expert is documented with its domain
 
 - **GIVEN** the role catalog and the `roles.md` chapters of `docs/en` and
   `docs/fr`
-- **WHEN** the test suite of `codev-cli` runs
+- **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if an expert's row does not name its domain

@@ -1,6 +1,6 @@
 # Review record: decision-accept-command
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
@@ -13,7 +13,7 @@ Mode: inline.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-cli/src/contract.rs:229-230"
+location: "crates/compagnon-cli/src/contract.rs:229-230"
 evidence: |
   #[serde(skip_serializing_if = "Option::is_none")]
   pub body_sha256: Option<String>,
@@ -28,7 +28,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-cli/src/contract.rs, crates/codev-cli/src/main.rs — `body_sha256: String`"
+    ref: "crates/compagnon-cli/src/contract.rs, crates/compagnon-cli/src/main.rs — `body_sha256: String`"
   - status: fixed
     by: newcomer
 ```

@@ -5,9 +5,9 @@
 - [x] 1.1 Write `assets/workflows/sync.md` — the body of the `sync` skill.
       Expected content:
       - input: optional change name, implicit resolution (only one active);
-      - prior check: `codev status --change <name> --json` to confirm that
+      - prior check: `compagnon status --change <name> --json` to confirm that
         planning is complete (`isPlanningComplete`);
-      - action: `codev sync <name> --json`;
+      - action: `compagnon sync <name> --json`;
       - reading the `SyncReportV1`: `changeName`, `created[]`, `updated[]`,
         `unchanged[]`; structured rendering ("✓ N spec(s) created, M
         updated, K unchanged" then a list per category);
@@ -18,14 +18,14 @@
 - [x] 1.2 Write `assets/workflows/archive.md` — the body of the `archive`
       skill. Expected content:
       - input: optional change name, implicit resolution;
-      - prior check: `codev status --change <name> --json` to confirm that
+      - prior check: `compagnon status --change <name> --json` to confirm that
         planning is complete;
-      - action: `codev archive <name> --json`;
+      - action: `compagnon archive <name> --json`;
       - reading the `ArchiveReportV1` on success (exit 0): structured
         rendering (counts per category + `movedTo` on its own line);
       - on non-zero exit: read the JSON's root `status` array; if a
         `code == "validation_failed"` is found, say exactly
-        "The change has errors. Run `codev validate <name>` to see the
+        "The change has errors. Run `compagnon validate <name>` to see the
         details."; for any other error code, relay the JSON's `message`
         field as is — no guessing, no retrying.
       Verified by the file's presence and by the CATALOG invariant.
@@ -33,15 +33,15 @@
 ## 2. CATALOG entries
 
 - [x] 2.1 Add `Workflow { id: "sync", description: "…", allowed-tools:
-      "Bash(codev:*), Read", body: include_str!("../../../assets/workflows/sync.md") }`
-      to the `CATALOG` of `codev-agents::workflows`. Description: "Sync
-      the deltas of an already planned codev change into the main specs,
+      "Bash(compagnon:*), Read", body: include_str!("../../../assets/workflows/sync.md") }`
+      to the `CATALOG` of `compagnon-agents::workflows`. Description: "Sync
+      the deltas of an already planned compagnon change into the main specs,
       without moving the change. Use when a new capability must appear in
       the specs before being consumed by another change. Does not
       archive."
 - [x] 2.2 Add `Workflow { id: "archive", description: "…", allowed-tools:
-      "Bash(codev:*), Read", body: include_str!("../../../assets/workflows/archive.md") }`.
-      Description: "Close a codev change: merge its deltas into the main
+      "Bash(compagnon:*), Read", body: include_str!("../../../assets/workflows/archive.md") }`.
+      Description: "Close a compagnon change: merge its deltas into the main
       specs and move the folder to the dated archive. Refuses to act if
       validation reports errors."
 
@@ -50,11 +50,11 @@
 - [x] 3.1 Add a test
       `workflows::cycle_completion_skills_present_et_restreintes` that checks:
       `find("sync")` and `find("archive")` return `Some`; their
-      `allowed_tools` equal exactly `"Bash(codev:*), Read"`; neither one
-      contains `Bash` other than in the `Bash(codev:*)` prefix.
+      `allowed_tools` equal exactly `"Bash(compagnon:*), Read"`; neither one
+      contains `Bash` other than in the `Bash(compagnon:*)` prefix.
 - [x] 3.2 The test `apply_est_dans_le_catalogue_et_a_les_bons_outils` keeps
       counting "exactly zero other workflows" that would have general
-      `Bash`. Verified by rerunning `cargo test -p codev-agents`.
+      `Bash`. Verified by rerunning `cargo test -p compagnon-agents`.
 - [x] 3.3 The invariant `chaque_workflow_a_un_corps_et_une_description_utilisables`
       covers the two new workflows automatically (loop over `CATALOG`).
       Verified in the same pass.
@@ -75,18 +75,18 @@
 ## 4. This repository's config and dogfooding
 
 - [x] 4.1 Add `- sync` and `- archive` to the `workflows` list of this
-      project's `_codev/config.yaml`.
-- [x] 4.2 Run `cargo install --path crates/codev-cli` then `codev update`.
-      Check that `.claude/skills/codev-sync/SKILL.md` and
-      `.claude/skills/codev-archive/SKILL.md` appear with the right
+      project's `_compagnon/config.yaml`.
+- [x] 4.2 Run `cargo install --path crates/compagnon-cli` then `compagnon update`.
+      Check that `.claude/skills/compagnon-sync/SKILL.md` and
+      `.claude/skills/compagnon-archive/SKILL.md` appear with the right
       frontmatter.
-- [x] 4.3 Check that the list of skills announced by `codev update`
-      does contain the five workflows: `codev-propose, codev-explore,
-      codev-apply, codev-sync, codev-archive`.
+- [x] 4.3 Check that the list of skills announced by `compagnon update`
+      does contain the five workflows: `compagnon-propose, compagnon-explore,
+      compagnon-apply, compagnon-sync, compagnon-archive`.
 
 ## 5. Workspace integration
 
 - [x] 5.1 `cargo test --workspace` stays green and counts at least 1
       additional test (`cycle_completion_skills_present_et_restreintes`).
 - [x] 5.2 `cargo clippy --workspace --all-targets` stays warning-free.
-- [x] 5.3 `codev validate --all` stays green.
+- [x] 5.3 `compagnon validate --all` stays green.

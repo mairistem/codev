@@ -99,9 +99,13 @@ impl GitHistory<'_> {
             .then(|| String::from_utf8_lossy(&out.stdout).into_owned())
     }
 
-    /// The text of `path` at `git_ref`.
+    /// The text of `path` at `git_ref`, read through the product's rename:
+    /// a commit that predates it holds the planning root under its former
+    /// name, and its text names the former product.
     pub fn show(&self, git_ref: &str, path: &str) -> Option<String> {
         self.git(&["show", &format!("{git_ref}:{path}")])
+            .or_else(|| self.git(&["show", &format!("{git_ref}:{}", former_path(path)?)]))
+            .map(|text| compagnon_core::legacy::through_rename(&text))
     }
 
     /// The titles of the decisions at `git_ref`, by id.
@@ -122,6 +126,15 @@ impl GitHistory<'_> {
 
     fn decision_files(&self, git_ref: &str) -> Vec<String> {
         self.git(&["ls-tree", "--name-only", git_ref, "_compagnon/decisions/"])
+            .filter(|out| !out.trim().is_empty())
+            .or_else(|| {
+                self.git(&[
+                    "ls-tree",
+                    "--name-only",
+                    git_ref,
+                    &former_path("_compagnon/decisions/")?,
+                ])
+            })
             .map(|out| {
                 out.lines()
                     .filter_map(|l| l.rsplit('/').next())
@@ -189,6 +202,13 @@ pub fn at_ref(case: &Case, history: &GitHistory) -> Result<AtRef, String> {
         requirements,
         decision_titles,
     })
+}
+
+/// `path` under the former planning root, when it lies under the current
+/// one.
+fn former_path(path: &str) -> Option<String> {
+    let rest = path.strip_prefix(compagnon_core::layout::PLANNING_DIR)?;
+    Some(format!("{}{rest}", compagnon_core::legacy::PLANNING_DIR))
 }
 
 /// `0007` from `0007-the-skills-dispatch.md`.

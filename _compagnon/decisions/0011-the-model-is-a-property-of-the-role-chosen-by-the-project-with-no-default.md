@@ -21,7 +21,7 @@ reviewer's.
 ## Decision
 
 A role may carry a model, set by the project under `roles:` in
-`_codev/config.yaml` (`model: opus | sonnet | haiku | inherit`); no
+`_compagnon/config.yaml` (`model: opus | sonnet | haiku | inherit`); no
 built-in role sets one, so every role runs on the session's model until a
 project chooses otherwise. The model applies where a role runs as its own
 sub-agent, in the isolated review mode.
@@ -31,8 +31,8 @@ sub-agent, in the isolated review mode.
 - A team chooses each reviewer's model, and the suite can measure any
   choice with `--fixture-config`.
 - Nothing changes for a project that sets no model.
-- An older codev refuses `model:` in a role's mapping: a project raises
-  `codev_version` before setting it, and a shared source waits until its
+- An older Compagnon refuses `model:` in a role's mapping: a project raises
+  `compagnon_version` before setting it, and a shared source waits until its
   consumers run this release; an inherited source's `roles:` is no longer
   parsed, so the next key added there cannot drop its rules.
 - The cost lever this measure points to is the review mode, not the

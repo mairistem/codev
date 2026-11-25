@@ -3,7 +3,7 @@
 ## 1. Core — `has_warnings()` on `ValidateReport`
 
 - [x] 1.1 Add the method `has_warnings(&self) -> bool` on
-      `ValidateReport` in `codev-engine::validate::report`.
+      `ValidateReport` in `compagnon-engine::validate::report`.
       Implementation: iterates `items[].findings[]`, returns `true` as
       soon as a `Finding.severity == Warning`.
 - [x] 1.2 Add the same method on `ItemReport` for symmetry with the
@@ -15,7 +15,7 @@
 ## 2. CLI — `--strict` flag
 
 - [x] 2.1 Add `#[arg(long)] strict: bool` on `Command::Validate`
-      in `codev-cli::main`. Clap documentation: "Treat any finding
+      in `compagnon-cli::main`. Clap documentation: "Treat any finding
       (Warning included) as a reason for a non-zero exit code. Useful
       for CI and automation."
 - [x] 2.2 Modify the exit-code logic in the `Command::Validate` match
@@ -43,7 +43,7 @@
 
 ## 4. CLI integration tests
 
-- [x] 4.1 Test in `codev-cli::commands::tests`: clean project + `--strict`
+- [x] 4.1 Test in `compagnon-cli::commands::tests`: clean project + `--strict`
       → no error, exit 0 (via `validate(&h.ctx(), ValidateArgs::All)`).
 - [x] 4.2 Test: project with an unsealed `accepted` local ADR + `--strict`
       → `report.has_warnings()` is true, `report.has_errors()` is false.
@@ -54,14 +54,14 @@
 
 ## 5. Dogfooding and workspace integration
 
-- [x] 5.1 After `cargo install`, run `codev validate --strict` on
+- [x] 5.1 After `cargo install`, run `compagnon validate --strict` on
       this repository — must return exit 0 (no warning today).
 - [x] 5.2 Manual test: deliberately introduce a warning (for
       example, remove an entry from `seal.yaml`), run
-      `codev validate --strict` → exit 1; without `--strict` → exit 0.
+      `compagnon validate --strict` → exit 1; without `--strict` → exit 0.
       Restore before committing.
 - [x] 5.3 `cargo test --workspace` stays green, gains at least 5 new
       tests (report + CLI + JSON).
 - [x] 5.4 `cargo clippy --workspace --all-targets` stays free of
       warnings.
-- [x] 5.5 `codev validate --strict --all` stays green on this repository.
+- [x] 5.5 `compagnon validate --strict --all` stays green on this repository.

@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 4901,
+          "compagnon roles": 4901,
           "skill": 11350
         }
       },
@@ -49,7 +49,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 2256
+          "compagnon review": 2256
         }
       },
       {
@@ -69,7 +69,7 @@
         "output": 8,
         "toolCalls": 0,
         "sources": {
-          "codev review": 1608,
+          "compagnon review": 1608,
           "edit": 450
         }
       }
@@ -150,7 +150,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-account-deletion/review.md",
+    "path": "_compagnon/changes/add-account-deletion/review.md",
     "status": [],
     "steps": [
       {

@@ -1,6 +1,6 @@
 ## Purpose
 
-Give codev a structured, reliable reading of main specs and deltas written
+Give compagnon a structured, reliable reading of main specs and deltas written
 in markdown, on which validation, sync and archive can rely without risking
 a destructive rewrite.
 

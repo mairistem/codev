@@ -5,6 +5,6 @@ request: "Les experts ne passent que si la proposition coche leur domaine, donc 
 summary: "Replays the change 2026-10-13-expert-triggers-and-stack-filter (feat(roles): expert triggers suggest domains from the diff, and knowledge fits the stack (#31))."
 expected:
   modified:
-    - "roles::`codev roles` serves the roles of a step"
+    - "roles::`compagnon roles` serves the roles of a step"
   collateral: []
   decisions: []

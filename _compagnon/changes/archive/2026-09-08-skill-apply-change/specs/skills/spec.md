@@ -1,6 +1,6 @@
 ## Purpose
 
-Describes the contract of the skills that codev installs in Claude Code:
+Describes the contract of the skills that compagnon installs in Claude Code:
 their name, what they must do, what they are not allowed to do, and how
 their frontmatter guarantees these promises. Entries are added as the
 changes that introduce each workflow land — one ADDED per workflow.
@@ -9,8 +9,8 @@ changes that introduce each workflow land — one ADDED per workflow.
 
 ### Requirement: Skill `apply` guides the implementation of a change
 
-The codev catalog SHALL expose an `apply` workflow — installed under
-`.claude/skills/codev-apply/SKILL.md`, invocable as `/codev-apply` — whose
+The compagnon catalog SHALL expose an `apply` workflow — installed under
+`.claude/skills/compagnon-apply/SKILL.md`, invocable as `/compagnon-apply` — whose
 role is to process the unchecked tasks of a change's `tasks.md`, in file
 order, checking each box as it goes.
 
@@ -18,7 +18,7 @@ order, checking each box as it goes.
 
 - **GIVEN** a project with a single active change whose `tasks.md` has two
   unchecked tasks
-- **WHEN** the user types `/codev-apply`
+- **WHEN** the user types `/compagnon-apply`
 - **THEN** the skill implicitly resolves the active change
 - **AND** implements the first task then checks it
 - **AND** implements the second task then checks it
@@ -27,14 +27,14 @@ order, checking each box as it goes.
 
 - **GIVEN** a `tasks.md` where the first task is already checked `- [x]` and
   the second is not
-- **WHEN** the user types `/codev-apply`
+- **WHEN** the user types `/compagnon-apply`
 - **THEN** the skill skips the already-checked task
 - **AND** starts with the first unchecked task
 
 #### Scenario: Ambiguity requires an explicit choice
 
 - **GIVEN** two active changes
-- **WHEN** the user types `/codev-apply` without a name
+- **WHEN** the user types `/compagnon-apply` without a name
 - **THEN** the skill asks which one to apply, listing both names
 
 ### Requirement: Skill `apply` respects the change's boundaries
@@ -47,9 +47,9 @@ or blocked rather than guess.
 #### Scenario: Refusal to archive from apply
 
 - **GIVEN** a change whose tasks are all checked
-- **WHEN** the user types `/codev-apply`
+- **WHEN** the user types `/compagnon-apply`
 - **THEN** the skill reports that the change is ready to be archived
-- **AND** explicitly invites running `/codev-archive` or `codev archive`
+- **AND** explicitly invites running `/compagnon-archive` or `compagnon archive`
   as a separate next step
 
 #### Scenario: Ambiguous task interrupts the flow
@@ -60,11 +60,11 @@ or blocked rather than guess.
 - **THEN** the skill asks the user for clarification before implementing
 - **AND** does not check the task until the clarification is obtained
 
-### Requirement: Frontmatter contract of a codev skill
+### Requirement: Frontmatter contract of a compagnon skill
 
-Every skill shipped by codev MUST carry a valid YAML frontmatter whose
+Every skill shipped by compagnon MUST carry a valid YAML frontmatter whose
 `name` matches the name of the `.claude/skills/<name>/` folder, whose
-`allowed-tools` field includes at least `Bash(codev:*)`, and whose
+`allowed-tools` field includes at least `Bash(compagnon:*)`, and whose
 `metadata.version` matches the version of the binary that generated it.
 
 #### Scenario: Frontmatter parsed by a third-party YAML reader
@@ -79,6 +79,6 @@ Every skill shipped by codev MUST carry a valid YAML frontmatter whose
 
 - **GIVEN** a skill whose body a user has edited by hand, without
   changing its version
-- **WHEN** the user reruns `codev update` without `--force`
+- **WHEN** the user reruns `compagnon update` without `--force`
 - **THEN** the skill is not overwritten
 - **AND** the update report flags it as preserved

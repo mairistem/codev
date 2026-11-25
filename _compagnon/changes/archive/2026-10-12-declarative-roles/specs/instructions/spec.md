@@ -1,8 +1,8 @@
 ## MODIFIED Requirements
 
-### Requirement: `codev instructions` describes one artifact of a change
+### Requirement: `compagnon instructions` describes one artifact of a change
 
-`codev instructions [ARTIFACT] --change <name>` SHALL describe the named
+`compagnon instructions [ARTIFACT] --change <name>` SHALL describe the named
 artifact of the change's schema or, without `ARTIFACT`, the first artifact
 whose state is `ready` in the schema's dependency order. With `--json`, the
 document SHALL carry:
@@ -33,31 +33,31 @@ The command reads files and writes none. It exits with code 0.
 #### Scenario: The next artifact to write
 
 - **GIVEN** a `spec-driven` change whose `proposal.md` exists
-- **WHEN** the user runs `codev instructions --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions --change add-auth --json`
 - **THEN** `artifact` is `specs`
-- **AND** `resolvedOutputPath` ends with `_codev/changes/add-auth/specs/**/*.md`
+- **AND** `resolvedOutputPath` ends with `_compagnon/changes/add-auth/specs/**/*.md`
 - **AND** `dependencies` is one entry `proposal` with `done: true` and the
   path of `proposal.md`, and `unlocks` is `["tasks"]`
 
 #### Scenario: A named artifact carries the schema's guidance
 
 - **GIVEN** a `spec-driven` change
-- **WHEN** the user runs `codev instructions proposal --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth --json`
 - **THEN** `instruction` is the `proposal` instruction of the schema and
   `template` its template, which holds `## Why`
-- **AND** `resolvedOutputPath` ends with `_codev/changes/add-auth/proposal.md`
+- **AND** `resolvedOutputPath` ends with `_compagnon/changes/add-auth/proposal.md`
 
 #### Scenario: Dependencies not written yet
 
 - **GIVEN** a `spec-driven` change with no artifact written
-- **WHEN** the user runs `codev instructions tasks --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions tasks --change add-auth --json`
 - **THEN** `dependencies` lists `specs` and `design`, both with
   `done: false`
 
 #### Scenario: The configured language
 
 - **GIVEN** a configuration with `language: fr`
-- **WHEN** the user runs `codev instructions proposal --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth --json`
 - **THEN** `language` is `fr`
 - **AND** without `language:` in the configuration it is `en`
 
@@ -65,14 +65,14 @@ The command reads files and writes none. It exits with code 0.
 
 - **GIVEN** a change using a project schema whose artifact `brief` declares
   neither `instruction` nor `template`
-- **WHEN** the user runs `codev instructions brief --change quick --json`
+- **WHEN** the user runs `compagnon instructions brief --change quick --json`
 - **THEN** `instruction` and `template` are `null`
 
 #### Scenario: The artifact's role
 
 - **GIVEN** a `spec-driven` change and a configuration where `qa` has the
   extra criterion `Every error code is named`
-- **WHEN** the user runs `codev instructions specs --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions specs --change add-auth --json`
 - **THEN** `role.id` is `qa` and `role.question` is the QA analyst's
   question
 - **AND** `role.doneWhen` ends with `Every error code is named` with the
@@ -82,12 +82,12 @@ The command reads files and writes none. It exits with code 0.
 
 - **GIVEN** a change using a project schema whose artifact `brief` declares
   no role
-- **WHEN** the user runs `codev instructions brief --change quick --json`
+- **WHEN** the user runs `compagnon instructions brief --change quick --json`
 - **THEN** `role` is `null`
 
-### Requirement: The human output of `codev instructions` reads top to bottom
+### Requirement: The human output of `compagnon instructions` reads top to bottom
 
-Without `--json`, `codev instructions` SHALL print, in this order: the line
+Without `--json`, `compagnon instructions` SHALL print, in this order: the line
 `Artifact: <id> (change `<name>`, schema <schema>)`, `Write to:` with the
 resolved output path, `Language:` with the language; then, each only when
 not empty, `Read before writing:` with one line per dependency marked `[x]`
@@ -101,7 +101,7 @@ criteria each prefixed by its origin in parentheses, `Decisions in effect:`,
 
 - **GIVEN** a configuration with a context and a rule for `specs`, and a
   change whose `proposal.md` exists
-- **WHEN** the user runs `codev instructions specs --change add-auth`
+- **WHEN** the user runs `compagnon instructions specs --change add-auth`
 - **THEN** the output starts with `Artifact: specs (change `add-auth`,
   schema spec-driven)`
 - **AND** it shows `[x] proposal`, the context and the rule each prefixed
@@ -111,7 +111,7 @@ criteria each prefixed by its origin in parentheses, `Decisions in effect:`,
 #### Scenario: No empty section
 
 - **GIVEN** a configuration without context nor rules
-- **WHEN** the user runs `codev instructions proposal --change add-auth`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth`
 - **THEN** the output has no `Read before writing:`, `Project context:`,
   `Rules for this artifact:` nor `Decisions in effect:` heading
 

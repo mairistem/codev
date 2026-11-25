@@ -4,14 +4,14 @@
 
 Roles are Markdown files under `assets/roles/` with a YAML frontmatter
 (`id`, `name`, `at`, `question`, `done_when`, …), read by
-`codev-core::roles`, configured under `roles:` and served by `codev
+`compagnon-core::roles`, configured under `roles:` and served by `compagnon
 roles`. In the `isolated` review mode, the skills start each reviewing
 role as a sub-agent with Claude Code's `Agent` tool, which takes a
 `model` (decision 0007: the orchestration is skill text, the binary
 serves the data). In the `inline` mode, the session reviews alone.
 
 The evaluation suite measured the review roles on Sonnet
-(`CODEV_EVAL_MODEL=sonnet`, 40 cases × 3, compared with the baseline on
+(`COMPAGNON_EVAL_MODEL=sonnet`, 40 cases × 3, compared with the baseline on
 Opus):
 
 | Role | Recall | False positives (baseline max → Sonnet) | Cost |
@@ -46,11 +46,11 @@ change of its own.
 
 ### Decision: The model is a property of the role, chosen by the project, with no default
 
-> Promoted to ADR **0011** — see `_codev/decisions/0011-the-model-is-a-property-of-the-role-chosen-by-the-project-with-no-default.md`.
+> Promoted to ADR **0011** — see `_compagnon/decisions/0011-the-model-is-a-property-of-the-role-chosen-by-the-project-with-no-default.md`.
 
 ### Decision: The model applies to sub-agents, in the isolated mode
 
-`codev roles --json` serves `model`. The isolated review procedure starts
+`compagnon roles --json` serves `model`. The isolated review procedure starts
 each role's sub-agent with it, or without a model when it is `null`. The
 `inline` mode keeps every role in the session: a session cannot switch
 models for a step, and decision 0007 keeps orchestration in the skills.
@@ -89,8 +89,8 @@ setup, and 0008 does not allow it.
 
 The `roles:` mapping of the project is strict, and an inherited source's
 was deserialized the same way although it is ignored. A source written
-for a newer codev — a `model:` today, another key tomorrow — would then
-fail to load in a project on an older codev, and its context and rules
+for a newer compagnon — a `model:` today, another key tomorrow — would then
+fail to load in a project on an older compagnon, and its context and rules
 would be dropped. The source's `roles:` is no longer parsed, only skipped.
 A model on a role that never runs as a sub-agent is a warning,
 `role_model_unused`: accepted, so that a project is never blocked, and
@@ -104,9 +104,9 @@ it would block a project for a setting with no effect.
 - [Sonnet misses a defect the suite does not hold] → The defaults cover
   only the roles measured unchanged; a project can set `opus` per role; a
   new case that Sonnet misses is a reason to change a default, measured.
-- [An older codev reads a configuration with `model:`] → The `roles:`
-  mapping is strict, so an older codev fails on the key. The release
-  note says to raise `codev_version` before using it, and that a shared
+- [An older compagnon reads a configuration with `model:`] → The `roles:`
+  mapping is strict, so an older compagnon fails on the key. The release
+  note says to raise `compagnon_version` before using it, and that a shared
   source should not set it until its consumers run this release; from
   this release on, a source's `roles:` is not parsed at all.
 - [Inline projects see no saving] → The release note and the roles
@@ -114,7 +114,7 @@ it would block a project for a setting with no effect.
 
 ## Migration Plan
 
-No file to migrate. `codev update` brings the skill text. A project that
-sets `model:` should require the new version in `codev_version`. The
+No file to migrate. `compagnon update` brings the skill text. A project that
+sets `model:` should require the new version in `compagnon_version`. The
 roles document gains `model` and `modelOrigin`, additions installed
 skills ignore.

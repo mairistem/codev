@@ -4,7 +4,7 @@
 
 The suite (`evals/`) runs review cases: a fixture committed under
 `evals/cases/<id>/{base,change}/`, one role reviewing, findings scored
-against expectations, consumption recorded, `codev-evals compare` judging
+against expectations, consumption recorded, `compagnon-evals compare` judging
 a candidate against the 5-run baseline. Planning is not covered. A study
 of this repository (44 headless runs) gives the protocol this change
 adopts: replay a request against the state of the repository before an
@@ -29,9 +29,9 @@ planning cases.
 `compare` can judge, with the same runner, repetitions, baseline and
 verdict; the contribution rule extended to every change of a skill.
 
-**Non-goals**: evaluating `/codev-explore`, the tasks, `plan.trace` or
+**Non-goals**: evaluating `/compagnon-explore`, the tasks, `plan.trace` or
 `plan.challenge` of a planning run (the review cases already cover the
-last two); `/codev-apply`'s implementation; a model as judge; an absolute
+last two); `/compagnon-apply`'s implementation; a model as judge; an absolute
 score — only comparisons are meaningful (see Risks); cutting the output
 tokens for their own sake.
 
@@ -40,7 +40,7 @@ tokens for their own sake.
 ### Decision: A planning case pins a commit, and the runner rebuilds its fixture
 
 `case.yaml` holds `ref`; the runner extracts `git archive <ref>` into the
-case's directory, makes it a fresh repository, then runs `codev update
+case's directory, makes it a fresh repository, then runs `compagnon update
 --force` with the binary under test and commits. Copying a whole
 repository per case into `evals/cases/` would add megabytes per case and
 duplicate history git already keeps. The cost is that the suite needs the
@@ -64,12 +64,12 @@ thoroughness on chores rather than understanding of the request, so they
 are reported apart. The labels come from the study (an LLM labelled them
 without seeing any run); a task reviews them by hand before the baseline.
 
-### Decision: The plan is scored with codev's own parser, in a pure module
+### Decision: The plan is scored with compagnon's own parser, in a pure module
 
-`evals` gains a dependency on `codev-core` and scores with
+`evals` gains a dependency on `compagnon-core` and scores with
 `parser::parse_delta` and `parse_spec`, so French keywords and every
-delta form count exactly as `codev sync` reads them. This respects
-decision 0002: `codev-core` stays at the bottom of the graph, and
+delta form count exactly as `compagnon sync` reads them. This respects
+decision 0002: `compagnon-core` stays at the bottom of the graph, and
 `evals`, a crate that is not shipped, depends on it, never the reverse;
 decision 0007 is untouched, the runner already starts Claude Code and is
 not part of the binary. Scoring stays pure (`evals/src/plan.rs`): the
@@ -78,7 +78,7 @@ shell part (`suite.rs`) reads the specs and decisions at `ref` with
 observations today.
 
 **Alternatives considered**: matching headings with regular expressions —
-a second parser that would drift from codev's.
+a second parser that would drift from compagnon's.
 
 ### Decision: The runner reads Claude Code's event stream for every case
 
@@ -87,7 +87,7 @@ event as `json` does, plus every message: the runner keeps the raw stream
 (`claude.jsonl`, ignored by git like `claude.json`), reads the result as
 before, counts the tool calls, and finds the orientation — the calls
 before the first `Write`, `Edit` or `MultiEdit` of a file under
-`_codev/changes/`. Both are optional fields of the observation's
+`_compagnon/changes/`. Both are optional fields of the observation's
 `consumption`, so earlier observations stay readable and the format stays
 2. The stream holds the whole transcript, and its first event
 (`system/init`) the session's settings, whose paths name the operator's
@@ -96,7 +96,7 @@ itself may still name that directory — Claude Code saves a large tool
 output there and the agent reads it back —, so the stream as a whole
 stays local and git-ignored, and the evaluation workflow keeps its
 artifact 14 days. The observations record no path of the machine — the `root` of
-each `codev validate` report is dropped. A write through a shell redirection is not seen as a write; the
+each `compagnon validate` report is dropped. A write through a shell redirection is not seen as a write; the
 skills write their artifacts with the file tools, which the study's 44
 runs confirm.
 
@@ -107,9 +107,9 @@ uncached input, output) and the messages around it. The runner records
 one entry per call. A call's cache writes are what entered the context
 since the previous call: the tool results returned in between and the
 previous call's output. They are shared among those in proportion to
-their length, each under its source (`skill`, `codev <subcommand>`,
+their length, each under its source (`skill`, `compagnon <subcommand>`,
 `file`, `search`, `shell`, `edit`, `output`; the first call's writes go
-to `prompt`, Claude Code's own and the request, outside codev's reach).
+to `prompt`, Claude Code's own and the request, outside compagnon's reach).
 Cache writes are what to trace: in this environment they are 67 % of a
 run's cost (8 USD per million against 0.20 for a read, fitted on the
 runs of three recordings with R² ≈ 1), and a token written once is re-read by every later
@@ -136,7 +136,7 @@ which refuse it.
 
 ### Decision: Every change to the workflow is evaluated, per call, for quality and tokens
 
-> Promoted to ADR **0008** — see `_codev/decisions/0008-every-change-to-the-workflow-is-evaluated-per-call-for-quality-and-tokens.md`.
+> Promoted to ADR **0008** — see `_compagnon/decisions/0008-every-change-to-the-workflow-is-evaluated-per-call-for-quality-and-tokens.md`.
 
 ### Decision: Planning measures sit next to the roles, by step
 
@@ -176,13 +176,13 @@ be evaluated.
 
 ## Risks / Trade-offs
 
-- [The model knows codev's public history and plans from memory] → The
+- [The model knows compagnon's public history and plans from memory] → The
   same contamination holds for baseline and candidate; the suite compares,
   it never claims an absolute planning score, and the reliability chapter
   shows the planning figures with that limit stated next to them.
 - [A history rewrite removes a pinned commit] → Loading fails on the case,
   naming the commit; the cases are rebased together with the history.
-- [An old state's configuration does not load with today's codev] → The
+- [An old state's configuration does not load with today's compagnon] → The
   fixture build fails as a case error, named; the dataset's 25 states were
   all prepared this way by the study, and a task runs every case once
   before the baseline.

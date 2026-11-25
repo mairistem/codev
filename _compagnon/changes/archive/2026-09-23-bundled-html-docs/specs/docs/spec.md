@@ -1,15 +1,15 @@
 ## Purpose
 
-Ship complete codev documentation in a **single, shareable** form: a
+Ship complete compagnon documentation in a **single, shareable** form: a
 standalone HTML file (embedded CSS, no external assets) that the
-`codev` binary can generate and open by itself, to complement the
+`compagnon` binary can generate and open by itself, to complement the
 CLI help and serve as a point of sharing with third parties.
 
 ## ADDED Requirements
 
-### Requirement: `codev docs` generates a standalone HTML file and opens it in the browser
+### Requirement: `compagnon docs` generates a standalone HTML file and opens it in the browser
 
-The `codev` binary SHALL expose a `docs` subcommand that, without
+The `compagnon` binary SHALL expose a `docs` subcommand that, without
 arguments, generates a standalone HTML file and opens it in the
 default system browser.
 
@@ -20,24 +20,24 @@ The HTML MUST:
   script;
 - correctly render the six common markdown elements — headings,
   paragraphs, lists, tables, code blocks, blockquotes;
-- carry at the top the name `codev` and the version of the binary
+- carry at the top the name `compagnon` and the version of the binary
   that generated it;
 - open in any recent browser, including **offline**.
 
 The default output path MUST be in the system temporary directory
 (`std::env::temp_dir()`) and carry the version in its name:
-`codev-docs-<version>.html`.
+`compagnon-docs-<version>.html`.
 
-#### Scenario: `codev docs` without arguments opens the HTML
+#### Scenario: `compagnon docs` without arguments opens the HTML
 
-- **GIVEN** a `codev` binary at version 0.1.0
-- **WHEN** the user runs `codev docs`
-- **THEN** a `codev-docs-0.1.0.html` file is written in
+- **GIVEN** a `compagnon` binary at version 0.1.0
+- **WHEN** the user runs `compagnon docs`
+- **THEN** a `compagnon-docs-0.1.0.html` file is written in
   `std::env::temp_dir()`
 - **AND** a system call opens that file in the default browser
   (macOS `open`, Linux `xdg-open`, Windows `start`)
 - **AND** the exit code is 0
-- **AND** the HTML carries the name `codev` and the version `0.1.0`
+- **AND** the HTML carries the name `compagnon` and the version `0.1.0`
   at the top
 
 #### Scenario: The HTML is standalone
@@ -48,9 +48,9 @@ The default output path MUST be in the system temporary directory
   request)
 - **AND** no `<link>` element points to an `http(s):` URL
 
-### Requirement: `codev docs --print` prints the markdown source to stdout
+### Requirement: `compagnon docs --print` prints the markdown source to stdout
 
-`codev docs --print` MUST print the documentation's **markdown
+`compagnon docs --print` MUST print the documentation's **markdown
 source** to stdout, without conversion. The output is useful for
 piping into `less`, `bat`, or a tool that consumes markdown (an LLM,
 for example).
@@ -61,16 +61,16 @@ return exit code 0.
 #### Scenario: `--print` outputs non-empty markdown
 
 - **GIVEN** the current binary
-- **WHEN** the user runs `codev docs --print`
+- **WHEN** the user runs `compagnon docs --print`
 - **THEN** stdout carries non-empty content (> 1000 bytes — the
   documentation has several sections)
 - **AND** the content starts with a level-1 markdown heading
-  (`# codev`)
+  (`# compagnon`)
 - **AND** no file is written
 
-### Requirement: `codev docs --write <PATH>` writes without opening
+### Requirement: `compagnon docs --write <PATH>` writes without opening
 
-`codev docs --write <PATH>` MUST write the standalone HTML to the
+`compagnon docs --write <PATH>` MUST write the standalone HTML to the
 given path and **open nothing**. This is the "targeted distribution"
 mode — placing the documentation in a shared drive, a Confluence
 folder, a repository.
@@ -84,21 +84,21 @@ with several missing levels).
 
 - **GIVEN** the current binary
 - **AND** a working directory where `./out/` exists
-- **WHEN** the user runs `codev docs --write ./out/manuel.html`
+- **WHEN** the user runs `compagnon docs --write ./out/manuel.html`
 - **THEN** the file `./out/manuel.html` exists and carries the
   standalone HTML
 - **AND** no browser is opened
 - **AND** the exit code is 0
 
-### Requirement: `codev docs` is independent of an initialized repository
+### Requirement: `compagnon docs` is independent of an initialized repository
 
-`codev docs` MUST NOT read `_codev/config.yaml` nor any other
+`compagnon docs` MUST NOT read `_compagnon/config.yaml` nor any other
 project state. The command works in any directory, even without a
-codev repository, even without `.git`.
+compagnon repository, even without `.git`.
 
-#### Scenario: Works outside a codev repository
+#### Scenario: Works outside a compagnon repository
 
-- **GIVEN** a user in a directory that has no `_codev/`
-- **WHEN** they run `codev docs --print`
+- **GIVEN** a user in a directory that has no `_compagnon/`
+- **WHEN** they run `compagnon docs --print`
 - **THEN** the markdown is printed normally
-- **AND** no error message mentions `_codev`
+- **AND** no error message mentions `_compagnon`

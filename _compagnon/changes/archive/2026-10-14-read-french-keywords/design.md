@@ -14,9 +14,9 @@ kinds), `parser/spec.rs` and `parser/delta.rs` (`Purpose`, `Requirements`,
 differ: delta section kinds are compared in upper case, `Purpose` and
 `Requirements` with `eq_ignore_ascii_case`, the rest exactly.
 
-`codev-core` is pure (decision 0001): it may embed data at compile time but
+`compagnon-core` is pure (decision 0001): it may embed data at compile time but
 reads no file. YAML is parsed with `serde_norway` (decision 0006), already a
-dependency of `codev-core`.
+dependency of `compagnon-core`.
 
 ## Goals / Non-Goals
 
@@ -30,11 +30,11 @@ dependency of `codev-core`.
 
 **Non-Goals**
 
-- What codev and its skills write in a new artifact (templates, schema
+- What compagnon and its skills write in a new artifact (templates, schema
   instructions, skill text, the ADR template): the follow-up change.
 - The review record's markers (`Mode:`, `No finding.`…), which the skills
-  write and codev reads as a machine record.
-- A project-defined language or override file under `_codev/`.
+  write and compagnon reads as a machine record.
+- A project-defined language or override file under `_compagnon/`.
 
 ## Decisions
 
@@ -43,7 +43,7 @@ dependency of `codev-core`.
 `assets/keywords/en.yaml` and `assets/keywords/fr.yaml` map each key to a
 text or a list of texts (the first is the written form), for example
 `requirement: "### Requirement:"` and `normative: [DOIT, DOIVENT]`. A
-`keywords` module of `codev-core` embeds them with `include_str!`, parses
+`keywords` module of `compagnon-core` embeds them with `include_str!`, parses
 them once behind a `std::sync::LazyLock`, and exposes a `Key` enum and a
 `Lang` value. Adding a language is adding a file and one line in the list
 of embedded files. A unit test loads every file and fails on a missing key,
@@ -56,7 +56,7 @@ cannot fail in a release build.
 
 - A Rust `match` table per language: no parsing, but a translator has to
   edit Rust, which is what the user asked to avoid.
-- Files read from `_codev/` at run time: lets a project add a language,
+- Files read from `_compagnon/` at run time: lets a project add a language,
   but puts I/O in the core (decision 0001) and makes every reader fallible;
   left as a possible extension through the engine's ports.
 
@@ -140,19 +140,19 @@ four normative words.
 
 - [An English document read differently than before] → English texts keep
   their current comparison; unit tests pin today's English edge cases, and
-  `codev validate --all` on this repository gives the same findings before
+  `compagnon validate --all` on this repository gives the same findings before
   and after the change.
 - [An English spec merged differently than before] → The English path
   keeps the same output: the existing golden tests in
-  `crates/codev-engine/tests/sync_golden.rs` and the merge tests must pass
+  `crates/compagnon-engine/tests/sync_golden.rs` and the merge tests must pass
   unchanged, and a test pins a byte-identical English merge.
 - [A French keyword taken for another key] → The catalog test rejects
   colliding normalized texts at the same level; the spec scenario "A word
   that is no keyword stays text" is tested.
-- [A team writes French keywords, a teammate runs an older codev, which
+- [A team writes French keywords, a teammate runs an older compagnon, which
   rejects them] → The documentation tells such a project to raise
-  `codev_version` in `_codev/config.yaml` to the release that ships this
-  change; `codev doctor` and the skills already enforce that setting.
+  `compagnon_version` in `_compagnon/config.yaml` to the release that ships this
+  change; `compagnon doctor` and the skills already enforce that setting.
 - [The folding table misses a letter of a future language] → Adding the
   language's file comes with its letters in the table; the catalog test
   checks every text of every file folds to ASCII.
@@ -160,13 +160,13 @@ four normative words.
 ## Migration Plan
 
 Nothing to migrate: English specs, deltas and proposals keep working. A
-project that starts writing French keywords raises `codev_version` to the
+project that starts writing French keywords raises `compagnon_version` to the
 first release with this change. Rollback is reverting the change; French
 documents written meanwhile would then fail validation and need their
 keywords put back in English.
 
 ## Open Questions
 
-- Should a project be able to add its own language file under `_codev/`?
+- Should a project be able to add its own language file under `_compagnon/`?
   Deferred: the catalog's shape allows it later without changing the
   readers.

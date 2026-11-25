@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Make codev installable on the machines of users who **do not have
+Make Compagnon installable on the machines of users who **do not have
 the Rust toolchain** — through prebuilt binaries published on GitHub
 Releases and an `install.sh` script that fetches them in a single
 command.
@@ -20,14 +20,14 @@ workflow MUST produce a GitHub Release containing:
 - One archive format **per OS family**: `.tar.gz` for macOS and
   Linux (Unix convention, `tar` is universal); `.zip` for Windows
   (Windows convention, native `Expand-Archive` since PowerShell 5.1).
-- File names follow `codev-<version>-<target>.<ext>` — for example
-  `codev-0.2.0-x86_64-pc-windows-msvc.zip`.
+- File names follow `compagnon-<version>-<target>.<ext>` — for example
+  `compagnon-0.2.0-x86_64-pc-windows-msvc.zip`.
 - A `SHA256SUMS` file listing the SHA-256 of **all** the archives
   (all four), in standard `sha256sum` format.
-- The contents of each archive: the binary (`codev` on macOS/Linux,
-  `codev.exe` on Windows), `README.md`, `README.fr.md`, `LICENSE` and
+- The contents of each archive: the binary (`compagnon` on macOS/Linux,
+  `compagnon.exe` on Windows), `README.md`, `README.fr.md`, `LICENSE` and
   `CHANGELOG.md`. The documentation itself is embedded in the binary
-  (`codev docs`).
+  (`compagnon docs`).
 
 The workflow MUST NOT write to the repository.
 
@@ -38,19 +38,19 @@ The workflow MUST NOT write to the repository.
 - **WHEN** the `.github/workflows/release.yml` workflow runs
 - **THEN** a GitHub Release named `v0.2.0` is created
 - **AND** it contains exactly four archives:
-  `codev-0.2.0-aarch64-apple-darwin.tar.gz`,
-  `codev-0.2.0-x86_64-apple-darwin.tar.gz`,
-  `codev-0.2.0-x86_64-unknown-linux-musl.tar.gz`,
-  `codev-0.2.0-x86_64-pc-windows-msvc.zip`
+  `compagnon-0.2.0-aarch64-apple-darwin.tar.gz`,
+  `compagnon-0.2.0-x86_64-apple-darwin.tar.gz`,
+  `compagnon-0.2.0-x86_64-unknown-linux-musl.tar.gz`,
+  `compagnon-0.2.0-x86_64-pc-windows-msvc.zip`
 - **AND** it contains a `SHA256SUMS` file listing the four archives
   with their SHA-256
 
-#### Scenario: The Windows archive contains `codev.exe`
+#### Scenario: The Windows archive contains `compagnon.exe`
 
-- **GIVEN** the `codev-<version>-x86_64-pc-windows-msvc.zip` archive
+- **GIVEN** the `compagnon-<version>-x86_64-pc-windows-msvc.zip` archive
   of the release
 - **WHEN** a user extracts it on Windows
-- **THEN** a `codev.exe` file is present
+- **THEN** a `compagnon.exe` file is present
 - **AND** the files `README.md`, `README.fr.md`, `LICENSE` and
   `CHANGELOG.md` are present as well
 
@@ -61,27 +61,27 @@ The workflow MUST NOT write to the repository.
 - **THEN** no GitHub Release is created
 - **AND** no binary is published
 
-### Requirement: The `install.sh` script installs codev in one command, without Rust
+### Requirement: The `install.sh` script installs Compagnon in one command, without Rust
 
 An `install.sh` script at the root of the repository SHALL let a
-user install codev via:
+user install Compagnon via:
 
 ```
-curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 ```
 
 The script MUST:
 
 - detect the OS (`uname -s`: `Darwin` or `Linux`) and the architecture
   (`uname -m`: `arm64`/`aarch64` or `x86_64`);
-- resolve the version to install: if `$CODEV_VERSION` is set, use it;
+- resolve the version to install: if `$COMPAGNON_VERSION` is set, use it;
   otherwise query the GitHub Releases API for the latest one;
-- download the matching `codev-<version>-<target>.tar.gz` archive and
+- download the matching `compagnon-<version>-<target>.tar.gz` archive and
   the `SHA256SUMS` file;
 - **verify the SHA-256** of the archive against `SHA256SUMS` and
   refuse to install if verification fails;
 - extract the binary into a temporary directory, then copy it to
-  `~/.local/bin/codev` with `755` permissions;
+  `~/.local/bin/compagnon` with `755` permissions;
 - create `~/.local/bin` if it does not exist;
 - display, on success, the appropriate message depending on whether
   `~/.local/bin` is already in `$PATH` or not (adding it to `.zshrc`/
@@ -98,11 +98,11 @@ The script MUST refuse (non-zero exit) if:
 - **GIVEN** a user on macOS Apple Silicon whose `~/.local/bin`
   is already in `$PATH`
 - **WHEN** they run
-  `curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh`
+  `curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh`
 - **THEN** the script detects `aarch64-apple-darwin`
 - **AND** downloads, verifies the SHA-256, and extracts the binary
-- **AND** copies `codev` into `~/.local/bin/`
-- **AND** the final message invites the user to run `codev --version`
+- **AND** copies `compagnon` into `~/.local/bin/`
+- **AND** the final message invites the user to run `compagnon --version`
   to check
 
 #### Scenario: Incomplete PATH — explanatory message
@@ -141,7 +141,7 @@ The Installation chapter of each language (`docs/en/src/installation.md`,
    in PowerShell.
 3. **Manual path** — download from GitHub Releases + verification with
    `sha256sum -c` (Unix) or `Get-FileHash` (Windows).
-4. **Contributor path** — `cargo install --path crates/codev-cli`
+4. **Contributor path** — `cargo install --path crates/compagnon-cli`
    from a clone of the repository.
 
 The repository README MUST mention at least the first **and** the
@@ -165,32 +165,32 @@ second path (with the `curl … | sh` and `iwr … | iex` one-liners).
 - **AND** they see the `iwr -useb … | iex` example for Windows in
   PowerShell
 
-### Requirement: The `install.ps1` script installs codev in one command on Windows
+### Requirement: The `install.ps1` script installs Compagnon in one command on Windows
 
 An `install.ps1` script at the root of the repository SHALL let a
-Windows user install codev via:
+Windows user install Compagnon via:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```
 
 The script MUST:
 
 - detect the architecture via `$env:PROCESSOR_ARCHITECTURE`
   (`AMD64` → target `x86_64-pc-windows-msvc`);
-- resolve the version: if `$env:CODEV_VERSION` is set, use it;
+- resolve the version: if `$env:COMPAGNON_VERSION` is set, use it;
   otherwise query the GitHub Releases API for the latest one (via
   `Invoke-RestMethod`);
 - download the
-  `codev-<version>-x86_64-pc-windows-msvc.zip` archive and the
+  `compagnon-<version>-x86_64-pc-windows-msvc.zip` archive and the
   `SHA256SUMS` file via `Invoke-WebRequest`;
 - **verify the SHA-256** via `Get-FileHash -Algorithm SHA256` and
   refuse to install on mismatch;
 - extract via `Expand-Archive`;
-- copy `codev.exe` to `$env:LOCALAPPDATA\Programs\codev\codev.exe`
+- copy `compagnon.exe` to `$env:LOCALAPPDATA\Programs\compagnon\compagnon.exe`
   (creating the directory if missing);
 - **display** the instructions for adding
-  `$env:LOCALAPPDATA\Programs\codev\` to the user PATH (via
+  `$env:LOCALAPPDATA\Programs\compagnon\` to the user PATH (via
   `setx PATH` or the System settings), **without** modifying the PATH
   automatically.
 
@@ -204,16 +204,16 @@ The script MUST refuse (non-zero exit code) if:
 #### Scenario: Installation on Windows x86_64, incomplete PATH
 
 - **GIVEN** a Windows user on PowerShell 5.1+ (or Core 7+)
-- **AND** `$env:LOCALAPPDATA\Programs\codev\` is not in their
+- **AND** `$env:LOCALAPPDATA\Programs\compagnon\` is not in their
   PATH
 - **WHEN** they run
-  `iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex`
+  `iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex`
 - **THEN** the script detects `x86_64-pc-windows-msvc`
-- **AND** downloads, verifies the SHA-256, and extracts `codev.exe`
-- **AND** copies `codev.exe` into
-  `$env:LOCALAPPDATA\Programs\codev\`
+- **AND** downloads, verifies the SHA-256, and extracts `compagnon.exe`
+- **AND** copies `compagnon.exe` into
+  `$env:LOCALAPPDATA\Programs\compagnon\`
 - **AND** displays the exact command to type to add the directory
-  to the user PATH (for example `setx PATH "$env:PATH;$env:LOCALAPPDATA\Programs\codev"`)
+  to the user PATH (for example `setx PATH "$env:PATH;$env:LOCALAPPDATA\Programs\compagnon"`)
 - **AND** recalls that a new shell must be opened to reload the PATH
 
 #### Scenario: Unsupported architecture rejected
@@ -234,16 +234,16 @@ The script MUST refuse (non-zero exit code) if:
 
 #### Scenario: Installation section up to date with the two recommended paths
 
-- **GIVEN** the documentation generated by `codev docs`
+- **GIVEN** the documentation generated by `compagnon docs`
 - **WHEN** the "Installation" section is looked up
 - **THEN** the four paths are present in the expected order
 - **AND** the Windows path cites exactly `iwr -useb https://…/install.ps1 | iex`
 - **AND** the Unix path cites exactly `curl -sSL https://…/install.sh | sh`
 
-### Requirement: The GitHub Release body is generated by `codev changelog`
+### Requirement: The GitHub Release body is generated by `compagnon changelog`
 
 The release workflow SHALL write the body of the GitHub Release with
-`codev changelog --until <tag> --format markdown`, run by a binary built
+`compagnon changelog --until <tag> --format markdown`, run by a binary built
 from the tagged source, so the body lists the release notes of the changes
 archived since the previous `v*` tag. GitHub's generated notes (pull
 requests and contributors) MUST follow it, below. The workflow MUST still

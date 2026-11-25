@@ -48,7 +48,7 @@
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "codev review": 3685
+          "compagnon review": 3685
         }
       },
       {
@@ -78,7 +78,7 @@
         "output": 2,
         "toolCalls": 0,
         "sources": {
-          "codev review": 669,
+          "compagnon review": 669,
           "edit": 197
         }
       }
@@ -159,7 +159,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-ticket-attachments/review.md",
+    "path": "_compagnon/changes/add-ticket-attachments/review.md",
     "status": [],
     "steps": [
       {

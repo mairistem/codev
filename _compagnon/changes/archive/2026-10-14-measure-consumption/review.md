@@ -222,7 +222,7 @@ location: "specs/role-evaluation/spec.md#Requirement: The runner runs each case 
 evidence: |
     the run SHALL refuse to start when the sandbox is unavailable on the
     machine, rather than run without it;
-recommendation: "Add the sandbox to the preflight that checks `claude`, `git` and `codev`: before any case runs, check what the sandbox needs (bubblewrap and socat on Linux) and exit with code 2 naming it; align the scenario \"A machine without the sandbox\": one refusal for the run, not one error per case."
+recommendation: "Add the sandbox to the preflight that checks `claude`, `git` and `compagnon`: before any case runs, check what the sandbox needs (bubblewrap and socat on Linux) and exit with code 2 naming it; align the scenario \"A machine without the sandbox\": one refusal for the run, not one error per case."
 history:
   - status: open
     by: ops
@@ -514,7 +514,7 @@ evidence: |
           description: "Runs of each case (a full baseline of five is recorded locally)"
           required: false
           default: "1"
-recommendation: "Reject a `repeat` above the safe bound in the run step, with a message saying to record larger runs locally, or document that a cut-off run is scored again with `codev-evals score <artifact>`."
+recommendation: "Reject a `repeat` above the safe bound in the run step, with a message saying to record larger runs locally, or document that a cut-off run is scored again with `compagnon-evals score <artifact>`."
 history:
   - status: open
     by: ops
@@ -532,7 +532,7 @@ severity: low
 confidence: low
 location: ".github/workflows/evals.yml:103-103"
 evidence: |
-            cargo run --locked -p codev-evals -- run --out evals-output --repeat "$EVAL_REPEAT" "${args[@]}"
+            cargo run --locked -p compagnon-evals -- run --out evals-output --repeat "$EVAL_REPEAT" "${args[@]}"
 recommendation: "Pass `--jobs 4` in the workflow; record `jobs` in `run.json` and have `compare` say when the two runs differ, as it does for the Claude Code version."
 history:
   - status: open

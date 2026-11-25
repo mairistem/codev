@@ -39,7 +39,7 @@ severity: medium
 confidence: high
 location: "tasks.md#5. Cases"
 evidence: |
-  - [ ] 5.1 Re-score the first baseline (old cases, old observations, copied outside the repository) under the new matching and tune `evals/categories.yaml` until every finding that named its seeded defect stays a true positive and the icon button's findings pair the right way round, verified by `cargo run -p codev-evals -- score <copy>` and the per-case lines of its report
+  - [ ] 5.1 Re-score the first baseline (old cases, old observations, copied outside the repository) under the new matching and tune `evals/categories.yaml` until every finding that named its seeded defect stays a true positive and the icon button's findings pair the right way round, verified by `cargo run -p compagnon-evals -- score <copy>` and the per-case lines of its report
 recommendation: >-
   `score` loads the cases through `case::load`, which after task 2.2
   refuses the old cases the lint rejects (`skeptic-control-small-flag`

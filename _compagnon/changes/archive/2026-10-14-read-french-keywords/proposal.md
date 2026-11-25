@@ -3,18 +3,18 @@
 ## Why
 
 A team that writes its specs in French still has to write `### Requirement:`,
-`## ADDED Requirements` or `SHALL` in English, because codev only recognizes
+`## ADDED Requirements` or `SHALL` in English, because compagnon only recognizes
 the English keywords: a sentence like `Le portail DOIT …` is rejected by
-`codev validate`. The keywords are also string literals scattered across the
+`compagnon validate`. The keywords are also string literals scattered across the
 parser, the validator, the merge and the proposal readers, so adding a
 language today means editing code in a dozen places.
 
 ## What Changes
 
-- A keyword catalog: every structural keyword codev reads or writes has a
+- A keyword catalog: every structural keyword compagnon reads or writes has a
   stable key (`requirement`, `scenario`, `delta.added`, `normative`,
   `proposal.domains`…), and each language is one embedded data file giving
-  the text of every key. English and French ship with codev; adding a
+  the text of every key. English and French ship with compagnon; adding a
   language means adding one file.
 - The parser recognizes the keywords of every catalog language, whatever
   the project's `language`: `## Objet`, `## Exigences`, `### Exigence :`,
@@ -30,7 +30,7 @@ language today means editing code in a dozen places.
 - Sync and archive write the keywords in the language of the spec they
   edit, so a French spec stays French; a new main spec takes the language
   of the delta that creates it.
-- Out of scope, left to a follow-up change: what codev and its skills
+- Out of scope, left to a follow-up change: what compagnon and its skills
   *write* (schema templates, instructions, skill text) when `language` is
   `fr`, and the review record's markers.
 
@@ -52,13 +52,13 @@ language today means editing code in a dozen places.
 
 ## Impact
 
-- `codev-core`: a new keyword catalog module and its embedded language
+- `compagnon-core`: a new keyword catalog module and its embedded language
   files under `assets/keywords/`; the parser (`parser/shared.rs`,
   `parser/spec.rs`, `parser/delta.rs`), the validation rules
   (`validate/rules.rs`), the merge and its renderer (`merge/mod.rs`,
   `merge/render.rs`), `domains.rs` and `changelog/release_note.rs` read
   their keywords from the catalog.
-- `codev-engine`: `design.rs` reads the decisions headings from the catalog.
+- `compagnon-engine`: `design.rs` reads the decisions headings from the catalog.
 - The JSON contract does not change: finding codes stay the same, and a
   release note category is reported by its English name whatever language
   wrote it.
@@ -72,7 +72,7 @@ language today means editing code in a dozen places.
 - [ ] user-interface
 - [ ] performance — matching a few more keywords per heading is negligible
 - [ ] operations
-- [x] migration — a spec written with French keywords is rejected by an older codev; existing English specs are unaffected
+- [x] migration — a spec written with French keywords is rejected by an older compagnon; existing English specs are unaffected
 
 ## Release note
 

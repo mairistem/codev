@@ -2,10 +2,10 @@
 
 ### Requirement: `onboard` is part of the default catalog
 
-The `DEFAULT_WORKFLOWS` array of `codev-agents::workflows` MUST
-contain the **full list of the 7 codev workflows**: `propose`,
+The `DEFAULT_WORKFLOWS` array of `compagnon-agents::workflows` MUST
+contain the **full list of the 7 compagnon workflows**: `propose`,
 `explore`, `onboard`, `apply`, `sync`, `archive` and `update`. A user
-who runs `codev init --yes` (or from a non-interactive pipe) on a new
+who runs `compagnon init --yes` (or from a non-interactive pipe) on a new
 project, without a `workflows:` key in their `config.yaml`, therefore
 gets all the available skills immediately.
 
@@ -14,7 +14,7 @@ A project that wants to restrict the catalog MUST declare an explicit
 rather than the former opt-in path.
 
 This switch solves a discovery problem: under the old default (3
-workflows), a user who typed `/codev-apply` after `/codev-propose`
+workflows), a user who typed `/compagnon-apply` after `/compagnon-propose`
 did not find the skill and believed it did not exist.
 
 #### Scenario: Default catalog includes the 7 workflows

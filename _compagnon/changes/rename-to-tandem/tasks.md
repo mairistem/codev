@@ -144,7 +144,7 @@ renames the crates and the repository.
   verified by a test `compagnon_marks_use_only_the_mairistem_palette`
   parsing the fills, and by the user's visual approval of a rendered
   preview (manual: a visual judgement).
-- [ ] 4.2 Show the mark in `README.md` and `README.fr.md` (`<picture>`
+- [x] 4.2 Show the mark in `README.md` and `README.fr.md` (`<picture>`
   with light/dark sources), in `docs/theme/header.hbs` next to the
   Mairistem symbol, in `docs/site/index.html` (header, favicon), and
   inline in the offline manual; `alt="Compagnon"` on README images,
@@ -170,7 +170,7 @@ renames the crates and the repository.
   (then bumped by hand to `">=0.7"`), skills
   `.claude/skills/compagnon-*`, `CLAUDE.md`, workflows; verified by
   `compagnon validate --strict` and `compagnon doctor` passing.
-- [ ] 5.3 Sweep every remaining text file with the ordered mapping
+- [x] 5.3 Sweep every remaining text file with the ordered mapping
   `CODEV`→`COMPAGNON`, `Codev`→`Compagnon`, `codev`→`compagnon` (product written
   **Compagnon** in prose), and `git mv` every path holding `codev` —
   decisions, the archived change `2026-10-23-eval-codev-binary-name`,
@@ -181,7 +181,7 @@ renames the crates and the repository.
   `MODIFIED` heading like the main spec's; verified by `cargo test --workspace`,
   `compagnon validate --strict` reporting no missing `MODIFIED` target, and
   the audit `rg -i -l codev` listing only the exceptions.
-- [ ] 5.4 Re-seal the decisions the sweep changed with
+- [x] 5.4 Re-seal the decisions the sweep changed with
   `compagnon decision seal <id> --force`, then create ADR 0014 "The product is named Compagnon" with
   `compagnon decision supersede 0003`, recording the rename and the re-seal,
   and accept it;
@@ -194,7 +194,7 @@ renames the crates and the repository.
 
 ## 6. Evaluations (decision 0008)
 
-- [ ] 6.1 Make the runner run `compagnon migrate` on a case's directory built
+- [x] 6.1 Make the runner run `compagnon migrate` on a case's directory built
   from a `ref` whose tree holds `_codev/`, before writing the case's files
   under `_compagnon/`; verified by a test in `evals/tests`
   `a_case_pinned_before_the_rename_is_migrated_before_it_runs`.

@@ -48,7 +48,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 2946,
+          "compagnon roles": 2946,
           "skill": 11058
         }
       },
@@ -59,7 +59,7 @@
         "output": 16,
         "toolCalls": 5,
         "sources": {
-          "codev review": 243
+          "compagnon review": 243
         }
       },
       {
@@ -69,7 +69,7 @@
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "codev review": 181,
+          "compagnon review": 181,
           "file": 2028
         }
       },
@@ -90,7 +90,7 @@
         "output": 283,
         "toolCalls": 0,
         "sources": {
-          "codev review": 770,
+          "compagnon review": 770,
           "edit": 170,
           "output": 49
         }
@@ -222,7 +222,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-birthday-greetings/review.md",
+    "path": "_compagnon/changes/add-birthday-greetings/review.md",
     "status": [],
     "steps": [
       {

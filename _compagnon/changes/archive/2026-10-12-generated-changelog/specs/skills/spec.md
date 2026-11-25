@@ -3,7 +3,7 @@
 ### Requirement: The default schema gives each artifact a role with "Done when" criteria
 
 The instruction of each artifact of the embedded `spec-driven` schema, as
-returned by `codev instructions <artifact> --json`, SHALL start with a role
+returned by `compagnon instructions <artifact> --json`, SHALL start with a role
 block: a `Role:` line naming the role and what it owns, followed by a
 `Done when:` list of checkable criteria. The roles are:
 
@@ -29,12 +29,12 @@ embedded proposal template MUST carry the `## Release note` section.
 
 The rest of each instruction MUST stay as before. A custom schema's
 instructions MUST be returned as written, without any role block added by
-codev.
+compagnon.
 
 #### Scenario: The proposal instruction starts with the product owner role
 
 - **GIVEN** a change using the `spec-driven` schema
-- **WHEN** the user runs `codev instructions proposal --change <name> --json`
+- **WHEN** the user runs `compagnon instructions proposal --change <name> --json`
 - **THEN** `instruction` starts with `Role: product owner`
 - **AND** it contains a `Done when:` list that includes marking every
   breaking change with **BREAKING**
@@ -46,7 +46,7 @@ codev.
 #### Scenario: The tasks criteria cover every spec scenario
 
 - **GIVEN** a change using the `spec-driven` schema
-- **WHEN** the user runs `codev instructions tasks --change <name> --json`
+- **WHEN** the user runs `compagnon instructions tasks --change <name> --json`
 - **THEN** `instruction` starts with `Role: tech lead`
 - **AND** its `Done when:` list requires every spec scenario to be covered
   by at least one task's verification
@@ -54,7 +54,7 @@ codev.
 #### Scenario: The tasks criteria require documentation and automated tests
 
 - **GIVEN** a change using the `spec-driven` schema
-- **WHEN** the user runs `codev instructions tasks --change <name> --json`
+- **WHEN** the user runs `compagnon instructions tasks --change <name> --json`
 - **THEN** its `Done when:` list requires the affected documentation to be
   updated in a task, or the plan to state that none is affected
 - **AND** it requires every spec scenario to be covered by an automated
@@ -66,7 +66,7 @@ codev.
 
 - **GIVEN** a change using a project schema whose artifact instruction has
   no role block
-- **WHEN** the user runs `codev instructions <artifact> --change <name>
+- **WHEN** the user runs `compagnon instructions <artifact> --change <name>
   --json`
 - **THEN** `instruction` is the schema's text, with no `Role:` line added
 
@@ -95,7 +95,7 @@ MUST NOT modify any code file.
 #### Scenario: A requirement without an error scenario gets one
 
 - **GIVEN** a plan whose spec has a requirement with only a nominal scenario
-- **WHEN** `/codev-propose` reaches the traceability check
+- **WHEN** `/compagnon-propose` reaches the traceability check
 - **THEN** the requirement gains an error or edge-case scenario, or a stated
   reason why none applies
 - **AND** a task's verification covers the new scenario
@@ -104,7 +104,7 @@ MUST NOT modify any code file.
 
 - **GIVEN** a plan with a spec file whose capability is not listed in the
   proposal
-- **WHEN** `/codev-propose` reaches the traceability check
+- **WHEN** `/compagnon-propose` reaches the traceability check
 - **THEN** the proposal lists the capability, or the spec file is removed
   if the capability is out of scope
 
@@ -112,7 +112,7 @@ MUST NOT modify any code file.
 
 - **GIVEN** a plan whose Impact changes a documented command and whose
   tasks update no documentation
-- **WHEN** `/codev-propose` reaches the traceability check
+- **WHEN** `/compagnon-propose` reaches the traceability check
 - **THEN** the tasks gain a documentation task, or the plan states why no
   documentation is affected
 
@@ -120,7 +120,7 @@ MUST NOT modify any code file.
 
 - **GIVEN** a plan whose only task covering a scenario is verified by a
   manual check, with no reason given
-- **WHEN** `/codev-propose` reaches the traceability check
+- **WHEN** `/compagnon-propose` reaches the traceability check
 - **THEN** the covering task names an automated test, or states why
   automation is impossible
 
@@ -128,7 +128,7 @@ MUST NOT modify any code file.
 
 - **GIVEN** a plan whose What Changes marks an item **BREAKING** and whose
   release note has no breaking item
-- **WHEN** `/codev-propose` reaches the traceability check
+- **WHEN** `/compagnon-propose` reaches the traceability check
 - **THEN** the release note gains the breaking item
 
 #### Scenario: A complete plan is left unchanged
@@ -136,5 +136,5 @@ MUST NOT modify any code file.
 - **GIVEN** a plan where capabilities, spec files, scenarios, automated
   tests, documentation tasks, task verifications and the release note all
   cover each other
-- **WHEN** `/codev-propose` reaches the traceability check
+- **WHEN** `/compagnon-propose` reaches the traceability check
 - **THEN** no artifact is modified by the check

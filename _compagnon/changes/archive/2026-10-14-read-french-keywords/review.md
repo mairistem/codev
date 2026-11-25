@@ -38,11 +38,11 @@ severity: medium
 confidence: high
 location: "specs/keyword-languages/spec.md#Requirement: Headings are matched with tolerance for case, accents and the space before a colon"
 evidence: |
-  When codev compares a heading or a labelled line with a keyword, it SHALL
+  When compagnon compares a heading or a labelled line with a keyword, it SHALL
   ignore letter case, SHALL treat an accented letter as its unaccented form,
   and SHALL accept the text with or without spaces before its colon. The
 recommendation: >
-  Apply the tolerance only to the texts of languages other than English, keep today's exact English rules, pin today's English edge cases (`### requirement: x`, `#### Scenario : x` in a requirement body, `## ADDED   Requirements`) in unit tests, and run `codev validate --all` on this repository before and after with no new finding (folded in from R-migration-1).
+  Apply the tolerance only to the texts of languages other than English, keep today's exact English rules, pin today's English edge cases (`### requirement: x`, `#### Scenario : x` in a requirement body, `## ADDED   Requirements`) in unit tests, and run `compagnon validate --all` on this repository before and after with no new finding (folded in from R-migration-1).
 raised_by: [skeptic, migration]
 history:
   - status: open
@@ -61,7 +61,7 @@ severity: medium
 confidence: high
 location: "tasks.md#6. Documentation and finish"
 evidence: |
-  - [ ] 6.1 Document the accepted keywords and the catalog in `docs/en` and `docs/fr` (concepts chapter, where the requirement format is described, and the workflow chapter's validation section), including the advice to raise `codev_version` before writing French keywords, verified by `mdbook build docs/en` and `mdbook build docs/fr` and both editions having the same chapters.
+  - [ ] 6.1 Document the accepted keywords and the catalog in `docs/en` and `docs/fr` (concepts chapter, where the requirement format is described, and the workflow chapter's validation section), including the advice to raise `compagnon_version` before writing French keywords, verified by `mdbook build docs/en` and `mdbook build docs/fr` and both editions having the same chapters.
 recommendation: >
   List faq.md, guides/artifact-language.md, reference/configuration.md and reference/file-formats.md in both editions with what each must now say (reading accepts every catalog language; writing stays English until the follow-up change), and add a task rewriting the `delta_unexpected_heading` message in parser/delta.rs with a named test.
 history:
@@ -164,12 +164,12 @@ No finding.
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-core/src/changelog/release_note.rs — over the material limit.
-Summarized: crates/codev-core/src/keywords.rs — over the material limit.
-Summarized: crates/codev-core/src/merge/mod.rs — over the material limit.
-Summarized: crates/codev-core/src/parser/delta.rs — over the material limit.
-Summarized: crates/codev-core/src/validate/rules.rs — over the material limit.
-Summarized: crates/codev-engine/src/validate/mod.rs — over the material limit.
+Summarized: crates/compagnon-core/src/changelog/release_note.rs — over the material limit.
+Summarized: crates/compagnon-core/src/keywords.rs — over the material limit.
+Summarized: crates/compagnon-core/src/merge/mod.rs — over the material limit.
+Summarized: crates/compagnon-core/src/parser/delta.rs — over the material limit.
+Summarized: crates/compagnon-core/src/validate/rules.rs — over the material limit.
+Summarized: crates/compagnon-engine/src/validate/mod.rs — over the material limit.
 Summarized: docs/en/src/reference/configuration.md — over the material limit.
 Summarized: docs/en/src/reference/file-formats.md — over the material limit.
 Summarized: docs/fr/src/faq.md — over the material limit.
@@ -187,7 +187,7 @@ No finding.
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-core/src/keywords.rs:157-168"
+location: "crates/compagnon-core/src/keywords.rs:157-168"
 evidence: |
       fn en_rule(self) -> EnRule {
           match self {
@@ -199,7 +199,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: 'crates/codev-core/src/keywords.rs — en_rule exhaustive, every matcher matches on it without a catch-all, module doc maps functions to rules'
+    ref: 'crates/compagnon-core/src/keywords.rs — en_rule exhaustive, every matcher matches on it without a catch-all, module doc maps functions to rules'
   - status: fixed
     by: newcomer
 ```
@@ -209,7 +209,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/parser/delta.rs:192-196"
+location: "crates/compagnon-core/src/parser/delta.rs:192-196"
 evidence: |
           let is_requirement =
               title.starts_with("Requirement:") || requirement_header(entry.text).is_some();
@@ -220,7 +220,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: 'crates/codev-core/src/parser/delta.rs — comment on the literal prefixes, message built only for a finding'
+    ref: 'crates/compagnon-core/src/parser/delta.rs — comment on the literal prefixes, message built only for a finding'
   - status: fixed
     by: newcomer
 ```
@@ -230,7 +230,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/parser/shared.rs:64-69"
+location: "crates/compagnon-core/src/parser/shared.rs:64-69"
 evidence: |
           Key::DeltaRemoved => DeltaKind::Removed,
           _ => DeltaKind::Renamed,
@@ -241,7 +241,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: 'crates/codev-core/src/parser/shared.rs — explicit Renamed arm and unreachable!'
+    ref: 'crates/compagnon-core/src/parser/shared.rs — explicit Renamed arm and unreachable!'
   - status: fixed
     by: newcomer
 ```

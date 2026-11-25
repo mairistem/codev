@@ -212,7 +212,7 @@ history:
 ## code.review
 
 Mode: isolated.
-Summarized: .github/workflows/evals.yml, CONTRIBUTING.md, CONTRIBUTING.fr.md, crates/codev-cli/src/docs.rs, docs/en/src/reliability.md, docs/fr/src/reliability.md — over the material limit, one summarizing sub-agent per file.
+Summarized: .github/workflows/evals.yml, CONTRIBUTING.md, CONTRIBUTING.fr.md, crates/compagnon-cli/src/docs.rs, docs/en/src/reliability.md, docs/fr/src/reliability.md — over the material limit, one summarizing sub-agent per file.
 Summarized: evals/src/case.rs, checks.rs, compare.rs, main.rs, observed.rs, plan.rs, reliability.rs, report.rs, runner.rs, score.rs, suite.rs, evals/tests/cli.rs, fixture.rs, suite.rs — over the material limit, one summarizing sub-agent per file.
 Summarized: evals/baseline/** — 479 files of generated observations, summarized as one set by one sub-agent rather than one per file; their checks are the suite tests (five runs per case, none in error, the report agreeing with the scoring).
 
@@ -225,10 +225,10 @@ severity: low
 confidence: low
 location: "evals/src/runner.rs:1189-1191"
 evidence: |
-              match codev_json(tools, work_dir, &["validate", &change, "--json"]) {
+              match compagnon_json(tools, work_dir, &["validate", &change, "--json"]) {
                   Ok(value) => {
                       observed.validate.insert(change, value);
-recommendation: "Remove the `root` field of the `codev validate --json` report before recording it — the scoring never reads it — and remove it from the 124 committed `evals/baseline/plan-*/*/observed.json`. A path like `/private/var/folders/_q/…/T/…` belongs to one account on one machine; recording it in a public repository is more than the measurement needs (GDPR Art. 5(1)(c), Art. 25). Confidence low: the path names nobody unless linked to a contributor."
+recommendation: "Remove the `root` field of the `compagnon validate --json` report before recording it — the scoring never reads it — and remove it from the 124 committed `evals/baseline/plan-*/*/observed.json`. A path like `/private/var/folders/_q/…/T/…` belongs to one account on one machine; recording it in a public repository is more than the measurement needs (GDPR Art. 5(1)(c), Art. 25). Confidence low: the path names nobody unless linked to a contributor."
 history:
   - status: open
     by: privacy
@@ -256,7 +256,7 @@ evidence: |
               "end",
               &s.source,
           ));
-recommendation: "The sources chart right-aligns each label at LABEL_END (92 units, 12-unit font), sized for role names; \"codev instructions\" needs about 96 to 105 units and starts left of x=0, where an inline SVG clips it. Give this chart a wider label column (for example x0 = 140 and the labels ending at 132, with a narrower plot so that 100 % still fits), then check the page in both languages."
+recommendation: "The sources chart right-aligns each label at LABEL_END (92 units, 12-unit font), sized for role names; \"compagnon instructions\" needs about 96 to 105 units and starts left of x=0, where an inline SVG clips it. Give this chart a wider label column (for example x0 = 140 and the labels ending at 132, with a narrower plot so that 100 % still fits), then check the page in both languages."
 history:
   - status: open
     by: accessibility
@@ -323,14 +323,14 @@ severity: low
 confidence: high
 location: "evals/src/runner.rs:1132-1156"
 evidence: |
-                  Err(e) => observed.error = Some(format!("cannot run codev validate: {e}")),
-recommendation: "Extract `fn codev_json(tools, dir, args) -> Result<serde_json::Value, String>`, holding once the comment on why exit code 1 is tolerated, and use it for `codev validate --json` and `codev review --json`."
+                  Err(e) => observed.error = Some(format!("cannot run compagnon validate: {e}")),
+recommendation: "Extract `fn compagnon_json(tools, dir, args) -> Result<serde_json::Value, String>`, holding once the comment on why exit code 1 is tolerated, and use it for `compagnon validate --json` and `compagnon review --json`."
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "evals/src/runner.rs: codev_json, used for codev validate and codev review"
+    ref: "evals/src/runner.rs: compagnon_json, used for compagnon validate and compagnon review"
   - status: fixed
     by: newcomer
 ```

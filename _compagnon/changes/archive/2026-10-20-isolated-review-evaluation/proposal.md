@@ -13,13 +13,13 @@ today.
 
 ## What Changes
 
-- `codev-evals run --review-mode isolated` plays the review cases in the
+- `compagnon-evals run --review-mode isolated` plays the review cases in the
   `isolated` mode: each case's configuration says so before the skills
   are rendered, and the sub-agent tool is granted.
-- `codev-evals run --fixture-config <file>` appends a configuration to
+- `compagnon-evals run --fixture-config <file>` appends a configuration to
   every case, for a setting a measure needs.
 - `run.json` records both; a resumed run with other values stops.
-- `codev-evals compare --across-models` compares two runs whose models
+- `compagnon-evals compare --across-models` compares two runs whose models
   differ, for a change that is a change of model, naming both; two runs
   in different review modes are never compared.
 
@@ -37,7 +37,7 @@ today.
 
 - `evals/src/runner.rs`, `evals/src/main.rs`, `evals/src/compare.rs`,
   `evals/src/observed.rs` (`run.json`).
-- No change to codev itself: `evals/` is not shipped.
+- No change to compagnon itself: `evals/` is not shipped.
 - `CONTRIBUTING.md` and `CONTRIBUTING.fr.md`: the two options.
 
 ## Domains

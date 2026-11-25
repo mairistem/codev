@@ -24,11 +24,11 @@ recommendation: >
   A merge copies requirement bodies verbatim (spec-merge, "A merge writes
   keywords in the language of the spec it edits"), so the first French
   change archived into an existing English main spec puts `DOIT` and
-  `**QUAND**` under `### Requirement:`; and `/codev-update` on a change
+  `**QUAND**` under `### Requirement:`; and `/compagnon-update` on a change
   planned before the upgrade would write French keywords into its English
   artifacts (raised by migration as well: the release note's "Existing
   artifacts and specs keep their keywords" is wrong for changes in
-  progress). Correct the risk; specify that `/codev-update` keeps the
+  progress). Correct the risk; specify that `/compagnon-update` keeps the
   keyword language of the artifact it revises, with a scenario and a test;
   state the mixed main spec in the design and the artifact-language guide,
   with how to avoid it.
@@ -102,7 +102,7 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-4 The French proposal template does not say that domain ids stay codev's vocabulary
+#### R-skeptic-4 The French proposal template does not say that domain ids stay compagnon's vocabulary
 
 ```yaml
 severity: low
@@ -115,14 +115,14 @@ evidence: |
 recommendation: >
   Domain names are identifiers, not catalog keys: a translated
   `- [ ] sécurité` is an `unknown_domain` error. Say that domain names stay
-  as codev defines them, and run `domains::parse` on each proposal
+  as compagnon defines them, and run `domains::parse` on each proposal
   template in the template test.
 history:
   - status: open
     by: skeptic
   - status: fixed
     by: qa
-    ref: 'specs/instructions/spec.md — identifiers stay as codev defines them; tasks.md 2.1 — proposal_templates_list_the_domains_codev_knows'
+    ref: 'specs/instructions/spec.md — identifiers stay as compagnon defines them; tasks.md 2.1 — proposal_templates_list_the_domains_compagnon_knows'
   - status: fixed
     by: skeptic
 ```
@@ -134,7 +134,7 @@ No finding.
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/workflows.rs, crates/codev-cli/src/{commands,contract,docs,main,render}.rs, crates/codev-core/src/config/mod.rs, crates/codev-core/src/keywords.rs, crates/codev-engine/src/{config,instructions}.rs, docs/en/src/reference/{cli,file-formats,json-output}.md, docs/fr/src/reference/{cli,configuration,file-formats,json-output}.md, docs/fr/src/skills.md, evals/src/{case,compare,plan,report,runner,score}.rs, evals/tests/suite.rs — too large to read whole; each diff is under two hundred lines, so the reviewers got it verbatim from `git diff`, not a summary.
+Summarized: crates/compagnon-agents/src/workflows.rs, crates/compagnon-cli/src/{commands,contract,docs,main,render}.rs, crates/compagnon-core/src/config/mod.rs, crates/compagnon-core/src/keywords.rs, crates/compagnon-engine/src/{config,instructions}.rs, docs/en/src/reference/{cli,file-formats,json-output}.md, docs/fr/src/reference/{cli,configuration,file-formats,json-output}.md, docs/fr/src/skills.md, evals/src/{case,compare,plan,report,runner,score}.rs, evals/tests/suite.rs — too large to read whole; each diff is under two hundred lines, so the reviewers got it verbatim from `git diff`, not a summary.
 
 ### migration
 
@@ -143,7 +143,7 @@ Summarized: crates/codev-agents/src/workflows.rs, crates/codev-cli/src/{commands
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-engine/src/schemas.rs:175-180"
+location: "crates/compagnon-engine/src/schemas.rs:175-180"
 evidence: |
   let per_language = templates.join(lang.code()).join(file);
   let path = if fs.exists(&per_language) {
@@ -162,7 +162,7 @@ history:
     by: migration
   - status: fixed
     by: developer
-    ref: 'fdab6da — keywordLanguage is the language of the served template''s first keyword heading (codev_core::keywords::text_language), else the setting''s; test a_single_english_template_keeps_english_keywords; spec, json-output, artifact-language guide and propose skill updated'
+    ref: 'fdab6da — keywordLanguage is the language of the served template''s first keyword heading (compagnon_core::keywords::text_language), else the setting''s; test a_single_english_template_keeps_english_keywords; spec, json-output, artifact-language guide and propose skill updated'
   - status: fixed
     by: migration
 ```
@@ -197,7 +197,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-cli/src/contract.rs:902-917"
+location: "crates/compagnon-cli/src/contract.rs:902-917"
 evidence: |
   let value = if matches!(key, Key::Normative | Key::None) {
 recommendation: Give `Key` an `is_choice()` that both `written` and `keywords_v1` call.
@@ -216,7 +216,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/schemas.rs:314-316"
+location: "crates/compagnon-engine/src/schemas.rs:314-316"
 evidence: |
   /// written in, and the text the catalog has for it there.
 recommendation: Drop the last clause; bind `line.trim_start_matches("- ")` once; say why `tasks.md` is skipped.
@@ -273,7 +273,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/keywords.rs:55-58"
+location: "crates/compagnon-core/src/keywords.rs:55-58"
 evidence: |
   pub fn for_setting(language: Option<&str>) -> Lang {
 recommendation: Take `&str` and drop the `let … else`.
@@ -292,7 +292,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-cli/src/render.rs:404-415"
+location: "crates/compagnon-cli/src/render.rs:404-415"
 evidence: |
   let keywords = instructions.keyword_language.code();
 recommendation: Rename it `keyword_code` and bind `prose` so both messages use named placeholders.

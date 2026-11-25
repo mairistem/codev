@@ -31,9 +31,9 @@
 ## 2. `Workflow { id: "propose" }` entry in the CATALOG
 
 - [x] 2.1 Extend `allowed_tools` of the `propose` entry in
-      `crates/codev-agents/src/workflows.rs`: change from
-      `"Bash(codev:*), Read, Write, Edit, Glob, Grep"` to
-      `"Bash(codev:*), Read, Write, Edit, Glob, Grep, mcp__claude_ai_Atlassian__getJiraIssue"`.
+      `crates/compagnon-agents/src/workflows.rs`: change from
+      `"Bash(compagnon:*), Read, Write, Edit, Glob, Grep"` to
+      `"Bash(compagnon:*), Read, Write, Edit, Glob, Grep, mcp__claude_ai_Atlassian__getJiraIssue"`.
 - [x] 2.2 Update the doc comment of the `propose` entry to say that
       the skill may call the Atlassian MCP when a ticket is detected,
       without it being mandatory.
@@ -41,7 +41,7 @@
 ## 3. Invariant tests
 
 - [x] 3.1 New test `propose_declare_le_mcp_atlassian_getJiraIssue`
-      in `crates/codev-agents/src/workflows.rs::tests`: checks that
+      in `crates/compagnon-agents/src/workflows.rs::tests`: checks that
       `find("propose").allowed_tools.contains("mcp__claude_ai_Atlassian__getJiraIssue")`.
 - [x] 3.2 Complementary test
       `propose_ne_declare_pas_dautre_mcp_atlassian`: walks the
@@ -60,10 +60,10 @@
       tests.
 - [x] 4.2 `cargo clippy --workspace --all-targets` stays free of
       warnings.
-- [x] 4.3 `codev validate --strict` on this repository stays green.
-- [x] 4.4 After `cargo install --path crates/codev-cli` then
-      `codev update --force`, check that
-      `.claude/skills/codev-propose/SKILL.md` does carry
+- [x] 4.3 `compagnon validate --strict` on this repository stays green.
+- [x] 4.4 After `cargo install --path crates/compagnon-cli` then
+      `compagnon update --force`, check that
+      `.claude/skills/compagnon-propose/SKILL.md` does carry
       `mcp__claude_ai_Atlassian__getJiraIssue` in its
       `allowed-tools` frontmatter.
 - [x] 4.5 Manual check (in this Claude Code session where the

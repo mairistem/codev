@@ -2,10 +2,10 @@
 
 ## Context
 
-A review case's fixture is a git repository with codev initialized and the
-skills of the codev under test rendered; its `change.yaml` disables every
+A review case's fixture is a git repository with compagnon initialized and the
+skills of the compagnon under test rendered; its `change.yaml` disables every
 role but the evaluated one. The runner runs Claude Code headlessly with
-`--allowedTools "Bash(codev:*)"` in a sandbox, and records `run.json`
+`--allowedTools "Bash(compagnon:*)"` in a sandbox, and records `run.json`
 (model, Claude Code version, repeat, jobs). `compare` refuses runs whose
 models differ, asked or used. Claude Code's JSON output reports the
 session's cost and tokens, its sub-agents included.
@@ -25,13 +25,13 @@ compares two runs recorded the same day; isolated planning steps
 ### Decision: The mode and extra settings go into the fixture's configuration
 
 The runner appends `review: { mode: isolated }` and the `--fixture-config`
-text to `_codev/config.yaml`, then renders the skills again (`codev update
+text to `_compagnon/config.yaml`, then renders the skills again (`compagnon update
 --force`) before committing. The case is then a project in that mode, as a
 user's would be; nothing in the prompt changes. The evaluation's agent
 reads the skill file rather than invoking the skill, so the runner grants
-the sub-agent tool itself in that mode, as it grants `codev`.
+the sub-agent tool itself in that mode, as it grants `compagnon`.
 
-The skill decides the mode from `codev roles` and falls back to inline
+The skill decides the mode from `compagnon roles` and falls back to inline
 when a sub-agent cannot run (decision 0007), recording it. So the runner
 checks after the run that the role really ran alone — `Mode: isolated.`,
 no `Fallback:` line, at least one sub-agent started — and fails the case
@@ -77,6 +77,6 @@ other comparison from a silent model change.
 - [Two runs differ by their appended configuration] → `compare` names both
   and says when they differ.
 - [Appended YAML duplicates a key the fixture already has] → The review
-  fixtures' configuration, from `codev init`, holds neither `review:` nor
-  `roles:`; a duplicate key fails the case's codev commands, which the run
+  fixtures' configuration, from `compagnon init`, holds neither `review:` nor
+  `roles:`; a duplicate key fails the case's compagnon commands, which the run
   reports as an error.

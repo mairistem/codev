@@ -6,29 +6,29 @@ Every change's `design.md` contains a `## Decisions` section with
 `### Decision: <title>` blocks describing the technical trade-offs
 chosen for the implementation. Today, these decisions **stay local** to
 the change: they live in the design while the change is active, and
-migrate to `_codev/changes/archive/<date>-<name>/` at archive time.
-**The decision index never sees them** — `codev decision list` does not
-list them, `codev instructions design` does not inject them into
+migrate to `_compagnon/changes/archive/<date>-<name>/` at archive time.
+**The decision index never sees them** — `compagnon decision list` does not
+list them, `compagnon instructions design` does not inject them into
 subsequent changes, and the equivalent ADR does not exist in
-`_codev/decisions/`.
+`_compagnon/decisions/`.
 
 Result today: either the change author creates an ADR by hand with
-`codev decision new`, duplicating the design's prose by hand (risk of
+`compagnon decision new`, duplicating the design's prose by hand (risk of
 divergence); or the decision stays buried in the archived design and
 can no longer be consulted like the others.
 
-K7 closes that gap with an explicit gesture: `codev decision promote
+K7 closes that gap with an explicit gesture: `compagnon decision promote
 <change> <title>` extracts a `### Decision: <title>` block from the
-design, turns it into a real ADR in `_codev/decisions/`, sealed by K3,
+design, turns it into a real ADR in `_compagnon/decisions/`, sealed by K3,
 and replaces the original block with a traceable reference.
 
 Completes the trio K3 (immutability) / K6 (inherited deviations) / K7
 (promotion) — after this, the lifecycle of a decision is complete in
-codev.
+compagnon.
 
 ## What Changes
 
-- **New command `codev decision promote <change> <title>`** —
+- **New command `compagnon decision promote <change> <title>`** —
   extracts a `### Decision: <title>` block from the change's
   `design.md`, creates a sealed local ADR (`plan_new_decision` from
   K3), and updates the design.
@@ -38,7 +38,7 @@ codev.
   standard ADR are generated with a `<!-- placeholder -->` inviting the
   author to split the content.
 - **The design block is replaced** by a short textual note:
-  `> Promoted to ADR **NNNN** — see `_codev/decisions/NNNN-<slug>.md`.`.
+  `> Promoted to ADR **NNNN** — see `_compagnon/decisions/NNNN-<slug>.md`.`.
   Deliberately text, not a markdown link: preserves traceability even
   when the change goes to the archive (where a `../../decisions/`
   breaks).
@@ -46,7 +46,7 @@ codev.
   later `promote` if the author writes several revisions; also allows
   quickly finding where the decision came from.
 - **Explicit refusals**:
-  - Change absent or archived (not found in `codev list`) → stable
+  - Change absent or archived (not found in `compagnon list`) → stable
     code `unknown_change` or `cannot_promote_from_archived`.
   - Design absent → code `design_missing`.
   - Title not found in `## Decisions` → `decision_heading_not_found`.
@@ -75,16 +75,16 @@ None.
 
 - **Code**:
   - New lightweight parser for `### Decision: ...` blocks in a
-    `design.md` — lives in `codev-engine::design` (new module — stays
+    `design.md` — lives in `compagnon-engine::design` (new module — stays
     on the engine side since parsing markdown at this level makes no
     sense without I/O).
   - New `plan_promote(change_id, heading, …) -> DeviatePlan-like` in
-    `codev-engine::decisions_actions`: reuses `plan_new_decision` for
+    `compagnon-engine::decisions_actions`: reuses `plan_new_decision` for
     the ADR + a `write` on `design.md` for the block substitution.
-  - New subcommand `codev decision promote` in the CLI.
+  - New subcommand `compagnon decision promote` in the CLI.
 - **JSON contract** — `DecisionPromotedV1` added, no field removed or
   renamed.
-- **Files written**: new ADR under `_codev/decisions/`, entry in
+- **Files written**: new ADR under `_compagnon/decisions/`, entry in
   `seal.yaml`, design.md of the change in question rewritten.
 - **Migration** — none. The command is opt-in; existing designs do not
   change.
@@ -95,5 +95,5 @@ None.
     the free prose of a design has no exploitable structure; we deliver
     the body verbatim and the author splits it by hand.
   - **Re-importing a promoted decision in case of cancellation** — a
-    `codev decision supersede` or a manual edit is enough; no dedicated
+    `compagnon decision supersede` or a manual edit is enough; no dedicated
     "unpromote".

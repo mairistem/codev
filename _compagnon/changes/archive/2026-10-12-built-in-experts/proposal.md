@@ -23,7 +23,7 @@ plan touching them is reviewed by a generalist skeptic at best.
   bound to a domain (`security`, `personal-data`, `user-interface`,
   `performance`, `operations`, `migration`).
 - The proposal gains a `## Domains` section: the six domains as a list to
-  tick, or `None`. `codev validate` reports an unknown domain
+  tick, or `None`. `compagnon validate` reports an unknown domain
   (`unknown_domain`, error), a malformed section (`domains_invalid`,
   error) and a missing section on an active change (`domains_missing`,
   warning); archived changes are never checked.
@@ -32,18 +32,18 @@ plan touching them is reviewed by a generalist skeptic at best.
   other roles keep `always`. `on_domain` on a role without domains is
   `invalid_role_activation`. Per-project and per-change overrides keep
   working.
-- `codev roles --json` gains, per role, `steps`, `domains`,
+- `compagnon roles --json` gains, per role, `steps`, `domains`,
   `activatedBy` (`always`, `domain:<name>`, `project`, `change`, or `null`
   when inactive) and `knowledge` (the role's body, served for active roles
   only). Human output prints the knowledge with `--knowledge`. Without
   `--change`, `on_domain` roles are inactive.
 - **BREAKING** `analyst` becomes required: `analyst: never` is now
   `role_not_disableable`.
-- `codev doctor`'s `config.roles` line names the roles active by domain.
-- `/codev-propose`'s challenge applies every active role (the skeptic and
+- `compagnon doctor`'s `config.roles` line names the roles active by domain.
+- `/compagnon-propose`'s challenge applies every active role (the skeptic and
   the active experts) with their knowledge; the Points to challenge stay
   capped at five in total, each tagged with its role id.
-  `/codev-apply`'s review applies the newcomer and the active experts; its
+  `/compagnon-apply`'s review applies the newcomer and the active experts; its
   **Review notes** (formerly Readability notes) are capped at five in
   total, each tagged with its role id, except that a high-severity security
   or privacy finding is never dropped. An expert never changes behavior
@@ -60,7 +60,7 @@ None.
 
 - `roles` — file-per-role catalog with knowledge, multi-step roles,
   experts and their domains, `on_domain` activation, `analyst` required,
-  `knowledge` and `activatedBy` in `codev roles`.
+  `knowledge` and `activatedBy` in `compagnon roles`.
 - `validation` — the `## Domains` section of an active change and its
   codes.
 - `skills` — the proposal's `## Domains` in the default schema; the
@@ -80,13 +80,13 @@ None.
   `assets/schemas/spec-driven/schema.yaml` and `templates/proposal.md`
   (`## Domains`); `assets/workflows/propose.md` and `apply.md`; the
   regenerated skills under `.claude/skills/`.
-- `codev-core`: `roles` (role file parsing, steps list, domains,
+- `compagnon-core`: `roles` (role file parsing, steps list, domains,
   `on_domain`, `activatedBy`, analyst required), new `domains` module
   (proposal parser and codes), `doctor` (`config.roles` message),
   `validate` (code uniqueness).
-- `codev-engine`: `roles` (the change's domains), `validate` (domains
+- `compagnon-engine`: `roles` (the change's domains), `validate` (domains
   findings).
-- `codev-cli`: `codev roles --knowledge`, `RoleV1` fields, human rendering,
+- `compagnon-cli`: `compagnon roles --knowledge`, `RoleV1` fields, human rendering,
   doctor facts, docs parity test.
 - JSON contract v1: additive — `steps`, `domains`, `activatedBy`,
   `knowledge` on a role; the value `on_domain` for `when`; three
@@ -97,7 +97,7 @@ None.
   `workflow.md` (review notes); the landing page's challenged-plan card.
 - A project whose configuration holds `analyst: never` fails until the
   entry is removed; active changes without `## Domains` get a warning,
-  which fails `codev validate --strict`.
+  which fails `compagnon validate --strict`.
 
 ## Domains
 
@@ -114,20 +114,20 @@ None.
   performance, operations and migration — challenge the plan and review the
   code when the change's proposal ticks their domain, each with concrete
   knowledge (signals, pitfalls per language, references) served by
-  `codev roles`.
+  `compagnon roles`.
 - Added: The proposal has a `## Domains` section listing the domains the
-  change touches, or `None`; `codev validate` reports an unknown domain or
+  change touches, or `None`; `compagnon validate` reports an unknown domain or
   a malformed section as an error and a missing section as a warning,
-  which fails `codev validate --strict`: add the section, or `None`, to
+  which fails `compagnon validate --strict`: add the section, or `None`, to
   your active changes.
-- Added: A role's activation can be `on_domain`; `codev roles --json`
+- Added: A role's activation can be `on_domain`; `compagnon roles --json`
   returns each role's `steps`, `domains`, `activatedBy` and, for active
-  roles, its `knowledge`, which `codev roles --knowledge` prints.
-- Changed: `/codev-propose` caps its Points to challenge at five across the
-  skeptic and the experts, and `/codev-apply` ends with up to five Review
+  roles, its `knowledge`, which `compagnon roles --knowledge` prints.
+- Changed: `/compagnon-propose` caps its Points to challenge at five across the
+  skeptic and the experts, and `/compagnon-apply` ends with up to five Review
   notes (formerly Readability notes), each tagged with its role; a
   high-severity security or privacy finding is never dropped.
 - Changed: **BREAKING** The `analyst` role can no longer be disabled:
-  remove `analyst: never` from `roles:` in `_codev/config.yaml` or a
+  remove `analyst: never` from `roles:` in `_compagnon/config.yaml` or a
   change's `change.yaml`.
-- Changed: `codev doctor` names the roles activated by domain.
+- Changed: `compagnon doctor` names the roles activated by domain.

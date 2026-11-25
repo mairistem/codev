@@ -3,11 +3,11 @@
 ## Context
 
 The reviewing roles are built-in markdown files (`assets/roles/*.md`)
-served by `codev roles`; the skills apply them at `plan.trace` (the
+served by `compagnon roles`; the skills apply them at `plan.trace` (the
 tracer, which fixes gaps directly), `plan.challenge` (the skeptic and the
 active experts) and `code.review` (the newcomer and the active experts).
-At the two review steps, findings go to `_codev/changes/<name>/review.md`,
-which `codev review --json` parses into `ReviewV1` (`findings[]` with
+At the two review steps, findings go to `_compagnon/changes/<name>/review.md`,
+which `compagnon review --json` parses into `ReviewV1` (`findings[]` with
 role, step, severity, confidence, location; `issues[]` whose messages
 start with the finding's id; decision 0002 makes that JSON the public
 contract). Experts are activated by `## Domains`, and a change's
@@ -15,7 +15,7 @@ contract). Experts are activated by `## Domains`, and a change's
 
 The workspace is `crates/*`; CI runs fmt, clippy and tests on the whole
 workspace, on Linux, macOS and Windows; `release.yml` builds
-`--bin codev` only. Claude Code runs headlessly with `claude -p`, which
+`--bin compagnon` only. Claude Code runs headlessly with `claude -p`, which
 takes `--model`, `--max-budget-usd`, `--allowedTools`,
 `--permission-mode`, `--output-format json` (whose result carries
 `total_cost_usd`, `duration_ms` and `is_error`) and
@@ -50,11 +50,11 @@ takes `--model`, `--max-budget-usd`, `--allowedTools`,
 
 ### Decision: A separate workspace crate, `evals/`, never shipped
 
-`evals/Cargo.toml` defines `codev-evals` (`publish = false`, a `lib`
+`evals/Cargo.toml` defines `compagnon-evals` (`publish = false`, a `lib`
 and a `bin`), added to `members` next to `crates/*`. It depends on no
-codev crate: it reads codev's JSON output as any consumer of the contract
+compagnon crate: it reads compagnon's JSON output as any consumer of the contract
 does (decision 0002 keeps the contract the boundary), and runs the
-`codev` binary built from the same tree. Inside it, decision 0001's split
+`compagnon` binary built from the same tree. Inside it, decision 0001's split
 is kept: `case`, `score` and `report` are pure functions over strings and
 values; `runner` and `main` do the I/O and the processes. Dependencies are
 the workspace's (`serde`, `serde_json`, `serde_norway` per decision 0006,
@@ -63,9 +63,9 @@ the workspace's (`serde`, `serde_json`, `serde_norway` per decision 0006,
 **Alternatives considered**: `evals/run.sh` with `jq` (the scoring rules
 are the hard part, and shell has no unit tests on Windows); an `xtask`
 (the same crate under another name, plus an alias); a subcommand of
-`codev` (would ship a model caller in a binary that must never call one);
-linking `codev-core` to parse `review.md` directly (bypasses the evidence
-check codev runs, and couples the suite to internals).
+`compagnon` (would ship a model caller in a binary that must never call one);
+linking `compagnon-core` to parse `review.md` directly (bypasses the evidence
+check compagnon runs, and couples the suite to internals).
 
 ### Decision: A case is a fixture split in two trees, and a `case.yaml`
 
@@ -94,7 +94,7 @@ kind: seeded
 summary: The spec's expired-link scenario has no task.
 checks:
   fixed:
-    - path: _codev/changes/add-magic-links/tasks.md
+    - path: _compagnon/changes/add-magic-links/tasks.md
       contains: expired link
   unchanged: []
 ```
@@ -122,20 +122,20 @@ others).
 For each case, in `<work>/<case-id>/` (`--work`, default the system's
 temporary directory, removed unless `--keep`):
 
-1. copy `base/`; `git init -b main`; `codev init --yes --no-detect
+1. copy `base/`; `git init -b main`; `compagnon init --yes --no-detect
    --no-integration --preset full --language en`; commit
-   (`git -c user.name=codev-evals -c user.email=evals@codev.invalid`,
+   (`git -c user.name=compagnon-evals -c user.email=evals@compagnon.invalid`,
    `commit.gpgsign=false`);
 2. `git switch -c change`; copy `change/` over; write
-   `_codev/changes/<change>/change.yaml` — `schema`, `created`,
+   `_compagnon/changes/<change>/change.yaml` — `schema`, `created`,
    `skip_specs: true` when the change has no `specs/`, and `roles:` with
-   every role returned by `codev roles --at <step> --change <change>
+   every role returned by `compagnon roles --at <step> --change <change>
    --json` other than the evaluated one set to `never`; commit;
 3. run `claude -p <prompt> --output-format json --no-session-persistence
-   --permission-mode acceptEdits --allowedTools "Bash(codev:*)
+   --permission-mode acceptEdits --allowedTools "Bash(compagnon:*)
    Bash(git diff:*) Bash(git log:*) Bash(git show:*) Bash(git status:*)
    Read Write Edit Glob Grep Skill" --max-budget-usd <b> [--model <m>]`,
-   with the directory of the `codev` binary first on `PATH`. git is
+   with the directory of the `compagnon` binary first on `PATH`. git is
    allowed by read-only subcommand only: `Bash(git:*)` would let the agent
    run any program through git's configuration (`-c core.pager=…`,
    aliases). On Unix the process starts in its own process group, and the
@@ -143,7 +143,7 @@ temporary directory, removed unless `--keep`):
    five seconds) when the timeout expires, so the shells and tools it
    spawned stop too; on Windows only the process itself is killed (the
    runner is not supported there, see the table below);
-4. run `codev review --change <change> --json` (review steps) and keep its
+4. run `compagnon review --change <change> --json` (review steps) and keep its
    JSON whatever the exit code — exit 1 means the record has an error,
    which the scoring turns into `record-invalid` or an invalid evidence;
    only an output that is not JSON is a run error. Read the checked files
@@ -173,8 +173,8 @@ edit the code under review.
   "costUsd": 0.42,
   "durationMs": 81234,
   "strayed": [],
-  "review": { "...": "the ReviewV1 document, as codev printed it" },
-  "files": { "_codev/changes/add-magic-links/tasks.md": "..." }
+  "review": { "...": "the ReviewV1 document, as compagnon printed it" },
+  "files": { "_compagnon/changes/add-magic-links/tasks.md": "..." }
 }
 ```
 
@@ -188,12 +188,12 @@ stopped (`timeout after 900 s`, `claude exited with 1: …`,
 missing (`exists: false`).
 
 Cases run `--jobs` at a time (default 2), each in its own directory. A
-preflight runs `claude --version`, `git --version` and `codev --version`
-(`--codev`, default `target/debug/codev` of the repository) before any
+preflight runs `claude --version`, `git --version` and `compagnon --version`
+(`--compagnon`, default `target/debug/compagnon` of the repository) before any
 case.
 
-**Alternatives considered**: running the whole `/codev-propose` or
-`/codev-apply` (it writes the plan or the code itself: nothing seeded
+**Alternatives considered**: running the whole `/compagnon-propose` or
+`/compagnon-apply` (it writes the plan or the code itself: nothing seeded
 would remain to find); running the answer loop (an author agreeing with
 an invented finding would hide it); `--dangerously-skip-permissions`
 (`acceptEdits` with a closed tool list is enough, and safer on a
@@ -232,7 +232,7 @@ to them).
 ### Decision: Thresholds per role, flags over environment
 
 `--min-recall` 0.5, `--max-false-positives` 2 (per role, over all its
-cases), `--min-evidence` 0.8, each also read from `CODEV_EVAL_*`. The
+cases), `--min-evidence` 0.8, each also read from `COMPAGNON_EVAL_*`. The
 defaults are deliberately loose: one run per case is noisy, and the
 suite's first purpose is comparison with the baseline, not a gate. Exit
 codes: 0 pass, 1 a role fails or a case errored, 2 usage (bad threshold,
@@ -248,7 +248,7 @@ noise; the human comparison in the pull request is the intended use).
 `evals/baseline/` is the output directory of a full run: `run.json`,
 `report.md`, `report.json` and `<case>/observed.json`. `run.json` —
 `{"format": 1, "model": null, "date": "2026-10-13", "claudeVersion":
-"…", "codevVersion": "…"}` — is written once when a run starts in an
+"…", "compagnonVersion": "…"}` — is written once when a run starts in an
 empty directory and never by `score`, which copies it into the report:
 the date and versions belong to the run, so scoring the same directory
 twice gives the same bytes. A test scores the observations again and compares
@@ -270,7 +270,7 @@ inject commands in a job that holds the key); one job on `ubuntu-latest`; a firs
 `secrets.ANTHROPIC_API_KEY` is set through an environment variable and,
 when it is not, prints "Evaluations skipped: the ANTHROPIC_API_KEY secret
 is not set in this repository" and ends successfully; otherwise it builds
-codev, installs Claude Code with `npm install -g @anthropic-ai/claude-code`,
+compagnon, installs Claude Code with `npm install -g @anthropic-ai/claude-code`,
 runs the suite with a job timeout of 240 minutes — twenty-six cases at
 most ten minutes each, two at a time, take at most 130 — and uploads the
 output directory with `if: always()`, so a stopped or failing job keeps
@@ -291,7 +291,7 @@ anyway).
 | A docs-only change | The `security` control `security-control-docs-only` changes only a README that talks about tokens; a finding there is a false positive. |
 | Generated, vendored, binary or very large files | Refused in fixtures: not UTF-8 or over 64 KiB (scenario "A binary fixture file"). Measuring roles on such files is out of scope. |
 | Huge diffs | Out of scope for the measure; fixtures are small by the 64 KiB rule; a run is bounded by its budget and timeout (scenario "The run timed out"). |
-| Monorepos with several stacks | `performance-code-n-plus-one` has a Rust service and a TypeScript front-end, both detected by `codev roles`. |
+| Monorepos with several stacks | `performance-code-n-plus-one` has a Rust service and a TypeScript front-end, both detected by `compagnon roles`. |
 | Windows paths and CRLF | Locations read `\` as `/` (scenario "A Windows path"); `unchanged` compares without `\r`; files are compared and counted without line-ending assumptions. The runner is exercised on macOS and Linux; on Windows it is untested (out of scope: the workflow runs on Linux). |
 | Offline | `run` fails per case with the error Claude Code reports, recorded as `error` (scenario "The run timed out" covers the outcome); `score` needs no network. |
 | A role disabled by configuration | The runner disables every other role on purpose; if the evaluated role ends up disabled, the case is `role-not-run`, never a clean control (scenario "The evaluated role was disabled"). |
@@ -311,7 +311,7 @@ anyway).
   realistic code next to correct code; controls hold the same domain
   without the defect.
 - [An agent with edit rights in a fixture runs commands] → a fresh
-  temporary copy, `acceptEdits` with a closed tool list (`codev` and
+  temporary copy, `acceptEdits` with a closed tool list (`compagnon` and
   `git` only for Bash), a budget and a timeout; the fixture holds no
   secret. The workflow passes the key as an environment variable to the
   run step only.

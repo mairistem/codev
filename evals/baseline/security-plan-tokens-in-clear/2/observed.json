@@ -99,7 +99,7 @@
         "output": 298,
         "toolCalls": 0,
         "sources": {
-          "codev review": 634
+          "compagnon review": 634
         }
       }
     ]
@@ -237,7 +237,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-api-tokens/review.md",
+    "path": "_compagnon/changes/add-api-tokens/review.md",
     "status": [],
     "steps": [
       {

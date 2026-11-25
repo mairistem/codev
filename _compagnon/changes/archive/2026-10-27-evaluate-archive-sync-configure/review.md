@@ -53,7 +53,7 @@ severity: medium
 confidence: high
 location: "specs/sync-archive-evaluation/spec.md#Requirement: A sync or archive run is scored by deterministic checks"
 evidence: |
-  - for a `refused` case, every file under `_codev/` after the run is the
+  - for a `refused` case, every file under `_compagnon/` after the run is the
     fixture's;
 recommendation: Add an optional `expected.code` matched against the reference's `status[0].code`, a mismatch ending the case in error as stale, with a scenario and a test.
 history:
@@ -73,7 +73,7 @@ severity: medium
 confidence: high
 location: "specs/configure-evaluation/spec.md#Requirement: A configure run is scored by deterministic checks"
 evidence: |
-  - for a `written` case: every top-level key of `_codev/config.yaml` but
+  - for a `written` case: every top-level key of `_compagnon/config.yaml` but
 recommendation: Say what is counted — the non-empty lines of the `context` value in the file's text — and add a scenario for a context on a single line.
 history:
   - status: open
@@ -85,7 +85,7 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-5 `sync-planning-incomplete` expects `/codev-propose`, but the skill points to `/codev-continue` for this state
+#### R-skeptic-5 `sync-planning-incomplete` expects `/compagnon-propose`, but the skill points to `/compagnon-continue` for this state
 
 ```yaml
 severity: medium
@@ -93,13 +93,13 @@ confidence: low
 location: "design.md#Decision: Sync and archive cases replay history, like update cases"
 evidence: |
   | `sync-planning-incomplete` | sync | as `archive-planning-incomplete` | `refused`, reply does not hold `Synced` |
-recommendation: Check the stop by the file comparison and an `absent` text, and note that the skill's mention of `/codev-continue`, which codev does not install, is a defect of the skill left to a change of its own.
+recommendation: Check the stop by the file comparison and an `absent` text, and note that the skill's mention of `/compagnon-continue`, which compagnon does not install, is a defect of the skill left to a change of its own.
 history:
   - status: open
     by: skeptic
   - status: fixed
     by: architect
-    ref: "design.md: the case checks the stop with `absent: Synced`, and the paragraph on `/codev-continue`"
+    ref: "design.md: the case checks the stop with `absent: Synced`, and the paragraph on `/compagnon-continue`"
   - status: fixed
     by: skeptic
 ```
@@ -246,14 +246,14 @@ location: "evals/src/case.rs:2875-2900"
 evidence: |
       fn an_overlay_link_fails() {
           let sync = ARCHIVE_YAML.replace("change.archive", "change.sync");
-recommendation: "Split tests into one per behavior, and replace the boolean helpers `done_run(.., through_codev: bool, ..)` and `unchanged_run(passes: bool)` with named constructors."
+recommendation: "Split tests into one per behavior, and replace the boolean helpers `done_run(.., through_compagnon: bool, ..)` and `unchanged_run(passes: bool)` with named constructors."
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
     ref: "evals/src/merge.rs, evals/src/configure.rs, evals/src/report.rs, evals/src/compare.rs (named run constructors)"
-    note: "The boolean helpers are replaced by `run_through_codev` / `run_merged_by_hand` and `run_leaving_the_file` / `run_writing_the_file`. The tests keep one test per spec scenario, named after it as tasks.md asks; the extra assertions are the scenario's loading rules (the spec lists the overlay's three refusals together)."
+    note: "The boolean helpers are replaced by `run_through_compagnon` / `run_merged_by_hand` and `run_leaving_the_file` / `run_writing_the_file`. The tests keep one test per spec scenario, named after it as tasks.md asks; the extra assertions are the scenario's loading rules (the spec lists the overlay's three refusals together)."
   - status: fixed
     by: newcomer
 ```

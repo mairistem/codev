@@ -1,11 +1,11 @@
 # Tasks
 
-## 1. Foundations in `codev-core`
+## 1. Foundations in `compagnon-core`
 
-- [x] 1.1 Create the `parser` module in `codev-core` (`parser/mod.rs`,
+- [x] 1.1 Create the `parser` module in `compagnon-core` (`parser/mod.rs`,
       `parser/ast.rs`, `parser/fence.rs`, `parser/spec.rs`, `parser/delta.rs`),
       expose the public items from `lib.rs`, verified by `cargo build -p
-      codev-core` then `cargo doc -p codev-core --no-deps`.
+      compagnon-core` then `cargo doc -p compagnon-core --no-deps`.
 - [x] 1.2 Define the AST types — `Spec`, `Delta`, `Requirement`,
       `Scenario`, the `DeltaOp` enumeration, the `Finding` and `Parsed<T>`
       structures — without logic, with `#[derive(Debug, Clone, PartialEq)]`,
@@ -99,11 +99,11 @@
 
 ## 7. Golden tests
 
-- [x] 7.1 Create `crates/codev-core/tests/parser_golden.rs` with at least
+- [x] 7.1 Create `crates/compagnon-core/tests/parser_golden.rs` with at least
       one complete main spec example and one complete delta example (input
-      files in `crates/codev-core/tests/fixtures/`), expectations serialized
+      files in `crates/compagnon-core/tests/fixtures/`), expectations serialized
       as `Debug`. Verified by
-      `cargo test -p codev-core --test parser_golden`.
+      `cargo test -p compagnon-core --test parser_golden`.
 - [x] 7.2 Add to `parser_golden` the case of a targeted rewrite of a
       `MODIFIED` block: extract its `byte_range`, inject new text into it,
       check that the rest of the file — including whitespace — is

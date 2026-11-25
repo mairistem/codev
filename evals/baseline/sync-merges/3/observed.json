@@ -47,7 +47,7 @@
         "output": 41,
         "toolCalls": 1,
         "sources": {
-          "codev status": 5648
+          "compagnon status": 5648
         }
       },
       {
@@ -57,7 +57,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev sync": 142,
+          "compagnon sync": 142,
           "output": 120
         }
       },
@@ -68,7 +68,7 @@
         "output": 108,
         "toolCalls": 0,
         "sources": {
-          "codev sync": 417
+          "compagnon sync": 417
         }
       }
     ]
@@ -78,30 +78,30 @@
   "files": {},
   "messages": [
     "Planning is complete, the version requirement is satisfied, and no update is pending.",
-    "✓ Synced \"`forward-compatible-config`\": 1 spec created, 1 updated, 0 unchanged.\n\n```\nCreated:\n  _codev/specs/configuration/spec.md\nUpdated:\n  _codev/specs/doctor/spec.md\n```\n\nThe change is ready to be archived if you want to close the cycle."
+    "✓ Synced \"`forward-compatible-config`\": 1 spec created, 1 updated, 0 unchanged.\n\n```\nCreated:\n  _compagnon/specs/configuration/spec.md\nUpdated:\n  _compagnon/specs/doctor/spec.md\n```\n\nThe change is ready to be archived if you want to close the cycle."
   ],
   "merge": {
     "changed": {
-      "_codev/specs/configuration/spec.md": "6855ac5f6ca1bf34ed74c2045e2baa8195a504ba889b629e3f34c2f7e68a9861",
-      "_codev/specs/doctor/spec.md": "6fd060df616c4fff73b53e2e248d4437dfcc6a2a471d3902c93a46eb3553d1eb"
+      "_compagnon/specs/configuration/spec.md": "6855ac5f6ca1bf34ed74c2045e2baa8195a504ba889b629e3f34c2f7e68a9861",
+      "_compagnon/specs/doctor/spec.md": "6fd060df616c4fff73b53e2e248d4437dfcc6a2a471d3902c93a46eb3553d1eb"
     },
     "reference": {
       "exitCode": 0,
       "report": {
         "changeName": "forward-compatible-config",
         "created": [
-          "_codev/specs/configuration/spec.md"
+          "_compagnon/specs/configuration/spec.md"
         ],
         "deleted": [],
         "status": [],
         "unchanged": [],
         "updated": [
-          "_codev/specs/doctor/spec.md"
+          "_compagnon/specs/doctor/spec.md"
         ]
       },
       "changed": {
-        "_codev/specs/configuration/spec.md": "6855ac5f6ca1bf34ed74c2045e2baa8195a504ba889b629e3f34c2f7e68a9861",
-        "_codev/specs/doctor/spec.md": "6fd060df616c4fff73b53e2e248d4437dfcc6a2a471d3902c93a46eb3553d1eb"
+        "_compagnon/specs/configuration/spec.md": "6855ac5f6ca1bf34ed74c2045e2baa8195a504ba889b629e3f34c2f7e68a9861",
+        "_compagnon/specs/doctor/spec.md": "6fd060df616c4fff73b53e2e248d4437dfcc6a2a471d3902c93a46eb3553d1eb"
       }
     }
   }

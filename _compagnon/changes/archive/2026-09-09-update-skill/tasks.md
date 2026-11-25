@@ -14,7 +14,7 @@
         **never** creates a missing artifact, **never** touches an
         archived change — each case explicitly redirects to the
         appropriate skill;
-      - prior reading: `codev status --change <name> --json` to check
+      - prior reading: `compagnon status --change <name> --json` to check
         that the requested artifact exists, then reading from disk
         (never from the conversation);
       - study of what exists: read the change's other artifacts
@@ -29,30 +29,30 @@
         the design that no longer exists, a task referencing a
         vanished scenario…), the skill **names** the inconsistency
         and **proposes** the action (delete, adjust, another
-        `/codev-update` call), without applying it without
+        `/compagnon-update` call), without applying it without
         confirmation;
-      - final safeguard: `codev validate <change>` and relay of the
+      - final safeguard: `compagnon validate <change>` and relay of the
         report;
       - end: summary — file(s) touched, `validate` verdict,
-        recommended next action (often `/codev-apply` or
-        `/codev-archive`).
+        recommended next action (often `/compagnon-apply` or
+        `/compagnon-archive`).
       Verified by the presence of the file and by the CATALOG
       invariant.
 
 ## 2. CATALOG entry
 
 - [x] 2.1 Add `Workflow { id: "update", description: "…",
-      allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep",
+      allowed-tools: "Bash(compagnon:*), Read, Write, Edit, Glob, Grep",
       body: include_str!("../../../assets/workflows/update.md") }` to
       the `CATALOG`. Description: "Revise an already-written planning
-      artifact of an active codev change — proposal, specs, design or
+      artifact of an active compagnon change — proposal, specs, design or
       tasks — while preserving consistency with the other artifacts.
       Modifies no project code, creates no missing artifact, touches
       no archived change."
 - [x] 2.2 Dedicated test
       `workflows::update_est_dans_le_catalogue_et_a_les_bons_outils`:
       `find("update")` returns `Some`; `allowed_tools` equals exactly
-      `"Bash(codev:*), Read, Write, Edit, Glob, Grep"`; does NOT
+      `"Bash(compagnon:*), Read, Write, Edit, Glob, Grep"`; does NOT
       contain general `Bash` — checks that "only `apply` has general
       Bash" stays true.
 - [x] 2.3 Complementary test
@@ -62,7 +62,7 @@
 - [x] 2.4 The existing invariants (`chaque_workflow_a_un_corps_…`,
       `le_frontmatter_de_chaque_skill_est_du_yaml_valide`)
       automatically cover `update` via the loop over `CATALOG`.
-      Verified by `cargo test -p codev-agents`.
+      Verified by `cargo test -p compagnon-agents`.
 
 ## 3. Repository config and default catalog
 
@@ -71,21 +71,21 @@
       check — an array `for opt_in in ["apply", "sync",
       "archive", "update"]`.
 - [x] 3.2 Update the example comment in
-      `crates/codev-engine/src/scaffold.rs::DEFAULT_CONFIG` to also
+      `crates/compagnon-engine/src/scaffold.rs::DEFAULT_CONFIG` to also
       list `update` in the commented-out `# workflows:` block.
 - [x] 3.3 Add `- update` to the `workflows` list of this project's
-      `_codev/config.yaml`.
+      `_compagnon/config.yaml`.
 
 ## 4. Dogfooding
 
-- [x] 4.1 After `cargo install --path crates/codev-cli` then `codev
-      update`, check that `.claude/skills/codev-update/SKILL.md`
+- [x] 4.1 After `cargo install --path crates/compagnon-cli` then `compagnon
+      update`, check that `.claude/skills/compagnon-update/SKILL.md`
       appears with the right frontmatter.
-- [x] 4.2 Check that the list of skills announced by `codev update`
-      does contain the six workflows: `codev-propose, codev-explore,
-      codev-apply, codev-sync, codev-archive, codev-update`.
+- [x] 4.2 Check that the list of skills announced by `compagnon update`
+      does contain the six workflows: `compagnon-propose, compagnon-explore,
+      compagnon-apply, compagnon-sync, compagnon-archive, compagnon-update`.
 - [x] 4.3 Once the change is applied and archived, try a real
-      `/codev-update` on a future change in the next Claude Code
+      `/compagnon-update` on a future change in the next Claude Code
       session — the skill will be visible at load time.
 
 ## 5. Workspace integration
@@ -95,4 +95,4 @@
       `update_cite_ses_frontieres`).
 - [x] 5.2 `cargo clippy --workspace --all-targets` stays free of
       warnings.
-- [x] 5.3 `codev validate --all` stays green.
+- [x] 5.3 `compagnon validate --all` stays green.

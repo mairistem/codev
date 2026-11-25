@@ -7,6 +7,6 @@ planned: [src/auth/links.rs, a_link_is_emailed, a_valid_link_signs_in]
 summary: "The spec's expired-link scenario has no task or test."
 checks:
   fixed:
-    - path: _codev/changes/add-magic-links/tasks.md
+    - path: _compagnon/changes/add-magic-links/tasks.md
       contains: "expired"
   unchanged: []

@@ -1,4 +1,4 @@
-# Design: `codev validate --strict`
+# Design: `compagnon validate --strict`
 
 ## Context
 

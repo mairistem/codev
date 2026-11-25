@@ -56,7 +56,7 @@ severity: medium
 confidence: low
 location: "design.md#Goals / Non-Goals"
 evidence: |
-  - A measure of `/codev-apply` precise enough to compare two models, or
+  - A measure of `/compagnon-apply` precise enough to compare two models, or
     two versions of the skill, with `compare`.
 recommendation: State the smallest regression compare detects, keep the refusal out of the pass and acceptance shares, and add a test naming the detectable regression.
 history:
@@ -100,7 +100,7 @@ confidence: high
 location: "design.md#Decision: The runner runs the checks itself, after the run"
 evidence: |
   same Cargo home. It records each outcome with the last 40 lines of its
-  output, then runs `acceptance.sh` against `target/debug/codev`. A check
+  output, then runs `acceptance.sh` against `target/debug/compagnon`. A check
 recommendation: Put a timeout on every runner command (preparation, checks, calibrate), in its own process group; a check that times out fails and the run is still scored; add a test.
 history:
   - status: open
@@ -160,7 +160,7 @@ evidence: |
           let after = fs::read(work_dir.join(".git").join("config")).ok();
           observed.error = config_tampered(&config_before, after.as_deref());
       }
-recommendation: Treat the run as tampered when anything under `.git/` that changes where git reads its configuration has changed (`commondir`, `config.worktree`, `info/attributes`), for instance with a snapshot of `.git/` outside `objects/`, `refs/`, `logs/` and `index`; start the runner's git and codev calls with a cleared environment too; add a test where a run writes `.git/commondir` and is refused.
+recommendation: Treat the run as tampered when anything under `.git/` that changes where git reads its configuration has changed (`commondir`, `config.worktree`, `info/attributes`), for instance with a snapshot of `.git/` outside `objects/`, `refs/`, `logs/` and `index`; start the runner's git and compagnon calls with a cleared environment too; add a test where a run writes `.git/commondir` and is refused.
 history:
   - status: open
     by: security
@@ -186,7 +186,7 @@ evidence: |
           &["status", "--porcelain", "-z", "--untracked-files=all"],
       )
       .unwrap_or_default();
-recommendation: Put the `git status` error in `observed.error`, as the `codev validate` failures are, so the run shows as stopped and is not scored.
+recommendation: Put the `git status` error in `observed.error`, as the `compagnon validate` failures are, so the run shows as stopped and is not scored.
 history:
   - status: open
     by: ops
@@ -252,13 +252,13 @@ location: "evals/src/runner.rs:1741-1760"
 evidence: |
       for (args, key) in [
           (vec!["validate", case.change.as_str(), "--json"], "validate"),
-recommendation: Write two plain `codev_json` calls; split `run_implementation` into steps; use the module's real name instead of the `build` alias; write `if let (true, Some(script))` more plainly.
+recommendation: Write two plain `compagnon_json` calls; split `run_implementation` into steps; use the module's real name instead of the `build` alias; write `if let (true, Some(script))` more plainly.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "evals/src/runner.rs: run_implementation split into run_agent, observe_change and check_implementation; two plain codev calls; the module named implement_run"
+    ref: "evals/src/runner.rs: run_implementation split into run_agent, observe_change and check_implementation; two plain compagnon calls; the module named implement_run"
   - status: fixed
     by: newcomer
 ```
@@ -290,7 +290,7 @@ confidence: high
 location: "evals/src/implement.rs:147-150"
 evidence: |
           check(
-              "the change is still in `_codev/changes/`".to_string(),
+              "the change is still in `_compagnon/changes/`".to_string(),
               file("proposal.md").is_some(),
           );
 recommendation: Say why `proposal.md` stands for the change not being archived, and split the function into the refusal's scoring and the implementation's.

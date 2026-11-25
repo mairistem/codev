@@ -2,9 +2,9 @@
 
 ## Context
 
-codev has no way to find a requirement but reading files: `codev list
+compagnon has no way to find a requirement but reading files: `compagnon list
 --specs` names the capabilities, and the skills then `grep` and read whole
-`spec.md` files. The parser (`codev-core::parser`) already gives each spec's
+`spec.md` files. The parser (`compagnon-core::parser`) already gives each spec's
 requirements — name, description, scenarios, span — and the language of its
 keywords (`Spec.lang`, English or French today); the engine already loads
 the main specs and the decision index, inherited decisions included, through
@@ -17,14 +17,14 @@ measured the ranking choices below; the evaluation suite of
 **Goals**: a ranked search over requirements and decisions whose output
 stays bounded; reading one requirement at a time; the requirements a
 change likely touches given to the planning agent in the instructions it
-already reads; the gain proven by `codev-evals compare` (decision 0008).
+already reads; the gain proven by `compagnon-evals compare` (decision 0008).
 
 **Non-goals**: a session map or any hook (`SessionStart`,
 `UserPromptSubmit`) — the study found the map costs tokens in every session
 and is truncated past about 50 capabilities, and the raw prompt finds 13 to
 23 % of the requirements; searching the code; a persistent index; semantic
 (embedding) search, which would call a model or ship one; changing
-`/codev-explore`, which the evaluation suite does not cover yet — decision
+`/compagnon-explore`, which the evaluation suite does not cover yet — decision
 0008 asks for a step to be covered, by its own change, before it changes.
 
 ## Decisions
@@ -52,12 +52,12 @@ indexing scenarios apart — more results naming the same requirement.
 The project's specs are a few hundred requirements: building the index in
 memory takes 30 ms for this repository's 210 requirements and 9 decisions,
 and 62 ms with `--archive` over its 53 archived changes (2.4 MB), measured
-with a release build (`hyperfine`, ten runs each), so `codev search`
+with a release build (`hyperfine`, ten runs each), so `compagnon search`
 rebuilds it every time and keeps nothing
 on disk — nothing to invalidate when a spec changes, nothing to commit or
 ignore.
 
-**Alternatives considered**: an index file under `_codev/` or a cache
+**Alternatives considered**: an index file under `_compagnon/` or a cache
 directory — a file to keep in step with the specs, for no gain at this
 size; revisit only if a project's search grows past a second.
 
@@ -79,7 +79,7 @@ lists, English and French, so that neither needs another crate.
 `rust-stemmers` is pure code, depends only on `serde`, already in the tree,
 and is MIT or BSD-3 licensed; the CI's `cargo audit` covers it.
 
-**Alternatives considered**: a stemmer written in codev — a Porter stemmer
+**Alternatives considered**: a stemmer written in compagnon — a Porter stemmer
 and a light French one, a few hundred lines to keep correct for no gain
 over a stable implementation of the reference algorithms; no stemming —
 the study measured it loses the plural/singular and conjugated forms, the
@@ -96,25 +96,25 @@ scores. Without the flag the archive is not read.
 **Alternatives considered**: one ranking with a weight on archived
 documents — a weight to tune per project, where two lists need none.
 
-### Decision: `codev show` reads one requirement from the parsed spec
+### Decision: `compagnon show` reads one requirement from the parsed spec
 
-`codev show <capability>::<requirement>` slices the requirement from the
+`compagnon show <capability>::<requirement>` slices the requirement from the
 spec's source by the span the parser gives — heading, description and
 scenarios, byte for byte — so that what an agent copies into a `MODIFIED`
-block is exactly the main spec's text. `codev show <capability>` prints the
+block is exactly the main spec's text. `compagnon show <capability>` prints the
 purpose and the requirement names. The `<capability>::<name>` form is the
-one the evaluation suite and `codev search` already use.
+one the evaluation suite and `compagnon search` already use.
 
-**Alternatives considered**: `codev search --full`, printing the matching
+**Alternatives considered**: `compagnon search --full`, printing the matching
 requirements whole — the output would grow with the results and lose the
-bound that makes the search cheap; extending `codev list --specs` — a list
+bound that makes the search cheap; extending `compagnon list --specs` — a list
 command that prints content would blur both.
 
 ### Decision: The instructions bring the related requirements; the skill names no search
 
-Once `proposal.md` exists, `codev instructions` ranks the requirements of
+Once `proposal.md` exists, `compagnon instructions` ranks the requirements of
 the main specs against the proposal's `Why` and `What Changes` — the same
-ranking as `codev search`, in the specs' language — and gives the best 10
+ranking as `compagnon search`, in the specs' language — and gives the best 10
 in a `related` field and a section of its human output, with the line that
 a requirement the change alters is modified, not added again. The
 proposal is written in the artifact language, the language its words are
@@ -126,10 +126,10 @@ than a few keywords. The decisions in effect are already in `decisions`
 and are not repeated.
 
 The list is served for the artifacts that require the proposal directly
-— the delta specs and the design —, empty for the others: `/codev-apply`
-and the reviews call `codev instructions` for the context and the rules
+— the delta specs and the design —, empty for the others: `/compagnon-apply`
+and the reviews call `compagnon instructions` for the context and the rules
 only, and must pay neither the ranking nor the tokens. Its human section
-says how to read one requirement, `codev show <capability>::<requirement>`
+says how to read one requirement, `compagnon show <capability>::<requirement>`
 — the tool comes with the data rather than being imposed by the skill — so
 that the agent reads one requirement rather than a whole spec, the cost
 the Why targets. An empty proposal ranks nothing and an unreadable spec is
@@ -141,12 +141,12 @@ starting point, and with no listed requirement work from the request and
 the code. It names no search command. This follows what ICM
 (rtk-ai/icm) does for an agent's memory — give the relevant context where
 the agent already looks rather than ask it to search — and what the first
-measure of this change showed: told to run `codev search`, the agent ran
-it and kept `grep`-ing as before. `codev search` and `codev show` stay, for
+measure of this change showed: told to run `compagnon search`, the agent ran
+it and kept `grep`-ing as before. `compagnon search` and `compagnon show` stay, for
 a person or an agent that wants them. Decision 0001 holds: the ranking is
 the core's pure function; decision 0004 holds: no new skill, no hook.
 
-**Alternatives considered**: telling the agent to run `codev search` first
+**Alternatives considered**: telling the agent to run `compagnon search` first
 — measured first, it adds calls without replacing the agent's own
 searches; a `SessionStart` or `UserPromptSubmit` hook, as ICM does —
 the study measured a session map costing tokens in every session and a
@@ -156,14 +156,14 @@ in another language than the specs.
 
 ### Decision: The change is judged on planning and on review
 
-Following decision 0008, the change is measured with `codev-evals` against
+Following decision 0008, the change is measured with `compagnon-evals` against
 the baseline that `evaluate-planning` records: `run --step plan.write
 --repeat 3`, compared with `compare` — the primary recall and the other
 planning measures within the baseline's range or better, the cost under its
 floor; and `run --step review --repeat 3` compared with `--quality-only`,
 since the `propose` skill the review cases read changes. Two arms are
 measured against the baseline: the first, where the skill told the agent
-to run `codev search`, recorded before the revision; the second, the
+to run `compagnon search`, recorded before the revision; the second, the
 related requirements in the instructions. The pull request pastes the
 comparisons of both arms and their sources tables, and ships the arm
 that passes — or neither, with the numbers.
@@ -212,4 +212,4 @@ document of `contract::v1` gains a field, `related`: an addition, which an
 installed skill of an earlier version ignores. A skill rendered by this
 version reads `related` only to list requirements, and an empty or absent
 list leaves it working from the request and the code, so it also runs
-against an earlier binary. Users get the new skills with `codev update`.
+against an earlier binary. Users get the new skills with `compagnon update`.

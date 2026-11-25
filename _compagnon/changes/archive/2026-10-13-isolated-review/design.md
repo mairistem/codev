@@ -2,42 +2,42 @@
 
 ## Context
 
-The reviewing roles are served by `codev roles --at <step> --change
-<name> --json` (`codev-engine::roles::resolve`, the change's `change.yaml`
-and domains applied; knowledge filtered by stack in `codev-cli`). The
+The reviewing roles are served by `compagnon roles --at <step> --change
+<name> --json` (`compagnon-engine::roles::resolve`, the change's `change.yaml`
+and domains applied; knowledge filtered by stack in `compagnon-cli`). The
 skills apply them in the conversation: `propose.md` step 6
 (`plan.trace`, the tracer fixes gaps directly) and step 7
 (`plan.challenge`), `apply.md` step 5 (`code.review`); the record
 procedure is shared once, `assets/workflows/_review-record.md`,
-substituted for `{{REVIEW_RECORD}}` by `codev-agents::claude::render`.
+substituted for `{{REVIEW_RECORD}}` by `compagnon-agents::claude::render`.
 
 A skill's `allowed-tools` is a static string of the catalog
-(`codev-agents::workflows::CATALOG`), with one placeholder,
-`{{JIRA_MCP_TOOL}}`, substituted from `_codev/config.yaml.mcp.jira_tool`
+(`compagnon-agents::workflows::CATALOG`), with one placeholder,
+`{{JIRA_MCP_TOOL}}`, substituted from `_compagnon/config.yaml.mcp.jira_tool`
 through `RenderCtx` (`substitute_jira_mcp`: the placeholder and its
 leading comma vanish when unset). `plan_skills` preserves a skill whose
 version stamp is current but whose content differs from the rendering:
-it treats it as edited by hand. `codev doctor`'s `skills` check only
+it treats it as edited by hand. `compagnon doctor`'s `skills` check only
 compares version stamps (`SkillState`).
 
-`_codev/config.yaml` is read by `codev-engine::config::load` into
+`_compagnon/config.yaml` is read by `compagnon-engine::config::load` into
 `ProjectConfig`: unknown top-level and `mcp` keys warn
 (`unknown_config_key`), invalid values of known keys fail
-(`invalid_codev_version` has its own stable code). `change.yaml`
-(`codev-engine::metadata`) is strict, `deny_unknown_fields`. The change's
-diff is read once by `codev-engine::diff::read` for the triggers, and
-`codev-core::triggers::classify` tells noise (planning, vendored, lock,
+(`invalid_compagnon_version` has its own stable code). `change.yaml`
+(`compagnon-engine::metadata`) is strict, `deny_unknown_fields`. The change's
+diff is read once by `compagnon-engine::diff::read` for the triggers, and
+`compagnon-core::triggers::classify` tells noise (planning, vendored, lock,
 generated) from code.
 
-The review record (`codev-core::review`) reads structure from headings
+The review record (`compagnon-core::review`) reads structure from headings
 and ignores other lines; a finding's YAML block is read field by field,
 an unknown field being the warning `review_unknown_field` (the forward
 compatibility rule of the review-record design: a new optional field is
 additive, a new status or required field raises the format marker).
 
 Decisions in force: 0001 (the core decides, the shell reads and writes;
-nothing in `codev-core` does I/O), 0002 (crate graph; the JSON contract
-in `codev-cli::contract::v1`), 0004 (one skill per workflow, no command
+nothing in `compagnon-core` does I/O), 0002 (crate graph; the JSON contract
+in `compagnon-cli::contract::v1`), 0004 (one skill per workflow, no command
 file), 0006 (`serde_norway`).
 
 ## Goals / Non-Goals
@@ -49,7 +49,7 @@ file), 0006 (`serde_norway`).
 - Every deterministic part in the binary — the mode, its origin, the
   material and its budget, the record's new lines — and only judgement
   in the skills.
-- Records written in isolated mode stay readable by the codev that
+- Records written in isolated mode stay readable by the compagnon that
   introduced the record.
 
 **Non-Goals:**
@@ -86,7 +86,7 @@ counts merged findings — which is a change of the harness and of the
 cases, out of this change's scope. Until then, `inline` stays the
 default: it is today's behavior, it costs one reading of the material
 instead of one per role, and switching is one line
-(`review: { mode: isolated }`, then `codev update`), documented in the
+(`review: { mode: isolated }`, then `compagnon update`), documented in the
 configuration reference.
 
 **Alternatives considered**: running the 40 cases in both modes anyway
@@ -94,9 +94,9 @@ configuration reference.
 to `isolated` on the argument alone (multiplies the review cost by the
 number of roles for every user, unmeasured).
 
-### Decision: codev's own repository sets `mode: isolated`
+### Decision: compagnon's own repository sets `mode: isolated`
 
-codev is developed with codev, and its own `_codev/config.yaml` exists
+compagnon is developed with compagnon, and its own `_compagnon/config.yaml` exists
 to try formats and workflows on real changes. Its changes routinely
 activate several reviewers (the skeptic or the newcomer, `migration` for
 the JSON contract, often `security`), which is where isolation and the
@@ -105,27 +105,27 @@ skills then show the `Agent` tool injection in the repository. The
 evaluation harness is unaffected: it initializes each case with its own
 default configuration.
 
-**Alternatives considered**: keeping codev's repository inline until a
+**Alternatives considered**: keeping compagnon's repository inline until a
 measurement exists (the mode would never meet a real change, and the
 procedure would rot untested).
 
 ### Decision: The mode lives under `review:`, project then change
 
 ```yaml
-# _codev/config.yaml, or a change's change.yaml
+# _compagnon/config.yaml, or a change's change.yaml
 review:
   mode: isolated   # inline (default) | isolated
 ```
 
-`codev-core::review::mode` holds `ReviewMode` (`Inline`, `Isolated`,
+`compagnon-core::review::mode` holds `ReviewMode` (`Inline`, `Isolated`,
 `parse`, `as_str`, `ALL`) and `resolve(project, change) -> (mode,
-origin)`, pure. `codev-engine::config` reads `review` as a YAML value,
+origin)`, pure. `compagnon-engine::config` reads `review` as a YAML value,
 so that `mode` is validated with our message, and adds `review` to
 `PROJECT_KEYS` and a `REVIEW_KEYS = ["mode"]` list for the
-`unknown_config_key` warning, as `mcp` does: a newer codev may add a
+`unknown_config_key` warning, as `mcp` does: a newer compagnon may add a
 budget key, and an older one should say so rather than refuse. An
 invalid value fails with `EngineError::InvalidReviewMode { path, value }`,
-code `invalid_review_mode`, like `invalid_codev_version`: a consumer
+code `invalid_review_mode`, like `invalid_compagnon_version`: a consumer
 tests the code, not a word of the message. `change.yaml` gets an
 optional `review: { mode }`, strict like the rest of the file, validated
 by the same function. `ResolvedConfig.review_mode` is project only, like
@@ -134,11 +134,11 @@ team's way of working.
 
 **Alternatives considered**: a top-level `review_mode: isolated` (one
 key less, but no room for later review settings); `deny_unknown_fields`
-under `review` (an older codev would refuse a project using a newer
+under `review` (an older compagnon would refuse a project using a newer
 key); inheriting the mode (a shared source would impose a token cost on
 every project).
 
-### Decision: `codev roles` serves the mode and measures the material
+### Decision: `compagnon roles` serves the mode and measures the material
 
 `RolesV1` gains `review: { mode, origin, material }`, additive in v1,
 `null` in a failure's document. `material` is given with `--change` at
@@ -153,7 +153,7 @@ every project).
 }
 ```
 
-The budget is pure, `codev-core::review::material::budget(files, limit)`:
+The budget is pure, `compagnon-core::review::material::budget(files, limit)`:
 smallest first, ties in path order, `full` while the running sum stays
 within the limit. Smallest first keeps the most files whole, and a large
 file is the one whose change is most likely summarizable. The engine
@@ -174,18 +174,18 @@ conversation that wrote the change. The limit, 160 KiB, is about 40,000 tokens: 
 role's criteria and knowledge, a sub-agent stays far from a context
 window, and five roles stay around the cost of one long inline session.
 
-The skills already call `codev roles` at each step: no new command, no
+The skills already call `compagnon roles` at each step: no new command, no
 new tool (decision 0004).
 
-**Alternatives considered**: a new `codev review material` command (one
-more call and contract for data `codev roles` is the natural carrier
+**Alternatives considered**: a new `compagnon review material` command (one
+more call and contract for data `compagnon roles` is the natural carrier
 of); letting the skill measure (non-deterministic, and the record could
 not say exactly what was summarized); counting tokens (needs a
 tokenizer, model-specific).
 
-### Decision: The skills dispatch sub-agents; codev only renders the permission
+### Decision: The skills dispatch sub-agents; compagnon only renders the permission
 
-> Promoted to ADR **0007** — see `_codev/decisions/0007-the-skills-dispatch-sub-agents-codev-only-renders-the-permission.md`.
+> Promoted to ADR **0007** — see `_compagnon/decisions/0007-the-skills-dispatch-sub-agents-compagnon-only-renders-the-permission.md`.
 
 ### Decision: The meeting merges by place and fix, credits with `raised_by`
 
@@ -193,27 +193,27 @@ Two findings are the same when they cite the same file or plan section
 with overlapping lines and call for the same fix — the review record's
 "one finding per defect" rule, applied across roles. The merged finding
 is written once, under the role that rated it most severe (then higher
-confidence, then `codev roles` order), keeping that role's id, evidence
+confidence, then `compagnon roles` order), keeping that role's id, evidence
 and title, with the other roles' points folded into its
 recommendation, and `raised_by: [<owner>, <others>]`. The owner
 re-checks the answers: `awaiting` keeps reading `by` against the
 section's role, unchanged.
 
-`raised_by` is an optional field of the block: the codev that introduced
+`raised_by` is an optional field of the block: the compagnon that introduced
 the record warns `review_unknown_field` and keeps working, which is the
 record's rule for additive fields (no format bump). A role whose
 findings were all merged writes `No finding.` — meaning none of its own
-— and `codev review` lists it as `credited` by the shared finding, so
+— and `compagnon review` lists it as `credited` by the shared finding, so
 the reader sees the credit without a new role state, which an older
-codev would call invalid.
+compagnon would call invalid.
 
 **Alternatives considered**: a new role line such as `Merged into
-R-…` (an older codev reports `review_invalid`, which would need a format
+R-…` (an older compagnon reports `review_invalid`, which would need a format
 bump); keeping duplicates (the human reads the same defect several
 times, the very cost the merge removes); crediting through a free-text
 line (not checkable).
 
-### Decision: How a step ran is recorded as plain lines codev reads
+### Decision: How a step ran is recorded as plain lines compagnon reads
 
 `Mode: isolated.` and `Summarized: <text>` under a step heading, and
 `Fallback: <reason>` under a role heading, are body lines: the parser
@@ -228,19 +228,19 @@ gains `steps[].mode`, `steps[].summarized`, `roles[].fallback`,
 block kind, invalid for an older parser); nothing recorded (the user
 could not tell a reviewer that never ran from one that found nothing).
 
-### Decision: `codev update` and `codev doctor` know the mode a skill was rendered for
+### Decision: `compagnon update` and `compagnon doctor` know the mode a skill was rendered for
 
 `plan_skills` treats a skill as edited by hand only if it differs from
-the rendering in both modes: a skill rendered by this codev for the
+the rendering in both modes: a skill rendered by this compagnon for the
 other mode is regenerated without `--force`. `ClaudeCode::skill_states`
 takes the `RenderCtx` and returns `SkillState::OtherReviewMode` for a
 current-version `propose` or `apply` skill whose frontmatter's
 `allowed-tools` does (or does not) list `Agent` against the mode;
-`codev-core::doctor` reports it as `skills_review_mode`, after
-`skills_missing` and `skills_outdated`, with the fix `codev update`
-(`codev update --force` for a skill it preserves as edited by hand):
+`compagnon-core::doctor` reports it as `skills_review_mode`, after
+`skills_missing` and `skills_outdated`, with the fix `compagnon update`
+(`compagnon update --force` for a skill it preserves as edited by hand):
 doctor cannot tell a hand edit from a stale rendering, and a fix that
-`codev update` alone cannot apply would leave `--strict` failing. The
+`compagnon update` alone cannot apply would leave `--strict` failing. The
 doctor table requirement is modified to list the new code, and its
 `config.keys` row names `review` next to `mcp`.
 
@@ -253,20 +253,20 @@ edits).
 
 | Case | Behavior |
 |---|---|
-| Monorepo / several stacks | Knowledge is filtered by the detected stacks as today; the material lists paths relative to the codev project root, as the diff does. |
+| Monorepo / several stacks | Knowledge is filtered by the detected stacks as today; the material lists paths relative to the compagnon project root, as the diff does. |
 | Huge diff | Over 160 KiB, files are summarized smallest-last; `Summarized:` lines name them. The diff reader's caps (2,000 files) still apply. |
 | No git | `material` is `null` at `code.review`; the skill gives the files the tasks name. Plan steps still have material. |
 | Docs-only change | Markdown files are material like code (`prose` is not noise for the reviewers); no special case. |
 | Generated, vendored, lock, binary files | Left out of the material, as from the triggers. |
 | Windows paths | Paths `/`-separated, sizes from the file system; no path separator assumed. |
-| Offline | No network: sub-agents run in the user's Claude Code; codev reads sizes only. |
+| Offline | No network: sub-agents run in the user's Claude Code; compagnon reads sizes only. |
 | Sub-agent tool unavailable | Every role inline, `Fallback:` per role, summary says so. |
 | Sub-agent failure | One retry, then inline with `Fallback:`. A failure is what the platform reports (an error, a stop on its own limits) or a malformed answer. |
 | Tracer at `plan.trace` | Isolated like the others; its gaps are fixed in the artifacts, not recorded — `plan.trace` has no section in the record (the review-record design's non-goal); a fallback is named in the summary. |
 | Symbolic link in the diff | Not material: never measured, never handed to a reviewer. |
-| Re-run / resumed session | The record is the state, as today: the procedure resumes from `codev review`, and sub-agents are told the ids already recorded so as not to raise them again. |
-| Older codev reading a newer record | Lines ignored; `raised_by` warns `review_unknown_field`. |
-| Older codev reading a newer config | `review` is an `unknown_config_key` warning; skills render inline. A `change.yaml` with `review:` fails on an older codev (strict file): pin `codev_version`. |
+| Re-run / resumed session | The record is the state, as today: the procedure resumes from `compagnon review`, and sub-agents are told the ids already recorded so as not to raise them again. |
+| Older compagnon reading a newer record | Lines ignored; `raised_by` warns `review_unknown_field`. |
+| Older compagnon reading a newer config | `review` is an `unknown_config_key` warning; skills render inline. A `change.yaml` with `review:` fails on an older compagnon (strict file): pin `compagnon_version`. |
 | Inherited sources | The mode is never inherited. |
 
 ## Risks / Trade-offs
@@ -283,28 +283,28 @@ edits).
   definition is the follow-up once the mode is measured.
 - [The main agent leaks the conversation into the brief] → the
   procedure builds the brief from named JSON fields and files only, and
-  forbids anything else; it cannot be enforced by codev, it is checked in
+  forbids anything else; it cannot be enforced by compagnon, it is checked in
   review of the skill text (tests assert the instruction is there).
 - [Isolated review costs more tokens] → opt-in, inline default; a
   material limit; parallel sub-agents cut wall time, not tokens.
-- [A `change.yaml` with `review:` breaks an older codev; `review:` in the
-  configuration and `raised_by` in a record make an older codev warn, and
+- [A `change.yaml` with `review:` breaks an older compagnon; `review:` in the
+  configuration and `raised_by` in a record make an older compagnon warn, and
   `--strict` fail] → **migration**: only when the mode is used; the
   release note and the configuration reference say to raise
-  `codev_version` to this release, so every codev reading the
+  `compagnon_version` to this release, so every compagnon reading the
   repository, CI included, understands the keys.
 - [Merging hides a role's distinct concern] → only same place and same
   fix merge; different fixes stay separate; every raiser is credited.
-- [The `Agent` tool is renamed again] → one constant in `codev-agents`;
+- [The `Agent` tool is renamed again] → one constant in `compagnon-agents`;
   the fallback keeps the review running inline.
 
 ## Migration Plan
 
 Nothing to migrate: without `review:`, behavior and skills' tools are
-unchanged; the skill bodies grow by the procedure, picked up by `codev
+unchanged; the skill bodies grow by the procedure, picked up by `compagnon
 update`. Projects switching set `review: { mode: isolated }` and run
-`codev update`; `codev doctor` reminds them. Rollback: remove the key and
-run `codev update`; records keep their lines, ignored or read.
+`compagnon update`; `compagnon doctor` reminds them. Rollback: remove the key and
+run `compagnon update`; records keep their lines, ignored or read.
 
 ## Open Questions
 

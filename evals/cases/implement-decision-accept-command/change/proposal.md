@@ -2,19 +2,19 @@
 
 ## Why
 
-`codev decision new <title>` creates an `accepted` decision and seals the
+`compagnon decision new <title>` creates an `accepted` decision and seals the
 placeholder template body at once. The first real edit of the decision then
-makes `codev validate` fail with `decision_seal_mismatch`, and the only way
-out is `codev decision seal --force` — which teaches users to force the seal
+makes `compagnon validate` fail with `decision_seal_mismatch`, and the only way
+out is `compagnon decision seal --force` — which teaches users to force the seal
 routinely and defeats the immutability it is meant to guarantee. A decision
 should be sealed when its text is final, not when its file is created.
 
 ## What Changes
 
-- `codev decision new` defaults to `--status proposed`: the decision is
+- `compagnon decision new` defaults to `--status proposed`: the decision is
   created unsealed and can be written freely. `--status accepted` stays
   available and still writes the decision and its seal in the same plan.
-- New command `codev decision accept <id> [--json]`: turns a local
+- New command `compagnon decision accept <id> [--json]`: turns a local
   `proposed` decision into an `accepted` one and seals its body, in a single
   plan of effects — the status and the seal are written together or not at
   all. The body is left byte for byte identical.
@@ -44,8 +44,8 @@ None.
 
 ## Impact
 
-- `codev-engine` (`decisions_actions`: a new pure plan and two refusal
-  codes) and `codev-cli` (command, clap help, human rendering, JSON
+- `compagnon-engine` (`decisions_actions`: a new pure plan and two refusal
+  codes) and `compagnon-cli` (command, clap help, human rendering, JSON
   contract).
 - JSON contract v1: new `DecisionAcceptedV1` document; `decision new` now
   omits `bodySha256` by default, as it already did for `proposed`.

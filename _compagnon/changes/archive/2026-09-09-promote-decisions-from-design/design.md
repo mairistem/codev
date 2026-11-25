@@ -32,14 +32,14 @@ A line-by-line scan is enough: find `## Decisions`, then loop over
 `### Decision: ...`, and collect the bytes between two `###` (or up to
 the next `## `). Aligned with decision
 [0001](../../decisions/0001-functional-core-imperative-shell.md) —
-the parser is pure and lives in a new module `codev-engine::design`
+the parser is pure and lives in a new module `compagnon-engine::design`
 (the pure function takes the design source as an argument, the shell
 does the disk read).
 
 **Rejected alternative**: reuse an existing markdown parser
 (pulldown-cmark, comrak). Dependency cost and rich parsing for an
-ultra-constrained need. codev has a tradition of hand-written parsers in
-`codev-core::parser` — we follow it.
+ultra-constrained need. compagnon has a tradition of hand-written parsers in
+`compagnon-core::parser` — we follow it.
 
 ### Decision: the body is reproduced verbatim
 
@@ -54,17 +54,17 @@ byte for the seal hash. Consistent from end to end.
 
 ### Decision: the reference in the design is text, not a link
 
-`> Promoted to ADR **NNNN** — see `` `_codev/decisions/NNNN-<slug>.md` ``.
+`> Promoted to ADR **NNNN** — see `` `_compagnon/decisions/NNNN-<slug>.md` ``.
 
 A link `[..](../../decisions/NNNN-slug.md)` would work while the change
-is active (`_codev/changes/<name>/design.md` → `../../decisions/`
-resolves to `_codev/decisions/`), but would break after archive
-(`_codev/changes/archive/<date>-<name>/design.md` → `../../decisions/`
-resolves to `_codev/changes/decisions/`, which does not exist). The
+is active (`_compagnon/changes/<name>/design.md` → `../../decisions/`
+resolves to `_compagnon/decisions/`), but would break after archive
+(`_compagnon/changes/archive/<date>-<name>/design.md` → `../../decisions/`
+resolves to `_compagnon/changes/decisions/`, which does not exist). The
 path as text stays **understandable** from any depth; the human finds
 it.
 
-**Rejected alternative**: absolute link `/_codev/decisions/...`. Works
+**Rejected alternative**: absolute link `/_compagnon/decisions/...`. Works
 on a website served from the repo root, but not in a plain
 `less design.md`. Too many assumptions about the reading environment.
 
@@ -92,10 +92,10 @@ body as an argument). The seal is added to the plan, as for any new
 block substitution in `design.md` — hence an atomic plan with 3
 writes: ADR + seal.yaml + design.md.
 
-### Decision: refusal of archived changes is explicit via `codev list`
+### Decision: refusal of archived changes is explicit via `compagnon list`
 
 As in K3 (`decision seal`) and K6 (`decision deviate`), the command
-refuses if the change name does not appear in `codev list` (which only
+refuses if the change name does not appear in `compagnon list` (which only
 shows active ones). Dedicated stable code `cannot_promote_from_archived`
 so that the agent can distinguish it from an `unknown_change` (for
 example to propose that the user open the archive manually if they

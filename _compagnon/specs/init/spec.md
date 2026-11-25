@@ -3,17 +3,17 @@
 ## Purpose
 
 Describes the first-time initialization experience of a project through
-`codev init`: silent detection of the environment, targeted
-interactive prompts, and generation of a prefilled `_codev/config.yaml`
+`compagnon init`: silent detection of the environment, targeted
+interactive prompts, and generation of a prefilled `_compagnon/config.yaml`
 with provenance comments. The capability puts under contract what no
 spec previously pinned down — the command's behavior used to be left
 to the implementation.
 
 ## Requirements
 
-### Requirement: Interactive `codev init` detects the environment before asking questions
+### Requirement: Interactive `compagnon init` detects the environment before asking questions
 
-Before any prompt, `codev init` SHALL silently probe the current
+Before any prompt, `compagnon init` SHALL silently probe the current
 directory and derive a `Detected` report covering:
 
 - **Stack** — language and framework, read from `Cargo.toml`,
@@ -45,8 +45,8 @@ A `--no-detect` flag MUST bypass the probe entirely.
 
 - **GIVEN** a directory with a workspace `Cargo.toml` containing 4
   members and `[workspace.package].edition = "2024"`
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the `context:` of the generated `_codev/config.yaml` mentions
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the `context:` of the generated `_compagnon/config.yaml` mentions
   the Rust workspace stack, the 2024 edition, and the number of crates
 - **AND** no prompt is displayed (`--yes` mode)
 
@@ -54,16 +54,16 @@ A `--no-detect` flag MUST bypass the probe entirely.
 
 - **GIVEN** a directory with no recognized manifest, no `.git/`, no
   `LICENSE`, no `.github/workflows/`
-- **WHEN** the user runs `codev init --yes`
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** the command succeeds
 - **AND** the generated `context:` is empty or minimal (one generic
   line)
 - **AND** no error is reported because detection came up empty
 
-### Requirement: `codev init` detects Jira/Atlassian MCPs and prefills the config
+### Requirement: `compagnon init` detects Jira/Atlassian MCPs and prefills the config
 
 When at least one MCP server is detected whose name, command or URL
-matches the case-insensitive regex `/jira|atlassian/`, `codev init`
+matches the case-insensitive regex `/jira|atlassian/`, `compagnon init`
 SHALL compute a candidate `tool_id` using the Claude Code
 convention:
 
@@ -73,12 +73,12 @@ convention:
 - Example: `"claude.ai Atlassian Rovo"` →
   `mcp__claude_ai_Atlassian_Rovo__getJiraIssue`.
 
-The computing function MUST be pure (`codev-core::detect::mcp`), with
+The computing function MUST be pure (`compagnon-core::detect::mcp`), with
 no network call and no introspection of the MCP server itself.
 
-If a single unambiguous candidate emerges, interactive `codev init`
+If a single unambiguous candidate emerges, interactive `compagnon init`
 MUST display it for confirmation along with its source (`.mcp.json`,
-`~/.claude.json`, etc.), and the generated `_codev/config.yaml` carries
+`~/.claude.json`, etc.), and the generated `_compagnon/config.yaml` carries
 the tool_id under the `mcp.jira_tool` key with a **provenance
 comment** above it.
 
@@ -96,22 +96,22 @@ without confirmation.
 
 - **GIVEN** a root `.mcp.json` containing a server named
   `"claude.ai Atlassian Rovo"`
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the generated `_codev/config.yaml` contains
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the generated `_compagnon/config.yaml` contains
   `mcp.jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue`
 - **AND** a comment above it cites `.mcp.json` as the source
 
 #### Scenario: No MCP detected
 
 - **GIVEN** a directory without any MCP config file
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the generated `_codev/config.yaml` contains no active
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the generated `_compagnon/config.yaml` contains no active
   `mcp:` key (it remains commented out in the template)
 - **AND** no warning is reported
 
-### Requirement: Interactive `codev init` asks at most two questions
+### Requirement: Interactive `compagnon init` asks at most two questions
 
-Without a non-interactive flag, `codev init` MUST ask exactly the
+Without a non-interactive flag, `compagnon init` MUST ask exactly the
 following two questions, in this order:
 
 1. **Workflows to install** — a choice among three presets, defaulting
@@ -133,14 +133,14 @@ detection, not asked for).
 #### Scenario: Two questions asked in interactive mode
 
 - **GIVEN** an interactive TTY and a new project
-- **WHEN** the user runs `codev init`
+- **WHEN** the user runs `compagnon init`
 - **THEN** exactly two prompts are displayed — workflows, then
   context
 - **AND** the workflows prompt has "Full (8)" as its default option
 
 ### Requirement: Non-interactive flags compose cleanly
 
-`codev init` MUST accept the following composable flags:
+`compagnon init` MUST accept the following composable flags:
 
 - `--yes` (`-y`) — applies the defaults for every question, no
   prompt displayed.
@@ -151,14 +151,14 @@ detection, not asked for).
 - `--force` — unchanged, rewrites skills even when they were modified
   by hand.
 
-When **stdin is not a TTY** (pipe, redirect, CI), `codev init`
+When **stdin is not a TTY** (pipe, redirect, CI), `compagnon init`
 MUST behave as if `--yes` had been passed — no prompt, defaults
 applied. This guarantees scriptability and pipeline behavior.
 
 #### Scenario: --yes bypasses the prompts
 
 - **GIVEN** an interactive TTY
-- **WHEN** the user runs `codev init --yes`
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** no prompt is displayed
 - **AND** the 8 workflows are installed
 - **AND** the generated `context:` carries only what detection
@@ -167,13 +167,13 @@ applied. This guarantees scriptability and pipeline behavior.
 #### Scenario: Non-TTY stdin implies --yes
 
 - **GIVEN** stdin redirected from `/dev/null`
-- **WHEN** the user runs `codev init` (without an explicit `--yes`)
+- **WHEN** the user runs `compagnon init` (without an explicit `--yes`)
 - **THEN** no prompt is displayed
 - **AND** the installation completes as under `--yes`
 
 ### Requirement: The generated `config.yaml` carries provenance comments
 
-`codev init` MUST write a **prefilled** `_codev/config.yaml` (rather
+`compagnon init` MUST write a **prefilled** `_compagnon/config.yaml` (rather
 than a commented-out template) in which each non-trivial key carries,
 on the line above it, a comment stating its source:
 
@@ -183,48 +183,48 @@ on the line above it, a comment stating its source:
 - No comment for trivial keys (`schema:`) or keys chosen by the user
   (`workflows:`).
 
-The generated YAML format MUST remain **readable by the existing codev
-reader** (`codev-engine::config::resolve`) — no regression when
+The generated YAML format MUST remain **readable by the existing Compagnon
+reader** (`compagnon-engine::config::resolve`) — no regression when
 reading it back.
 
 #### Scenario: Provenance present for context and mcp
 
 - **GIVEN** a Rust workspace + an Atlassian `.mcp.json`
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the generated `_codev/config.yaml` carries
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the generated `_compagnon/config.yaml` carries
   `# detected from Cargo.toml` above the `context:` key
 - **AND** carries
   `# detected from .mcp.json → server "claude.ai Atlassian Rovo"`
   above `mcp.jira_tool:`
-- **AND** `codev status` on this new project succeeds (read-back OK)
+- **AND** `compagnon status` on this new project succeeds (read-back OK)
 
-### Requirement: `codev init` hints at `/codev-configure` when the generated config is thin
+### Requirement: `compagnon init` hints at `/compagnon-configure` when the generated config is thin
 
-At the end of `codev init`, the **human** output SHALL evaluate whether
-the freshly written or already present `_codev/config.yaml` is
+At the end of `compagnon init`, the **human** output SHALL evaluate whether
+the freshly written or already present `_compagnon/config.yaml` is
 **thin** — that is, whether its `rules:` key is absent or empty.
 
 The `context:` field is no longer part of the definition of "thin" —
-the `codev init` probe systematically fills it from the detected
+the `compagnon init` probe systematically fills it from the detected
 manifests, which makes its length useless for guessing whether the
 user has actually filled in their config. `rules:`, on the other hand,
 are always an explicit user choice; their presence is the only
 reliable indicator.
 
 If the config is thin, the last lines of the human output MUST
-invite the user to run `/codev-configure`:
+invite the user to run `/compagnon-configure`:
 
 ```
-→ Recommended next step: in Claude Code, run /codev-configure.
-  Claude will analyze the project and enrich _codev/config.yaml
+→ Recommended next step: in Claude Code, run /compagnon-configure.
+  Claude will analyze the project and enrich _compagnon/config.yaml
   (context, per-artifact rules) — ~30 seconds.
 
-Or skip this step and run /codev-propose <an-idea> directly.
+Or skip this step and run /compagnon-propose <an-idea> directly.
 ```
 
 If the config is not thin (the user had already written rules, or a
-`codev-configure` has already run), the output keeps its current short
-form: "Restart Claude Code, then run /codev-propose."
+`compagnon-configure` has already run), the output keeps its current short
+form: "Restart Claude Code, then run /compagnon-propose."
 
 The **JSON** output MUST remain unchanged — no field added, no promise
 broken. The hint is reserved for the human output, where it does not
@@ -234,34 +234,34 @@ affect scripts that consume the machine report.
 
 - **GIVEN** a new project with a minimal `Cargo.toml` (hence a
   detected `context:`, but no `rules:` written)
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the human output contains the keyword `/codev-configure`
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the human output contains the keyword `/compagnon-configure`
 - **AND** the JSON output (`--json`) does not contain it
 
 #### Scenario: Config with rules does not trigger the hint
 
-- **GIVEN** a project whose `_codev/config.yaml` already exists and
+- **GIVEN** a project whose `_compagnon/config.yaml` already exists and
   carries at least one entry in `rules:` (for example
   `rules: { specs: [...] }`)
-- **WHEN** the user runs `codev init --yes` (idempotence)
-- **THEN** the human output does not contain `/codev-configure`
+- **WHEN** the user runs `compagnon init --yes` (idempotence)
+- **THEN** the human output does not contain `/compagnon-configure`
 
 #### Scenario: A long auto-detected context does not suppress the hint
 
 - **GIVEN** a TypeScript project with many dependencies
   (auto-detected context longer than 200 characters), without `rules:`
-- **WHEN** the user runs `codev init --yes`
-- **THEN** the human output does contain `/codev-configure` — the
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the human output does contain `/compagnon-configure` — the
   length of the auto-detected context no longer suppresses the hint
 
-### Requirement: `codev init` records the artifact language
+### Requirement: `compagnon init` records the artifact language
 
-`codev init` SHALL write a `language:` key in the generated
-`_codev/config.yaml`: the language in which skills write the artifacts —
+`compagnon init` SHALL write a `language:` key in the generated
+`_compagnon/config.yaml`: the language in which skills write the artifacts —
 their prose, and their structural keywords when the keyword catalog ships
 the language — as an ISO 639 code optionally followed by one subtag (`en`,
 `fr`, `pt-BR`). The comment above the key MUST say that the structural
-keywords follow the language when codev ships it, and stay in English
+keywords follow the language when Compagnon ships it, and stay in English
 otherwise.
 The value MUST come, in order, from `--language <CODE>`, from the locale
 (`LC_ALL`, then `LC_MESSAGES`, then `LANG`; `C` and `POSIX` carry no
@@ -273,8 +273,8 @@ invalid configuration.
 #### Scenario: Language detected from the locale
 
 - **GIVEN** an environment where `LANG=fr_FR.UTF-8` and `LC_ALL` is unset
-- **WHEN** the user runs `codev init --yes`
-- **THEN** `_codev/config.yaml` contains `language: fr`
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** `_compagnon/config.yaml` contains `language: fr`
 - **AND** the line above it reads `# detected from LANG=fr_FR.UTF-8`
 - **AND** the comment above the key says that the structural keywords
   follow the language
@@ -282,23 +282,23 @@ invalid configuration.
 #### Scenario: The flag wins over the locale
 
 - **GIVEN** an environment where `LANG=fr_FR.UTF-8`
-- **WHEN** the user runs `codev init --yes --language de`
-- **THEN** `_codev/config.yaml` contains `language: de`
+- **WHEN** the user runs `compagnon init --yes --language de`
+- **THEN** `_compagnon/config.yaml` contains `language: de`
 
 #### Scenario: An invalid language is refused
 
-- **WHEN** the user runs `codev init --yes --language 'fr_FR!'`
+- **WHEN** the user runs `compagnon init --yes --language 'fr_FR!'`
 - **THEN** the command fails and no file is written
 
 #### Scenario: No locale, English by default
 
 - **GIVEN** an environment with no locale variable, or only `LC_ALL=C`
-- **WHEN** the user runs `codev init --yes`
-- **THEN** `_codev/config.yaml` contains `language: en`
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** `_compagnon/config.yaml` contains `language: en`
 
-### Requirement: `codev init --inherit` declares inherited sources
+### Requirement: `compagnon init --inherit` declares inherited sources
 
-`codev init` SHALL accept `--inherit <SOURCE>`, any number of times. A
+`compagnon init` SHALL accept `--inherit <SOURCE>`, any number of times. A
 SOURCE is a git source when it starts with `git@`, `https://`, `http://`,
 `ssh://` or `file://`, or ends with `.git` once an optional `@<ref>`
 suffix is removed; anything else is a local path. A git source MAY carry an
@@ -306,14 +306,14 @@ suffix is removed; anything else is a local path. A git source MAY carry an
 of a user name before the host (`git@github.com:…`) is not a ref
 separator. Without a suffix the ref is `main`.
 
-When `codev init` writes `_codev/config.yaml`, it MUST declare every
+When `compagnon init` writes `_compagnon/config.yaml`, it MUST declare every
 source under `inherits:`, in the order given, as `git:` + `ref:` or as
-`path:`, with the comment `# set with codev init --inherit` above the
+`path:`, with the comment `# set with compagnon init --inherit` above the
 key. A relative local path MUST be written as an absolute path, so that it
 resolves the same from any folder of the project, and with forward slashes
 on every platform (Windows accepts them), so that the file stays readable
-and identical whatever machine ran `codev init`. The written file MUST
-stay readable by every other codev command.
+and identical whatever machine ran `compagnon init`. The written file MUST
+stay readable by every other Compagnon command.
 
 The command MUST refuse, before writing anything, with the stable code
 `invalid_inherit`:
@@ -322,7 +322,7 @@ The command MUST refuse, before writing anything, with the stable code
 - a git source with an empty ref (`…/conventions.git@`) or an empty URL;
 - a local path that does not exist or is not a folder.
 
-When `_codev/config.yaml` already exists, `codev init` MUST NOT modify it:
+When `_compagnon/config.yaml` already exists, `compagnon init` MUST NOT modify it:
 the sources are not written, and a warning with the code
 `inherit_not_written` names them and tells the user to add them under
 `inherits:` by hand.
@@ -332,111 +332,111 @@ No source is declared when `--inherit` is absent.
 #### Scenario: A git source with a ref and a local path
 
 - **GIVEN** a new project and an existing folder `/home/you/conventions`
-- **WHEN** the user runs `codev init --yes --inherit
+- **WHEN** the user runs `compagnon init --yes --inherit
   git@github.com:acme/conventions.git@v2 --inherit /home/you/conventions`
-- **THEN** `_codev/config.yaml` contains, under `inherits:`, an entry
+- **THEN** `_compagnon/config.yaml` contains, under `inherits:`, an entry
   `git: git@github.com:acme/conventions.git` with `ref: v2`, then an entry
   `path: /home/you/conventions`
 - **AND** the line above `inherits:` reads
-  `# set with codev init --inherit`
-- **AND** `codev status` and `codev sources list` read the file without
+  `# set with compagnon init --inherit`
+- **AND** `compagnon status` and `compagnon sources list` read the file without
   error
 
 #### Scenario: A git source without a ref gets `main`
 
-- **WHEN** the user runs `codev init --yes --inherit
+- **WHEN** the user runs `compagnon init --yes --inherit
   https://example.com/acme/conventions.git`
 - **THEN** the declared source carries `ref: main`
 
 #### Scenario: An invalid value is refused before anything is written
 
-- **GIVEN** a folder without `_codev/`
-- **WHEN** the user runs `codev init --yes --inherit ./does-not-exist`
+- **GIVEN** a folder without `_compagnon/`
+- **WHEN** the user runs `compagnon init --yes --inherit ./does-not-exist`
 - **THEN** the command fails with the code `invalid_inherit`
 - **AND** no file or folder has been created
 
 #### Scenario: An existing configuration is left untouched
 
-- **GIVEN** a project whose `_codev/config.yaml` already exists
-- **WHEN** the user runs `codev init --yes --inherit /home/you/conventions`
-- **THEN** `_codev/config.yaml` is identical byte for byte
+- **GIVEN** a project whose `_compagnon/config.yaml` already exists
+- **WHEN** the user runs `compagnon init --yes --inherit /home/you/conventions`
+- **THEN** `_compagnon/config.yaml` is identical byte for byte
 - **AND** a warning `inherit_not_written` names the source
 
 #### Scenario: A relative local path is written with forward slashes
 
 - **GIVEN** a project folder and an existing folder `../conventions` next to it
-- **WHEN** the user runs `codev init --yes --inherit ../conventions`, on any
+- **WHEN** the user runs `compagnon init --yes --inherit ../conventions`, on any
   platform
 - **THEN** the declared `path:` is the absolute path of that folder, written
   with `/` separators and without quotes
 
-### Requirement: `codev init` pins inherited git sources without failing on the network
+### Requirement: `compagnon init` pins inherited git sources without failing on the network
 
-After writing the configuration, `codev init` SHALL pin every declared git
-source in `_codev/codev.lock` and fetch its content into the cache, with
-the same result as `codev sources update`. Local paths are not pinned.
+After writing the configuration, `compagnon init` SHALL pin every declared git
+source in `_compagnon/compagnon.lock` and fetch its content into the cache, with
+the same result as `compagnon sources update`. Local paths are not pinned.
 
 If pinning fails — `git` missing, network or authentication failure,
-unknown ref — `codev init` MUST still succeed: the configuration and every
+unknown ref — `compagnon init` MUST still succeed: the configuration and every
 other file are written, the lock is left without the source, a warning
 with the code `inherit_pin_failed` gives the reason, and the human output
-says `help: run codev sources update`.
+says `help: run compagnon sources update`.
 
 #### Scenario: A reachable git source is pinned
 
 - **GIVEN** a reachable git repository whose `main` branch contains a
-  `_codev/config.yaml`
-- **WHEN** the user runs `codev init --yes --inherit <its URL>`
-- **THEN** `_codev/codev.lock` contains an entry for the URL and ref
+  `_compagnon/config.yaml`
+- **WHEN** the user runs `compagnon init --yes --inherit <its URL>`
+- **THEN** `_compagnon/compagnon.lock` contains an entry for the URL and ref
   `main` with the commit of `main`
-- **AND** `codev sources list` reports the source as `locked`
-- **AND** `codev instructions` exposes the inherited context with the
+- **AND** `compagnon sources list` reports the source as `locked`
+- **AND** `compagnon instructions` exposes the inherited context with the
   origin `git:<its URL>`
 
 #### Scenario: An unreachable git source leaves the source unpinned
 
 - **GIVEN** a git URL that cannot be reached
-- **WHEN** the user runs `codev init --yes --inherit <that URL>`
+- **WHEN** the user runs `compagnon init --yes --inherit <that URL>`
 - **THEN** the command exits with code 0 and the skills are installed
-- **AND** the source is declared in `_codev/config.yaml`
+- **AND** the source is declared in `_compagnon/config.yaml`
 - **AND** a warning `inherit_pin_failed` is reported, followed by
-  `help: run codev sources update`
-- **AND** `codev sources list` reports the source as `unlocked`
+  `help: run compagnon sources update`
+- **AND** `compagnon sources list` reports the source as `unlocked`
 
-### Requirement: `codev init` integrates codev into the repository
+### Requirement: `compagnon init` integrates Compagnon into the repository
 
-Unless opted out, `codev init` SHALL write three integration files, after
+Unless opted out, `compagnon init` SHALL write three integration files, after
 the skills:
 
-- **`CLAUDE.md`** at the project root, created if missing, holding a codev
+- **`CLAUDE.md`** at the project root, created if missing, holding a Compagnon
   section that tells Claude Code, in English: the repository follows
-  spec-driven development with codev; `_codev/specs/` describes the current
-  behavior and is authoritative; `_codev/decisions/` holds accepted
+  spec-driven development with Compagnon; `_compagnon/specs/` describes the current
+  behavior and is authoritative; `_compagnon/decisions/` holds accepted
   decisions that are not re-debated; any change of behavior starts with
-  `/codev-propose` and is implemented with `/codev-apply` (or by following
-  the change's `tasks.md` when `/codev-apply` is not installed), never
-  without a codev change; trivial fixes (typos, documentation wording) are
-  exempt; `codev validate` runs before committing. The section lists the
+  `/compagnon-propose` and is implemented with `/compagnon-apply` (or by following
+  the change's `tasks.md` when `/compagnon-apply` is not installed), never
+  without a compagnon change; trivial fixes (typos, documentation wording) are
+  exempt; `compagnon validate` runs before committing. The section lists the
   installed skills.
 - **A CI workflow**, for a GitHub repository only — one that has a
   `.github/` folder, or a git remote on `github.com`:
-  `.github/workflows/codev.yml`, which checks out the repository, installs
-  codev with the official installer pinned to the version of the running
-  binary (`CODEV_VERSION=<version>`), and runs `codev validate --strict`.
-  It is not written when that file exists without the codev marker, nor
+  `.github/workflows/compagnon.yml`, which checks out the repository, installs
+  Compagnon with the official installer pinned to the version of the running
+  binary (`COMPAGNON_VERSION=<version>`), and runs `compagnon validate --strict`.
+  It is not written when that file exists without the Compagnon marker, nor
   when another workflow of `.github/workflows/` already runs
-  `codev validate`; no other workflow file is ever modified. For a GitLab
+  `compagnon validate`; no other workflow file is ever modified. For a GitLab
   repository — a `.gitlab-ci.yml` file or a remote on `gitlab.com` —
   `.gitlab-ci.yml` is never modified and the human output prints a
-  ready-to-paste job running `codev validate --strict`. Otherwise the CI
+  ready-to-paste job running `compagnon validate --strict`. Otherwise the CI
   step is skipped with a hint.
 - **A pull request template section**, for a GitHub repository only: in the
   first existing template among `.github/`, the project root and `docs/`
   (file name `pull_request_template.md`, in any case), or in a new
   `.github/PULL_REQUEST_TEMPLATE.md` holding only the section. The section
-  has a "codev change" line, to fill with the folder under
-  `_codev/changes/` or "trivial fix, no change", and a checkbox
-  "`codev validate --strict` passes".
+  has a "Compagnon change" line, to fill with the folder under
+  `_compagnon/changes/` or "trivial fix, no change", and a checkbox
+  "`compagnon validate --strict` passes".
 
 The flags `--no-claude-md`, `--no-ci` and `--no-pr-template` MUST skip the
 corresponding file, and `--no-integration` MUST skip all three. No
@@ -446,19 +446,19 @@ interactive question is added. `--no-detect` does not affect integration.
 
 - **GIVEN** a new project with a `.github/` folder, no `CLAUDE.md` and no
   pull request template
-- **WHEN** the user runs `codev init --yes`
-- **THEN** `CLAUDE.md` holds the codev section and names
-  `/codev-propose` and `/codev-apply`
-- **AND** `.github/workflows/codev.yml` runs `codev validate --strict`
-  after installing codev with `CODEV_VERSION=<running version>`
-- **AND** `.github/PULL_REQUEST_TEMPLATE.md` holds the "codev change" line
-  and the `codev validate --strict` checkbox
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** `CLAUDE.md` holds the Compagnon section and names
+  `/compagnon-propose` and `/compagnon-apply`
+- **AND** `.github/workflows/compagnon.yml` runs `compagnon validate --strict`
+  after installing Compagnon with `COMPAGNON_VERSION=<running version>`
+- **AND** `.github/PULL_REQUEST_TEMPLATE.md` holds the "Compagnon change" line
+  and the `compagnon validate --strict` checkbox
 
 #### Scenario: A project outside GitHub gets only `CLAUDE.md`
 
 - **GIVEN** a new project with no `.github/` folder, no `.gitlab-ci.yml`
   and no git remote
-- **WHEN** the user runs `codev init --yes`
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** `CLAUDE.md` is written
 - **AND** no `.github/` folder is created
 - **AND** the summary reports the CI and pull request template steps as
@@ -467,54 +467,54 @@ interactive question is added. `--no-detect` does not affect integration.
 #### Scenario: GitLab CI gets a snippet, not an edit
 
 - **GIVEN** a project with a `.gitlab-ci.yml` file and no `.github/`
-- **WHEN** the user runs `codev init --yes`
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** `.gitlab-ci.yml` is identical byte for byte
-- **AND** the human output prints a job that installs codev and runs
-  `codev validate --strict`
+- **AND** the human output prints a job that installs Compagnon and runs
+  `compagnon validate --strict`
 
-#### Scenario: An existing workflow already runs `codev validate`
+#### Scenario: An existing workflow already runs `compagnon validate`
 
 - **GIVEN** a GitHub project whose `.github/workflows/ci.yml` runs
-  `codev validate --strict`
-- **WHEN** the user runs `codev init --yes`
-- **THEN** `.github/workflows/codev.yml` is not created
+  `compagnon validate --strict`
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** `.github/workflows/compagnon.yml` is not created
 - **AND** the summary names `ci.yml` as the reason
 
-#### Scenario: A hand-written `codev.yml` is left alone
+#### Scenario: A hand-written `compagnon.yml` is left alone
 
-- **GIVEN** a GitHub project whose `.github/workflows/codev.yml` exists
-  without the codev marker
-- **WHEN** the user runs `codev init --yes`
+- **GIVEN** a GitHub project whose `.github/workflows/compagnon.yml` exists
+  without the Compagnon marker
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** the file is identical byte for byte
-- **AND** the summary says it is not managed by codev
+- **AND** the summary says it is not managed by Compagnon
 
 #### Scenario: Opting out
 
 - **GIVEN** a new GitHub project
-- **WHEN** the user runs `codev init --yes --no-integration`
-- **THEN** neither `CLAUDE.md`, nor `.github/workflows/codev.yml`, nor a
+- **WHEN** the user runs `compagnon init --yes --no-integration`
+- **THEN** neither `CLAUDE.md`, nor `.github/workflows/compagnon.yml`, nor a
   pull request template is created
-- **AND WHEN** the user runs `codev init --yes --no-ci` on another new
+- **AND WHEN** the user runs `compagnon init --yes --no-ci` on another new
   GitHub project
 - **THEN** `CLAUDE.md` and the pull request template are written, and no
   workflow is
 
-### Requirement: codev's text lives in managed sections that never touch user content
+### Requirement: Compagnon's text lives in managed sections that never touch user content
 
-In `CLAUDE.md` and the pull request template, codev's text SHALL sit
-between a line starting with `<!-- codev:begin` and a line
-`<!-- codev:end -->` — HTML comments, invisible once the markdown is
-rendered. The managed workflow file carries a `# codev:managed` comment on
+In `CLAUDE.md` and the pull request template, Compagnon's text SHALL sit
+between a line starting with `<!-- compagnon:begin` and a line
+`<!-- compagnon:end -->` — HTML comments, invisible once the markdown is
+rendered. The managed workflow file carries a `# compagnon:managed` comment on
 its first line.
 
-- When the file has no managed section, `codev init` appends one, separated
+- When the file has no managed section, `compagnon init` appends one, separated
   from the existing content by a blank line; every byte before it is kept.
-- When the file has one, `codev init` and `codev update` replace only what
+- When the file has one, `compagnon init` and `compagnon update` replace only what
   lies between the markers; every byte outside is kept. Identical content
   is not rewritten.
 - When the markers are unbalanced or repeated, the file is not modified
   and a warning with the code `managed_section_malformed` names it.
-- `codev update` refreshes the managed sections and the managed workflow
+- `compagnon update` refreshes the managed sections and the managed workflow
   file that exist, and never creates a file or appends a section: a
   project that opted out stays opted out.
 - `--force` is not needed to refresh a managed section.
@@ -522,50 +522,50 @@ its first line.
 #### Scenario: A section is appended to an existing `CLAUDE.md`
 
 - **GIVEN** a project whose `CLAUDE.md` holds the user's own instructions
-  and no codev markers
-- **WHEN** the user runs `codev init --yes`
+  and no Compagnon markers
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** `CLAUDE.md` starts with the user's instructions, unchanged
-- **AND** ends with the codev managed section
+- **AND** ends with the Compagnon managed section
 
-#### Scenario: `codev update` refreshes only the section
+#### Scenario: `compagnon update` refreshes only the section
 
 - **GIVEN** a project whose `CLAUDE.md` has user text before and after a
-  codev section whose content is outdated
-- **WHEN** the user runs `codev update`
-- **THEN** the text between the markers is the current codev section
+  Compagnon section whose content is outdated
+- **WHEN** the user runs `compagnon update`
+- **THEN** the text between the markers is the current Compagnon section
 - **AND** the user text before and after it is unchanged byte for byte
-- **AND** running `codev update` a second time changes nothing
+- **AND** running `compagnon update` a second time changes nothing
 
-#### Scenario: `codev update` adds nothing to an opted-out project
+#### Scenario: `compagnon update` adds nothing to an opted-out project
 
 - **GIVEN** a project initialized with `--no-integration`
-- **WHEN** the user runs `codev update`
+- **WHEN** the user runs `compagnon update`
 - **THEN** no `CLAUDE.md`, workflow or pull request template is created
 
-#### Scenario: `codev update` bumps the managed workflow's version
+#### Scenario: `compagnon update` bumps the managed workflow's version
 
-- **GIVEN** a `.github/workflows/codev.yml` carrying `# codev:managed`,
-  written by an earlier codev version
-- **WHEN** the user runs `codev update` with a newer codev
+- **GIVEN** a `.github/workflows/compagnon.yml` carrying `# compagnon:managed`,
+  written by an earlier compagnon version
+- **WHEN** the user runs `compagnon update` with a newer Compagnon
 - **THEN** the workflow installs the newer version
 
 #### Scenario: Unbalanced markers leave the file alone
 
-- **GIVEN** a `CLAUDE.md` with a `<!-- codev:begin` line and no
-  `<!-- codev:end -->` line
-- **WHEN** the user runs `codev init --yes`
+- **GIVEN** a `CLAUDE.md` with a `<!-- compagnon:begin` line and no
+  `<!-- compagnon:end -->` line
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** `CLAUDE.md` is identical byte for byte
 - **AND** a warning `managed_section_malformed` names `CLAUDE.md`
 
 ### Requirement: The init summary reports each integration step
 
-The human output of `codev init` and `codev update` SHALL list each
+The human output of `compagnon init` and `compagnon update` SHALL list each
 integration file with what happened to it — written, refreshed, unchanged
-or skipped — and, when skipped, why. `codev init` MUST end with a one-line
-hint to run `codev doctor` when `codev doctor` would report a missing
+or skipped — and, when skipped, why. `compagnon init` MUST end with a one-line
+hint to run `compagnon doctor` when `compagnon doctor` would report a missing
 check.
 
-The JSON report of `codev init` and `codev update` MUST carry an
+The JSON report of `compagnon init` and `compagnon update` MUST carry an
 `integration` array, one entry per step, with the stable fields `step`
 (`claude_md`, `ci`, `pr_template`), `action` (`created`, `appended`,
 `refreshed`, `unchanged`, `skipped`), `path` (relative to the project, or
@@ -574,13 +574,13 @@ The JSON report of `codev init` and `codev update` MUST carry an
 #### Scenario: The summary explains a skipped step
 
 - **GIVEN** a project outside GitHub
-- **WHEN** the user runs `codev init --yes`
+- **WHEN** the user runs `compagnon init --yes`
 - **THEN** the summary reports `CLAUDE.md` as written and the CI step as
   skipped, with the reason
-- **AND** the last line suggests `codev doctor`
+- **AND** the last line suggests `compagnon doctor`
 
 #### Scenario: The JSON report lists the integration steps
 
-- **WHEN** the user runs `codev init --yes --json` on a new GitHub project
+- **WHEN** the user runs `compagnon init --yes --json` on a new GitHub project
 - **THEN** `integration` holds three entries with `action: "created"`
-- **AND** no entry mentions `codev doctor`
+- **AND** no entry mentions `compagnon doctor`

@@ -35,7 +35,7 @@ severity: medium
 confidence: high
 location: "tasks.md#5. Measure and record"
 evidence: |
-  - [ ] 5.1 The decision: `codev decision new` then `accept`, "Implementation may run on another model than planning, chosen per project through the developer role", with the measure of the implementation evaluation (Opus 13.02 USD, Sonnet session 5.68 USD, every measure at 1.00) and the recommendation `developer: sonnet`, no built-in default (0011 unchanged); verified by `codev validate --strict`
+  - [ ] 5.1 The decision: `compagnon decision new` then `accept`, "Implementation may run on another model than planning, chosen per project through the developer role", with the measure of the implementation evaluation (Opus 13.02 USD, Sonnet session 5.68 USD, every measure at 1.00) and the recommendation `developer: sonnet`, no built-in default (0011 unchanged); verified by `compagnon validate --strict`
 recommendation: "Measure the delegated setup first, record its cost in the ADR, and state the cost result that justifies recommending `developer: sonnet`."
 history:
   - status: open
@@ -108,11 +108,11 @@ history:
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — over the material's size limit.
-Summarized: crates/codev-agents/src/workflows.rs — over the material's size limit.
-Summarized: crates/codev-cli/src/commands.rs — over the material's size limit.
-Summarized: crates/codev-core/src/roles.rs — over the material's size limit.
-Summarized: crates/codev-engine/src/validate/mod.rs — over the material's size limit.
+Summarized: crates/compagnon-agents/src/claude.rs — over the material's size limit.
+Summarized: crates/compagnon-agents/src/workflows.rs — over the material's size limit.
+Summarized: crates/compagnon-cli/src/commands.rs — over the material's size limit.
+Summarized: crates/compagnon-core/src/roles.rs — over the material's size limit.
+Summarized: crates/compagnon-engine/src/validate/mod.rs — over the material's size limit.
 Summarized: docs/en/src/roles.md — over the material's size limit.
 Summarized: docs/fr/src/roles.md — over the material's size limit.
 Summarized: evals/src/runner.rs — over the material's size limit.
@@ -146,7 +146,7 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "crates/codev-agents/src/claude.rs:366"
+location: "crates/compagnon-agents/src/claude.rs:366"
 evidence: |
                               && has_agent != wants_agent_tool(ctx, w.id)
 recommendation: Rename the state, or keep the name and say at this branch and in the variant's doc that the developer's model also decides the sub-agent tool of `apply`.
@@ -155,7 +155,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs: a comment at the branch; crates/codev-core/src/doctor.rs: the variant doc names the developer model too"
+    ref: "crates/compagnon-agents/src/claude.rs: a comment at the branch; crates/compagnon-core/src/doctor.rs: the variant doc names the developer model too"
   - status: fixed
     by: newcomer
 ```
@@ -165,7 +165,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:62"
+location: "crates/compagnon-agents/src/claude.rs:62"
 evidence: |
       pub developer_model: bool,
 recommendation: Rename the field `developer_has_model`.
@@ -174,7 +174,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs: the field is named developer_has_model"
+    ref: "crates/compagnon-agents/src/claude.rs: the field is named developer_has_model"
   - status: fixed
     by: newcomer
 ```
@@ -184,7 +184,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:833"
+location: "crates/compagnon-agents/src/claude.rs:833"
 evidence: |
       fn a_developer_model_leaves_propose_without_the_sub_agent_tool() {
 recommendation: Name the test for what it checks.

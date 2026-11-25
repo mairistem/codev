@@ -1,6 +1,6 @@
 ## Purpose
 
-Make architecture decisions usable by codev: read them, index them, resolve
+Make architecture decisions usable by compagnon: read them, index them, resolve
 the supersession chain, and inject them into the instructions for the
 `design` artifact so that a drafting agent sees the already settled
 choices right away.
@@ -91,8 +91,8 @@ remains in effect.
 ### Requirement: Inherited decisions taken into account
 
 When a project declares `inherits: path: <path>` in its
-`_codev/config.yaml`, the validator MUST also parse the ADRs in
-`<path>/_codev/decisions/` and merge them into the index with their
+`_compagnon/config.yaml`, the validator MUST also parse the ADRs in
+`<path>/_compagnon/decisions/` and merge them into the index with their
 `origin` visible.
 
 #### Scenario: ADR from an inherited source appears in the index
@@ -115,7 +115,7 @@ When a project declares `inherits: path: <path>` in its
 
 ### Requirement: Injection into the design instructions
 
-The call `codev instructions design --change <name>` MUST enrich its
+The call `compagnon instructions design --change <name>` MUST enrich its
 response with a `decisions[]` field carrying the decisions in effect. Each
 entry exposes `id`, `title`, `status`, `tags`, `path` (relative to the
 project) and `origin`. The full content stays in the file — no duplication
@@ -124,7 +124,7 @@ in the response.
 #### Scenario: Design instructions carry the decisions in effect
 
 - **GIVEN** a project with 6 `accepted` ADRs and no supersession
-- **WHEN** the user runs `codev instructions design --change <name>
+- **WHEN** the user runs `compagnon instructions design --change <name>
   --json`
 - **THEN** the JSON response contains a `decisions` array with exactly
   6 entries, each carrying `id`, `title`, `status`, a `path` relative to
@@ -133,7 +133,7 @@ in the response.
 #### Scenario: Superseded decisions absent from the instructions
 
 - **GIVEN** a project where `0003` is superseded by `0007`
-- **WHEN** the user runs `codev instructions design --change <name>
+- **WHEN** the user runs `compagnon instructions design --change <name>
   --json`
 - **THEN** `0003` does not appear in the `decisions` array
 - **AND** `0007` does appear in it
@@ -141,7 +141,7 @@ in the response.
 #### Scenario: Human rendering lists the decisions
 
 - **GIVEN** the same context
-- **WHEN** the user runs `codev instructions design --change <name>`
+- **WHEN** the user runs `compagnon instructions design --change <name>`
   (without `--json`)
 - **THEN** the rendering contains a "Decisions in effect" section listing
   each decision on its own line with its `id` and its `title`
@@ -149,6 +149,6 @@ in the response.
 #### Scenario: No decision, no section
 
 - **GIVEN** a new project without any ADR
-- **WHEN** the user runs `codev instructions design --change <name>`
+- **WHEN** the user runs `compagnon instructions design --change <name>`
 - **THEN** no "Decisions in effect" section is added to the rendering
 - **AND** the `decisions[]` field in the JSON response is present and empty

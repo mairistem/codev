@@ -5,13 +5,13 @@ request: "Nos rôles de relecture disent quoi vérifier mais pas comment, et per
 summary: "Replays the change 2026-10-12-built-in-experts (feat(roles): built-in experts with their own knowledge, activated by domains (#29))."
 expected:
   modified:
-    - "roles::codev knows a catalog of roles bound to workflow steps"
+    - "roles::compagnon knows a catalog of roles bound to workflow steps"
     - "skills::The `propose` skill challenges the plan and reports points to challenge"
     - "skills::The `apply` skill reviews the change's code as a newcomer"
   collateral:
     - "docs::The Roles chapter lists exactly the catalog's roles"
     - "roles::The project configures roles under `roles:`"
     - "roles::Invalid role settings are reported with stable codes"
-    - "roles::`codev roles` serves the roles of a step"
+    - "roles::`compagnon roles` serves the roles of a step"
     - "skills::The default schema gives each artifact a role with \"Done when\" criteria"
   decisions: []

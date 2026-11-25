@@ -1,9 +1,9 @@
 ---
-id: 0003
-title: The planning root is `_codev/`, visible
-status: accepted
+id: "0003"
+title: "The planning root is `_codev/`, visible"
+status: superseded
 date: 2026-09-08
-tags: [ergonomics, layout]
+tags: ["ergonomics", "layout"]
 ---
 
 ## Context

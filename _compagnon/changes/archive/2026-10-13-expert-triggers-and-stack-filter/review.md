@@ -13,12 +13,12 @@ severity: medium
 confidence: high
 location: "design.md#Every case, planned"
 evidence: |
-  at `/codev-propose` time the diff usually holds only the planning files, which are `planning` noise
+  at `/compagnon-propose` time the diff usually holds only the planning files, which are `planning` noise
 recommendation: >-
   The proposal presents the product owner's reaction as the guard, while
   the design shows the diff is empty before the code exists. Say plainly,
   in the proposal and the design's goals, that the review step and
-  `codev validate` after the code is written are where a missed domain is
+  `compagnon validate` after the code is written are where a missed domain is
   caught, so nobody relies on the planning-time check.
 history:
   - status: open
@@ -64,15 +64,15 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "design.md#Decision: The diff in `codev-engine::diff`, through `ProcessRunner`"
+location: "design.md#Decision: The diff in `compagnon-engine::diff`, through `ProcessRunner`"
 evidence: |
   All commands run in the project root, with
 recommendation: >-
-  Every `codev roles --change` and `codev validate` now runs `git diff`. A
+  Every `compagnon roles --change` and `compagnon validate` now runs `git diff`. A
   repository unpacked from an archive brings its own `.git/config`, whose
   `core.fsmonitor` or a `textconv` driver is a program git runs. Pass
   `-c core.fsmonitor=false` and `--no-textconv` (with `--no-ext-diff`)
-  so codev never runs one on the user's behalf (CWE-427, uncontrolled
+  so compagnon never runs one on the user's behalf (CWE-427, uncontrolled
   search path element).
 history:
   - status: open
@@ -94,7 +94,7 @@ severity: low
 confidence: high
 location: "design.md#Decision: The core classifies, caps and matches"
 evidence: |
-  `codev-core::triggers` holds the parsing of groups, the noise list
+  `compagnon-core::triggers` holds the parsing of groups, the noise list
 recommendation: >-
   With six experts and project groups, a line meets some thirty patterns;
   match all of them at once first (one multi-pattern expression) and name
@@ -112,24 +112,24 @@ history:
 
 ### migration
 
-#### R-migration-1 The new key breaks an older codev's strict validation without a word
+#### R-migration-1 The new key breaks an older compagnon's strict validation without a word
 
 ```yaml
 severity: medium
 confidence: high
 location: "proposal.md#Release note"
 evidence: |
-  - Added: A `triggers:` key in `_codev/config.yaml` adds the project's own
+  - Added: A `triggers:` key in `_compagnon/config.yaml` adds the project's own
 recommendation: >-
-  An earlier codev reads `triggers:` as an unknown key: a warning, which
-  fails its `codev validate --strict`. Tell teams to raise
-  `codev_version` when they add the key.
+  An earlier compagnon reads `triggers:` as an unknown key: a warning, which
+  fails its `compagnon validate --strict`. Tell teams to raise
+  `compagnon_version` when they add the key.
 history:
   - status: open
     by: migration
   - status: fixed
     by: product
-    ref: proposal.md release note, the `triggers:` item says an earlier codev warns and to raise `codev_version`
+    ref: proposal.md release note, the `triggers:` item says an earlier compagnon warns and to raise `compagnon_version`
   - status: fixed
     by: migration
     note: verified; the configuration chapter must say it too (task 6.1)
@@ -148,7 +148,7 @@ No finding.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/diff.rs:100-102"
+location: "crates/compagnon-engine/src/diff.rs:100-102"
 evidence: |
   for path in untracked.split('\0').filter(|p| !p.is_empty()) {
       let full = root.join(path);
@@ -164,7 +164,7 @@ history:
     by: performance
   - status: fixed
     by: developer
-    ref: crates/codev-engine/src/diff.rs, an untracked path the core excludes from every trigger gets no `is_regular_file` or `len` call; test `untracked_noise_is_neither_stated_nor_read`
+    ref: crates/compagnon-engine/src/diff.rs, an untracked path the core excludes from every trigger gets no `is_regular_file` or `len` call; test `untracked_noise_is_neither_stated_nor_read`
   - status: fixed
     by: performance
     note: verified
@@ -172,25 +172,25 @@ history:
 
 ### migration
 
-#### R-migration-2 This repository now uses a key its pinned codev does not know
+#### R-migration-2 This repository now uses a key its pinned compagnon does not know
 
 ```yaml
 severity: medium
 confidence: high
-location: "_codev/config.yaml:14"
+location: "_compagnon/config.yaml:14"
 evidence: |
-  codev_version: ">=0.6"
+  compagnon_version: ">=0.6"
 recommendation: >-
   `triggers:` is added to this repository's configuration while
-  `codev_version` still accepts 0.6.x, which warns `unknown_config_key` and
-  fails its `codev validate --strict`. Raise `codev_version` to the release
+  `compagnon_version` still accepts 0.6.x, which warns `unknown_config_key` and
+  fails its `compagnon validate --strict`. Raise `compagnon_version` to the release
   that ships `triggers:`.
 history:
   - status: open
     by: migration
   - status: deferred
     by: developer
-    to: the release that ships this change (raise `codev_version` in `_codev/config.yaml` to it); the dev binary is 0.6.1, so raising it now fails `codev doctor --strict`, as R-migration-1 of review-record
+    to: the release that ships this change (raise `compagnon_version` in `_compagnon/config.yaml` to it); the dev binary is 0.6.1, so raising it now fails `compagnon doctor --strict`, as R-migration-1 of review-record
 ```
 
 ### newcomer
@@ -200,7 +200,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/diff.rs:81"
+location: "crates/compagnon-engine/src/diff.rs:81"
 evidence: |
   Err(reason) if reason == GIT_MISSING => return Err(reason),
 recommendation: >-
@@ -212,7 +212,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: crates/codev-engine/src/diff.rs, `Git::run` returns `GitError::{Missing, Failed}`; the caller matches `GitError::Missing`
+    ref: crates/compagnon-engine/src/diff.rs, `Git::run` returns `GitError::{Missing, Failed}`; the caller matches `GitError::Missing`
   - status: fixed
     by: newcomer
     note: verified, no message is compared any more
@@ -223,7 +223,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/roles.rs:652-669"
+location: "crates/compagnon-core/src/roles.rs:652-669"
 evidence: |
   let mut out: Vec<&str> = lines[..start].to_vec();
   if !kept.is_empty() {
@@ -237,7 +237,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: crates/codev-core/src/roles.rs `filter_by_stack`, the kept section is pushed when there is one, then one trim and one separator for both cases
+    ref: crates/compagnon-core/src/roles.rs `filter_by_stack`, the kept section is pushed when there is one, then one trim and one separator for both cases
   - status: fixed
     by: newcomer
     note: verified, one path, the five filter tests unchanged and green

@@ -12,7 +12,7 @@ with `id` and `expect` (`follow` or `supersede`); and, optionally,
 `keyword_language`, the language whose structural keywords the plan must
 be written in (`en` or a language of the keyword catalog). A case MAY
 also hold `config`, a YAML mapping of configuration keys — such as
-`language: fr` — appended to the fixture's `_codev/config.yaml` before the
+`language: fr` — appended to the fixture's `_compagnon/config.yaml` before the
 skills are installed, each top-level key it sets replacing the same key of
 the fixture's; it may not set `review:`. `modified` holds the
 requirements the request is about; `collateral` the ones the real change
@@ -21,13 +21,13 @@ or one decision.
 
 Loading a case SHALL fail, naming the case and the cause, when `ref` is
 not a commit of the repository's history; when a requirement of
-`modified` or `collateral` is not in `_codev/specs/<capability>/spec.md`
-at `ref`; when a decision id is not one of `_codev/decisions/` at `ref`;
+`modified` or `collateral` is not in `_compagnon/specs/<capability>/spec.md`
+at `ref`; when a decision id is not one of `_compagnon/decisions/` at `ref`;
 when the tree at `ref` holds `evals/cases/<case id>/`, which would hand
 the agent the answer; when `config` is not a YAML mapping or sets
 `review:`; when `keyword_language` is not `en` nor a language of the
-keyword catalog; or when an unknown key or an empty request is found. `codev-evals list` SHALL show planning cases with their step, and
-`codev-evals run` and `score` SHALL exit with code 2 on an invalid case,
+keyword catalog; or when an unknown key or an empty request is found. `compagnon-evals list` SHALL show planning cases with their step, and
+`compagnon-evals run` and `score` SHALL exit with code 2 on an invalid case,
 as for the other cases.
 
 #### Scenario: A case replaying an archived change
@@ -65,7 +65,7 @@ as for the other cases.
 - **GIVEN** a planning case with `config: { language: fr }` and
   `keyword_language: fr`
 - **WHEN** the suite loads its cases and the runner builds its fixture
-- **THEN** the case loads, and the fixture's `_codev/config.yaml` ends
+- **THEN** the case loads, and the fixture's `_compagnon/config.yaml` ends
   with `language: fr`, its own `language: en` gone, before the skills are
   installed
 
@@ -83,7 +83,7 @@ a user would ask, not copied from the archived proposal.
 #### Scenario: The repository's planning suite
 
 - **GIVEN** `evals/cases/`
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails if there are fewer than 17 planning cases with a
   `modified` requirement, or fewer than 4 with a decision, or none with
   a decision to supersede, or none planned in a catalog language other
@@ -93,13 +93,13 @@ a user would ask, not copied from the archived proposal.
 
 - **GIVEN** a planning case whose `request` repeats a sentence of more
   than twelve words of the archived change's proposal
-- **WHEN** the test suite of `codev-evals` runs
+- **WHEN** the test suite of `compagnon-evals` runs
 - **THEN** it fails, naming the case
 
 ### Requirement: A plan is scored on the requirements it modifies, its added duplicates, its decisions and its validity
 
 Scoring a planning run SHALL read the deltas of the change it created
-with codev's own parser, whatever the language of their keywords. An
+with compagnon's own parser, whatever the language of their keywords. An
 expected requirement SHALL count as modified when a delta of its
 capability holds it under `MODIFIED` or `REMOVED`, or as the `FROM` of a
 `RENAMED`, its name compared ignoring case and runs of whitespace. Each
@@ -116,7 +116,7 @@ run SHALL be given:
   design do not cite, by its id or its title; a decision to `supersede`
   also counts as ignored when no paragraph citing it says the plan
   supersedes or deviates from it;
-- whether the plan validates: `codev validate` reports no error on it;
+- whether the plan validates: `compagnon validate` reports no error on it;
 - for a case with `keyword_language`, whether its keywords are in that
   language: every structural keyword line of its proposal, delta specs
   and design that the keyword catalog recognizes is written in that
@@ -129,7 +129,7 @@ per repetition over the planning runs, then given as their median with
 their minimum and maximum, as the role measures are — the share of the
 runs with `keyword_language` whose keywords are in that language among
 them; they have no
-threshold of their own and are judged by `codev-evals compare` against
+threshold of their own and are judged by `compagnon-evals compare` against
 the baseline.
 
 #### Scenario: A requirement modified, another added beside it
@@ -187,7 +187,7 @@ the roles;
 and per planning run, its outcome, the expected requirements found and
 missed, the duplicates, the decisions ignored, and its consumption,
 tool calls and orientation included. A suite without planning case SHALL
-give no planning section. `codev-evals compare` SHALL fail on the
+give no planning section. `compagnon-evals compare` SHALL fail on the
 planning step, besides its other rules, when the candidate's median
 share of plans whose keywords are in their language is under the
 baseline's minimum.
@@ -195,7 +195,7 @@ baseline's minimum.
 #### Scenario: A suite with both kinds of cases
 
 - **GIVEN** observations of review cases and of planning cases
-- **WHEN** the user runs `codev-evals score <dir>`
+- **WHEN** the user runs `compagnon-evals score <dir>`
 - **THEN** the report has the per-role section and a `plan.write`
   section, and the roles' figures are those of the review cases alone
 
@@ -210,5 +210,5 @@ baseline's minimum.
 - **GIVEN** a baseline whose plans keep their keywords in their language
   in every run, and a candidate where one of two such cases writes
   English headings in every run
-- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **WHEN** the user runs `compagnon-evals compare <baseline> <candidate>`
 - **THEN** the verdict fails, naming the keyword share

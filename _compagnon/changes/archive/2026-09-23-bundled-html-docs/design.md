@@ -1,4 +1,4 @@
-# Design: `codev docs` and its standalone HTML bundle
+# Design: `compagnon docs` and its standalone HTML bundle
 
 ## Context
 
@@ -7,7 +7,7 @@ questions settled by default:
 
 - **Generation**: runtime, not build-time (the build stays simple).
 - **Visual design**: minimal and home-made, no CDN.
-- **Content**: manual, written in the same tone as the codev
+- **Content**: manual, written in the same tone as the compagnon
   artifacts.
 
 ## Goals / Non-Goals
@@ -26,7 +26,7 @@ Two options:
 | Option | Pro | Con |
 |---|---|---|
 | **A. Build-time via `build.rs`** — the HTML is embedded ready to use | Zero cost at runtime, precomputed HTML | Build cache invalidated on every documentation edit, an extra `build.rs` to maintain |
-| **B. Runtime — the markdown is embedded, converted at call time** | Build stays simple, markdown source caching identical to the other `include_str!` | ~5-10 ms of conversion on every `codev docs` |
+| **B. Runtime — the markdown is embedded, converted at call time** | Build stays simple, markdown source caching identical to the other `include_str!` | ~5-10 ms of conversion on every `compagnon docs` |
 
 **Chosen: B.** The 5-10 ms are painless compared to opening the
 browser (~500 ms). The build stays homogeneous — no `build.rs` that
@@ -76,13 +76,13 @@ Resolution ordered by precedence:
 The `--print --write` combinations are refused by clap
 (`conflicts_with`).
 
-### Decision: default path = `temp_dir()/codev-docs-<version>.html`
+### Decision: default path = `temp_dir()/compagnon-docs-<version>.html`
 
-Calling `codev docs` again overwrites the file from the previous
+Calling `compagnon docs` again overwrites the file from the previous
 session. Idempotent. A file name that carries the version
 distinguishes versions installed side by side (rare but possible).
 
-**Rejected alternative**: `~/.local/share/codev/docs.html`.
+**Rejected alternative**: `~/.local/share/compagnon/docs.html`.
 Persistent but pollutes `$HOME`, which is not the role of a docs
 command.
 
@@ -99,9 +99,9 @@ next to nothing.
 
 ### Decision: manual content, ten sections
 
-Outline of the documentation, to be written in `docs/codev.md`:
+Outline of the documentation, to be written in `docs/compagnon.md`:
 
-1. **Introduction** — what codev is, why this cycle.
+1. **Introduction** — what compagnon is, why this cycle.
 2. **Installation** — cargo install, PATH, `~/.cargo/bin`,
    completions.
 3. **The cycle** — propose → apply → sync → archive, ASCII diagram.
@@ -112,7 +112,7 @@ Outline of the documentation, to be written in `docs/codev.md`:
    (`ADDED`, `MODIFIED`, `REMOVED`, `RENAMED`).
 6. **The CLI** — every command with an example, grouped by family
    (project, changes, decisions, sources, validation, docs).
-7. **Configuration** — `_codev/config.yaml`: schema, workflows,
+7. **Configuration** — `_compagnon/config.yaml`: schema, workflows,
    context, rules, inherits, mcp.
 8. **Architecture decisions** — the 6 root ADRs, K3/K6/K7.
 9. **MCP extensions** — Jira/Atlassian today, how to add other
@@ -135,7 +135,7 @@ changes.
 - **Future documentation changes will break any golden tests** —
   that is **the point**. A golden test would be replaced by
   structural tests: "the HTML starts with `<!doctype html>`", "it
-  cites no external URL", "it contains the name `codev`".
+  cites no external URL", "it contains the name `compagnon`".
 
 ## Migration Plan
 

@@ -10,7 +10,7 @@ the finding's own role. A record without `raised_by` stays valid: the
 finding was raised by its role alone. `raised_by` does not change who
 re-checks the answers: the finding's own role does.
 
-`codev review --json` SHALL give each finding `raisedBy`, the list as
+`compagnon review --json` SHALL give each finding `raisedBy`, the list as
 written or the finding's role alone, and each role of a step
 `credited`, the ids of the findings of other roles of that step whose
 `raised_by` names it. The human output SHALL name, for a finding raised
@@ -21,7 +21,7 @@ by several roles, the other roles.
 - **GIVEN** a record whose `### security` section holds `R-security-1`
   with `raised_by: [security, skeptic]` and whose `### skeptic` section
   says `No finding.`
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** `R-security-1` has `raisedBy: ["security", "skeptic"]`
 - **AND** the `skeptic` role of that step has `credited:
   ["R-security-1"]`, and no review finding is reported
@@ -29,14 +29,14 @@ by several roles, the other roles.
 #### Scenario: A finding without `raised_by`
 
 - **GIVEN** a record whose findings carry no `raised_by`
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** each finding's `raisedBy` holds its role alone
 
 #### Scenario: A malformed `raised_by`
 
 - **GIVEN** a finding of `### security` with `raised_by: [skeptic,
   security]`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error at the finding's block says the
   first entry must be `security`
 
@@ -52,7 +52,7 @@ or role holding two `Mode:` or two `Fallback:` lines. These lines do not
 change the role's state: a role still holds findings, `No finding.` or
 `Disabled by configuration.`.
 
-`codev review --json` SHALL give each step `mode` (`null` when not
+`compagnon review --json` SHALL give each step `mode` (`null` when not
 written) and `summarized` (the texts, in file order), and each role
 `fallback` (`null` when not written). The human output SHALL print them.
 
@@ -62,7 +62,7 @@ written) and `summarized` (the texts, in file order), and each role
   isolated.` and `Summarized: src/big.rs, diff over the limit.`, and
   whose `### newcomer` says `Fallback: the sub-agent timed out twice.`
   then `No finding.`
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** the step has `mode: "isolated"` and `summarized: ["src/big.rs,
   diff over the limit"]`
 - **AND** the `newcomer` role has `fallback: "the sub-agent timed out
@@ -71,13 +71,13 @@ written) and `summarized` (the texts, in file order), and each role
 #### Scenario: A record written before isolated review
 
 - **GIVEN** a record without `Mode:`, `Summarized:` or `Fallback:` lines
-- **WHEN** the user runs `codev review --json`
+- **WHEN** the user runs `compagnon review --json`
 - **THEN** each step has `mode: null` and `summarized: []`, and each role
   `fallback: null`
 
 #### Scenario: An unknown mode in the record
 
 - **GIVEN** a record whose `## plan.challenge` holds `Mode: parallel.`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error at that line names `inline` and
   `isolated`

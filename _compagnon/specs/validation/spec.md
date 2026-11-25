@@ -45,7 +45,7 @@ requirement.
 
 #### Scenario: Main spec with no requirement
 
-- **GIVEN** a main spec `_codev/specs/x/spec.md` with `## Purpose`
+- **GIVEN** a main spec `_compagnon/specs/x/spec.md` with `## Purpose`
   but whose `## Requirements` is empty
 - **WHEN** the validator inspects the spec
 - **THEN** a finding with code `spec_no_requirement` reports that the spec
@@ -115,26 +115,26 @@ errors from a run that reports some.
 #### Scenario: Validating a named item
 
 - **GIVEN** an initialized project with a change `add-auth`
-- **WHEN** the user runs `codev validate add-auth`
+- **WHEN** the user runs `compagnon validate add-auth`
 - **THEN** the report covers only that change and its exit code reflects
   the presence or absence of errors
 
 #### Scenario: Batch validation
 
 - **GIVEN** a project containing two changes and one main spec
-- **WHEN** the user runs `codev validate --all`
+- **WHEN** the user runs `compagnon validate --all`
 - **THEN** the report covers all three items in a single document
 
 #### Scenario: No errors, exit code zero
 
 - **GIVEN** a well-formed change with no error finding
-- **WHEN** the user runs `codev validate add-auth`
+- **WHEN** the user runs `compagnon validate add-auth`
 - **THEN** the process exits with code `0`
 
 #### Scenario: At least one error, non-zero exit code
 
 - **GIVEN** a change containing at least one finding of severity `Error`
-- **WHEN** the user runs `codev validate add-auth`
+- **WHEN** the user runs `compagnon validate add-auth`
 - **THEN** the process exits with code `1`
 
 ### Requirement: JSON report with a stable contract
@@ -148,21 +148,21 @@ errors land (root not found, unknown item).
 #### Scenario: JSON output of a successful run
 
 - **GIVEN** a well-formed change
-- **WHEN** the user runs `codev validate add-auth --json`
+- **WHEN** the user runs `compagnon validate add-auth --json`
 - **THEN** stdout carries a single JSON document containing the list of
   items, each with an empty `findings` array, and an empty root `status`
 
 #### Scenario: JSON output when the root cannot be found
 
-- **GIVEN** a directory outside any `_codev/` root
-- **WHEN** the user runs `codev validate --json`
+- **GIVEN** a directory outside any `_compagnon/` root
+- **WHEN** the user runs `compagnon validate --json`
 - **THEN** stdout carries a single JSON document with the shape of the
   report, with its item lists empty, and a root `status` carrying an error
   entry with a stable code
 
 ### Requirement: Strict mode propagates warnings to the exit code
 
-`codev validate [--all|--changes|--specs|<item>] [--strict]` MUST
+`compagnon validate [--all|--changes|--specs|<item>] [--strict]` MUST
 return a non-zero exit code as soon as at least one finding is emitted,
 **whatever its severity**, when `--strict` is present. Without
 `--strict`, the behavior is unchanged: exit code 1 only when at least
@@ -174,16 +174,16 @@ rendering (text and JSON) remains identical.
 
 #### Scenario: `--strict` on a clean report → exit 0
 
-- **GIVEN** a project for which `codev validate --all` reports no
+- **GIVEN** a project for which `compagnon validate --all` reports no
   finding
-- **WHEN** the user runs `codev validate --all --strict`
+- **WHEN** the user runs `compagnon validate --all --strict`
 - **THEN** the exit code of the command is 0
 
 #### Scenario: `--strict` on a warning → non-zero exit
 
 - **GIVEN** a project containing an unsealed `accepted` local ADR,
   which reports a `decision_unsealed` (warning) on validate
-- **WHEN** the user runs `codev validate --strict`
+- **WHEN** the user runs `compagnon validate --strict`
 - **THEN** the exit code of the command is non-zero (1)
 - **AND** the human rendering still carries the `warning` line (not
   `error`) for this finding — the displayed severity is preserved
@@ -191,7 +191,7 @@ rendering (text and JSON) remains identical.
 #### Scenario: Without `--strict`, a warning does not flip the exit code
 
 - **GIVEN** the same context
-- **WHEN** the user runs `codev validate` (without `--strict`)
+- **WHEN** the user runs `compagnon validate` (without `--strict`)
 - **THEN** the exit code of the command is 0
 - **AND** the warning still appears in the output
 
@@ -199,7 +199,7 @@ rendering (text and JSON) remains identical.
 
 - **GIVEN** a project in which a local ADR was edited in place after
   sealing, which reports a `decision_seal_mismatch` (error)
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** the exit code of the command is non-zero (1) — strict mode
   is not needed for errors
 
@@ -216,19 +216,19 @@ strict mode uses it. The exit code remains the official signal.
 #### Scenario: `hasWarnings: true` on a report with a warning
 
 - **GIVEN** a project that reports a `decision_unsealed` warning
-- **WHEN** the user runs `codev validate --json`
+- **WHEN** the user runs `compagnon validate --json`
 - **THEN** the JSON document carries `"hasWarnings": true` at the root
 
 #### Scenario: `hasWarnings: false` on a clean report
 
 - **GIVEN** a project with no finding
-- **WHEN** the user runs `codev validate --all --json`
+- **WHEN** the user runs `compagnon validate --all --json`
 - **THEN** the JSON document carries `"hasWarnings": false`
 
 #### Scenario: `hasWarnings` independent of strict mode
 
 - **GIVEN** a project that reports a warning and no error
-- **WHEN** the user runs `codev validate --strict --json`
+- **WHEN** the user runs `compagnon validate --strict --json`
 - **THEN** the JSON document carries `"hasWarnings": true`
 - **AND** the exit code of the command is non-zero — both signals
   coexist without contradicting each other
@@ -244,7 +244,7 @@ exists there, which means an earlier sync already applied the rename.
 
 - **GIVEN** a main spec without any requirement named `Remember Me`
 - **AND** a delta renaming `Remember Me` to `Stay Signed In`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** an error `rename_source_missing` is reported
 - **AND** the exit code is non-zero
 
@@ -253,7 +253,7 @@ exists there, which means an earlier sync already applied the rename.
 - **GIVEN** a delta renaming `Remember Me` to `Stay Signed In`
 - **AND** a main spec that already contains `Stay Signed In` and no longer
   contains `Remember Me`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `rename_source_missing` is reported
 
 ### Requirement: The release note of an active change is checked
@@ -270,56 +270,56 @@ changes MUST NOT be checked: their history is not rewritten.
 
 - **GIVEN** an active change whose release note is
   `- Added: a flag.` and `- Changed: **BREAKING** a default.`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `release_note_*` finding is reported
 
 #### Scenario: Internal change
 
 - **GIVEN** an active change whose release note is `None`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `release_note_*` finding is reported
 
 #### Scenario: Missing section
 
 - **GIVEN** an active change whose proposal has no `## Release note`
   section
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `release_note_missing` warning is reported
 - **AND** the exit code is 0 without `--strict`
 
 #### Scenario: Unknown category
 
 - **GIVEN** an active change whose release note has `- Improved: speed.`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `release_note_invalid` error names `Improved` and its line
 - **AND** the exit code is 1
 
 #### Scenario: Empty bullet
 
 - **GIVEN** an active change whose release note has `- Fixed:` with no text
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `release_note_invalid` error is reported
 
 #### Scenario: Archived changes are not checked
 
 - **GIVEN** a project whose only change without a release note is archived
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** no `release_note_*` finding is reported
 
 ### Requirement: The specs validated are the capabilities listed
 
-`codev validate` — without argument, with `--all` or with `--specs` — SHALL
-validate exactly the main specs of the capabilities that `codev list
---specs` lists, and `codev validate <name>` SHALL find a spec under the same
-names. A file under `_codev/specs/` that is not a capability's `spec.md`
+`compagnon validate` — without argument, with `--all` or with `--specs` — SHALL
+validate exactly the main specs of the capabilities that `compagnon list
+--specs` lists, and `compagnon validate <name>` SHALL find a spec under the same
+names. A file under `_compagnon/specs/` that is not a capability's `spec.md`
 SHALL be ignored without finding: it is neither validated nor reported, and
 it never makes the command fail.
 
 #### Scenario: A stray Markdown file is ignored
 
-- **GIVEN** a project with a valid main spec `_codev/specs/user-auth/spec.md`
-  and a file `_codev/specs/notes/myspec.md`
-- **WHEN** the user runs `codev validate --specs --json`
+- **GIVEN** a project with a valid main spec `_compagnon/specs/user-auth/spec.md`
+  and a file `_compagnon/specs/notes/myspec.md`
+- **WHEN** the user runs `compagnon validate --specs --json`
 - **THEN** the exit code is 0
 - **AND** `items` holds one spec item, `user-auth`, and no item mentions
   `notes`
@@ -327,13 +327,13 @@ it never makes the command fail.
 #### Scenario: The whole project with a stray file
 
 - **GIVEN** the same project
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** the exit code is 0
 
 #### Scenario: A stray file is not an item
 
 - **GIVEN** the same project
-- **WHEN** the user runs `codev validate notes/my`
+- **WHEN** the user runs `compagnon validate notes/my`
 - **THEN** the command fails with `unknown_item`
 
 ### Requirement: The domains of an active change are checked
@@ -363,20 +363,20 @@ Archived changes MUST NOT be checked: their history is not rewritten.
 - **GIVEN** an active change whose `## Domains` section holds
   `- [x] security`, `- [ ] performance` and `- personal-data — new e-mail
   field`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no domain finding is reported
 
 #### Scenario: No domain
 
 - **GIVEN** an active change whose `## Domains` section is `None`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no domain finding is reported
 
 #### Scenario: Unknown domain
 
 - **GIVEN** an active change whose `## Domains` section holds
   `- [x] securty`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** an `unknown_domain` error names `securty` and its line
 - **AND** the exit code is 1
 
@@ -384,13 +384,13 @@ Archived changes MUST NOT be checked: their history is not rewritten.
 
 - **GIVEN** an active change whose `## Domains` section holds `None` and
   `- [x] security`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `domains_invalid` error is reported
 
 #### Scenario: Missing section
 
 - **GIVEN** an active change whose proposal has no `## Domains` section
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `domains_missing` warning is reported
 - **AND** the exit code is 0 without `--strict`
 
@@ -398,7 +398,7 @@ Archived changes MUST NOT be checked: their history is not rewritten.
 
 - **GIVEN** a project whose only change without a `## Domains` section is
   archived
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** no domain finding is reported
 
 ### Requirement: The review record of an active change is checked
@@ -418,14 +418,14 @@ the record. Archived changes MUST NOT be checked.
 #### Scenario: A change without a record
 
 - **GIVEN** an active change without `review.md`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `review_*` finding is reported
 
 #### Scenario: An open high finding is not a validation error
 
 - **GIVEN** an active change whose well-formed record holds a `high`
   finding `open`, its evidence at the cited lines
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `review_*` finding is reported
 - **AND** the exit code is 0
 
@@ -433,7 +433,7 @@ the record. Archived changes MUST NOT be checked.
 
 - **GIVEN** an active change whose record has a finding without
   `evidence`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `review_invalid` error is reported with the path of
   `review.md` and its line
 - **AND** the exit code is 1
@@ -442,12 +442,12 @@ the record. Archived changes MUST NOT be checked.
 
 - **GIVEN** a project whose only invalid review record is in an archived
   change
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** no `review_*` finding is reported
 
 ### Requirement: The suggested domains of an active change are checked
 
-`codev validate` SHALL read the diff once, as the `domain-suggestions`
+`compagnon validate` SHALL read the diff once, as the `domain-suggestions`
 capability defines it, and, for each active change whose `proposal.md`
 exists, report the warning `domain_suggested` for each suggested domain
 whose state is `unticked`. The warning SHALL be located in `proposal.md`,
@@ -461,15 +461,15 @@ keep it unticked with a reason on its line. A domain that is `ticked` or
 The diff is the working tree's: every active change is compared to the
 same diff. Without a diff — outside git, without a default branch — no
 `domain_suggested` is reported and validation does not fail because of
-it. The pre-flight of `codev sync` and `codev archive`, and the
-validation `codev doctor` counts, MUST NOT read the diff. Archived
+it. The pre-flight of `compagnon sync` and `compagnon archive`, and the
+validation `compagnon doctor` counts, MUST NOT read the diff. Archived
 changes MUST NOT be checked.
 
 #### Scenario: An unticked suggestion
 
 - **GIVEN** an active change whose proposal lists `- [ ] security` and
   whose diff adds `src/auth/session.rs`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `domain_suggested` warning on `proposal.md`, at the line of
   `- [ ] security`, names `security`, `**/auth/**` and
   `src/auth/session.rs`
@@ -480,7 +480,7 @@ changes MUST NOT be checked.
 - **GIVEN** an active change whose proposal lists
   `- [ ] security — only renames a variable` and whose diff adds
   `src/auth/session.rs`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `domain_suggested` warning is reported
 - **AND** none either once the line becomes `- [x] security`
 
@@ -488,7 +488,7 @@ changes MUST NOT be checked.
 
 - **GIVEN** a project outside any git repository with an active change
   whose proposal says `None`
-- **WHEN** the user runs `codev validate --strict`
+- **WHEN** the user runs `compagnon validate --strict`
 - **THEN** no `domain_suggested` warning is reported and the exit code
   is 0
 
@@ -496,7 +496,7 @@ changes MUST NOT be checked.
 
 - **GIVEN** an active change with an unticked suggested domain and no
   other finding
-- **WHEN** the user runs `codev archive <change>`
+- **WHEN** the user runs `compagnon archive <change>`
 - **THEN** the change is archived and git was not asked for a diff
 
 ### Requirement: The proposal sections are checked in every catalog language
@@ -516,34 +516,34 @@ is ignored, as a second section of the same heading is today.
 
 - **GIVEN** an active change whose proposal holds `## Note de version`
   with `- Ajouté : un export.` and `## Domaines` with `- [x] migration`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `release_note_*` and no domain finding is reported
 
 #### Scenario: Internal change written in French
 
 - **GIVEN** an active change whose `## Note de version` is `Aucune` and
   whose `## Domaines` is `Aucun`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `release_note_*` and no domain finding is reported
 
 #### Scenario: Unknown French category
 
 - **GIVEN** an active change whose `## Note de version` holds
   `- Amélioré : la vitesse.`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `release_note_invalid` error names `Amélioré` and its line
 
 #### Scenario: Translated domain name
 
 - **GIVEN** an active change whose `## Domaines` holds `- [x] sécurité`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** an `unknown_domain` error names `sécurité` and its line
 
 #### Scenario: The same section in two languages
 
 - **GIVEN** an active change whose proposal holds `## Domains` with
   `- [x] migration`, then `## Domaines` with `- [x] sécurité`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** the domains read are those of `## Domains`, and no
   `unknown_domain` finding names `sécurité`
 
@@ -560,14 +560,14 @@ MUST NOT be checked.
 #### Scenario: A change without corrections
 
 - **GIVEN** an active change without `corrections.md`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `corrections_*` finding is reported
 
 #### Scenario: A corrections error fails validation
 
 - **GIVEN** an active change whose `corrections.md` holds an entry
   without `did`
-- **WHEN** the user runs `codev validate <change> --json`
+- **WHEN** the user runs `compagnon validate <change> --json`
 - **THEN** a `corrections_invalid` error is reported with the path of
   `corrections.md` and its line
 - **AND** the exit code is 1
@@ -576,5 +576,5 @@ MUST NOT be checked.
 
 - **GIVEN** an active change whose only finding is a
   `corrections_unknown_field` warning
-- **WHEN** the user runs `codev validate <change> --strict`
+- **WHEN** the user runs `compagnon validate <change> --strict`
 - **THEN** the exit code is 1

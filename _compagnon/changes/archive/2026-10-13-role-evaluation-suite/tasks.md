@@ -11,7 +11,7 @@ is the committed baseline that task 8.2 checks.
 
 ## 1. Crate
 
-- [x] 1.1 `evals/Cargo.toml` (`codev-evals`, `publish = false`, workspace lints, workspace dependencies only), `members = ["crates/*", "evals"]`, `lib` with modules `case`, `observed`, `score`, `report`, `runner` and a `bin` with `list`, `run`, `score` subcommands, verified by `cargo build -p codev-evals --locked` and `git diff Cargo.lock` adding only the `codev-evals` package
+- [x] 1.1 `evals/Cargo.toml` (`compagnon-evals`, `publish = false`, workspace lints, workspace dependencies only), `members = ["crates/*", "evals"]`, `lib` with modules `case`, `observed`, `score`, `report`, `runner` and a `bin` with `list`, `run`, `score` subcommands, verified by `cargo build -p compagnon-evals --locked` and `git diff Cargo.lock` adding only the `compagnon-evals` package
 
 ## 2. Cases
 
@@ -24,13 +24,13 @@ is the committed baseline that task 8.2 checks.
 
 ## 4. Report and thresholds
 
-- [x] 4.1 `score::suite` and `report`: per-role totals, recall, evidence validity, the thresholds (flags over `CODEV_EVAL_*`), the failures, the exit code, `report.json` and `report.md` in a fixed order with the run's metadata from `run.json`, the strayed files and the answered findings per case, verified by unit tests `every_role_passing_exits_zero` ("Every role passes"), `a_role_under_the_recall_threshold_fails_with_its_name` ("A role under the recall threshold"), `a_timed_out_run_is_an_error_and_fails_the_suite` ("The run timed out"), `an_invalid_threshold_in_the_environment_is_a_usage_error` ("An invalid threshold"), `a_role_without_checked_evidence_fails_no_evidence_threshold`, `the_report_is_sorted_and_identical_twice` ("Scoring twice gives the same report")
+- [x] 4.1 `score::suite` and `report`: per-role totals, recall, evidence validity, the thresholds (flags over `COMPAGNON_EVAL_*`), the failures, the exit code, `report.json` and `report.md` in a fixed order with the run's metadata from `run.json`, the strayed files and the answered findings per case, verified by unit tests `every_role_passing_exits_zero` ("Every role passes"), `a_role_under_the_recall_threshold_fails_with_its_name` ("A role under the recall threshold"), `a_timed_out_run_is_an_error_and_fails_the_suite` ("The run timed out"), `an_invalid_threshold_in_the_environment_is_a_usage_error` ("An invalid threshold"), `a_role_without_checked_evidence_fails_no_evidence_threshold`, `the_report_is_sorted_and_identical_twice` ("Scoring twice gives the same report")
 
 ## 5. Runner
 
 - [x] 5.1 Pure parts of `runner`: the `change.yaml` from the roles a step serves, the prompts per step, the Claude Code arguments from the environment, the cases still to run in an output directory, the files modified outside the step from `git status --porcelain`, verified by unit tests `change_yaml_disables_every_other_reviewing_role` ("Only the evaluated role reviews"), `the_review_prompt_names_the_skill_step_and_the_evaluation_mode` ("The prompt names the step and the evaluation mode"), `the_trace_prompt_asks_to_fix_the_plan`, `the_claude_command_takes_model_and_budget_from_the_environment` ("The model and the budget come from the environment"), `a_resumed_run_runs_only_unrecorded_cases` ("A resumed run"), `files_modified_outside_the_step_are_strayed` ("A run that strays outside the step"), `a_resumed_run_with_another_model_is_refused` ("Resuming with another model")
-- [x] 5.2 Shell parts of `runner`: preflight, `run.json` written once, fixture setup (git, `codev init`, branch, commits), the Claude Code process in its own process group with its timeout, `codev review --json`, the checked files, `observed.json`, parallel jobs, verified by unit test `preflight_names_a_missing_tool` ("Claude Code is not installed") and by task 8.1's real run
-- [x] 5.3 The `codev-evals` binary: `list`, `run` (`--case`, `--role`, `--out`, `--work`, `--keep`, `--rerun`, `--jobs`, `--codev`, the thresholds), `score <dir>` (`--out`), exit codes 0/1/2, verified by integration test `score_writes_identical_reports_twice` in `evals/tests/cli.rs` ("Every role passes", "Scoring twice gives the same report") and `cargo run -p codev-evals -- list` listing every case
+- [x] 5.2 Shell parts of `runner`: preflight, `run.json` written once, fixture setup (git, `compagnon init`, branch, commits), the Claude Code process in its own process group with its timeout, `compagnon review --json`, the checked files, `observed.json`, parallel jobs, verified by unit test `preflight_names_a_missing_tool` ("Claude Code is not installed") and by task 8.1's real run
+- [x] 5.3 The `compagnon-evals` binary: `list`, `run` (`--case`, `--role`, `--out`, `--work`, `--keep`, `--rerun`, `--jobs`, `--compagnon`, the thresholds), `score <dir>` (`--out`), exit codes 0/1/2, verified by integration test `score_writes_identical_reports_twice` in `evals/tests/cli.rs` ("Every role passes", "Scoring twice gives the same report") and `cargo run -p compagnon-evals -- list` listing every case
 
 ## 6. Fixtures
 
@@ -44,7 +44,7 @@ is the committed baseline that task 8.2 checks.
 
 ## 8. Baseline
 
-- [x] 8.1 Run the whole suite once for real (`cargo build --bin codev`, `cargo run -p codev-evals -- run --out evals/baseline`), with Claude Code's default model; roles that score badly are recorded, not tuned, verified by `evals/baseline/report.md` and `report.json` listing every case with its scores, the model, the date and the cost
+- [x] 8.1 Run the whole suite once for real (`cargo build --bin compagnon`, `cargo run -p compagnon-evals -- run --out evals/baseline`), with Claude Code's default model; roles that score badly are recorded, not tuned, verified by `evals/baseline/report.md` and `report.json` listing every case with its scores, the model, the date and the cost
 - [x] 8.2 The baseline checks, verified by tests `the_baseline_agrees_with_the_scoring` ("The baseline agrees with the scoring") and `every_case_has_a_baseline_observation` in `evals/tests/suite.rs`, and unit test `missing_from_baseline_names_the_case` ("A case missing from the baseline")
 
 ## 9. Documentation
@@ -53,4 +53,4 @@ is the committed baseline that task 8.2 checks.
 
 ## 10. Verification
 
-- [x] 10.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `codev validate --strict` and `codev doctor --strict` reporting nothing to fix
+- [x] 10.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `compagnon validate --strict` and `compagnon doctor --strict` reporting nothing to fix

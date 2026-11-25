@@ -3,17 +3,17 @@
 ## Context
 
 Decision 0011 makes the model a property of the role, chosen by the
-project, with no built-in default. `codev roles --json` already serves
+project, with no built-in default. `compagnon roles --json` already serves
 each role's `model`, the `developer` included at `code.implement`. Until
 now only the reviewing roles could use it, as sub-agents in the
-`isolated` review mode (decision 0007: codev renders the permission, the
+`isolated` review mode (decision 0007: compagnon renders the permission, the
 skill dispatches the sub-agent). `unused_models` in
-`crates/codev-core/src/roles.rs` warns `role_model_unused` for every role
+`crates/compagnon-core/src/roles.rs` warns `role_model_unused` for every role
 that does not review, the `developer` included.
 
 The `Agent` tool reaches a skill's `allowed-tools` through the
 `{{AGENT_TOOL}}` placeholder of `propose` and `apply`.
-`substitute_agent_tool` in `crates/codev-agents/src/claude.rs` replaces
+`substitute_agent_tool` in `crates/compagnon-agents/src/claude.rs` replaces
 it according to the render context's `review_mode` alone.
 
 The implementation evaluation (`code.implement`) plays implementation
@@ -26,8 +26,8 @@ cases. It reads their configuration from the tree at `ref`. Today
 
 - A project can run its implementation on another model than its
   session, through the `developer` role, and measure the result with
-  `codev-evals compare`.
-- Without a model on the `developer`, `/codev-apply` behaves exactly as
+  `compagnon-evals compare`.
+- Without a model on the `developer`, `/compagnon-apply` behaves exactly as
   before.
 
 **Non-Goals**
@@ -70,7 +70,7 @@ for work left on the first unchecked task, so partial work is neither
 lost nor duplicated. The review and its sub-agents (decision 0007) do not
 change.
 
-This follows decision 0007: codev renders the permission and serves the
+This follows decision 0007: compagnon renders the permission and serves the
 model, and the skill dispatches the sub-agent. No new command is needed.
 
 **Alternatives considered**:
@@ -79,7 +79,7 @@ model, and the skill dispatches the sub-agent. No new command is needed.
   for every task, and it would lose what the previous task learned. The
   measure behind this change ran the whole implementation in one context.
 - Asking the user to switch the session's model (`/model sonnet`) before
-  `/codev-apply`. The review and the summary would then run on Sonnet
+  `/compagnon-apply`. The review and the summary would then run on Sonnet
   too, and the choice would not be the project's.
 
 ### Decision: The sub-agent tool follows the developer's model as well as the review mode
@@ -88,7 +88,7 @@ The render context gains whether the `developer` has a model.
 `substitute_agent_tool` puts `Agent` in the `apply` skill when the
 review mode is `isolated` or the developer has a model. It puts it in
 `propose` only in the `isolated` mode. A change of the developer's model
-changes the rendered `apply` skill, and `codev update` rewrites it as it
+changes the rendered `apply` skill, and `compagnon update` rewrites it as it
 does for any skill that still matches its checksum.
 
 **Alternatives considered**: always listing `Agent` in `apply`. That
@@ -110,7 +110,7 @@ silently and never applied, which is the case the warning exists for.
 ### Decision: `--fixture-config` also reaches implementation cases
 
 The runner appends the file to the implementation fixture's
-`_codev/config.yaml` before `codev update --force` renders the skills.
+`_compagnon/config.yaml` before `compagnon update --force` renders the skills.
 The fixture then grants the sub-agent tool as a project would. The
 `review:` key stays refused (decision 0008's runs record their mode).
 The `role-evaluation` requirement that limited the option to review

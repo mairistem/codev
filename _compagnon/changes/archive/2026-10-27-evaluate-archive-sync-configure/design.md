@@ -1,27 +1,27 @@
-# Design: Evaluate `/codev-sync`, `/codev-archive` and `/codev-configure`
+# Design: Evaluate `/compagnon-sync`, `/compagnon-archive` and `/compagnon-configure`
 
 ## Context
 
-`codev-evals` replays four kinds of cases. Review cases lay a small
+`compagnon-evals` replays four kinds of cases. Review cases lay a small
 `base/` and a `change/` in a new repository. Planning, update and
 implementation cases rebuild this repository at a past commit
 (`git archive <ref>`), the update and implementation ones with an active
 change laid from `change/`, since `main` squash-merges each change with
 its archive and no commit holds an active change. Every case installs
-the skills of the codev under test (`codev update --force`), runs Claude
-Code headlessly in the sandbox with `CODEV_NO_UPDATE_CHECK=1`, and is
+the skills of the compagnon under test (`compagnon update --force`), runs Claude
+Code headlessly in the sandbox with `COMPAGNON_NO_UPDATE_CHECK=1`, and is
 scored without a model. The update step (`evals/src/update.rs`) is the
 closest model: a list of named checks per run, a run passing when all
 pass, and three measures per repetition (share of runs that pass, share
 of checks that pass, runs modifying a file outside the step), judged by
 `compare` against the baseline's range.
 
-`CODEV_NO_UPDATE_CHECK=1` hides `update` in `codev status --json`, but
-not `versionRequirement`, which codev computes from the project's
-`codev_version`: a fixture that sets an unsatisfiable `codev_version`
+`COMPAGNON_NO_UPDATE_CHECK=1` hides `update` in `compagnon status --json`, but
+not `versionRequirement`, which compagnon computes from the project's
+`compagnon_version`: a fixture that sets an unsatisfiable `compagnon_version`
 makes the skills' update check ask its question even in the suite.
 
-The three skills do little reasoning: sync and archive run one codev
+The three skills do little reasoning: sync and archive run one compagnon
 command and report it, stopping on a refusal; configure reads a bounded
 sample of a project and proposes two blocks of YAML. What they get wrong
 is conduct — a merge written by hand, a step not stopped, a field or
@@ -36,9 +36,9 @@ as decision 0008 requires, before the three changes that wait on them
 unchecked tasks, `lessons-from-reviews`); record their baseline; plan
 the multi-role review cases as a second change.
 
-**Non-goals**: changing any skill or codev command; judging the prose of
+**Non-goals**: changing any skill or compagnon command; judging the prose of
 a configure proposal with a model; measuring the `lessons` mode of
-`/codev-configure` (its own step, `configure.lessons`, comes with
+`/compagnon-configure` (its own step, `configure.lessons`, comes with
 `lessons-from-reviews`); measuring the review meeting (second change,
 below).
 
@@ -60,7 +60,7 @@ task-progress relay `change.archive`, `lessons-from-reviews`
 `change.archive` and `configure.enrich` next to its `configure.lessons`.
 
 **Alternatives considered**: one step for the three skills — a change to
-`/codev-archive` would pay for configure runs, against 0008's
+`/compagnon-archive` would pay for configure runs, against 0008's
 per-step selection. Folding sync and archive into one step — the
 version-check follow-up touches both, but task-progress and lessons
 touch only the archive. A separate scoring module per step — three
@@ -71,7 +71,7 @@ copies of the same measures and verdict.
 A case carries `change/`, an archived change's files, laid on `ref`, the
 parent of the commit that brought it to `main`, as update cases do; an
 optional `overlay/` lays other files on the tree — a configuration with
-`codev_version: ">=99"` for the version cases. A refusal case's
+`compagnon_version: ">=99"` for the version cases. A refusal case's
 `change/` is the archived one edited to fail as wanted: a requirement
 stripped of its normative keywords (a requirement renamed so it matches
 none fails the merge with the code `invalid`, not validation), a
@@ -90,20 +90,20 @@ are written:
 
 | Case | Step | Change | Expected |
 |---|---|---|---|
-| `archive-merges-and-moves` | archive | `2026-10-23-eval-codev-binary-name` | `done`, reply names `Moved to` |
+| `archive-merges-and-moves` | archive | `2026-10-23-eval-compagnon-binary-name` | `done`, reply names `Moved to` |
 | `archive-unchecked-tasks` | archive | `2026-10-14-fewer-review-turns` (one box unchecked) | `done` |
-| `archive-validation-failed` | archive | `2026-10-12-forward-compatible-config`, a requirement without `SHALL` | `refused`, `code: validation_failed`, reply names `codev validate` |
-| `archive-review-blocked` | archive | `2026-10-20-role-models`, a `high` finding reopened | `refused`, `code: review_blocked`, reply names `codev review` |
-| `archive-planning-incomplete` | archive | `2026-10-23-eval-codev-binary-name` without `tasks.md` | `refused`, reply names `/codev-propose` |
-| `archive-version-later` | archive | `2026-10-20-role-models`, `codev_version: ">=99"` | `done`, reply names `>=99` |
+| `archive-validation-failed` | archive | `2026-10-12-forward-compatible-config`, a requirement without `SHALL` | `refused`, `code: validation_failed`, reply names `compagnon validate` |
+| `archive-review-blocked` | archive | `2026-10-20-role-models`, a `high` finding reopened | `refused`, `code: review_blocked`, reply names `compagnon review` |
+| `archive-planning-incomplete` | archive | `2026-10-23-eval-compagnon-binary-name` without `tasks.md` | `refused`, reply names `/compagnon-propose` |
+| `archive-version-later` | archive | `2026-10-20-role-models`, `compagnon_version: ">=99"` | `done`, reply names `>=99` |
 | `sync-merges` | sync | `2026-10-12-forward-compatible-config` | `done`, reply names `ready to be archived` |
-| `sync-validation-failed` | sync | as `archive-validation-failed` | `refused`, `code: validation_failed`, reply names `codev validate` |
+| `sync-validation-failed` | sync | as `archive-validation-failed` | `refused`, `code: validation_failed`, reply names `compagnon validate` |
 | `sync-planning-incomplete` | sync | as `archive-planning-incomplete` | `refused`, reply does not hold `Synced` |
-| `sync-version-later` | sync | `2026-10-23-eval-codev-binary-name`, `codev_version: ">=99"` | `done`, reply names `>=99` |
+| `sync-version-later` | sync | `2026-10-23-eval-compagnon-binary-name`, `compagnon_version: ">=99"` | `done`, reply names `>=99` |
 
-`sync-planning-incomplete` checks no suggested skill: `/codev-sync`
-suggests "`/codev-propose` or `/codev-continue`", and `/codev-continue`
-is not a skill codev installs, so a run following the skill could name
+`sync-planning-incomplete` checks no suggested skill: `/compagnon-sync`
+suggests "`/compagnon-propose` or `/compagnon-continue`", and `/compagnon-continue`
+is not a skill compagnon installs, so a run following the skill could name
 either. The case records the stop, not the suggestion, until that line
 of the skill is settled by a change of its own.
 
@@ -124,47 +124,47 @@ spread of five runs.
 **Alternatives considered**: synthetic `base/` projects for sync and
 archive — they would not exercise the real specs' merge, and the
 history cases already exist as a pattern. An `overlay` key appending
-YAML to the configuration — it cannot replace a `codev_version` the
+YAML to the configuration — it cannot replace a `compagnon_version` the
 configuration at `ref` already sets.
 
-### Decision: The reference is codev's own command, run by the runner on a copy
+### Decision: The reference is compagnon's own command, run by the runner on a copy
 
 Before the agent runs, the runner copies the fixture outside the case's
-directory and runs `codev sync --change <change> --json` or `codev
+directory and runs `compagnon sync --change <change> --json` or `compagnon
 archive --change <change> --json` on it with the
-codev under test; it records the exit code, the report and a digest per
-file under `_codev/`. A `done` run must leave `_codev/` as the reference
+compagnon under test; it records the exit code, the report and a digest per
+file under `_compagnon/`. A `done` run must leave `_compagnon/` as the reference
 did, the archive folder's date aside; a `refused` run as the fixture
 was. This catches a merge written by hand, a partial one and a missing
 move, without the case listing every spec the merge touches, and keeps
-working when codev's merge changes. A `done` case whose reference fails
+working when compagnon's merge changes. A `done` case whose reference fails
 ends in error rather than scoring: the case has gone stale, and the
 error says so. Scoring stays pure: it reads the recorded digests.
 
 **Alternatives considered**: listing in `case.yaml` the specs created
 and updated — it misses a hand merge that touches the right files, and
 goes stale with every change to the merge. Checking only that the agent
-called `codev archive` in its tool calls — it passes a run that calls it
+called `compagnon archive` in its tool calls — it passes a run that calls it
 and then edits the result.
 
 ### Decision: Configure cases are small synthetic projects, with the author's answer set by the case
 
-`/codev-configure` reads a project, not a change, and its scenarios are
+`/compagnon-configure` reads a project, not a change, and its scenarios are
 about stacks (Jest in `__tests__/`, Go without tests, pytest). Five small
 `base/` projects, like the review cases', keep the runs short and the
 expected texts sure. The prompt plays the author: ask the skill's
 confirmation, then continue with the case's `answer`. With `yes` the
 written file shows what the skill preserves; with `no`, that it writes
-nothing. A project without `_codev/config.yaml` gets the skills, then
-loses `_codev/`, so the refusal is measured as a user meets it.
+nothing. A project without `_compagnon/config.yaml` gets the skills, then
+loses `_compagnon/`, so the refusal is measured as a user meets it.
 
 | Case | Answer | Expected |
 |---|---|---|
 | `configure-ts-jest` | yes | `written`; `tasks` names `Jest`, `__tests__/`, not `Vitest` |
 | `configure-go-no-tests` | yes | `written`; `tasks` names `go test ./...`, `go vet`, `_test.go` |
-| `configure-python-preserves` | yes | `written`; `language: fr`, `mcp`, `codev_version`, comments kept; `tasks` names `pytest` |
+| `configure-python-preserves` | yes | `written`; `language: fr`, `mcp`, `compagnon_version`, comments kept; `tasks` names `pytest` |
 | `configure-answer-no` | no | `unchanged`; reply names `No changes made` |
-| `configure-no-config` | — (yes) | `refused`; reply names `codev init` |
+| `configure-no-config` | — (yes) | `refused`; reply names `compagnon init` |
 
 **Alternatives considered**: this repository at a past commit — a large
 project, several dollars a run, and expected texts that drift with the
@@ -177,7 +177,7 @@ none.
 ### Decision: The update check's question is answered **Later** by the prompt
 
 Every new step's prompt says that, if the skill asks whether to update
-codev, the author answers **Later**: the answer that leads to the dead
+compagnon, the author answers **Later**: the answer that leads to the dead
 end of `R-migration-2`, and the only one a sandboxed run can take
 (`self-update` needs the network). The rest of the prompt stays neutral
 — it never says what to write or refuse — so the checks measure the
@@ -189,7 +189,7 @@ succeed in the sandbox, so the choice has one value.
 ### Decision: The cost guidance of decision 0008 holds
 
 Each run gets the review cases' budget (3 USD) and timeout (600 s): a
-run calls one or two codev commands, or reads a small project. The
+run calls one or two compagnon commands, or reads a small project. The
 suite stays on demand: only `--step` selects these cases, the CI
 workflow is unchanged, and the baseline is recorded locally with the
 pinned Claude Code, the new steps' cases alone, as `CONTRIBUTING`
@@ -241,7 +241,7 @@ and its format is still under review.
   steps cannot be recorded alone] → Record them with the version the
   workflow then pins and record the rest of the baseline again, as
   `CONTRIBUTING` requires for a change of version.
-- [A past change no longer archives with today's codev (a rule added
+- [A past change no longer archives with today's compagnon (a rule added
   since)] → The reference run says so when the case is written; pick
   another change, or fix it in `change/`.
 - [An archive at midnight moves the change to another date than the
@@ -254,7 +254,7 @@ and its format is still under review.
   pass share of 0.8 is reviewed before it is committed.
 - [The runner's reference command writes outside its copy] → It runs in
   a copy under the run's temporary folder, with the environment the
-  runner already gives codev; the agent's directory is checked
+  runner already gives compagnon; the agent's directory is checked
   unchanged before the agent starts.
 - [Five more runs per waiting change] → Each waiting change selects
   only its steps with `--step`, at a few dollars per candidate.
@@ -262,7 +262,7 @@ and its format is still under review.
 ## Migration Plan
 
 None for users: `evals/` is not shipped. `report.json` gains three
-sections; an older `codev-evals` reading a newer baseline ignores them.
+sections; an older `compagnon-evals` reading a newer baseline ignores them.
 
 ## Open Questions
 

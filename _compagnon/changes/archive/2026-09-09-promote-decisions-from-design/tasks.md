@@ -2,7 +2,7 @@
 
 ## 1. Core — parser for `### Decision: ...` blocks
 
-- [x] 1.1 New module `codev-engine::design` (pure function — same
+- [x] 1.1 New module `compagnon-engine::design` (pure function — same
       pattern as the other parsers). Signature:
       ```rust
       pub struct DecisionBlock {
@@ -68,9 +68,9 @@
       simple path check (the layout only knows active changes under
       `changes/<name>/`, an archived change is not reachable by
       `change::load` — the `UnknownChange` error is surfaced today).
-      **New**: `codev list` alone shows the active ones; we add a
+      **New**: `compagnon list` alone shows the active ones; we add a
       manual pass that checks for the existence of a folder under
-      `_codev/changes/archive/*-<name>/` to distinguish the two cases
+      `_compagnon/changes/archive/*-<name>/` to distinguish the two cases
       and return the right stable code.
 - [x] 4.3 `design_missing`: if `<change_dir>/design.md` does not exist
       → dedicated code.
@@ -78,7 +78,7 @@
       project, checks the created ADR, the seal.yaml, the substitution
       in the design.
 
-## 5. CLI — `codev decision promote` subcommand
+## 5. CLI — `compagnon decision promote` subcommand
 
 - [x] 5.1 `DecisionCommand::Promote { change, title, json }`.
       clap documentation: "Promote a `### Decision: <title>` block
@@ -90,9 +90,9 @@
 - [x] 5.3 Human rendering:
       ```
       ✓ Promoted decision "<title>" to ADR 0007: <title>
-        File:      _codev/decisions/0007-<slug>.md
+        File:      _compagnon/decisions/0007-<slug>.md
         Hash:      sha256:...
-        Source:    _codev/changes/<change>/design.md
+        Source:    _compagnon/changes/<change>/design.md
 
       Split the body into Context / Decision / Consequences /
       Rejected Alternatives before archiving the change.
@@ -118,8 +118,8 @@
 - [x] 7.1 `cargo test --workspace` stays green, +12 new tests
       (parser + lookup + plan + execute + CLI).
 - [x] 7.2 `cargo clippy --workspace --all-targets` without warnings.
-- [x] 7.3 `codev validate --strict --all` stays green.
+- [x] 7.3 `compagnon validate --strict --all` stays green.
 - [x] 7.4 Manual test: on the test change, create a design.md with a
       decision block, run the promotion, check that the ADR is
-      created, sealed, referenced, and that `codev decision list`
+      created, sealed, referenced, and that `compagnon decision list`
       does list it.

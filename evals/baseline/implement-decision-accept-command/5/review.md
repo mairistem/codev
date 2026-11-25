@@ -1,6 +1,6 @@
 # Review record: decision-accept-command
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## code.review
 
@@ -13,7 +13,7 @@ Mode: inline.
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/decisions_actions.rs:581-584"
+location: "crates/compagnon-engine/src/decisions_actions.rs:581-584"
 evidence: |
   plan.write(entry.path.clone(), accepted, WriteMode::Overwrite);
   match existing_seal.find(&local_id) {
@@ -23,7 +23,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/decisions_actions.rs — plan_accept decides `new_seal` before building the plan"
+    ref: "crates/compagnon-engine/src/decisions_actions.rs — plan_accept decides `new_seal` before building the plan"
   - status: fixed
     by: newcomer
 ```
@@ -33,7 +33,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-engine/src/decisions_actions.rs:1616-1633"
+location: "crates/compagnon-engine/src/decisions_actions.rs:1616-1633"
 evidence: |
   fn plan_accept_refuses_a_leftover_seal_for_another_body() {
 recommendation: Move the "leftover seal for the same body is kept" half into its own test named after that behavior, so the test list describes both outcomes.
@@ -42,7 +42,7 @@ history:
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/decisions_actions.rs — new test plan_accept_keeps_a_leftover_seal_for_the_same_body"
+    ref: "crates/compagnon-engine/src/decisions_actions.rs — new test plan_accept_keeps_a_leftover_seal_for_the_same_body"
   - status: fixed
     by: newcomer
 ```

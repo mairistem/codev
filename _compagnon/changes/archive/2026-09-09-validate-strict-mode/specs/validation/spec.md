@@ -2,7 +2,7 @@
 
 ### Requirement: Strict mode propagates warnings to the exit code
 
-`codev validate [--all|--changes|--specs|<item>] [--strict]` MUST
+`compagnon validate [--all|--changes|--specs|<item>] [--strict]` MUST
 return a non-zero exit code as soon as at least one finding is
 emitted, **whatever its severity**, when `--strict` is present.
 Without `--strict`, the behavior stays unchanged: exit code 1 only in
@@ -14,16 +14,16 @@ rendering (text and JSON) stays identical.
 
 #### Scenario: `--strict` on a clean report → exit 0
 
-- **GIVEN** a project for which `codev validate --all` reports no
+- **GIVEN** a project for which `compagnon validate --all` reports no
   finding
-- **WHEN** the user runs `codev validate --all --strict`
+- **WHEN** the user runs `compagnon validate --all --strict`
 - **THEN** the command's exit code is 0
 
 #### Scenario: `--strict` on a warning → non-zero exit
 
 - **GIVEN** a project containing an unsealed `accepted` local ADR,
   which reports a `decision_unsealed` (warning) on validate
-- **WHEN** the user runs `codev validate --strict`
+- **WHEN** the user runs `compagnon validate --strict`
 - **THEN** the command's exit code is non-zero (1)
 - **AND** the human rendering still shows the `warning` line (not
   `error`) for this finding — the displayed severity is preserved
@@ -31,7 +31,7 @@ rendering (text and JSON) stays identical.
 #### Scenario: Without `--strict`, a warning does not flip the exit code
 
 - **GIVEN** the same context
-- **WHEN** the user runs `codev validate` (without `--strict`)
+- **WHEN** the user runs `compagnon validate` (without `--strict`)
 - **THEN** the command's exit code is 0
 - **AND** the warning still appears in the output
 
@@ -39,7 +39,7 @@ rendering (text and JSON) stays identical.
 
 - **GIVEN** a project where a local ADR was edited in place after
   sealing, which reports a `decision_seal_mismatch` (error)
-- **WHEN** the user runs `codev validate`
+- **WHEN** the user runs `compagnon validate`
 - **THEN** the command's exit code is non-zero (1) — strict mode is
   not needed for errors
 
@@ -58,19 +58,19 @@ signal.
 #### Scenario: `hasWarnings: true` on a report with a warning
 
 - **GIVEN** a project that reports a `decision_unsealed` warning
-- **WHEN** the user runs `codev validate --json`
+- **WHEN** the user runs `compagnon validate --json`
 - **THEN** the JSON document carries `"hasWarnings": true` at the root
 
 #### Scenario: `hasWarnings: false` on a clean report
 
 - **GIVEN** a project without any finding
-- **WHEN** the user runs `codev validate --all --json`
+- **WHEN** the user runs `compagnon validate --all --json`
 - **THEN** the JSON document carries `"hasWarnings": false`
 
 #### Scenario: `hasWarnings` independent of strict mode
 
 - **GIVEN** a project that reports a warning and no error
-- **WHEN** the user runs `codev validate --strict --json`
+- **WHEN** the user runs `compagnon validate --strict --json`
 - **THEN** the JSON document carries `"hasWarnings": true`
 - **AND** the command's exit code is non-zero — the two signals
   coexist without contradicting each other

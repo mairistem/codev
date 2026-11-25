@@ -12,12 +12,12 @@ kept true each time the baseline is recorded again.
 
 ## What Changes
 
-- **A new command, `codev-evals docs`**, writes the chapter
+- **A new command, `compagnon-evals docs`**, writes the chapter
   `reliability.md` of both books (`docs/en/src/`, `docs/fr/src/`) from
   the committed baseline's `report.json` and `run.json`. The pages are
   never written by hand.
 - **The chapter**, in English and French: what the bench is and what it
-  is not; the run (date, model, Claude Code and codev versions, cases,
+  is not; the run (date, model, Claude Code and compagnon versions, cases,
   cost); headline figures (recall, evidence validity, false positives,
   roles within thresholds); a chart of false positives per role with the
   threshold drawn and the roles over it marked by an icon and a label; a
@@ -25,10 +25,10 @@ kept true each time the baseline is recorded again.
   the thresholds and which roles fail them; the limits of the measure;
   how to run it; a link to `evals/baseline` on GitHub. The charts are
   inline SVG, with no script, readable in light and dark themes, on the
-  website and in `codev docs`.
+  website and in `compagnon docs`.
 - **A test fails when the committed pages differ from what the command
   produces**, so a new baseline cannot be committed without its page.
-- The chapter is listed in both `SUMMARY.md` under "Using codev", after
+- The chapter is listed in both `SUMMARY.md` under "Using compagnon", after
   "Roles"; the Roles chapter links to it; the contributing guides say to
   regenerate it with the baseline; the website's landing page links to it.
 
@@ -49,12 +49,12 @@ kept true each time the baseline is recorded again.
   name the command).
 - `docs/en/src/reliability.md`, `docs/fr/src/reliability.md` (new,
   generated), both `SUMMARY.md`, both `roles.md` (a link).
-- `docs/theme/mairistem.css` and `crates/codev-cli/assets/docs.css`: the
+- `docs/theme/mairistem.css` and `crates/compagnon-cli/assets/docs.css`: the
   chart and figure styles, in light and dark.
 - `docs/site/index.html`: a link to the chapter.
 - `CONTRIBUTING.md`, `CONTRIBUTING.fr.md`: regenerate the page with the
   baseline.
-- `codev docs` embeds the new chapter through `SUMMARY.md`, unchanged in
+- `compagnon docs` embeds the new chapter through `SUMMARY.md`, unchanged in
   code. The roles, the skills and the scoring are unchanged.
 
 ## Domains

@@ -1,6 +1,6 @@
 ---
 id: "0007"
-title: "The skills dispatch sub-agents; codev only renders the permission"
+title: "The skills dispatch sub-agents; Compagnon only renders the permission"
 status: accepted
 date: 2026-10-13
 ---
@@ -38,8 +38,8 @@ the skill sets no clock of its own.
 
 - The binary stays free of credentials, processes and model costs; a
   later multi-agent step reuses the same split: data and checks in
-  codev, orchestration in the skill.
-- What a sub-agent receives cannot be enforced by codev, only written in
+  Compagnon, orchestration in the skill.
+- What a sub-agent receives cannot be enforced by Compagnon, only written in
   the skill and checked afterwards in the record; tests assert the
   instruction is in the rendered skills.
 - The skills grow by one shared procedure, rendered in both modes so that

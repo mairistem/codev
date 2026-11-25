@@ -17,7 +17,7 @@ never inside it, even when that requirement ends the section.
   a requirement `Login`
 - **AND** an `ADDED` delta carrying a requirement `Two-Factor Authentication`
   with its scenario
-- **WHEN** the user runs `codev sync <change>`
+- **WHEN** the user runs `compagnon sync <change>`
 - **THEN** the main spec now contains `Login` first, then
   `Two-Factor Authentication`
 - **AND** the `Login` block — its header, its description, its scenarios —
@@ -29,7 +29,7 @@ never inside it, even when that requirement ends the section.
   `Session Expiration`, in that order
 - **AND** a `MODIFIED` delta carrying `Session Expiration` with a new
   scenario
-- **WHEN** the user runs `codev sync <change>`
+- **WHEN** the user runs `compagnon sync <change>`
 - **THEN** the `Session Expiration` block has been replaced by the delta's
   version
 - **AND** the `Login` block and the whitespace separating the two
@@ -39,7 +39,7 @@ never inside it, even when that requirement ends the section.
 
 - **GIVEN** a main spec containing `Login` and `Remember Me`
 - **AND** a `REMOVED` delta carrying `Remember Me`
-- **WHEN** the user runs `codev sync <change>`
+- **WHEN** the user runs `compagnon sync <change>`
 - **THEN** the main spec no longer contains any trace of `Remember Me`
 - **AND** the `Login` block remains identical down to the character
 
@@ -48,7 +48,7 @@ never inside it, even when that requirement ends the section.
 - **GIVEN** a main spec containing `Session Expiration` with its
   scenarios
 - **AND** a `RENAMED` delta mapping `Session Expiration` to `Session Timeout`
-- **WHEN** the user runs `codev sync <change>`
+- **WHEN** the user runs `compagnon sync <change>`
 - **THEN** the requirement header has become `### Requirement: Session Timeout`
 - **AND** the description and scenarios of that requirement are identical
   down to the character
@@ -58,6 +58,6 @@ never inside it, even when that requirement ends the section.
 - **GIVEN** a main spec whose `## Requirements` ends with `Login`
 - **AND** a delta that modifies `Login`, making it longer, and adds
   `Export`
-- **WHEN** the user runs `codev sync <change>`
+- **WHEN** the user runs `compagnon sync <change>`
 - **THEN** the main spec holds the delta's `Login` whole, then `Export`
 - **AND** no line of `Login` is cut, and a second sync changes nothing

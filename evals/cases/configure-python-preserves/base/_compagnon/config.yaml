@@ -1,11 +1,11 @@
-# Configuration codev du service rendezvous.
+# Configuration compagnon du service rendezvous.
 schema: spec-driven
 
 # Les artefacts sont rédigés en français.
 language: fr
 
-# Toute l'équipe utilise une version de codev qui lit ce format.
-codev_version: ">=0.6"
+# Toute l'équipe utilise une version de compagnon qui lit ce format.
+compagnon_version: ">=0.6"
 
 # Le MCP Jira de l'équipe, injecté dans les skills à l'installation.
 mcp:

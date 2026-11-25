@@ -2,12 +2,12 @@
 
 ### Requirement: The template is served in the project's keyword language
 
-`codev instructions` SHALL give as `template` the artifact's template in the
+`compagnon instructions` SHALL give as `template` the artifact's template in the
 keyword language. The embedded `spec-driven` schema SHALL hold its four
 templates in every language the keyword catalog ships, each writing every
 catalog keyword it holds with that language's first text, and its other
 headings, guidance comments and the `**WHEN**` / `**THEN**` scenario lines
-in that language. Identifiers stay as codev defines them in every
+in that language. Identifiers stay as compagnon defines them in every
 language: the domain names of the proposal's domain list (`security`,
 `personal-data`…), so that a template's domain list is read without
 error. A project schema SHALL be read from
@@ -18,7 +18,7 @@ change is served unchanged.
 #### Scenario: The French proposal template
 
 - **GIVEN** a `spec-driven` change and a configuration with `language: fr`
-- **WHEN** the user runs `codev instructions proposal --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth --json`
 - **THEN** `template` starts with `# Proposition :` and holds
   `## Changements`, `## Domaines` and `## Note de version`
 - **AND** it holds no `## What Changes`
@@ -26,14 +26,14 @@ change is served unchanged.
 #### Scenario: The French spec template
 
 - **GIVEN** a `spec-driven` change and a configuration with `language: fr`
-- **WHEN** the user runs `codev instructions specs --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions specs --change add-auth --json`
 - **THEN** `template` holds `## Exigences AJOUTÉES`, `### Exigence :`,
   `#### Scénario :` and the word `DOIT`
 
 #### Scenario: Every embedded template uses its language's keywords
 
 - **GIVEN** the embedded templates of every catalog language
-- **WHEN** codev reads each template's structural lines with the keyword
+- **WHEN** compagnon reads each template's structural lines with the keyword
   catalog
 - **THEN** every keyword it holds is recognized as the text of its key in
   the template's own language
@@ -41,7 +41,7 @@ change is served unchanged.
 #### Scenario: A language without a catalog gets the English template
 
 - **GIVEN** a `spec-driven` change and a configuration with `language: pt-BR`
-- **WHEN** the user runs `codev instructions proposal --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth --json`
 - **THEN** `language` is `pt-BR`, `keywordLanguage` is `en`
 - **AND** `template` holds `## What Changes`
 
@@ -50,7 +50,7 @@ change is served unchanged.
 - **GIVEN** a configuration with `language: fr`, and a project schema whose
   artifact `brief` declares `template: brief.md`, with both
   `templates/fr/brief.md` and `templates/brief.md`
-- **WHEN** the user runs `codev instructions brief --change quick --json`
+- **WHEN** the user runs `compagnon instructions brief --change quick --json`
 - **THEN** `template` is the content of `templates/fr/brief.md`
 
 #### Scenario: A project schema with a single template
@@ -58,7 +58,7 @@ change is served unchanged.
 - **GIVEN** a configuration with `language: fr`, and a project schema whose
   artifact `brief` declares `template: brief.md`, with only
   `templates/brief.md`
-- **WHEN** the user runs `codev instructions brief --change quick --json`
+- **WHEN** the user runs `compagnon instructions brief --change quick --json`
 - **THEN** `template` is the content of `templates/brief.md`
 - **AND** when that template's headings are English keywords, such as
   `## What Changes`, `keywordLanguage` is `en` and `keywords` are the
@@ -66,9 +66,9 @@ change is served unchanged.
 
 ## MODIFIED Requirements
 
-### Requirement: `codev instructions` describes one artifact of a change
+### Requirement: `compagnon instructions` describes one artifact of a change
 
-`codev instructions [ARTIFACT] --change <name>` SHALL describe the named
+`compagnon instructions [ARTIFACT] --change <name>` SHALL describe the named
 artifact of the change's schema or, without `ARTIFACT`, the first artifact
 whose state is `ready` in the schema's dependency order. With `--json`, the
 document SHALL carry:
@@ -89,7 +89,7 @@ document SHALL carry:
   or a keyword heading in it, the language the `keyword-languages`
   capability resolves from `language`;
 - `keywords` — an object giving, for every key of the keyword catalog, the
-  text codev writes for it in `keywordLanguage` (the first text of the
+  text compagnon writes for it in `keywordLanguage` (the first text of the
   key), and for `normative` and `none` the list of all its texts;
 - `dependencies` — one entry per artifact it requires, with `id`, `path`
   (the change folder joined with that artifact's `generates`) and `done`,
@@ -99,7 +99,7 @@ document SHALL carry:
   `decisions` capability;
 - `skipped` — `true` when the change's `skip_specs` disables the artifact;
 - `related` — the existing requirements the change likely touches, as
-  "`codev instructions` names the existing requirements the change likely
+  "`compagnon instructions` names the existing requirements the change likely
   touches" says; an empty array when there are none;
 - `role` — the artifact's role as the `roles` capability resolves it
   (`id`, `name`, `kind`, `at`, `artifact`, `question`, `when`,
@@ -112,31 +112,31 @@ The command reads files and writes none. It exits with code 0.
 #### Scenario: The next artifact to write
 
 - **GIVEN** a `spec-driven` change whose `proposal.md` exists
-- **WHEN** the user runs `codev instructions --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions --change add-auth --json`
 - **THEN** `artifact` is `specs`
-- **AND** `resolvedOutputPath` ends with `_codev/changes/add-auth/specs/**/*.md`
+- **AND** `resolvedOutputPath` ends with `_compagnon/changes/add-auth/specs/**/*.md`
 - **AND** `dependencies` is one entry `proposal` with `done: true` and the
   path of `proposal.md`, and `unlocks` is `["tasks"]`
 
 #### Scenario: A named artifact carries the schema's guidance
 
 - **GIVEN** a `spec-driven` change
-- **WHEN** the user runs `codev instructions proposal --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth --json`
 - **THEN** `instruction` is the `proposal` instruction of the schema and
   `template` its template, which holds `## Why`
-- **AND** `resolvedOutputPath` ends with `_codev/changes/add-auth/proposal.md`
+- **AND** `resolvedOutputPath` ends with `_compagnon/changes/add-auth/proposal.md`
 
 #### Scenario: Dependencies not written yet
 
 - **GIVEN** a `spec-driven` change with no artifact written
-- **WHEN** the user runs `codev instructions tasks --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions tasks --change add-auth --json`
 - **THEN** `dependencies` lists `specs` and `design`, both with
   `done: false`
 
 #### Scenario: The configured language
 
 - **GIVEN** a configuration with `language: fr`
-- **WHEN** the user runs `codev instructions proposal --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth --json`
 - **THEN** `language` and `keywordLanguage` are `fr`
 - **AND** `keywords.requirement` is `### Exigence :` and
   `keywords.normative` is `["DOIT", "DOIVENT"]`
@@ -147,14 +147,14 @@ The command reads files and writes none. It exits with code 0.
 
 - **GIVEN** a change using a project schema whose artifact `brief` declares
   neither `instruction` nor `template`
-- **WHEN** the user runs `codev instructions brief --change quick --json`
+- **WHEN** the user runs `compagnon instructions brief --change quick --json`
 - **THEN** `instruction` and `template` are `null`
 
 #### Scenario: The artifact's role
 
 - **GIVEN** a `spec-driven` change and a configuration where `qa` has the
   extra criterion `Every error code is named`
-- **WHEN** the user runs `codev instructions specs --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions specs --change add-auth --json`
 - **THEN** `role.id` is `qa` and `role.question` is the QA analyst's
   question
 - **AND** `role.doneWhen` ends with `Every error code is named` with the
@@ -164,12 +164,12 @@ The command reads files and writes none. It exits with code 0.
 
 - **GIVEN** a change using a project schema whose artifact `brief` declares
   no role
-- **WHEN** the user runs `codev instructions brief --change quick --json`
+- **WHEN** the user runs `compagnon instructions brief --change quick --json`
 - **THEN** `role` is `null`
 
-### Requirement: The human output of `codev instructions` reads top to bottom
+### Requirement: The human output of `compagnon instructions` reads top to bottom
 
-Without `--json`, `codev instructions` SHALL print, in this order: the line
+Without `--json`, `compagnon instructions` SHALL print, in this order: the line
 `Artifact: <id> (change `<name>`, schema <schema>)`, `Write to:` with the
 resolved output path, `Language:` with the language followed by the
 language of the structural keywords — `Language: fr — prose and structural
@@ -187,7 +187,7 @@ criteria each prefixed by its origin in parentheses, `Decisions in effect:`,
 
 - **GIVEN** a configuration with a context and a rule for `specs`, and a
   change whose `proposal.md` exists
-- **WHEN** the user runs `codev instructions specs --change add-auth`
+- **WHEN** the user runs `compagnon instructions specs --change add-auth`
 - **THEN** the output starts with `Artifact: specs (change `add-auth`,
   schema spec-driven)`
 - **AND** with no `language:` in the configuration, its third line is
@@ -199,18 +199,18 @@ criteria each prefixed by its origin in parentheses, `Decisions in effect:`,
 #### Scenario: No empty section
 
 - **GIVEN** a configuration without context nor rules
-- **WHEN** the user runs `codev instructions proposal --change add-auth`
+- **WHEN** the user runs `compagnon instructions proposal --change add-auth`
 - **THEN** the output has no `Read before writing:`, `Project context:`,
   `Rules for this artifact:` nor `Decisions in effect:` heading
 
-### Requirement: `codev instructions` fails with stable codes
+### Requirement: `compagnon instructions` fails with stable codes
 
-`codev instructions` SHALL fail with exit code 1 and:
+`compagnon instructions` SHALL fail with exit code 1 and:
 
 - `unknown_artifact` when `ARTIFACT` is not an artifact of the change's
   schema, naming the artifact and the schema;
 - `no_artifact_ready` when `ARTIFACT` is omitted and no artifact is
-  `ready`, pointing to `codev status --change <name>`;
+  `ready`, pointing to `compagnon status --change <name>`;
 - `template_not_found` when the artifact declares a template that its
   project schema's `templates/` folder does not hold, neither under the
   keyword language's folder nor at its root;
@@ -225,7 +225,7 @@ field of the success document.
 
 #### Scenario: Unknown artifact
 
-- **WHEN** the user runs `codev instructions sketch --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions sketch --change add-auth --json`
 - **THEN** the exit code is 1
 - **AND** `status[0].code` is `unknown_artifact`, its message names
   `sketch` and `spec-driven`, and `artifact` is `null`
@@ -233,21 +233,21 @@ field of the success document.
 #### Scenario: The failure document keeps the configured language
 
 - **GIVEN** a configuration with `language: fr`
-- **WHEN** the user runs `codev instructions sketch --change add-auth --json`
+- **WHEN** the user runs `compagnon instructions sketch --change add-auth --json`
 - **THEN** the exit code is 1
 - **AND** `language` and `keywordLanguage` are `fr`
 
 #### Scenario: The failure document outside a project
 
-- **GIVEN** a directory outside any codev project
-- **WHEN** the user runs `codev instructions --json`
-- **THEN** `status[0].code` is `no_codev_root`
+- **GIVEN** a directory outside any compagnon project
+- **WHEN** the user runs `compagnon instructions --json`
+- **THEN** `status[0].code` is `no_compagnon_root`
 - **AND** `language` is `en`
 
 #### Scenario: Nothing left to write
 
 - **GIVEN** a change where every artifact is written
-- **WHEN** the user runs `codev instructions --change add-auth`
+- **WHEN** the user runs `compagnon instructions --change add-auth`
 - **THEN** the command fails with `no_artifact_ready`
 
 #### Scenario: A template missing from a project schema
@@ -255,5 +255,5 @@ field of the success document.
 - **GIVEN** a configuration with `language: fr`, and a project schema
   whose artifact `brief` declares `template: brief.md` with neither
   `templates/fr/brief.md` nor `templates/brief.md`
-- **WHEN** the user runs `codev instructions brief --change quick`
+- **WHEN** the user runs `compagnon instructions brief --change quick`
 - **THEN** the command fails with `template_not_found`

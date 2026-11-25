@@ -38,7 +38,7 @@
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 3930,
+          "compagnon roles": 3930,
           "skill": 11591
         }
       },
@@ -49,7 +49,7 @@
         "output": 3,
         "toolCalls": 2,
         "sources": {
-          "codev review": 2479
+          "compagnon review": 2479
         }
       },
       {
@@ -59,7 +59,7 @@
         "output": 180,
         "toolCalls": 0,
         "sources": {
-          "codev review": 815,
+          "compagnon review": 815,
           "edit": 582
         }
       }
@@ -81,7 +81,7 @@
     "findings": [],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/fetch-exchange-rates/review.md",
+    "path": "_compagnon/changes/fetch-exchange-rates/review.md",
     "status": [],
     "steps": [
       {

@@ -30,26 +30,26 @@ The 3 existing targets (macOS/Linux) and the `install.sh` script are
     target: x86_64-pc-windows-msvc
   ```
   A Windows-specific packaging step produces
-  `codev-<version>-x86_64-pc-windows-msvc.zip` (instead of `.tar.gz`)
-  containing `codev.exe`, `README.md`, `LICENSE`, `docs/codev.md`.
+  `compagnon-<version>-x86_64-pc-windows-msvc.zip` (instead of `.tar.gz`)
+  containing `compagnon.exe`, `README.md`, `LICENSE`, `docs/compagnon.md`.
 - **New `install.ps1` script** at the repository root, pipeable:
   ```powershell
-  iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+  iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
   ```
   The script:
   - detects the architecture (`$env:PROCESSOR_ARCHITECTURE`);
-  - resolves the version (`$env:CODEV_VERSION` or the latest via the
+  - resolves the version (`$env:COMPAGNON_VERSION` or the latest via the
     GitHub API);
   - downloads the target `.zip` and the `SHA256SUMS` via
     `Invoke-WebRequest`;
   - verifies the SHA-256 via `Get-FileHash -Algorithm SHA256`;
   - extracts via `Expand-Archive`;
-  - copies `codev.exe` into `$env:LOCALAPPDATA\Programs\codev\`,
+  - copies `compagnon.exe` into `$env:LOCALAPPDATA\Programs\compagnon\`,
     creating the folder if missing;
   - **prints** the instructions for adding the folder to the user
     PATH (does not modify the environment variable — same stance as
     `install.sh`, which does not touch `.zshrc`).
-- **Installation section of `docs/codev.md`** — the "recommended
+- **Installation section of `docs/compagnon.md`** — the "recommended
   path" splits in two: `curl … | sh` for macOS/Linux and
   `iwr … | iex` for Windows. A table or two sub-blocks, to be decided
   at render time.
@@ -73,7 +73,7 @@ None.
     recommended paths (Unix + Windows).
 - `distribution` — one ADDED requirement: the `install.ps1` script
   and its contract (arch detection, SHA-256 check, install into
-  `%LOCALAPPDATA%\Programs\codev\`).
+  `%LOCALAPPDATA%\Programs\compagnon\`).
 
 ### Removed Capabilities
 
@@ -86,12 +86,12 @@ None.
   - `.github/workflows/release.yml`: new matrix row + `.zip`
     packaging branch.
   - `install.ps1`: new root file.
-  - `docs/codev.md`: rework of the Installation section.
+  - `docs/compagnon.md`: rework of the Installation section.
   - `README.md`: add the Windows one-liner.
 - **JSON contract**: nothing.
 - **File written**: on the release side, one more asset (the Windows
   `.zip`) + the updated `SHA256SUMS`. On the Windows user side, the
-  binary in `%LOCALAPPDATA%\Programs\codev\codev.exe`.
+  binary in `%LOCALAPPDATA%\Programs\compagnon\compagnon.exe`.
 - **Migration**: none. This batch is additive — the macOS/Linux
   binaries and `install.sh` keep existing unchanged.
 - **Out of scope**:
@@ -104,5 +104,5 @@ None.
     the instructions, does not modify `[Environment]`. Symmetry with
     `install.sh`.
   - **Automatically installed PowerShell completions** — the user
-    can run `codev completions powershell | Out-String | iex` if they
+    can run `compagnon completions powershell | Out-String | iex` if they
     want.

@@ -36,7 +36,7 @@ requirement.
 
 #### Scenario: Main spec with no requirement
 
-- **GIVEN** a main spec `_codev/specs/x/spec.md` with `## Purpose`
+- **GIVEN** a main spec `_compagnon/specs/x/spec.md` with `## Purpose`
   but whose `## Requirements` is empty
 - **WHEN** the validator inspects the spec
 - **THEN** a finding with code `spec_no_requirement` reports that the spec
@@ -61,33 +61,33 @@ is ignored, as a second section of the same heading is today.
 
 - **GIVEN** an active change whose proposal holds `## Note de version`
   with `- Ajouté : un export.` and `## Domaines` with `- [x] migration`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `release_note_*` and no domain finding is reported
 
 #### Scenario: Internal change written in French
 
 - **GIVEN** an active change whose `## Note de version` is `Aucune` and
   whose `## Domaines` is `Aucun`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** no `release_note_*` and no domain finding is reported
 
 #### Scenario: Unknown French category
 
 - **GIVEN** an active change whose `## Note de version` holds
   `- Amélioré : la vitesse.`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** a `release_note_invalid` error names `Amélioré` and its line
 
 #### Scenario: Translated domain name
 
 - **GIVEN** an active change whose `## Domaines` holds `- [x] sécurité`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** an `unknown_domain` error names `sécurité` and its line
 
 #### Scenario: The same section in two languages
 
 - **GIVEN** an active change whose proposal holds `## Domains` with
   `- [x] migration`, then `## Domaines` with `- [x] sécurité`
-- **WHEN** the user runs `codev validate <change>`
+- **WHEN** the user runs `compagnon validate <change>`
 - **THEN** the domains read are those of `## Domains`, and no
   `unknown_domain` finding names `sécurité`

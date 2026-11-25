@@ -2,7 +2,7 @@
 
 ## Context
 
-The suite (`evals/`, crate `codev-evals`, archived change
+The suite (`evals/`, crate `compagnon-evals`, archived change
 `2026-10-13-role-evaluation-suite`) loads each case in `case::load` — a
 pure function over `case.yaml`, the fixture's bytes and the roles' steps
 — and refuses a malformed case; `suite::load_cases` does the reading.
@@ -13,7 +13,7 @@ rest. `category` is already a field of every expected finding, but free
 text that nothing reads. The observation keeps the whole `ReviewV1`
 document, so each finding's `title` and `recommendation` are available
 to the scoring without a new run. The review record has no category
-field, and this change does not add one: the record is codev's public
+field, and this change does not add one: the record is compagnon's public
 format (decision 0002 keeps the JSON contract the boundary), and the
 reviewer must not be told what category is expected.
 
@@ -101,7 +101,7 @@ each read by a person and naming its seeded defect; otherwise adding
 terms until misses vanish would raise recall by construction.
 
 **Alternatives considered**: a `category` field in the review record
-filled by the reviewer (changes codev's public format for an evaluation
+filled by the reviewer (changes compagnon's public format for an evaluation
 need, and tells the reviewer what to look for if the categories are
 listed); per-case keywords (the same synonyms copied into every case
 that seeds the same kind of defect, drifting apart); a model as judge
@@ -187,18 +187,18 @@ markdown files (`` `…` ``; fenced code blocks are skipped):
   `cargo test` that is neither a flag nor the value of `-p`, `--test`,
   `--features` and the like, the first non-flag word after
   `npm test --`, the word after `-k` in `pytest`. It resolves when a test file of the fixture contains it: outside
-  `_codev/`, a path containing `test` or `spec`, or a `.rs` file
+  `_compagnon/`, a path containing `test` or `spec`, or a `.rs` file
   containing `#[test]`.
 
 The rule is deliberately narrow: it catches the gaps the first baseline
 showed (paths, directories and test names) without parsing prose.
 Anything it cannot recognise is not checked, rather than guessed.
 
-**Alternatives considered**: a separate `codev-evals lint` command (a
+**Alternatives considered**: a separate `compagnon-evals lint` command (a
 second gate a contributor can forget; loading already refuses invalid
 cases); checking every word that looks like a path in the prose (MIME
 types, routes and URLs would need their own exceptions); using
-`codev validate` on the fixture (it checks a plan's structure, not that
+`compagnon validate` on the fixture (it checks a plan's structure, not that
 the files it names exist).
 
 ### Decision: Coverage per expert: three seeded, two controls, one case of two severities
@@ -239,7 +239,7 @@ variance work is a non-goal).
 After the lint and the matching are tested, the existing cases are
 completed (their gaps fixed, secondary locations moved to
 `alternatives`, categories from the vocabulary), then the whole suite
-runs once — `cargo run -p codev-evals -- run --out evals/baseline` after
+runs once — `cargo run -p compagnon-evals -- run --out evals/baseline` after
 removing the old directory, Claude Code's default model, the default
 3 USD budget and 600 s timeout per case. The roles' scores before and
 after are recorded below, under **Baseline before and after**, once the

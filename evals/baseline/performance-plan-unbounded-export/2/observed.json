@@ -109,7 +109,7 @@
         "output": 204,
         "toolCalls": 0,
         "sources": {
-          "codev review": 475
+          "compagnon review": 475
         }
       }
     ]
@@ -189,7 +189,7 @@
     ],
     "format": 1,
     "issues": [],
-    "path": "_codev/changes/add-audit-export/review.md",
+    "path": "_compagnon/changes/add-audit-export/review.md",
     "status": [],
     "steps": [
       {

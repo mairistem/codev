@@ -1,13 +1,13 @@
-# Proposal: Evaluate the `/codev-update` skill
+# Proposal: Evaluate the `/compagnon-update` skill
 
 ## Why
 
-Decision 0008 asks that every change to what codev's agents read be
+Decision 0008 asks that every change to what compagnon's agents read be
 measured on the steps it touches, and that a step the suite does not
-cover be covered first. The suite covers `/codev-propose` (planning and
-the plan's reviews) and `/codev-apply` at `code.review`, but no case runs
-`/codev-update`. Since then, `capture-corrections` (#48) waits on this:
-it adds text to `/codev-update` that nothing can measure.
+cover be covered first. The suite covers `/compagnon-propose` (planning and
+the plan's reviews) and `/compagnon-apply` at `code.review`, but no case runs
+`/compagnon-update`. Since then, `capture-corrections` (#48) waits on this:
+it adds text to `/compagnon-update` that nothing can measure.
 
 ## What Changes
 
@@ -17,13 +17,13 @@ it adds text to `/codev-update` that nothing can measure.
   changes, the files it must leave alone, the files whose ripple the
   agent must report rather than edit, the text the revised artifact must
   hold, or a refusal.
-- `codev-evals run --step plan.update` replays the request with the
-  `/codev-update` skill of the codev under test, headlessly, and records
+- `compagnon-evals run --step plan.update` replays the request with the
+  `/compagnon-update` skill of the compagnon under test, headlessly, and records
   what changed.
 - Each run is scored by deterministic checks, without a model: the
   revised and the kept files, the ripple named in the agent's reply, the
   expected text, the change's validity, and nothing written outside the
-  change's folder. The report and `codev-evals compare` give the
+  change's folder. The report and `compagnon-evals compare` give the
   update measures next to the planning and review ones.
 - Six cases drawn from archived changes, and five runs of each recorded
   in the baseline. `capture-corrections` (#48) is then measured on them in
@@ -44,7 +44,7 @@ it adds text to `/codev-update` that nothing can measure.
 - `evals/`: the case format, the runner's fixture and prompt for
   `plan.update`, the scoring, the report, the comparison, six cases under
   `evals/cases/`, and `evals/baseline/`.
-- No change to codev itself: `evals/` is not shipped.
+- No change to compagnon itself: `evals/` is not shipped.
 - Documentation: the generated reliability page (`evals/src/reliability.rs`,
   `docs/{en,fr}/src/reliability.md`) and `CONTRIBUTING.md` /
   `CONTRIBUTING.fr.md`.

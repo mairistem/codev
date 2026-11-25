@@ -45,7 +45,7 @@ Rationale:
 - **deletions before moves**: `archive` moves the change folder at
   the end — a file deleted during sync must not come back to life
   because it lived in the change folder (it does not — deletions
-  target `_codev/specs/`, `move` targets `_codev/changes/`).
+  target `_compagnon/specs/`, `move` targets `_compagnon/changes/`).
 
 **Rejected alternative**: deletions before writes. No spec deletion
 depends on a write, but we prefer "write what is new, remove what no
@@ -102,7 +102,7 @@ port could honor.
 - **An `apply::execute` that fails mid-plan leaves an intermediate
   state.** → **Accepted trade-off**: strict atomicity would require a
   journaling system (rollback). Too expensive for current usage;
-  `codev validate` + `git status` remain the safety net.
+  `compagnon validate` + `git status` remain the safety net.
 - **A capability deleted then re-added in the same change** — an odd
   case, but possible: a total REMOVED followed by an ADDED on the same
   capability in another delta. → **Accepted trade-off**: the order of
