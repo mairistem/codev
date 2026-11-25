@@ -294,12 +294,12 @@ fn normalize(path: &Path) -> String {
 /// spaces turned into `-`, other punctuation dropped, and a `-N` suffix on
 /// repeats.
 #[derive(Default)]
-struct Slugger {
+pub(crate) struct Slugger {
     seen: HashMap<String, usize>,
 }
 
 impl Slugger {
-    fn slug(&mut self, text: &str) -> String {
+    pub(crate) fn slug(&mut self, text: &str) -> String {
         let base: String = text
             .trim()
             .chars()

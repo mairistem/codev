@@ -15,7 +15,7 @@ design, in *vouvoiement*.
 
 ## 1. The checks, on synthetic chapters
 
-- [ ] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add
+- [x] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add
   `unexplained_terms` and `anglicisms`, with the term lists of each
   edition (French: delta, artefact, capacité, schéma, déroulé,
   frontmatter, kebab-case), and unit tests one per scenario:
@@ -28,7 +28,7 @@ design, in *vouvoiement*.
   `the_french_verb_changer_is_not_an_anglicism`,
   `the_english_word_in_parentheses_code_or_path_is_allowed`; verified by
   these tests passing.
-- [ ] 1.2 Add the tests on the real chapters,
+- [x] 1.2 Add the tests on the real chapters,
   `every_everyday_chapter_explains_its_terms` and
   `the_french_everyday_pages_hold_no_anglicism` (the ten French everyday
   chapters and `README.fr.md`), and change `glossary_terms`: English adds
