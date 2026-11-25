@@ -58,6 +58,11 @@ pub trait FileSystem {
     /// whether to ignore or propagate it. The port's only role is to expose
     /// the destructive operation; any policy is decided upstream.
     fn remove_file(&self, path: &Path) -> io::Result<()>;
+
+    /// Removes an **empty** directory: a directory that still holds
+    /// anything is an error, never a recursive deletion. `compagnon migrate`
+    /// uses it to drop a skill folder once its generated file is gone.
+    fn remove_dir(&self, path: &Path) -> io::Result<()>;
 }
 
 /// The clock, behind a port.
@@ -596,6 +601,12 @@ impl FileSystem for RealFileSystem {
     fn remove_file(&self, path: &Path) -> io::Result<()> {
         std::fs::remove_file(path)
     }
+
+    fn remove_dir(&self, path: &Path) -> io::Result<()> {
+        // `remove_dir` (not `remove_dir_all`) refuses a non-empty directory
+        // by itself.
+        std::fs::remove_dir(path)
+    }
 }
 
 /// `rename(2)` fails with `EXDEV` when `from` and `to` are on different file
@@ -873,6 +884,41 @@ impl FileSystem for MemoryFileSystem {
             ))
         }
     }
+
+    fn remove_dir(&self, path: &Path) -> io::Result<()> {
+        let holds_anything = self
+            .files
+            .borrow()
+            .keys()
+            .chain(self.links.borrow().iter())
+            .any(|p| p != path && p.starts_with(path))
+            || self
+                .dirs
+                .borrow()
+                .iter()
+                .any(|d| d != path && d.starts_with(path));
+        if holds_anything {
+            return Err(io::Error::other(format!("{} is not empty", path.display())));
+        }
+        if self.files.borrow().contains_key(path) {
+            return Err(io::Error::other(format!(
+                "{} is a file, not a directory",
+                path.display()
+            )));
+        }
+        // A directory with nothing below it only exists when it was
+        // created explicitly.
+        let mut dirs = self.dirs.borrow_mut();
+        let before = dirs.len();
+        dirs.retain(|d| d != path);
+        if dirs.len() == before {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                format!("{} is missing", path.display()),
+            ));
+        }
+        Ok(())
+    }
 }
 
 /// Frozen environment, for tests.
@@ -912,6 +958,23 @@ mod tests {
         assert!(fs.exists(Path::new("/p/_compagnon")));
         assert!(fs.exists(Path::new("/p")));
         assert!(!fs.exists(Path::new("/p/_compagnon/specs")));
+    }
+
+    #[test]
+    fn remove_dir_removes_an_empty_directory() {
+        let fs = MemoryFileSystem::new().with_file("/p/skills/a/SKILL.md", "x");
+        fs.remove_file(Path::new("/p/skills/a/SKILL.md")).unwrap();
+        fs.create_dir_all(Path::new("/p/skills/a")).unwrap();
+        fs.remove_dir(Path::new("/p/skills/a")).unwrap();
+        assert!(!fs.exists(Path::new("/p/skills/a")));
+    }
+
+    #[test]
+    fn remove_dir_refuses_a_non_empty_directory() {
+        let fs = MemoryFileSystem::new().with_file("/p/skills/a/SKILL.md", "x");
+        let err = fs.remove_dir(Path::new("/p/skills/a")).unwrap_err();
+        assert!(err.to_string().contains("not empty"), "{err}");
+        assert!(fs.exists(Path::new("/p/skills/a/SKILL.md")));
     }
 
     #[test]

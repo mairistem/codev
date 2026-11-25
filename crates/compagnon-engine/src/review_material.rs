@@ -400,6 +400,10 @@ mod tests {
         fn remove_file(&self, path: &Path) -> std::io::Result<()> {
             self.0.remove_file(path)
         }
+
+        fn remove_dir(&self, path: &Path) -> std::io::Result<()> {
+            self.0.remove_dir(path)
+        }
     }
 
     #[test]

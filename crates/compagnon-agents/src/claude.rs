@@ -449,6 +449,14 @@ fn matches_its_checksum(contents: &str) -> Option<bool> {
         .map(|checksum| sha256_hex(without_checksum(contents).as_bytes()) == checksum)
 }
 
+/// Whether a skill installed by an earlier version is still exactly what
+/// that version rendered — its content hashes to the checksum it carries.
+/// A skill without a checksum, or one edited since, is not: `compagnon
+/// migrate` keeps it rather than lose someone's work.
+pub fn is_generated_rendering(contents: &str) -> bool {
+    matches_its_checksum(contents) == Some(true)
+}
+
 /// Extracts the version stamped in a `SKILL.md` frontmatter.
 ///
 /// This stamp is what distinguishes "file from an earlier version, to

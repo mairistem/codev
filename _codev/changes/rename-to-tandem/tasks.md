@@ -12,12 +12,12 @@ renames the crates and the repository.
 
 ## 1. Former names and root discovery
 
-- [ ] 1.1 Add `codev-core::legacy` holding the former planning root,
+- [x] 1.1 Add `codev-core::legacy` holding the former planning root,
   lock file, version key, skill prefix, managed markers, workflow path and
   binary stem, with a module comment stating it is the only place the
   former name may appear in code; verified by a unit test
   `legacy_names_are_the_codev_ones`.
-- [ ] 1.2 Rename the current constants: `PLANNING_DIR = "_compagnon"`,
+- [x] 1.2 Rename the current constants: `PLANNING_DIR = "_compagnon"`,
   `LOCK_FILE = "compagnon.lock"`, the version key `compagnon_version` (config
   loader, doctor check id, `codev_version_unsatisfied` →
   `compagnon_version_unsatisfied`), `SKILL_PREFIX = "compagnon"`, the managed
@@ -25,12 +25,12 @@ renames the crates and the repository.
   `compagnon-corrections`), `.github/workflows/compagnon.yml`, the user cache
   folder `compagnon`, and every `CODEV_*` variable to `COMPAGNON_*`; update the
   existing tests' expectations; verified by `cargo test --workspace`.
-- [ ] 1.3 Rename the error and warning codes containing `codev` in the
+- [x] 1.3 Rename the error and warning codes containing `codev` in the
   engine and in `contract::v1` (`no_codev_root` → `no_compagnon_root`, …) and
   list them in the contract's documentation comment; verified by the
   existing contract tests updated, and a test
   `no_json_code_contains_the_former_name` iterating the codes.
-- [ ] 1.4 In `root::discover`, return `legacy_root` naming the
+- [x] 1.4 In `root::discover`, return `legacy_root` naming the
   directory and `compagnon migrate` when an ancestor holds `_codev/` and no
   `_compagnon/`; `_compagnon/` wins when both exist; doctor goes through the
   same discovery; verified by engine tests
@@ -41,7 +41,7 @@ renames the crates and the repository.
   holding only `_codev/`; and CLI tests
   `init_in_a_codev_project_fails_with_legacy_root_and_writes_nothing` and
   `status_json_in_a_codev_project_reports_legacy_root_and_writes_nothing`.
-- [ ] 1.5 In the sources loader, refuse a source holding only
+- [x] 1.5 In the sources loader, refuse a source holding only
   `_codev/config.yaml` with `legacy_source`, naming the source and
   `compagnon migrate`, without writing to it; verified by an engine test
   `a_source_laid_out_for_codev_is_refused_and_left_untouched` and
@@ -50,11 +50,11 @@ renames the crates and the repository.
 
 ## 2. `compagnon migrate`
 
-- [ ] 2.1 Add `remove_dir` (empty directories only) to the `FileSystem`
+- [x] 2.1 Add `remove_dir` (empty directories only) to the `FileSystem`
   port, the real implementation and `MemoryFileSystem`; verified by unit
   tests `remove_dir_removes_an_empty_directory` and
   `remove_dir_refuses_a_non_empty_directory`.
-- [ ] 2.2 Add the pure planner `codev-core::migrate::plan(facts)`
+- [x] 2.2 Add the pure planner `codev-core::migrate::plan(facts)`
   returning ordered rename, write, remove and keep effects: root, lock,
   `codev_version` key renamed by a line edit preserving comments and
   bytes, review/correction markers, generated skills replaced,
@@ -67,7 +67,7 @@ renames the crates and the repository.
   touched; outcomes `already_migrated`, `migration_conflict`,
   `no_compagnon_root`; verified by unit tests in `migrate.rs`, one per
   outcome and one `the_prose_of_planning_files_is_never_rewritten`.
-- [ ] 2.3 Wire the engine executor and the CLI command
+- [x] 2.3 Wire the engine executor and the CLI command
   `migrate [--dry-run] [--json]` with a v1 `migrate` document listing
   every path moved, written, removed or kept; skills and managed blocks
   rendered by the same code as `init`/`update`; verified by CLI tests
@@ -83,7 +83,7 @@ renames the crates and the repository.
   `migrate_refuses_an_unsatisfiable_version_requirement`,
   `migrate_rewrites_the_pr_template_managed_section`, and
   `migrate_with_git_sources_says_to_run_sources_update`.
-- [ ] 2.4 Add `migrate` to the shell completions and the CLI help;
+- [x] 2.4 Add `migrate` to the shell completions and the CLI help;
   verified by the existing completion golden tests updated.
 
 ## 3. Changelog, bridge, update URLs

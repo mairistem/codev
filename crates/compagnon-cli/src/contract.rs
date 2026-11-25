@@ -10,6 +10,14 @@
 //! Two invariants held by the whole module:
 //! - stdout carries **exactly one** JSON document, including on failure;
 //! - every document carries a `status` array, possibly empty.
+//!
+//! The codes and fields that held the product's former name were renamed
+//! with it, in 0.7.0, their shape unchanged: `no_compagnon_root`,
+//! `compagnon_version_unsatisfied`, `invalid_compagnon_version`, the
+//! `compagnon_version` doctor check and the `compagnonVersion` field. Two
+//! codes were added for a project or a source still laid out under the
+//! former name: `legacy_root` and `legacy_source`. No code names the former
+//! product (see `compagnon_core::legacy`).
 
 use compagnon_core::roles::{ResolvedRole, RoleKind};
 use compagnon_core::{ArtifactState, ChangeStatus};
@@ -1179,6 +1187,52 @@ pub struct SchemasV1 {
     pub schemas: Vec<SchemaV1>,
     pub root: Option<String>,
     pub status: Vec<StatusEntry>,
+}
+
+/// `compagnon migrate --json`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MigrateV1 {
+    pub root: String,
+    pub dry_run: bool,
+    pub already_migrated: bool,
+    /// One line per operation, in order, paths relative to the root.
+    pub operations: Vec<String>,
+    /// Files left under their former names because they were edited by
+    /// hand.
+    pub kept: Vec<String>,
+    /// The refresh that followed, shaped like `compagnon update --json`;
+    /// `null` for a dry run or an already migrated project.
+    pub refreshed: Option<SetupV1>,
+    /// The project declares git sources: `compagnon sources update` re-pins
+    /// them.
+    pub sources_update: bool,
+    pub status: Vec<StatusEntry>,
+}
+
+impl From<&crate::commands::MigrateOutcome> for MigrateV1 {
+    fn from(outcome: &crate::commands::MigrateOutcome) -> Self {
+        let refreshed = outcome.refresh.as_ref().map(|r| SetupV1 {
+            root: json_path(&r.root),
+            created: json_paths(&r.created),
+            updated: json_paths(&r.updated),
+            untouched: json_paths(&r.untouched),
+            preserved: json_paths(&r.preserved),
+            skills: r.skills.clone(),
+            integration: r.integration.iter().map(IntegrationStepV1::from).collect(),
+            status: statuses(&r.warnings),
+        });
+        Self {
+            root: json_path(&outcome.root),
+            dry_run: outcome.dry_run,
+            already_migrated: outcome.already_migrated,
+            operations: outcome.operations.clone(),
+            kept: outcome.kept.clone(),
+            refreshed,
+            sources_update: outcome.sources_update,
+            status: Vec::new(),
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]

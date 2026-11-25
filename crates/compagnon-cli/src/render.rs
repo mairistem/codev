@@ -31,6 +31,48 @@ pub fn warnings(warnings: &[Warning]) {
     }
 }
 
+pub fn migrate(outcome: &crate::commands::MigrateOutcome) -> String {
+    let mut out = String::new();
+    let root = outcome.root.display();
+    if outcome.already_migrated {
+        let _ = writeln!(out, "{root} is already migrated: nothing to do.");
+        return out;
+    }
+    let heading = if outcome.dry_run {
+        "would migrate"
+    } else {
+        "migrated"
+    };
+    let _ = writeln!(out, "{heading} {root}");
+    for line in &outcome.operations {
+        let _ = writeln!(out, "  {line}");
+    }
+    for line in &outcome.kept {
+        let _ = writeln!(out, "  {line}");
+    }
+    if outcome.dry_run {
+        let _ = writeln!(
+            out,
+            "  then refresh the skills and managed sections, as `compagnon update` does"
+        );
+    } else if let Some(refresh) = &outcome.refresh {
+        out.push_str(&setup(refresh, false));
+    }
+    if !outcome.kept.is_empty() {
+        let _ = writeln!(
+            out,
+            "Files edited by hand were kept under their former names: review them, then delete them."
+        );
+    }
+    if outcome.sources_update {
+        let _ = writeln!(
+            out,
+            "This project declares git sources: run `compagnon sources update` to pin commits laid out for Compagnon."
+        );
+    }
+    out
+}
+
 pub fn setup(outcome: &SetupOutcome, initialized: bool) -> String {
     let mut out = String::new();
     let verb = if initialized {

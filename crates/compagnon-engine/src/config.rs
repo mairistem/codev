@@ -484,6 +484,30 @@ pub fn unknown_key_message(file: &str, key: &str, compagnon_version: Option<&str
     )
 }
 
+/// Refuses a source that holds only the former planning root: reading it
+/// would silently use a layout its maintainers have not converted.
+fn refuse_former_layout(
+    fs: &dyn FileSystem,
+    source: &Layout,
+    address: &str,
+    git: bool,
+) -> Result<()> {
+    if !fs.exists(&source.config_file())
+        && fs.exists(
+            &source
+                .project_root()
+                .join(compagnon_core::legacy::PLANNING_DIR)
+                .join(compagnon_core::layout::CONFIG_FILE),
+        )
+    {
+        return Err(EngineError::LegacySource {
+            source_name: address.to_string(),
+            git,
+        });
+    }
+    Ok(())
+}
+
 /// Resolves the project's effective configuration, inherited sources included.
 pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<ResolvedConfig> {
     let config_path = layout.config_file();
@@ -511,6 +535,7 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
                 let origin = format!("path:{raw}");
                 let source_layout = Layout::new(&root);
                 let source_config_path = source_layout.config_file();
+                refuse_former_layout(fs, &source_layout, &raw, false)?;
 
                 match load_source(fs, &source_config_path) {
                     Ok(Some(inherited)) => {
@@ -549,11 +574,12 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
                 let git_content_dir = resolve_git_source_dir(fs, env, layout, &url, &git_ref);
                 match git_content_dir {
                     GitResolution::Ok(content_root) => {
-                        let source_config_path = Layout::new(crate::sources::project_root(
+                        let source_layout = Layout::new(crate::sources::project_root(
                             &content_root,
                             subpath.as_deref(),
-                        ))
-                        .config_file();
+                        ));
+                        refuse_former_layout(fs, &source_layout, &url, true)?;
+                        let source_config_path = source_layout.config_file();
                         let origin = format!("git:{url}");
                         if let Ok(Some(inherited)) = load_source(fs, &source_config_path) {
                             if !inherited.inherits.is_empty() {
@@ -1258,6 +1284,83 @@ mod tests {
                 .iter()
                 .any(|b| b.origin == "git:url" && b.text.contains("inherited via git"))
         );
+    }
+
+    fn former_config(root: &str) -> String {
+        format!(
+            "{root}/{}/config.yaml",
+            compagnon_core::legacy::PLANNING_DIR
+        )
+    }
+
+    #[test]
+    fn a_source_laid_out_for_codev_is_refused_and_left_untouched() {
+        let fs = MemoryFileSystem::new()
+            .with_file(
+                "/p/_compagnon/config.yaml",
+                "inherits:\n  - path: /standards\n",
+            )
+            .with_file(former_config("/standards"), "context: |\n  Old rules\n");
+        let before = fs.paths();
+        let err = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap_err();
+        assert_eq!(err.code(), "legacy_source");
+        let message = err.to_string();
+        assert!(message.contains("/standards"), "{message}");
+        assert!(message.contains("compagnon migrate"), "{message}");
+        assert!(
+            !message.contains("sources update"),
+            "a path source: {message}"
+        );
+        assert_eq!(fs.paths(), before);
+    }
+
+    #[test]
+    fn a_migrated_source_with_a_leftover_codev_folder_is_read_from_compagnon() {
+        let fs = MemoryFileSystem::new()
+            .with_file(
+                "/p/_compagnon/config.yaml",
+                "inherits:\n  - path: /standards\n",
+            )
+            .with_file(
+                "/standards/_compagnon/config.yaml",
+                "context: |\n  New rules\n",
+            )
+            .with_file(former_config("/standards"), "context: |\n  Old rules\n");
+        let resolved = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert!(resolved.warnings.is_empty(), "{:?}", resolved.warnings);
+        assert!(
+            resolved
+                .context
+                .iter()
+                .any(|b| b.text.contains("New rules"))
+        );
+        assert!(
+            !resolved
+                .context
+                .iter()
+                .any(|b| b.text.contains("Old rules"))
+        );
+    }
+
+    #[test]
+    fn a_source_pinned_before_its_migration_names_sources_update() {
+        let lock = "version = 1\n\n[[source]]\ngit = \"url\"\nref = \"main\"\ncommit = \"deadbeef\"\nresolved_at = \"2026-09-08\"\n";
+        let fs = MemoryFileSystem::new()
+            .with_file(
+                "/p/_compagnon/config.yaml",
+                "inherits:\n  - git: url\n    ref: main\n",
+            )
+            .with_file("/p/_compagnon/compagnon.lock", lock)
+            .with_file(
+                former_config("/Users/me/.cache/compagnon/content/deadbeef"),
+                "context: |\n  Old rules\n",
+            );
+        let err = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap_err();
+        assert_eq!(err.code(), "legacy_source");
+        let message = err.to_string();
+        assert!(message.contains("url"), "{message}");
+        assert!(message.contains("compagnon migrate"), "{message}");
+        assert!(message.contains("compagnon sources update"), "{message}");
     }
 
     #[test]

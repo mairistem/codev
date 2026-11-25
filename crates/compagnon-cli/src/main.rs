@@ -165,6 +165,23 @@ enum Command {
         json: bool,
     },
 
+    /// Convert a project set up before the rename to Compagnon
+    ///
+    /// Moves the former planning root to `_compagnon/`, renames its lock
+    /// file and version key, rewrites the review and correction markers and
+    /// the managed sections' markers, replaces the generated skills and CI
+    /// workflow, then refreshes everything as `compagnon update` does. Keeps
+    /// what was edited by hand, and never rewrites the prose of specs,
+    /// decisions or changes. Run it again to complete an interrupted
+    /// migration.
+    Migrate {
+        /// Print the operations without performing them
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long)]
+        json: bool,
+    },
+
     /// Download and install the latest compagnon release, verified
     ///
     /// Downloads the release archive for this platform from GitHub,
@@ -718,6 +735,28 @@ fn run(cli: Cli) -> i32 {
                 Err(err) => fail(json, setup_shape(), &err),
             }
         }
+
+        Command::Migrate { dry_run, json } => match commands::migrate(&ctx, dry_run) {
+            Ok(outcome) => {
+                emit(json, contract::MigrateV1::from(&outcome), || {
+                    render::migrate(&outcome)
+                });
+                0
+            }
+            Err(err) => fail(
+                json,
+                json!({
+                    "root": null,
+                    "dryRun": dry_run,
+                    "alreadyMigrated": false,
+                    "operations": [],
+                    "kept": [],
+                    "refreshed": null,
+                    "sourcesUpdate": false,
+                }),
+                &err,
+            ),
+        },
 
         Command::Update { force, json } => match commands::update(&ctx, force) {
             Ok(outcome) => {
@@ -1885,6 +1924,20 @@ mod completions_tests {
                 script.contains("compagnon"),
                 "output for {shell:?} does not name the binary"
             );
+            assert!(
+                script.contains("migrate"),
+                "output for {shell:?} does not offer `migrate`"
+            );
         }
+    }
+
+    #[test]
+    fn the_help_lists_migrate() {
+        let help = Cli::command().render_long_help().to_string();
+        assert!(help.contains("migrate"), "{help}");
+        assert!(
+            help.contains("Convert a project set up before the rename"),
+            "{help}"
+        );
     }
 }

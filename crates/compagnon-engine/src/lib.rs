@@ -25,6 +25,7 @@ pub mod error;
 pub mod instructions;
 pub mod integration;
 pub mod metadata;
+pub mod migrate;
 pub mod ports;
 pub mod review;
 pub mod review_material;

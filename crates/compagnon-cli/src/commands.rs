@@ -164,6 +164,17 @@ pub fn init(
 ) -> Result<SetupOutcome> {
     let root_path = absolute(ctx, path)?;
     let layout = Layout::new(&root_path);
+    // A project set up before the rename is converted, never initialized
+    // a second time beside its former root: that would leave an empty
+    // `_compagnon/` that every command reads instead of the user's specs.
+    if !ctx.fs.exists(&layout.planning_dir())
+        && compagnon_engine::root::holds_former_root(ctx.fs, layout.project_root())
+    {
+        return Err(EngineError::LegacyRoot {
+            dir: layout.project_root().to_path_buf(),
+        }
+        .into());
+    }
     let config_path = layout.project_root().join("_compagnon").join("config.yaml");
 
     // Inherited sources are checked before the first write: a typo in a
@@ -395,6 +406,110 @@ fn plan_integration(
 /// restores a deleted folder without touching anything else. Integration
 /// files are only refreshed where compagnon's markers already are: `update`
 /// never adds a section a project does not have.
+/// What `compagnon migrate` did, or would do with `--dry-run`.
+#[derive(Debug)]
+pub struct MigrateOutcome {
+    pub root: PathBuf,
+    pub dry_run: bool,
+    /// Nothing was left under the former names.
+    pub already_migrated: bool,
+    /// One line per operation, in order: moved, wrote, removed.
+    pub operations: Vec<String>,
+    /// Files left under their former names, edited by hand.
+    pub kept: Vec<String>,
+    /// The refresh of the skills and managed sections that followed, as
+    /// `compagnon update` reports it. `None` for a dry run or when already
+    /// migrated.
+    pub refresh: Option<SetupOutcome>,
+    /// The project declares git sources: re-pin them.
+    pub sources_update: bool,
+}
+
+/// Converts a project set up under the product's former name: the core
+/// decides the operations from what is still present, the engine runs them,
+/// then the skills and managed sections are refreshed as `update` does.
+pub fn migrate(ctx: &Ctx, dry_run: bool) -> Result<MigrateOutcome> {
+    use compagnon_core::migrate::{Op, Outcome, plan};
+    use compagnon_engine::migrate as engine_migrate;
+
+    let cwd = ctx.env.current_dir().map_err(|e| EngineError::Unreadable {
+        path: ".".into(),
+        reason: e.to_string(),
+    })?;
+    let Some(root) = engine_migrate::discover(ctx.fs, &cwd) else {
+        return Err(EngineError::NoRoot { from: cwd }.into());
+    };
+    let layout = Layout::new(&root);
+    let skills_need_refresh = !ctx.fs.exists(&layout.planning_dir())
+        || config::resolve(ctx.fs, ctx.env, &layout).is_ok_and(|resolved| {
+            let (selected, _) = workflows::select(resolved.workflows.as_deref());
+            ClaudeCode::skill_states(
+                ctx.fs,
+                &root,
+                &selected,
+                ctx.version,
+                &render_ctx(&resolved),
+            )
+            .iter()
+            .any(|(_, state)| {
+                matches!(
+                    state,
+                    compagnon_core::doctor::SkillState::Missing
+                        | compagnon_core::doctor::SkillState::Outdated(_)
+                )
+            })
+        });
+    let facts = engine_migrate::gather(
+        ctx.fs,
+        &root,
+        ctx.version,
+        &compagnon_agents::claude::is_generated_rendering,
+        skills_need_refresh,
+    );
+    let mut outcome = MigrateOutcome {
+        root: root.clone(),
+        dry_run,
+        already_migrated: false,
+        operations: Vec::new(),
+        kept: Vec::new(),
+        refresh: None,
+        sources_update: false,
+    };
+    let (ops, sources_update) = match plan(&facts) {
+        Outcome::NoRoot => return Err(EngineError::NoRoot { from: cwd }.into()),
+        Outcome::Conflict => return Err(EngineError::MigrationConflict { dir: root }.into()),
+        Outcome::VersionUnsatisfied { requirement } => {
+            return Err(EngineError::MigrationVersionUnsatisfied {
+                requirement,
+                running: ctx.version.to_string(),
+            }
+            .into());
+        }
+        Outcome::AlreadyMigrated => {
+            outcome.already_migrated = true;
+            return Ok(outcome);
+        }
+        Outcome::Migrate {
+            ops,
+            sources_update,
+        } => (ops, sources_update),
+    };
+    outcome.sources_update = sources_update;
+    for op in &ops {
+        let line = engine_migrate::describe(&root, op);
+        match op {
+            Op::Keep { .. } => outcome.kept.push(line),
+            _ => outcome.operations.push(line),
+        }
+    }
+    if dry_run {
+        return Ok(outcome);
+    }
+    engine_migrate::execute(ctx.fs, &root, &ops)?;
+    outcome.refresh = Some(update(ctx, false)?);
+    Ok(outcome)
+}
+
 pub fn update(ctx: &Ctx, force: bool) -> Result<SetupOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let scaffolded = apply::execute(&scaffold::plan_init(&layout), ctx.fs)?;
@@ -5153,6 +5268,335 @@ The rationale for the choice.
         let h = Harness::new();
         let err = doctor(&h.ctx()).err().expect("doctor must fail");
         assert_eq!(err.code, "no_compagnon_root");
+    }
+
+    // ─────────────── projects set up before the rename ───────────────
+
+    fn former_root(path: &str) -> String {
+        format!("/p/{}/{path}", compagnon_core::legacy::PLANNING_DIR)
+    }
+
+    #[test]
+    fn doctor_in_a_codev_project_fails_with_legacy_root() {
+        let h = Harness::new().with(&former_root("config.yaml"), "schema: spec-driven\n");
+        let Err(err) = doctor(&h.ctx()) else {
+            panic!("doctor must fail")
+        };
+        assert_eq!(err.code, "legacy_root");
+        assert!(err.message.contains("compagnon migrate"), "{}", err.message);
+    }
+
+    #[test]
+    fn status_json_in_a_codev_project_reports_legacy_root_and_writes_nothing() {
+        let h = Harness::new().with(&former_root("config.yaml"), "schema: spec-driven\n");
+        let before = h.fs.paths();
+        let err = status(&h.ctx(), None).expect_err("status must fail");
+        assert_eq!(err.code, "legacy_root");
+        assert!(err.message.contains("/p"), "{}", err.message);
+        assert!(err.message.contains("compagnon migrate"), "{}", err.message);
+        assert_eq!(h.fs.paths(), before);
+    }
+
+    // ─────────────── migrate ───────────────
+
+    use compagnon_core::legacy;
+
+    fn former_skill_dir(id: &str) -> String {
+        format!("/p/.claude/skills/{}-{id}", legacy::SKILL_PREFIX)
+    }
+
+    /// A skill as an earlier version rendered it: sealed with its checksum.
+    fn generated_skill(id: &str) -> String {
+        let workflow = compagnon_agents::workflows::find(id).expect("a known workflow");
+        ClaudeCode::render(workflow, "0.0.9", &Default::default())
+    }
+
+    /// A project set up before the rename, as the former version left it.
+    fn codev_project() -> Harness {
+        Harness::new()
+            .with(
+                &former_root("config.yaml"),
+                &format!(
+                    "# Ours.\nschema: spec-driven\n{}: \">=0.1\"\n",
+                    legacy::VERSION_KEY
+                ),
+            )
+            .with(&former_root(legacy::LOCK_FILE), "version = 1\n")
+            .with(
+                &former_root("specs/auth/spec.md"),
+                &format!("# Auth\n\nRun `{} validate` first.\n", legacy::BINARY_STEM),
+            )
+            .with(
+                &format!("{}/SKILL.md", former_skill_dir("propose")),
+                &generated_skill("propose"),
+            )
+            .with(
+                "/p/CLAUDE.md",
+                &format!(
+                    "# Team notes\n\n{} — managed\nold body\n{}\n",
+                    legacy::BEGIN_PREFIX,
+                    legacy::END_LINE
+                ),
+            )
+    }
+
+    #[test]
+    fn migrate_converts_a_codev_project() {
+        let h = codev_project();
+        let outcome = migrate(&h.ctx(), false).unwrap();
+        assert!(!outcome.already_migrated);
+        let config = h.fs.read("/p/_compagnon/config.yaml").unwrap();
+        assert!(config.contains("compagnon_version: \">=0.1\""), "{config}");
+        assert!(config.starts_with("# Ours.\n"), "{config}");
+        assert!(!h.fs.exists(Path::new(&former_root(""))));
+        assert!(h.fs.read("/p/_compagnon/compagnon.lock").is_some());
+        assert!(
+            !h.fs
+                .exists(Path::new(&format!("/p/_compagnon/{}", legacy::LOCK_FILE)))
+        );
+        assert!(
+            h.fs.read("/p/.claude/skills/compagnon-propose/SKILL.md")
+                .is_some_and(|s| s.contains("name: compagnon-propose"))
+        );
+        assert!(!h.fs.exists(Path::new(&former_skill_dir("propose"))));
+        let claude_md = h.fs.read("/p/CLAUDE.md").unwrap();
+        assert!(claude_md.starts_with("# Team notes\n"), "{claude_md}");
+        assert!(claude_md.contains("/compagnon-propose"), "{claude_md}");
+        assert!(!claude_md.contains(legacy::BEGIN_PREFIX), "{claude_md}");
+    }
+
+    #[test]
+    fn migrate_dry_run_writes_nothing() {
+        let h = codev_project();
+        let before: Vec<(PathBuf, Option<String>)> =
+            h.fs.paths()
+                .into_iter()
+                .map(|p| {
+                    let c = h.fs.read(&p);
+                    (p, c)
+                })
+                .collect();
+        let outcome = migrate(&h.ctx(), true).unwrap();
+        assert!(outcome.dry_run);
+        assert!(
+            outcome.operations.iter().any(|o| o.starts_with("moved")),
+            "{:?}",
+            outcome.operations
+        );
+        assert!(outcome.refresh.is_none());
+        let after: Vec<(PathBuf, Option<String>)> =
+            h.fs.paths()
+                .into_iter()
+                .map(|p| {
+                    let c = h.fs.read(&p);
+                    (p, c)
+                })
+                .collect();
+        assert_eq!(after, before);
+    }
+
+    #[test]
+    fn migrate_keeps_a_hand_edited_skill() {
+        let edited = generated_skill("apply").replace("## Steps", "## Steps (ours)");
+        let h = codev_project().with(&format!("{}/SKILL.md", former_skill_dir("apply")), &edited);
+        let outcome = migrate(&h.ctx(), false).unwrap();
+        assert_eq!(
+            h.fs.read(format!("{}/SKILL.md", former_skill_dir("apply")))
+                .as_deref(),
+            Some(edited.as_str())
+        );
+        assert!(
+            outcome.kept.iter().any(|k| k.contains("-apply/SKILL.md")),
+            "{:?}",
+            outcome.kept
+        );
+        assert!(
+            h.fs.read("/p/.claude/skills/compagnon-apply/SKILL.md")
+                .is_some()
+        );
+    }
+
+    #[test]
+    fn migrate_in_a_migrated_project_does_nothing() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let before = h.fs.paths();
+        let outcome = migrate(&h.ctx(), false).unwrap();
+        assert!(outcome.already_migrated);
+        assert!(outcome.operations.is_empty());
+        assert_eq!(h.fs.paths(), before);
+    }
+
+    #[test]
+    fn migrate_with_both_roots_fails_with_migration_conflict() {
+        let h = codev_project().with("/p/_compagnon/config.yaml", "schema: spec-driven\n");
+        let before = h.fs.paths();
+        let err = migrate(&h.ctx(), false).expect_err("a conflict");
+        assert_eq!(err.code, "migration_conflict");
+        assert_eq!(h.fs.paths(), before);
+    }
+
+    #[test]
+    fn migrate_without_a_planning_root_fails_with_no_compagnon_root() {
+        let h = Harness::new();
+        let err = migrate(&h.ctx(), false).expect_err("no root");
+        assert_eq!(err.code, "no_compagnon_root");
+    }
+
+    #[test]
+    fn migrate_leaves_spec_prose_alone() {
+        let h = codev_project();
+        migrate(&h.ctx(), false).unwrap();
+        assert_eq!(
+            h.fs.read("/p/_compagnon/specs/auth/spec.md"),
+            Some(format!(
+                "# Auth\n\nRun `{} validate` first.\n",
+                legacy::BINARY_STEM
+            ))
+        );
+    }
+
+    #[test]
+    fn a_migrated_project_matches_a_freshly_initialized_one() {
+        let fresh = Harness::new();
+        init(&fresh.ctx(), ".", false, &test_init_opts()).unwrap();
+        let config = fresh.fs.read("/p/_compagnon/config.yaml").unwrap();
+
+        let migrated = Harness::new()
+            .with(&former_root("config.yaml"), &config)
+            .with(
+                "/p/CLAUDE.md",
+                &fresh
+                    .fs
+                    .read("/p/CLAUDE.md")
+                    .unwrap()
+                    .replace(
+                        compagnon_core::managed::BEGIN_LINE,
+                        &format!("{} — managed", legacy::BEGIN_PREFIX),
+                    )
+                    .replace(compagnon_core::managed::END_LINE, legacy::END_LINE),
+            );
+        migrate(&migrated.ctx(), false).unwrap();
+
+        let skills = |h: &Harness| -> Vec<(PathBuf, Option<String>)> {
+            h.fs.paths()
+                .into_iter()
+                .filter(|p| p.starts_with("/p/.claude"))
+                .map(|p| {
+                    let c = h.fs.read(&p);
+                    (p, c)
+                })
+                .collect()
+        };
+        assert_eq!(skills(&migrated), skills(&fresh));
+        assert_eq!(
+            migrated.fs.read("/p/CLAUDE.md"),
+            fresh.fs.read("/p/CLAUDE.md")
+        );
+    }
+
+    #[test]
+    fn migrate_failure_names_the_path_and_the_applied_operations() {
+        // A file of the user's sits in a generated skill's folder: the
+        // folder cannot be removed, after the root already moved.
+        let h = codev_project().with(
+            &format!("{}/notes.txt", former_skill_dir("propose")),
+            "mine",
+        );
+        let err = migrate(&h.ctx(), false).expect_err("an incomplete migration");
+        assert_eq!(err.code, "migration_incomplete");
+        assert!(
+            err.message.contains(&former_skill_dir("propose")),
+            "{}",
+            err.message
+        );
+        assert!(err.message.contains("moved"), "{}", err.message);
+        assert!(err.message.contains("compagnon migrate"), "{}", err.message);
+    }
+
+    #[test]
+    fn migrate_resumes_after_a_failure_past_the_root_rename() {
+        let h = codev_project().with(
+            &format!("{}/notes.txt", former_skill_dir("propose")),
+            "mine",
+        );
+        assert!(migrate(&h.ctx(), false).is_err());
+        assert!(h.fs.exists(Path::new("/p/_compagnon")));
+        h.fs.remove_file(Path::new(&format!(
+            "{}/notes.txt",
+            former_skill_dir("propose")
+        )))
+        .unwrap();
+
+        let outcome = migrate(&h.ctx(), false).unwrap();
+        assert!(!outcome.already_migrated);
+        assert!(!h.fs.exists(Path::new(&former_skill_dir("propose"))));
+        assert!(
+            h.fs.read("/p/.claude/skills/compagnon-propose/SKILL.md")
+                .is_some()
+        );
+        assert!(h.fs.read("/p/_compagnon/compagnon.lock").is_some());
+        assert!(migrate(&h.ctx(), false).unwrap().already_migrated);
+    }
+
+    #[test]
+    fn migrate_refuses_an_unsatisfiable_version_requirement() {
+        let h = Harness::new().with(
+            &former_root("config.yaml"),
+            &format!("{}: \"^0.0\"\n", legacy::VERSION_KEY),
+        );
+        let before = h.fs.paths();
+        let err = migrate(&h.ctx(), false).expect_err("refused");
+        assert_eq!(err.code, "migration_version_unsatisfied");
+        assert!(err.message.contains("^0.0"), "{}", err.message);
+        assert_eq!(h.fs.paths(), before);
+    }
+
+    #[test]
+    fn migrate_rewrites_the_pr_template_managed_section() {
+        let h = codev_project().with(
+            "/p/.github/PULL_REQUEST_TEMPLATE.md",
+            &format!(
+                "Describe your change.\n\n{} — managed\nold\n{}\n",
+                legacy::BEGIN_PREFIX,
+                legacy::END_LINE
+            ),
+        );
+        migrate(&h.ctx(), false).unwrap();
+        let template = h.fs.read("/p/.github/PULL_REQUEST_TEMPLATE.md").unwrap();
+        assert!(
+            template.starts_with("Describe your change.\n"),
+            "{template}"
+        );
+        assert!(
+            template.contains(compagnon_core::managed::BEGIN_LINE),
+            "{template}"
+        );
+        assert!(
+            template.contains(compagnon_engine::integration::pr_template_body().trim()),
+            "{template}"
+        );
+        assert!(!template.contains(legacy::BEGIN_PREFIX), "{template}");
+    }
+
+    #[test]
+    fn migrate_with_git_sources_says_to_run_sources_update() {
+        let h = Harness::new().with(
+            &former_root("config.yaml"),
+            "inherits:\n  - git: https://git.example.com/acme/standards.git\n    ref: main\n",
+        );
+        let outcome = migrate(&h.ctx(), false).unwrap();
+        assert!(outcome.sources_update);
+        assert!(crate::render::migrate(&outcome).contains("compagnon sources update"));
+    }
+
+    #[test]
+    fn init_in_a_codev_project_fails_with_legacy_root_and_writes_nothing() {
+        let h = Harness::new().with(&former_root("config.yaml"), "schema: spec-driven\n");
+        let before = h.fs.paths();
+        let err = init(&h.ctx(), ".", false, &test_init_opts()).expect_err("init must refuse");
+        assert_eq!(err.code, "legacy_root");
+        assert_eq!(h.fs.paths(), before);
     }
 
     // ─────────────── changelog ───────────────

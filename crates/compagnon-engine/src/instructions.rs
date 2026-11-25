@@ -1020,6 +1020,10 @@ from the command line.\n\n## What Changes\n\n- `compagnon decision new` creates 
         fn remove_file(&self, path: &std::path::Path) -> std::io::Result<()> {
             self.inner.remove_file(path)
         }
+
+        fn remove_dir(&self, path: &std::path::Path) -> std::io::Result<()> {
+            self.inner.remove_dir(path)
+        }
     }
 
     #[test]

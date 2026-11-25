@@ -11,6 +11,53 @@ pub enum EngineError {
     #[error("no compagnon project found from {from} — run `compagnon init` at the project root")]
     NoRoot { from: PathBuf },
 
+    /// A project still laid out under the product's former name: refused,
+    /// never read, until `compagnon migrate` converts it.
+    #[error(
+        "{dir} holds a project set up before the rename ({former}/) — run `compagnon migrate` there to convert it",
+        former = compagnon_core::legacy::PLANNING_DIR
+    )]
+    LegacyRoot { dir: PathBuf },
+
+    /// An inherited source still laid out under the product's former
+    /// name: never read, never modified. For a git source, the pin may also
+    /// predate the source's migration.
+    #[error("{}", legacy_source_message(source_name, *git))]
+    LegacySource { source_name: String, git: bool },
+
+    /// Both planning roots exist: which one holds the truth is the user's
+    /// decision, never `compagnon migrate`'s.
+    #[error(
+        "{dir} holds both {former}/ and _compagnon/ — keep the one that holds your project, \
+         remove or move the other, then run `compagnon migrate` again",
+        former = compagnon_core::legacy::PLANNING_DIR
+    )]
+    MigrationConflict { dir: PathBuf },
+
+    /// The project's version requirement excludes the running version: the
+    /// migrated project would refuse every verdict.
+    #[error(
+        "the project requires version `{requirement}`, which this compagnon ({running}) does not satisfy — \
+         widen the requirement in the configuration, then run `compagnon migrate` again"
+    )]
+    MigrationVersionUnsatisfied {
+        requirement: String,
+        running: String,
+    },
+
+    /// An operation of the migration failed; the ones before it were
+    /// applied.
+    #[error(
+        "the migration stopped at {path}: {reason}. Already done: {}. \
+         Fix the cause, then run `compagnon migrate` again to complete it",
+        if applied.is_empty() { "nothing".to_string() } else { applied.join("; ") }
+    )]
+    MigrationIncomplete {
+        path: PathBuf,
+        reason: String,
+        applied: Vec<String>,
+    },
+
     #[error("change `{change}` does not exist — `compagnon list` shows the existing ones")]
     UnknownChange { change: String },
 
@@ -119,6 +166,20 @@ pub enum EngineError {
     Core(#[from] CoreError),
 }
 
+fn legacy_source_message(source: &str, git: bool) -> String {
+    let mut message = format!(
+        "inherited source `{source}` is laid out under the former name ({}/) and is not read: \
+         its maintainers must run `compagnon migrate` in it",
+        compagnon_core::legacy::PLANNING_DIR
+    );
+    if git {
+        message.push_str(
+            "; if they already did, the pinned commit predates it — run `compagnon sources update`",
+        );
+    }
+    message
+}
+
 impl EngineError {
     /// Stable code, exposed in the `status[]` array of the JSON contract.
     ///
@@ -127,6 +188,11 @@ impl EngineError {
     pub fn code(&self) -> &'static str {
         match self {
             Self::NoRoot { .. } => "no_compagnon_root",
+            Self::LegacyRoot { .. } => "legacy_root",
+            Self::LegacySource { .. } => "legacy_source",
+            Self::MigrationConflict { .. } => "migration_conflict",
+            Self::MigrationVersionUnsatisfied { .. } => "migration_version_unsatisfied",
+            Self::MigrationIncomplete { .. } => "migration_incomplete",
             Self::UnknownChange { .. } => "unknown_change",
             Self::ChangeExists { .. } => "change_exists",
             Self::SchemaNotFound { .. } => "schema_not_found",

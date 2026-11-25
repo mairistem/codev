@@ -28,6 +28,7 @@ pub mod layout;
 pub mod legacy;
 pub mod managed;
 pub mod merge;
+pub mod migrate;
 pub mod outputs;
 pub mod parser;
 pub mod plan;
