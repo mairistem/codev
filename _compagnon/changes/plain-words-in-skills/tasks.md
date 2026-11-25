@@ -94,9 +94,12 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 ## 4. Evaluation (decision 0008)
 
 - [ ] 4.1 Ask the user's agreement on the estimated cost, then run
-  `cargo run -p compagnon-evals -- run` on the steps `plan.write`,
-  `plan.update`, `code.implement`, `change.sync`, `change.archive` and
-  `configure.enrich`, and `compare` against the committed baseline;
+  `cargo run -p compagnon-evals -- run` on the steps `plan.update`,
+  `code.implement`, `change.sync`, `change.archive` and
+  `configure.enrich` — `plan.write` left out by the user's decision on
+  the cost (about 140 USD for three repetitions), the propose body
+  gaining only the shared rule — and `compare` against the committed
+  baseline;
   verified by `compare` reporting the quality within the baseline's range,
   its output pasted in the pull request, and any cost rise reported with
   its numbers.
