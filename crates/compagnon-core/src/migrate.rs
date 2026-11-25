@@ -90,8 +90,8 @@ pub enum Op {
     RemoveDir {
         path: PathBuf,
     },
-    /// Leaves a file under its former name, edited by hand: reported as
-    /// `kept_modified`.
+    /// Leaves a file under its former name, edited by hand: listed in the
+    /// outcome's `kept`, as "kept <path> (edited by hand)".
     Keep {
         path: PathBuf,
     },

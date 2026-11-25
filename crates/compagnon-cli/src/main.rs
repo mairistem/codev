@@ -754,6 +754,9 @@ fn run(cli: Cli) -> i32 {
                 emit(json, contract::MigrateV1::from(&outcome), || {
                     render::migrate(&outcome)
                 });
+                if let (false, Some(refresh)) = (json, &outcome.refresh) {
+                    render::warnings(&refresh.warnings);
+                }
                 0
             }
             Err(err) => fail(

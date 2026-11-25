@@ -22,8 +22,11 @@ pub enum EngineError {
     /// An inherited source still laid out under the product's former
     /// name: never read, never modified. For a git source, the pin may also
     /// predate the source's migration.
-    #[error("{}", legacy_source_message(source_name, *git))]
-    LegacySource { source_name: String, git: bool },
+    #[error("{}", legacy_source_message(source_name, kind))]
+    LegacySource {
+        source_name: String,
+        kind: crate::sources::SourceKind,
+    },
 
     /// Both planning roots exist: which one holds the truth is the user's
     /// decision, never `compagnon migrate`'s.
@@ -166,13 +169,13 @@ pub enum EngineError {
     Core(#[from] CoreError),
 }
 
-fn legacy_source_message(source: &str, git: bool) -> String {
+fn legacy_source_message(source: &str, kind: &crate::sources::SourceKind) -> String {
     let mut message = format!(
         "inherited source `{source}` is laid out under the former name ({}/) and is not read: \
          its maintainers must run `compagnon migrate` in it",
         compagnon_core::legacy::PLANNING_DIR
     );
-    if git {
+    if *kind == crate::sources::SourceKind::Git {
         message.push_str(
             "; if they already did, the pinned commit predates it — run `compagnon sources update`",
         );

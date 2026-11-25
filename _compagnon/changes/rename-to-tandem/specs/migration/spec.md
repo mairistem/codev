@@ -74,7 +74,11 @@ affected. When a directory holds both `_codev/` and `_compagnon/`,
   outside the managed blocks untouched.
 
 A `codev-*` skill or a `codev.yml` workflow modified by hand SHALL be
-kept and reported as `kept_modified`, never deleted. The command MUST
+kept and reported as kept, never deleted. A skill is judged modified when
+it no longer hashes to the checksum it carries; a skill that carries no
+checksum, as every skill the 0.6 releases installed, and whose
+frontmatter names codev as its generator is taken as generated and
+replaced — an edit to it is recovered from version control. The command MUST
 print every path it moved, wrote, removed or kept, and support `--json`
 (contract v1) and `--dry-run`, which prints the same plan and writes
 nothing. Run where `_compagnon/` exists and `_codev/` does not, it SHALL complete
@@ -126,6 +130,14 @@ MUST NOT rewrite the prose of the planning files.
 - **THEN** `.claude/skills/codev-apply/SKILL.md` still exists
 - **AND** it is reported as `kept_modified`
 - **AND** `.claude/skills/compagnon-apply/SKILL.md` is installed
+
+#### Scenario: A skill installed by codev 0.6 is replaced
+
+- **GIVEN** a codev project whose `.claude/skills/codev-propose/SKILL.md`
+  is exactly as codev 0.6.1 wrote it, with no checksum
+- **WHEN** the user runs `compagnon migrate`
+- **THEN** `.claude/skills/codev-propose/` no longer exists
+- **AND** `.claude/skills/compagnon-propose/SKILL.md` is installed
 
 #### Scenario: Already migrated
 

@@ -52,7 +52,11 @@ alias de votre shell et les variables d'environnement ci-dessus.
 - **Ce que vous avez modifié à la main.** Une skill `codev-*` ou un
   workflow `codev.yml` qui ne correspond plus à ce que codev avait généré
   reste en place, signalé comme conservé. Reportez vos modifications dans le
-  nouveau fichier, puis supprimez l'ancien.
+  nouveau fichier, puis supprimez l'ancien. Les skills installées par codev
+  0.6 ne portent pas d'empreinte : une modification n'y est pas détectable,
+  elles sont donc remplacées. Si vous en aviez modifié une, prévisualisez
+  avec `--dry-run` et récupérez votre modification dans git après la
+  migration.
 
 ## Cas particuliers
 

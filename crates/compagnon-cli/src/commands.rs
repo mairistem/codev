@@ -400,12 +400,6 @@ fn plan_integration(
     planned
 }
 
-/// Regenerates the skills of an already initialized project.
-///
-/// Also runs the scaffolding plan: in "create only what is missing" mode, it
-/// restores a deleted folder without touching anything else. Integration
-/// files are only refreshed where compagnon's markers already are: `update`
-/// never adds a section a project does not have.
 /// What `compagnon migrate` did, or would do with `--dry-run`.
 #[derive(Debug)]
 pub struct MigrateOutcome {
@@ -440,25 +434,7 @@ pub fn migrate(ctx: &Ctx, dry_run: bool) -> Result<MigrateOutcome> {
         return Err(EngineError::NoRoot { from: cwd }.into());
     };
     let layout = Layout::new(&root);
-    let skills_need_refresh = !ctx.fs.exists(&layout.planning_dir())
-        || config::resolve(ctx.fs, ctx.env, &layout).is_ok_and(|resolved| {
-            let (selected, _) = workflows::select(resolved.workflows.as_deref());
-            ClaudeCode::skill_states(
-                ctx.fs,
-                &root,
-                &selected,
-                ctx.version,
-                &render_ctx(&resolved),
-            )
-            .iter()
-            .any(|(_, state)| {
-                matches!(
-                    state,
-                    compagnon_core::doctor::SkillState::Missing
-                        | compagnon_core::doctor::SkillState::Outdated(_)
-                )
-            })
-        });
+    let skills_need_refresh = skills_need_refresh(ctx, &layout);
     let facts = engine_migrate::gather(
         ctx.fs,
         &root,
@@ -506,10 +482,62 @@ pub fn migrate(ctx: &Ctx, dry_run: bool) -> Result<MigrateOutcome> {
         return Ok(outcome);
     }
     engine_migrate::execute(ctx.fs, &root, &ops)?;
-    outcome.refresh = Some(update(ctx, false)?);
+    // The project is converted; a refresh that fails now must not hide it,
+    // nor let a second run report it as done with no skill installed.
+    let refresh = update(ctx, false).map_err(|failure| Failure {
+        code: "migration_incomplete".into(),
+        message: format!(
+            "the project was converted ({}), but refreshing its skills and managed sections \
+             failed: {}. Fix that, then run `compagnon migrate` again to complete it",
+            if outcome.operations.is_empty() {
+                "nothing left to move".to_string()
+            } else {
+                outcome.operations.join("; ")
+            },
+            failure.message
+        ),
+        fix: failure.fix,
+    })?;
+    outcome.refresh = Some(refresh);
     Ok(outcome)
 }
 
+/// Whether the skills and managed sections still need the refresh that
+/// follows a migration: a configured skill missing or out of date. Before
+/// the move (no `_compagnon/` yet) they always do; and a configuration that
+/// cannot be resolved counts as pending too, so that a refresh that failed
+/// is attempted again rather than reported as done.
+fn skills_need_refresh(ctx: &Ctx, layout: &Layout) -> bool {
+    if !ctx.fs.exists(&layout.planning_dir()) {
+        return true;
+    }
+    let Ok(resolved) = config::resolve(ctx.fs, ctx.env, layout) else {
+        return true;
+    };
+    let (selected, _) = workflows::select(resolved.workflows.as_deref());
+    ClaudeCode::skill_states(
+        ctx.fs,
+        layout.project_root(),
+        &selected,
+        ctx.version,
+        &render_ctx(&resolved),
+    )
+    .iter()
+    .any(|(_, state)| {
+        matches!(
+            state,
+            compagnon_core::doctor::SkillState::Missing
+                | compagnon_core::doctor::SkillState::Outdated(_)
+        )
+    })
+}
+
+/// Regenerates the skills of an already initialized project.
+///
+/// Also runs the scaffolding plan: in "create only what is missing" mode, it
+/// restores a deleted folder without touching anything else. Integration
+/// files are only refreshed where compagnon's markers already are: `update`
+/// never adds a section a project does not have.
 pub fn update(ctx: &Ctx, force: bool) -> Result<SetupOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let scaffolded = apply::execute(&scaffold::plan_init(&layout), ctx.fs)?;
@@ -5305,10 +5333,23 @@ The rationale for the choice.
         format!("/p/.claude/skills/{}-{id}", legacy::SKILL_PREFIX)
     }
 
-    /// A skill as an earlier version rendered it: sealed with its checksum.
+    /// A skill sealed with its checksum, as unreleased builds after 0.6.1
+    /// rendered it.
     fn generated_skill(id: &str) -> String {
         let workflow = compagnon_agents::workflows::find(id).expect("a known workflow");
         ClaudeCode::render(workflow, "0.0.9", &Default::default())
+    }
+
+    /// A skill exactly as codev 0.6.1 wrote it: its frontmatter names the
+    /// former generator and carries no checksum.
+    fn released_former_skill(id: &str) -> String {
+        format!(
+            "---\nname: {prefix}-{id}\ndescription: \"The {id} workflow\"\n\
+             allowed-tools: \"Bash({stem}:*) Read Write\"\nlicense: MIT\nmetadata:\n\
+             \x20 generator: {stem}\n  version: \"0.6.1\"\n---\n\nRun `{stem} status`.\n",
+            prefix = legacy::SKILL_PREFIX,
+            stem = legacy::BINARY_STEM,
+        )
     }
 
     /// A project set up before the rename, as the former version left it.
@@ -5328,7 +5369,7 @@ The rationale for the choice.
             )
             .with(
                 &format!("{}/SKILL.md", former_skill_dir("propose")),
-                &generated_skill("propose"),
+                &released_former_skill("propose"),
             )
             .with(
                 "/p/CLAUDE.md",
@@ -5506,7 +5547,10 @@ The rationale for the choice.
         let err = migrate(&h.ctx(), false).expect_err("an incomplete migration");
         assert_eq!(err.code, "migration_incomplete");
         assert!(
-            err.message.contains(&former_skill_dir("propose")),
+            err.message.contains(&format!(
+                "stopped at .claude/skills/{}-propose:",
+                legacy::SKILL_PREFIX
+            )),
             "{}",
             err.message
         );
@@ -5537,6 +5581,51 @@ The rationale for the choice.
         );
         assert!(h.fs.read("/p/_compagnon/compagnon.lock").is_some());
         assert!(migrate(&h.ctx(), false).unwrap().already_migrated);
+    }
+
+    #[test]
+    fn migrate_replaces_a_skill_installed_by_codev_0_6() {
+        let h = former_project();
+        let outcome = migrate(&h.ctx(), false).unwrap();
+        assert!(outcome.kept.is_empty(), "{:?}", outcome.kept);
+        assert!(!h.fs.exists(Path::new(&former_skill_dir("propose"))));
+        assert!(
+            h.fs.read("/p/.claude/skills/compagnon-propose/SKILL.md")
+                .is_some()
+        );
+    }
+
+    #[test]
+    fn a_failed_refresh_is_reported_and_not_taken_for_done() {
+        // The project inherits a git source pinned to a commit laid out
+        // under the former name: the operations run, then the refresh
+        // cannot read the configuration.
+        let lock = "version = 1\n\n[[source]]\ngit = \"url\"\nref = \"main\"\ncommit = \"deadbeef\"\nresolved_at = \"2026-09-08\"\n";
+        let h = Harness::new()
+            .with(
+                &former_root("config.yaml"),
+                "inherits:\n  - git: url\n    ref: main\n",
+            )
+            .with(&former_root(legacy::LOCK_FILE), lock)
+            .with(
+                &format!(
+                    "/home/.cache/compagnon/content/deadbeef/{}/config.yaml",
+                    legacy::PLANNING_DIR
+                ),
+                "context: |\n  Old\n",
+            );
+        let err = migrate(&h.ctx(), false).expect_err("the refresh fails");
+        assert_eq!(err.code, "migration_incomplete");
+        assert!(err.message.contains("was converted"), "{}", err.message);
+        assert!(
+            err.message.contains("compagnon sources update"),
+            "{}",
+            err.message
+        );
+        assert!(h.fs.exists(Path::new("/p/_compagnon/config.yaml")));
+
+        let again = migrate(&h.ctx(), false).expect_err("still pending, never done");
+        assert_eq!(again.code, "migration_incomplete");
     }
 
     #[test]

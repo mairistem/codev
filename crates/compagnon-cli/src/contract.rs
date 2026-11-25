@@ -1230,7 +1230,12 @@ impl From<&crate::commands::MigrateOutcome> for MigrateV1 {
             kept: outcome.kept.clone(),
             refreshed,
             sources_update: outcome.sources_update,
-            status: Vec::new(),
+            // The refresh's warnings, where every consumer reads them.
+            status: outcome
+                .refresh
+                .as_ref()
+                .map(|r| statuses(&r.warnings))
+                .unwrap_or_default(),
         }
     }
 }

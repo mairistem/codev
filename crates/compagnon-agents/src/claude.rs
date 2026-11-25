@@ -449,12 +449,25 @@ fn matches_its_checksum(contents: &str) -> Option<bool> {
         .map(|checksum| sha256_hex(without_checksum(contents).as_bytes()) == checksum)
 }
 
-/// Whether a skill installed by an earlier version is still exactly what
-/// that version rendered — its content hashes to the checksum it carries.
-/// A skill without a checksum, or one edited since, is not: `compagnon
-/// migrate` keeps it rather than lose someone's work.
+/// Whether a skill installed under the product's former name is still
+/// what that version rendered, for `compagnon migrate` to replace it.
+///
+/// A skill that carries a checksum is judged by it: no longer hashing to
+/// it, someone edited it, and it is kept. The released 0.6 versions
+/// stamped no checksum, so an edit cannot be told from their rendering: a
+/// skill without one whose frontmatter names the former generator is taken
+/// as generated — every project's skills would otherwise be kept, side by
+/// side with their replacements. The migration guide says to recover an
+/// edit from version control.
 pub fn is_generated_rendering(contents: &str) -> bool {
-    matches_its_checksum(contents) == Some(true)
+    match matches_its_checksum(contents) {
+        Some(matches) => matches,
+        None => frontmatter_lines(contents).any(|line| {
+            line.trim()
+                .strip_prefix("generator:")
+                .is_some_and(|g| g.trim().trim_matches('"') == compagnon_core::legacy::BINARY_STEM)
+        }),
+    }
 }
 
 /// Extracts the version stamped in a `SKILL.md` frontmatter.
@@ -1052,6 +1065,20 @@ mod tests {
             SpliceMode::Refresh,
         );
         assert!(planned.plan.is_empty() && planned.steps.is_empty());
+    }
+
+    #[test]
+    fn released_former_skills_without_checksum_count_as_generated() {
+        let stem = compagnon_core::legacy::BINARY_STEM;
+        let released = format!(
+            "---\nname: {stem}-apply\nmetadata:\n  generator: {stem}\n  version: \"0.6.1\"\n---\n\nBody.\n"
+        );
+        assert!(is_generated_rendering(&released));
+        let foreign = "---\nname: x\nmetadata:\n  generator: someone\n---\n\nBody.\n";
+        assert!(!is_generated_rendering(foreign));
+        let sealed = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
+        assert!(is_generated_rendering(&sealed));
+        assert!(!is_generated_rendering(&sealed.replace("## ", "## Ours ")));
     }
 
     #[test]

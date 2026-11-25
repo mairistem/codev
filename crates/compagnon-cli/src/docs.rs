@@ -28,10 +28,9 @@ const CHAPTERS_FR: &[(&str, &str)] = include!(concat!(env!("OUT_DIR"), "/docs_fr
 /// The embedded CSS, injected inline into every rendered HTML page.
 const CSS: &str = include_str!("../assets/docs.css");
 
-/// The Compagnon mark, inline so the manual needs nothing beside itself. It
-/// carries the product's name for assistive technologies; the visible word
-/// next to it is hidden from them, so the name is read once.
-const MARK: &str = "<svg class=\"mark\" viewBox=\"0 0 250 250\" role=\"img\" aria-label=\"Compagnon\">\
+/// The Compagnon mark, inline so the manual needs nothing beside itself.
+/// Decorative: the visible word next to it names the product.
+const MARK: &str = "<svg class=\"mark\" viewBox=\"0 0 250 250\" aria-hidden=\"true\" focusable=\"false\">\
 <path d=\"M180.82,177.71 A82,82 0 1 1 180.82,72.29\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"34\" stroke-linecap=\"round\"/>\
 <circle cx=\"214\" cy=\"88\" r=\"16\" fill=\"#ff5331\"/>\
 <circle cx=\"222\" cy=\"125\" r=\"16\" fill=\"#ffab03\"/>\
@@ -147,7 +146,7 @@ pub fn render_html(md: &str, lang: Lang, version: &str) -> String {
          <body>\n\
          <header>\n\
          {mark}\n\
-         <span class=\"title\" aria-hidden=\"true\">Compagnon</span>\n\
+         <span class=\"title\">Compagnon</span>\n\
          <span class=\"version\">v{version}</span>\n\
          </header>\n\
          <main>\n\
@@ -806,8 +805,12 @@ mod tests {
         let html = render_html("# Compagnon\n\nText.\n", Lang::En, "0.7.0");
         assert!(html.contains("<svg class=\"mark\""), "{html}");
         assert!(
-            html.contains("role=\"img\" aria-label=\"Compagnon\""),
-            "{html}"
+            html.contains("<svg class=\"mark\" viewBox=\"0 0 250 250\" aria-hidden=\"true\""),
+            "the mark beside the word is decorative: {html}"
+        );
+        assert!(
+            html.contains("<span class=\"title\">Compagnon</span>"),
+            "the visible word names the product: {html}"
         );
         for external in ["<img", "src=", "href=\"http", "url("] {
             assert!(

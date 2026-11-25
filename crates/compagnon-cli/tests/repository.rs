@@ -19,8 +19,7 @@ fn read(relative: &str) -> String {
     fs::read_to_string(repo().join(relative)).unwrap_or_else(|e| panic!("{relative}: {e}"))
 }
 
-/// Every `.rs` file under `dir`, as `/`-separated paths relative to the
-/// repository.
+/// Every `.rs` file under `dir`, as the paths `read_dir` gives.
 fn rust_sources(dir: &Path, out: &mut Vec<PathBuf>) {
     for entry in fs::read_dir(dir).expect("a readable directory") {
         let path = entry.expect("an entry").path();

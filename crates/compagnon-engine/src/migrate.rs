@@ -122,7 +122,12 @@ pub fn execute(fs: &dyn FileSystem, project_root: &Path, ops: &[Op]) -> Result<(
         };
         if let Err(err) = result {
             return Err(EngineError::MigrationIncomplete {
-                path: path.clone(),
+                // Relative and `/`-separated, like the operations listed
+                // with it, on every platform.
+                path: PathBuf::from(compagnon_core::layout::slashed(relative(
+                    project_root,
+                    path,
+                ))),
                 reason: err.to_string(),
                 applied,
             });

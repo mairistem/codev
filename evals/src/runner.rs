@@ -2501,11 +2501,11 @@ pub fn bring_through_rename(dir: &Path) -> Result<(), String> {
     }
     let mut files = Vec::new();
     collect_files(dir, dir, &mut files).map_err(io)?;
-    for relative in files {
+    for (relative, is_link) in files {
         let from = dir.join(&relative);
         let renamed = legacy::through_rename(&relative.to_string_lossy());
         let to = dir.join(&renamed);
-        if let Ok(text) = fs::read_to_string(&from) {
+        if let (false, Ok(text)) = (is_link, fs::read_to_string(&from)) {
             let through = legacy::through_rename(&text);
             if through != text {
                 fs::write(&from, through).map_err(io)?;
@@ -2522,11 +2522,13 @@ pub fn bring_through_rename(dir: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// The files under `dir`, relative to `root`, `.git` excluded.
+/// The files under `dir`, relative to `root`, `.git` excluded, each with
+/// whether it is a symbolic link: a link is moved, never read nor written
+/// through, so the rename cannot reach outside the fixture.
 fn collect_files(
     root: &Path,
     dir: &Path,
-    out: &mut Vec<std::path::PathBuf>,
+    out: &mut Vec<(std::path::PathBuf, bool)>,
 ) -> std::io::Result<()> {
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
@@ -2534,10 +2536,12 @@ fn collect_files(
         if entry.file_name() == ".git" {
             continue;
         }
-        if entry.file_type()?.is_dir() {
+        let kind = entry.file_type()?;
+        if kind.is_dir() {
             collect_files(root, &path, out)?;
         } else {
-            out.push(path.strip_prefix(root).unwrap_or(&path).to_path_buf());
+            let relative = path.strip_prefix(root).unwrap_or(&path).to_path_buf();
+            out.push((relative, kind.is_symlink()));
         }
     }
     Ok(())

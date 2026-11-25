@@ -50,6 +50,9 @@ the environment variables above.
 - **What you edited by hand.** A `codev-*` skill or a `codev.yml` workflow
   that no longer matches what codev generated stays in place, reported as
   kept. Bring your edits over to the new file, then delete the old one.
+  Skills installed by codev 0.6 carry no fingerprint, so an edit to them
+  cannot be detected: they are replaced. If you edited one, preview with
+  `--dry-run` and recover your edit from git after the migration.
 
 ## Particular cases
 

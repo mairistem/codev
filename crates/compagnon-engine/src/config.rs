@@ -490,7 +490,7 @@ fn refuse_former_layout(
     fs: &dyn FileSystem,
     source: &Layout,
     address: &str,
-    git: bool,
+    kind: crate::sources::SourceKind,
 ) -> Result<()> {
     if !fs.exists(&source.config_file())
         && fs.exists(
@@ -502,7 +502,7 @@ fn refuse_former_layout(
     {
         return Err(EngineError::LegacySource {
             source_name: address.to_string(),
-            git,
+            kind,
         });
     }
     Ok(())
@@ -535,7 +535,7 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
                 let origin = format!("path:{raw}");
                 let source_layout = Layout::new(&root);
                 let source_config_path = source_layout.config_file();
-                refuse_former_layout(fs, &source_layout, &raw, false)?;
+                refuse_former_layout(fs, &source_layout, &raw, crate::sources::SourceKind::Path)?;
 
                 match load_source(fs, &source_config_path) {
                     Ok(Some(inherited)) => {
@@ -578,7 +578,12 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
                             &content_root,
                             subpath.as_deref(),
                         ));
-                        refuse_former_layout(fs, &source_layout, &url, true)?;
+                        refuse_former_layout(
+                            fs,
+                            &source_layout,
+                            &url,
+                            crate::sources::SourceKind::Git,
+                        )?;
                         let source_config_path = source_layout.config_file();
                         let origin = format!("git:{url}");
                         if let Ok(Some(inherited)) = load_source(fs, &source_config_path) {

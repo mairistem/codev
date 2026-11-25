@@ -281,3 +281,210 @@ history:
   - status: fixed
     by: migration
 ```
+
+## code.review
+
+Mode: isolated.
+
+### security
+
+#### R-security-1 Fixture rename writes through symlinks to files outside the extracted tree
+
+```yaml
+severity: low
+confidence: low
+location: "evals/src/runner.rs:2508-2512"
+evidence: |
+        if let Ok(text) = fs::read_to_string(&from) {
+            let through = legacy::through_rename(&text);
+recommendation: 'Skip symlinks so they are only renamed, never read or written.'
+history:
+  - status: open
+    by: security
+  - status: fixed
+    by: developer
+    ref: "evals/src/runner.rs collect_files reports links; bring_through_rename never reads or writes through one"
+  - status: fixed
+    by: security
+```
+
+### accessibility
+
+#### R-accessibility-3 The offline manual hides the visible word and names the mark beside it
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/docs.rs:34-38"
+evidence: |
+  const MARK: &str = "<svg class=\"mark\" viewBox=\"0 0 250 250\" role=\"img\" aria-label=\"Compagnon\">\
+recommendation: 'Make the mark aria-hidden and expose the visible title.'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-cli/src/docs.rs MARK is aria-hidden, the title span is exposed; offline_manual_inlines_the_mark_without_external_images asserts both"
+  - status: fixed
+    by: accessibility
+```
+
+### ops
+
+#### R-ops-3 A refresh that fails after the operations ran hides the migration, and a second run says nothing to do
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/compagnon-cli/src/commands.rs:508-509"
+evidence: |
+      engine_migrate::execute(ctx.fs, &root, &ops)?;
+      outcome.refresh = Some(update(ctx, false)?);
+recommendation: 'Report a failed refresh as part of the migration with the applied operations; treat an unresolvable configuration as a pending refresh.'
+history:
+  - status: open
+    by: ops
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-cli/src/commands.rs migrate wraps a refresh failure as migration_incomplete listing the applied operations; skills_need_refresh counts an unresolvable configuration as pending; test a_failed_refresh_is_reported_and_not_taken_for_done"
+  - status: fixed
+    by: ops
+```
+
+#### R-ops-4 compagnon migrate drops the refresh warnings
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/main.rs:752-758"
+evidence: |
+          Command::Migrate { dry_run, json } => match commands::migrate(&ctx, dry_run) {
+recommendation: 'Print the refresh warnings and put them in the top-level status.'
+history:
+  - status: open
+    by: ops
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-cli/src/main.rs prints them; contract.rs MigrateV1 status carries them"
+  - status: fixed
+    by: ops
+```
+
+### migration
+
+#### R-migration-4 Skills installed by a released codev carry no checksum, so migrate keeps every one of them
+
+```yaml
+severity: high
+confidence: high
+location: "crates/compagnon-agents/src/claude.rs:452-458"
+evidence: |
+  pub fn is_generated_rendering(contents: &str) -> bool {
+recommendation: 'Classify former skills as update does; treat a skill without checksum from the former generator as generated; test with a skill exactly as 0.6.1 wrote it.'
+history:
+  - status: open
+    by: migration
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-agents/src/claude.rs is_generated_rendering; specs/migration/spec.md (rule and scenario A skill installed by codev 0.6 is replaced); both migration guides; tests migrate_replaces_a_skill_installed_by_codev_0_6 and released_former_skills_without_checksum_count_as_generated"
+    note: 'An edit to a 0.6 skill cannot be detected (no checksum): such skills are replaced and the guide says to recover an edit from git, after a --dry-run.'
+  - status: fixed
+    by: migration
+```
+
+### newcomer
+
+#### R-newcomer-1 MigrateOutcome sits between update doc comment and update
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/compagnon-cli/src/commands.rs:403-411"
+evidence: |
+  /// Regenerates the skills of an already initialized project.
+recommendation: 'Move MigrateOutcome and migrate so the doc comment sits on update again.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-cli/src/commands.rs migrate block moved above update's doc comment"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 Unexplained skills_need_refresh check inside migrate
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/commands.rs:443-461"
+evidence: |
+      let skills_need_refresh = !ctx.fs.exists(&layout.planning_dir())
+recommendation: 'Extract fn skills_need_refresh with a why-comment.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-cli/src/commands.rs fn skills_need_refresh"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 rust_sources doc comment says the opposite of what the function does
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/tests/repository.rs:22-33"
+evidence: |
+  /// Every `.rs` file under `dir`, as `/`-separated paths relative to the
+recommendation: 'Fix the comment.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-cli/tests/repository.rs comment"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 Op::Keep doc names a kept_modified report that does not exist
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-core/src/migrate.rs:93-97"
+evidence: |
+      /// Leaves a file under its former name, edited by hand: reported as
+recommendation: 'Say what actually happens.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-core/src/migrate.rs Op::Keep doc"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-5 Bare boolean argument to refuse_former_layout
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-engine/src/config.rs:538"
+evidence: |
+                  refuse_former_layout(fs, &source_layout, &raw, false)?;
+recommendation: 'Pass a SourceKind instead of a bool.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-engine/src/config.rs and error.rs use sources::SourceKind"
+  - status: fixed
+    by: newcomer
+```
