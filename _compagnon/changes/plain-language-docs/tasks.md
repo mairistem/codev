@@ -60,7 +60,7 @@ design, in *vouvoiement*.
   `review_a_plan_covers_the_plan_without_a_terminal` looks for (« specs »
   becomes « spécification »); verified by the two new tests and that
   test.
-- [ ] 2.4 The workflow and Concepts — the French title « Le workflow »
+- [x] 2.4 The workflow and Concepts — the French title « Le workflow »
   becomes « Le déroulé », in the chapter and in `SUMMARY.md`; verified by
   the two new tests.
 - [ ] 2.5 Claude Code skills — the French title « Les skills Claude Code »
@@ -70,7 +70,7 @@ design, in *vouvoiement*.
   clore » for sync) and the « Comment demander » examples (« réalise la
   modification »); verified by the two new tests and the existing
   `every_skill_has_examples_of_requests`.
-- [ ] 2.6 FAQ, and `README.fr.md`; verified by the two new tests and the
+- [x] 2.6 FAQ, and `README.fr.md`; verified by the two new tests and the
   existing `both_readmes_stay_short_keep_the_one_liners_and_link_the_profiles`.
 
 ## 3. Check
