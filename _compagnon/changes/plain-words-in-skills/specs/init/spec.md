@@ -31,7 +31,11 @@ If the config is not thin (the user had already written rules, or a
 `compagnon-configure` has already run), the output keeps its short form,
 in plain words with the shortcut: "Restart Claude Code so it discovers the
 skills, then ask it to plan your first change (shortcut:
-/compagnon-propose)."
+/compagnon-propose)." When `propose` is not installed, the short form names
+the first installed skill instead, still as the shortcut after a plain
+request: "Restart Claude Code so it discovers the skills, then ask it to
+use them (shortcut: /<that skill>)." When `configure` is not installed, a
+thin config gets the short form.
 
 The **JSON** output MUST remain unchanged — no field added, no promise
 broken. The hint is reserved for the human output, where it does not
@@ -64,3 +68,12 @@ affect scripts that consume the machine report.
 - **WHEN** the user runs `compagnon init --yes`
 - **THEN** the human output does contain `/compagnon-configure` — the
   length of the auto-detected context no longer suppresses the hint
+
+#### Scenario: Without propose, the hint names an installed skill
+
+- **GIVEN** a project whose `workflows:` installs `explore` and `onboard`
+  but not `propose` nor `configure`
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the human output asks, in plain words, to use the skills, with
+  `/compagnon-explore` as the shortcut
+- **AND** it does not name `/compagnon-propose` nor `/compagnon-configure`

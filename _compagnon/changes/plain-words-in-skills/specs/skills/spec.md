@@ -8,7 +8,9 @@ way out of a refusal, the fix for a problem it reports — it SHALL first give
 the words to say to Claude, in plain language and in the language the user
 writes in, then MAY give the slash command or the `compagnon` command as an
 optional shortcut. Every command these skills named before this requirement
-MUST still be named, as the shortcut. A command that is not a next step for
+that exists — a skill of the catalog or a `compagnon` command — MUST still be
+named, as the shortcut; a command that names no skill, such as
+`/compagnon-continue`, is dropped. A command that is not a next step for
 the user — a file marker such as `# written by /compagnon-configure`, or a
 command the skill runs itself — is not concerned.
 
@@ -64,3 +66,33 @@ characters.
 - **GIVEN** a description whose only example request is in English
 - **WHEN** the check runs on it
 - **THEN** it fails naming the workflow
+
+## MODIFIED Requirements
+
+### Requirement: The `sync` and `archive` skills rely on the JSON contract
+
+The `sync` and `archive` workflows MUST invoke the CLI with `--json` and
+read the structured form (`SyncReportV1`, `ArchiveReportV1`) rather than
+the human output — it is the public contract that Compagnon guarantees stable
+within its current version, and it is what makes the skill's output
+reliable.
+
+#### Scenario: Structured rendering of creations and updates
+
+- **GIVEN** a change whose merge creates one main spec and updates
+  another
+- **WHEN** the user types `/compagnon-sync`
+- **THEN** the output names the two distinctly — the created file and the
+  updated file — each on its own line
+
+#### Scenario: Archive refusal detected through a stable code
+
+- **GIVEN** a change for which `compagnon archive --json` refuses with the code
+  `validation_failed` in its `status` array
+- **WHEN** the user types `/compagnon-archive`
+- **THEN** the skill detects the stable code in the JSON
+- **AND** says, in the user's language, that the change has errors and
+  offers to show them, then gives `compagnon validate <name>` as the
+  shortcut — the same sentence every time, with no detail of its own
+- **AND** does not parse the human message (which may be reworded without
+  notice)

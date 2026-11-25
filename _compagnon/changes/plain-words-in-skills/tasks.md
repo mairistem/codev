@@ -47,7 +47,10 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   as plain request then shortcut, keeping each command they named — the
   apply refusals and closing summary, the archive and sync refusals (still
   naming `compagnon validate <name>` and `compagnon review --change
-  <name>`), the sync suggestion to archive, the update refusals and next
+  <name>` as the shortcut after a plain offer to show the errors, the
+  "reply **exactly**" lines rewritten to the modified requirement), the
+  sync suggestion to archive, dropping `/compagnon-continue`, which names
+  no skill, the update refusals and next
   actions, the configure messages — and name the step rather than the
   command in boundary prose; verified by
   `every_slash_command_in_the_six_skills_is_a_shortcut`,
@@ -70,7 +73,10 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   `/compagnon-configure`, and a plain request before
   `/compagnon-propose <an-idea>`) and
   `setup_non_thin_config_does_not_cite_configure` (a plain request to plan
-  a first change before `/compagnon-propose`); the JSON output stays
+  a first change before `/compagnon-propose`), and add
+  `setup_without_propose_names_an_installed_skill` (only `explore` and
+  `onboard` installed: `/compagnon-explore` as the shortcut, neither
+  `/compagnon-propose` nor `/compagnon-configure`); the JSON output stays
   unchanged, as the existing init JSON tests check; verified by these
   tests.
 - [ ] 3.2 Update the init output shown in the "Under the hood" block of
