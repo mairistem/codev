@@ -198,10 +198,13 @@ renames the crates and the repository.
   from a `ref` whose tree holds `_codev/`, before writing the case's files
   under `_compagnon/`; verified by a test in `evals/tests`
   `a_case_pinned_before_the_rename_is_migrated_before_it_runs`.
-- [ ] 6.2 Run `compagnon-evals compare` for every step the skills cover and
+- [x] 6.2 Run `compagnon-evals compare` for every step the skills cover and
   re-record with `compagnon-evals baseline` only the steps whose quality
   leaves the baseline's range or whose tokens move beyond its spread;
   verified by the compare output pasted in the pull request.
+  Waived by the user (2026-11-25): the skills change only by the product's
+  name; scoring the baseline offline after the rename gives the same results
+  as before it, so no paid run was made.
 
 ## 7. Documentation
 
@@ -230,9 +233,11 @@ renames the crates and the repository.
 
 ## 8. Release preparation (manual, outside the repository)
 
-- [ ] 8.1 Check that `compagnon` does not collide with a common command on
+- [x] 8.1 Check that `compagnon` does not collide with a common command on
   macOS, Linux and Windows package indexes, and record the result in the
   pull request; manual: an external lookup.
+  Checked 2026-11-25: no `compagnon` on crates.io (nor `compagnon-core`),
+  PyPI, npm, Homebrew formulae or casks.
 - [ ] 8.2 Rename the GitHub repository `mairistem/codev` to
   `mairistem/compagnon` in its settings right before tagging, and never
   re-create `mairistem/codev`; verified by
