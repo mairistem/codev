@@ -63,7 +63,7 @@ design, in *vouvoiement*.
 - [x] 2.4 The workflow and Concepts — the French title « Le workflow »
   becomes « Le déroulé », in the chapter and in `SUMMARY.md`; verified by
   the two new tests.
-- [ ] 2.5 Claude Code skills — the French title « Les skills Claude Code »
+- [x] 2.5 Claude Code skills — the French title « Les skills Claude Code »
   becomes « Les compétences Claude Code », in the chapter and in
   `SUMMARY.md`; its table first (« Met à jour les
   spécifications du projet avec ce que la modification apporte, sans la
