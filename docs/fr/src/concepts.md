@@ -1,7 +1,7 @@
 # Concepts
 
-Compagnon conserve trois types d'enregistrements dans le dépôt de votre
-projet, à côté du code :
+Compagnon conserve trois types d'enregistrements dans le [dépôt](glossary.md#dépôt) de
+votre projet, à côté du code :
 
 - les **spécifications** disent ce que fait le système ;
 - les **décisions** expliquent pourquoi il est construit ainsi ;
@@ -97,12 +97,13 @@ Une modification est un travail sur le système, rangé dans son propre dossier
 - un fichier `change.yaml`, qui contient les informations de la modification
   (ses métadonnées).
 
-Ces documents sont les [artefacts](glossary.md#artefact) de la modification.
-Lesquels elle comporte, c'est son [schéma](glossary.md#schéma) qui le fixe :
-voir [Schémas personnalisés](guides/custom-schemas.md). Le schéma par défaut,
-`spec-driven`, fixe le [déroulé](glossary.md#déroulé), c'est-à-dire les
-étapes de la demande jusqu'à l'archive, décrit dans
-[Le déroulé](workflow.md).
+Ces documents sont les [artefacts](glossary.md#artefact) de la
+modification : les parties de son plan. Le [schéma](glossary.md#schéma) fixe
+les parties que contient le plan : voir
+[Schémas personnalisés](guides/custom-schemas.md). Le schéma par défaut
+s'appelle `spec-driven`. Il fixe aussi les étapes que suit une
+modification, le [déroulé](glossary.md#déroulé), décrit dans
+[Étape par étape](workflow.md).
 
 Une modification est **active** tant que son dossier se trouve dans
 `_compagnon/changes/<name>/`. L'archivage déplace le dossier dans
@@ -155,18 +156,21 @@ la spécification du projet reste tel quel : autres exigences, sections
 libres, commentaires.
 
 Le delta d'une **nouvelle** capacité commence par sa propre section
-`## Purpose`. Sa fusion crée la spécification de la capacité. Supprimer
-entièrement une capacité, avec un delta `REMOVED` qui vide une
-spécification, exige `retire_capabilities: true` dans `change.yaml`. Cette
-sécurité existe parce que seul git, l'historique des versions du projet,
-peut annuler la suppression.
+`## Purpose`. Sa fusion crée la spécification de la capacité.
+
+Vous pouvez aussi supprimer entièrement une capacité, avec un delta
+`REMOVED` qui vide sa spécification. Il faut pour cela
+`retire_capabilities: true` dans `change.yaml`. Cette sécurité existe parce
+que seul [git](glossary.md#git), l'historique des versions du projet, peut
+annuler la suppression.
 
 La syntaxe exacte figure dans [Formats de fichiers](reference/file-formats.md).
 
 ## Décision
 
 Une décision, ou ADR (*architecture decision record*), est un fichier
-`_compagnon/decisions/NNNN-<slug>.md`. Elle consigne un choix sur la façon
+rangé dans `_compagnon/decisions/`, nommé d'un numéro et d'un titre court
+(`NNNN-<nom-court>.md`). Elle consigne un choix sur la façon
 dont le système est construit : ce qui y a mené (le contexte), le choix
 lui-même, ses conséquences et les autres options envisagées.
 
@@ -175,8 +179,9 @@ compagnon decision new "Use PostgreSQL for persistence"
 compagnon decision accept 0001
 ```
 
-Une décision a l'un des cinq statuts suivants : `accepted`, `superseded`,
-`proposed`, `deprecated` ou `rejected`.
+Une décision a l'un des cinq statuts suivants : `accepted` (acceptée),
+`superseded` (remplacée), `proposed` (proposée), `deprecated` (obsolète) ou
+`rejected` (rejetée).
 
 Toutes les commandes qui créent une décision la créent `proposed` :
 `compagnon decision new`, [`supersede`](#remplacement),
@@ -189,7 +194,7 @@ Une décision `proposed` ne remplace encore aucune autre décision et ne
 s'en écarte pas encore. Une décision est **en vigueur** lorsqu'elle est
 `accepted` et qu'aucune autre ne la remplace.
 
-L'agent reçoit les décisions en vigueur chaque fois qu'il rédige un
+L'[agent](glossary.md#agent) reçoit les décisions en vigueur chaque fois qu'il rédige un
 `design.md`. Ainsi, les conceptions les respectent au lieu de les remettre
 en débat.
 
@@ -210,7 +215,7 @@ autre dépôt.
 ## Sceau
 
 Une décision acceptée ne doit plus être modifiée. Compagnon le vérifie grâce
-à un sceau : une empreinte du texte de la décision, enregistrée au moment où
+à un [sceau](glossary.md#sceau) : une empreinte du texte de la décision, enregistrée au moment où
 elle est acceptée. Si quelqu'un modifie le texte ensuite, `compagnon validate`
 voit que l'empreinte ne correspond plus et le signale. Il avertit aussi
 lorsqu'une décision acceptée n'a pas de sceau. Une décision `proposed` n'est
@@ -223,10 +228,10 @@ statut peut donc passer de `accepted` à `superseded` sans briser le sceau.
 > **Remarque**
 > Scellez une décision lorsque son texte est définitif : rédigez d'abord la
 > décision `proposed`, puis lancez `compagnon decision accept <ID>`, qui change
-> le statut et enregistre le sceau en une seule étape. Si vous avez modifié
-> volontairement une décision scellée, `compagnon decision seal <ID> --force`
-> enregistre le nouveau texte ; pour changer ce que dit une décision
-> acceptée, [remplacez-la](#remplacement) plutôt.
+> le statut et enregistre le sceau en une seule étape. Pour changer ce que
+> dit une décision acceptée, [remplacez-la](#remplacement) plutôt que de la
+> modifier. Si vous avez modifié volontairement une décision scellée,
+> `compagnon decision seal <ID> --force` enregistre le nouveau texte.
 
 <details>
 <summary>Sous le capot : comment le sceau est enregistré et vérifié</summary>
@@ -314,12 +319,14 @@ Un projet peut reprendre le contenu d'autres dépôts Compagnon, sans pouvoir
 le modifier. Une source peut être :
 
 - un dossier partagé sur votre ordinateur (`path:`) ;
-- un dépôt git (`git:`), épinglé sur un enregistrement précis (commit).
+- un dépôt git (`git:`), épinglé sur un
+  [enregistrement](glossary.md#enregistrement) précis (commit).
 
 Chaque source apporte son `context:`, ses `rules:` et ses décisions. Rien de
-ce qui s'exécute comme un programme n'est jamais hérité. Rien n'est lu non
-plus depuis une branche qui continue de bouger : les sources git sont
-épinglées dans `_compagnon/compagnon.lock`.
+ce qui s'exécute comme un programme n'est jamais hérité. Les sources tirées
+d'un dépôt git sont figées sur une version exacte : elles ne changent
+jamais à votre insu (cette version est notée dans
+`_compagnon/compagnon.lock`).
 Voir [Sources héritées](guides/inherited-sources.md).
 
 ## Schéma
@@ -330,13 +337,13 @@ pour les rédiger. Compagnon fournit un schéma, `spec-driven`. Un projet peut
 définir les siens dans `_compagnon/schemas/`. Voir
 [Schémas personnalisés](guides/custom-schemas.md).
 
-Dans `spec-driven`, chaque instruction commence par nommer le rôle qui porte
-l'artefact, et ses critères « Terminé quand » (*Done when*), qui disent
-quand l'artefact est complet :
+Dans `spec-driven`, chaque partie du plan a un [rôle](glossary.md#rôle)
+responsable, et une liste de critères (« Terminé quand ») qui disent quand
+elle est terminée :
 
 - le responsable produit (product owner), pour la proposition (pourquoi et
   quoi) ;
-- l'analyste QA, pour les spécifications (le comportement que l'on peut
+- l'analyste qualité (QA), pour les spécifications (le comportement que l'on peut
   observer) ;
 - l'architecte, pour la conception (comment) ;
 - le référent technique (tech lead), pour les tâches (leur ordre, et comment

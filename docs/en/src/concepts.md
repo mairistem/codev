@@ -1,6 +1,7 @@
 # Concepts
 
-Compagnon keeps three kinds of records in your project's repository, next to
+Compagnon keeps three kinds of records in your project's
+[repository](glossary.md#repository), next to
 the code:
 
 - **specs** say what the system does;
@@ -93,11 +94,12 @@ A change is one piece of work on the system, in its own folder
 - a task list;
 - a `change.yaml` file, which holds the change's details (its metadata).
 
-These documents are the change's [artifacts](glossary.md#artifact). Which
-ones a change has is set by its [schema](glossary.md#schema): see
-[Custom schemas](guides/custom-schemas.md). The default schema,
-`spec-driven`, sets the [workflow](glossary.md#workflow), the steps from the
-request to the archive, described in [The workflow](workflow.md).
+These documents are the change's [artifacts](glossary.md#artifact): the
+parts of its plan. The [schema](glossary.md#schema) sets which parts the
+plan holds: see [Custom schemas](guides/custom-schemas.md). The default
+schema is called `spec-driven`. It also sets the steps a change goes
+through, the [workflow](glossary.md#workflow), described in
+[Step by step](workflow.md).
 
 A change is **active** while its folder is in `_compagnon/changes/<name>/`.
 Archiving moves the folder to
@@ -149,17 +151,20 @@ the project's spec stays as it was: other requirements, free-form sections,
 comments.
 
 A delta for a **new** capability starts with its own `## Purpose`. Merging it
-creates the capability's spec. Removing a capability entirely, with a
-`REMOVED` delta that empties a spec, needs `retire_capabilities: true` in
-`change.yaml`. This safety switch exists because only git, the project's
-version history, can undo the deletion.
+creates the capability's spec.
+
+You can also remove a capability entirely, with a `REMOVED` delta that
+empties its spec. This needs `retire_capabilities: true` in `change.yaml`.
+This safety switch exists because only [git](glossary.md#git), the
+project's version history, can undo the deletion.
 
 The exact syntax is in [File formats](reference/file-formats.md).
 
 ## Decision
 
-A decision, or ADR (architecture decision record), is a file
-`_compagnon/decisions/NNNN-<slug>.md`. It records a choice about how the
+A decision, or ADR (architecture decision record), is a file in
+`_compagnon/decisions/`, named with a number and a short title
+(`NNNN-<slug>.md`). It records a choice about how the
 system is built: what led to it (the context), the choice itself, its
 consequences, and the other options considered.
 
@@ -181,7 +186,7 @@ Accepting is the only step that puts a decision into effect. A `proposed`
 decision does not replace or set aside any other decision yet. A decision is
 **in effect** when it is `accepted` and no other decision replaces it.
 
-The agent receives the decisions in effect every time it writes a
+The [agent](glossary.md#agent) receives the decisions in effect every time it writes a
 `design.md`. So designs follow them instead of debating them again.
 
 Each decision has a short id, such as `0007`, and a full id that also says
@@ -201,7 +206,7 @@ another repository.
 ## Seal
 
 An accepted decision must not be edited afterwards. Compagnon checks this
-with a seal: a fingerprint of the decision's text, recorded when the decision
+with a [seal](glossary.md#seal): a fingerprint of the decision's text, recorded when the decision
 is accepted. If someone edits the text later, `compagnon validate` sees that
 the fingerprint no longer matches and reports it. It also warns about an
 accepted decision that has no seal. A `proposed` decision is not sealed.
@@ -213,10 +218,10 @@ can move from `accepted` to `superseded` without breaking the seal.
 > **Note**
 > Seal a decision when its text is final: write the `proposed` decision
 > first, then run `compagnon decision accept <ID>`, which sets the status and
-> records the seal in one step. If you have edited a sealed decision on
-> purpose, `compagnon decision seal <ID> --force` records the new text; to
-> change what an accepted decision says, [supersede](#supersession) it
-> instead.
+> records the seal in one step. To change what an accepted decision says,
+> [supersede](#supersession) it instead of editing it. If you have edited a
+> sealed decision on purpose, `compagnon decision seal <ID> --force` records
+> the new text.
 
 <details>
 <summary>Under the hood: how the seal is recorded and checked</summary>
@@ -301,11 +306,13 @@ A project can reuse material from other Compagnon repositories, without
 being able to change it. A source can be:
 
 - a shared folder on your computer (`path:`);
-- a git repository, pinned to one precise commit (`git:`).
+- a git repository, pinned to one precise [commit](glossary.md#commit)
+  (`git:`).
 
 Each source brings its `context:`, its `rules:` and its decisions. Nothing
-that runs as a program is ever inherited. Nothing is read from a branch that
-keeps moving either: git sources are pinned in `_compagnon/compagnon.lock`.
+that runs as a program is ever inherited. Sources taken from a git repository
+are frozen at one exact version, so they never change without you knowing
+(that version is recorded in `_compagnon/compagnon.lock`).
 See [Inherited sources](guides/inherited-sources.md).
 
 ## Schema
@@ -315,9 +322,9 @@ and the instructions and templates the agent follows to write them.
 Compagnon comes with one schema, `spec-driven`. A project can define its own
 in `_compagnon/schemas/`. See [Custom schemas](guides/custom-schemas.md).
 
-In `spec-driven`, each instruction starts by naming the role that owns the
-artifact, and its "Done when" criteria, which say when the artifact is
-complete:
+In `spec-driven`, each part of the plan has a responsible
+[role](glossary.md#role), and a list of criteria ("Done when") that say when
+it is finished:
 
 - the product owner, for the proposal (why and what);
 - the QA analyst, for the specs (behavior someone can observe);
