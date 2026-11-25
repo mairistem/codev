@@ -99,12 +99,25 @@ body {
 header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
   min-height: 64px;
   margin: 0 0 40px;
   border-bottom: 1px solid var(--hairline);
+}
+
+/* The Compagnon mark: its C takes the heading color, so it stays legible
+   in the dark scheme; the three compagnons keep their own. */
+header .mark {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  margin-inline-end: -6px;
+  color: var(--heading);
+}
+
+header .version {
+  margin-inline-start: auto;
 }
 
 header .title {

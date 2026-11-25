@@ -28,6 +28,15 @@ const CHAPTERS_FR: &[(&str, &str)] = include!(concat!(env!("OUT_DIR"), "/docs_fr
 /// The embedded CSS, injected inline into every rendered HTML page.
 const CSS: &str = include_str!("../assets/docs.css");
 
+/// The Compagnon mark, inline so the manual needs nothing beside itself. It
+/// carries the product's name for assistive technologies; the visible word
+/// next to it is hidden from them, so the name is read once.
+const MARK: &str = "<svg class=\"mark\" viewBox=\"0 0 250 250\" role=\"img\" aria-label=\"Compagnon\">\
+<path d=\"M180.82,177.71 A82,82 0 1 1 180.82,72.29\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"34\" stroke-linecap=\"round\"/>\
+<circle cx=\"214\" cy=\"88\" r=\"16\" fill=\"#ff5331\"/>\
+<circle cx=\"222\" cy=\"125\" r=\"16\" fill=\"#ffab03\"/>\
+<circle cx=\"214\" cy=\"162\" r=\"16\" fill=\"#00c39b\"/></svg>";
+
 /// A documentation language.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Lang {
@@ -132,12 +141,13 @@ pub fn render_html(md: &str, lang: Lang, version: &str) -> String {
          <head>\n\
          <meta charset=\"utf-8\">\n\
          <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\
-         <title>compagnon — Documentation</title>\n\
+         <title>Compagnon — Documentation</title>\n\
          <style>\n{css}\n</style>\n\
          </head>\n\
          <body>\n\
          <header>\n\
-         <span class=\"title\">compagnon</span>\n\
+         {mark}\n\
+         <span class=\"title\" aria-hidden=\"true\">Compagnon</span>\n\
          <span class=\"version\">v{version}</span>\n\
          </header>\n\
          <main>\n\
@@ -147,6 +157,7 @@ pub fn render_html(md: &str, lang: Lang, version: &str) -> String {
          </html>\n",
         lang = lang.tag(),
         css = CSS,
+        mark = MARK,
         version = version,
         body_html = body_html,
     )
@@ -788,6 +799,22 @@ mod tests {
             "compagnon-init--what-it-does"
         );
         assert_eq!(s.slug("Getting started"), "getting-started-1");
+    }
+
+    #[test]
+    fn offline_manual_inlines_the_mark_without_external_images() {
+        let html = render_html("# Compagnon\n\nText.\n", Lang::En, "0.7.0");
+        assert!(html.contains("<svg class=\"mark\""), "{html}");
+        assert!(
+            html.contains("role=\"img\" aria-label=\"Compagnon\""),
+            "{html}"
+        );
+        for external in ["<img", "src=", "href=\"http", "url("] {
+            assert!(
+                !html.contains(external),
+                "the manual references `{external}`"
+            );
+        }
     }
 
     #[test]

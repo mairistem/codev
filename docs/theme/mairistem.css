@@ -115,6 +115,7 @@ html:not(.js) {
   --mx-float-shadow: 0 8px 18px 0 rgba(0, 60, 80, .18);
 
   --mx-logo-ink: #000000;
+  --cp-mark-ink: #004c66;
   --mx-logo-corail: #ff5331;
   --mx-logo-jaune: #ffab03;
   --mx-logo-bleu: #004c66;
@@ -202,6 +203,7 @@ html:not(.js) {
   --mx-float-shadow: 0 8px 18px 0 rgba(0, 20, 30, .45);
 
   --mx-logo-ink: #ffffff;
+  --cp-mark-ink: #ffffff;
   --mx-logo-corail: #ffffff;
   --mx-logo-jaune: #ffffff;
   --mx-logo-bleu: #ffffff;
@@ -1102,6 +1104,15 @@ mark {
   border-radius: var(--mx-radius-sm);
 }
 
+.cp-mark {
+  /* The Compagnon mark, beside the product name it decorates. */
+  width: 1.35em;
+  height: 1.35em;
+  flex: none;
+  vertical-align: -0.3em;
+  margin-inline-end: 0.35em;
+}
+
 .mx-brand-title::before {
   content: "";
   width: 1px;
@@ -1342,6 +1353,7 @@ mark {
 .mx-footer .mx-logo {
   height: 24px;
   --mx-logo-ink: #ffffff;
+  --cp-mark-ink: #ffffff;
   --mx-logo-corail: #ffffff;
   --mx-logo-jaune: #ffffff;
   --mx-logo-bleu: #ffffff;

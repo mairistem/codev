@@ -158,10 +158,10 @@
 
         <nav id="mdbook-sidebar" class="sidebar" aria-label="{{#if (eq language "fr")}}Table des matières{{else}}Table of contents{{/if}}">
             <div class="mx-sidebar-brand">
-                <a class="mx-brand-logo" href="{{ path_to_root }}../index.html" title="{{#if (eq language "fr")}}Accueil du site compagnon{{else}}compagnon home{{/if}}">
+                <a class="mx-brand-logo" href="{{ path_to_root }}../index.html" title="{{#if (eq language "fr")}}Accueil du site Compagnon{{else}}Compagnon home{{/if}}" aria-label="{{#if (eq language "fr")}}Accueil du site Compagnon, par Mairistem{{else}}Compagnon, by Mairistem — home{{/if}}">
                     <svg class="mx-logo" viewBox="0 0 1113 249" role="img" aria-label="Mairistem by JVS"><use href="#mx-logo"></use></svg>
                 </a>
-                <a class="mx-brand-title" href="{{ path_to_root }}index.html">{{ book_title }}</a>
+                <a class="mx-brand-title" href="{{ path_to_root }}index.html"><svg class="cp-mark" viewBox="0 0 250 250" aria-hidden="true" focusable="false"><use href="#cp-mark"></use></svg>{{ book_title }}</a>
             </div>
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
@@ -183,13 +183,13 @@
                             {{fa "solid" "bars"}}
                         </label>
                         <div class="mx-bar-brand">
-                            <a class="mx-brand-logo" href="{{ path_to_root }}../index.html" title="{{#if (eq language "fr")}}Accueil du site compagnon{{else}}compagnon home{{/if}}">
+                            <a class="mx-brand-logo" href="{{ path_to_root }}../index.html" title="{{#if (eq language "fr")}}Accueil du site Compagnon{{else}}Compagnon home{{/if}}" aria-label="{{#if (eq language "fr")}}Accueil du site Compagnon, par Mairistem{{else}}Compagnon, by Mairistem — home{{/if}}">
                                 <svg class="mx-logo" viewBox="0 0 1113 249" role="img" aria-label="Mairistem by JVS"><use href="#mx-logo"></use></svg>
                             </a>
                         </div>
                     </div>
 
-                    <h1 class="menu-title"><span class="mx-menu-book">{{ book_title }}</span></h1>
+                    <h1 class="menu-title"><span class="mx-menu-book"><svg class="cp-mark" viewBox="0 0 250 250" aria-hidden="true" focusable="false"><use href="#cp-mark"></use></svg>{{ book_title }}</span></h1>
 
                     <div class="right-buttons">
                         {{#if search_enabled}}

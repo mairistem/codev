@@ -79,11 +79,44 @@ jobs:
           Copy-Item README.md, README.fr.md, LICENSE, CHANGELOG.md $stage
           Compress-Archive -Path $stage -DestinationPath "$stage.zip" -Force
 
+      # Bridge for the rename: during the 0.7 series only, the same binary
+      # is also published under the product's former name, so that an
+      # installed codev 0.6 finds an archive its `self-update` knows
+      # (`codev-<version>-<target>/codev`). The binary, run under that name,
+      # tells the user to rename it. Dropped from 0.8.0 on.
+      - name: Package legacy tarball (Unix, 0.7 series)
+        if: matrix.ext == 'tar.gz' && startsWith(github.ref_name, 'v0.7.')
+        run: |
+          set -eu
+          version="${{ steps.version.outputs.version }}"
+          target="${{ matrix.target }}"
+          legacy="codev-${version}-${target}"
+          mkdir -p "${legacy}"
+          cp "target/${target}/release/compagnon" "${legacy}/codev"
+          cp README.md README.fr.md LICENSE CHANGELOG.md "${legacy}/"
+          tar czf "${legacy}.tar.gz" "${legacy}"
+
+      - name: Package legacy zip (Windows, 0.7 series)
+        if: matrix.ext == 'zip' && startsWith(github.ref_name, 'v0.7.')
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $target  = "${{ matrix.target }}"
+          $legacy  = "codev-$version-$target"
+          New-Item -ItemType Directory -Path $legacy -Force | Out-Null
+          Copy-Item "target/$target/release/compagnon.exe" "$legacy/codev.exe"
+          Copy-Item README.md, README.fr.md, LICENSE, CHANGELOG.md $legacy
+          Compress-Archive -Path $legacy -DestinationPath "$legacy.zip" -Force
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: compagnon-${{ steps.version.outputs.version }}-${{ matrix.target }}
-          path: compagnon-${{ steps.version.outputs.version }}-${{ matrix.target }}.${{ matrix.ext }}
+          # The legacy archive, when packaged, travels with the current one.
+          path: |
+            compagnon-${{ steps.version.outputs.version }}-${{ matrix.target }}.${{ matrix.ext }}
+            codev-${{ steps.version.outputs.version }}-${{ matrix.target }}.${{ matrix.ext }}
+          if-no-files-found: warn
           retention-days: 1
 
   release:

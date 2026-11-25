@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/compagnon-logo-dark.svg">
+    <img src="docs/assets/compagnon-logo.svg" alt="Compagnon" width="420">
+  </picture>
+</p>
+
 # Compagnon
 
 **Spec-driven development for Claude Code.**

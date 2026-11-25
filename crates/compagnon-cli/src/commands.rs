@@ -6767,31 +6767,31 @@ The rationale for the choice.
 
     #[test]
     fn self_update_json_reports_the_action() {
-        let asset = compagnon_core::update::asset_name("0.6.0", "aarch64-apple-darwin").unwrap();
+        let asset = compagnon_core::update::asset_name("0.7.0", "aarch64-apple-darwin").unwrap();
         let archive = b"archive".to_vec();
         let h = Harness::new()
             .with_http(
                 MemoryHttp::new()
-                    .with_response(compagnon_core::update::RELEASES_API, release_json("0.6.0"))
+                    .with_response(compagnon_core::update::RELEASES_API, release_json("0.7.0"))
                     .with_response(
-                        &compagnon_core::update::download_url("0.6.0", "SHA256SUMS"),
+                        &compagnon_core::update::download_url("0.7.0", "SHA256SUMS"),
                         format!(
                             "{}  {asset}\n",
                             compagnon_core::update::sha256_hex(&archive)
                         ),
                     )
                     .with_response(
-                        &compagnon_core::update::download_url("0.6.0", &asset),
+                        &compagnon_core::update::download_url("0.7.0", &asset),
                         archive.clone(),
                     ),
             )
             .with_exe(
                 MemoryExecutable::at("/home/.local/bin/compagnon", "compagnon 0.1.0").with_file(
                     format!(
-                        "{}/compagnon-0.6.0-aarch64-apple-darwin/compagnon",
+                        "{}/compagnon-0.7.0-aarch64-apple-darwin/compagnon",
                         compagnon_engine::ports::MEMORY_TEMP_DIR
                     ),
-                    "compagnon 0.6.0",
+                    "compagnon 0.7.0",
                 ),
             )
             .with_runner(
@@ -6804,14 +6804,14 @@ The rationale for the choice.
         let json = serde_json::to_value(crate::contract::SelfUpdateV1::from(&outcome)).unwrap();
         assert_eq!(json["action"], "updated");
         assert_eq!(json["current"], "0.1.0");
-        assert_eq!(json["latest"], "0.6.0");
+        assert_eq!(json["latest"], "0.7.0");
         assert_eq!(json["installMethod"], "standalone");
         assert_eq!(json["projectUpdated"], true);
         assert_eq!(json["hint"], serde_json::Value::Null);
         assert_eq!(json["status"], serde_json::json!([]));
         assert_eq!(
             h.exe.read("/home/.local/bin/compagnon").as_deref(),
-            Some(&b"compagnon 0.6.0"[..])
+            Some(&b"compagnon 0.7.0"[..])
         );
     }
 

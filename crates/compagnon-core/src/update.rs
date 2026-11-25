@@ -334,23 +334,43 @@ fn is_windows(target: &str) -> bool {
     target.contains("windows")
 }
 
+/// The name a release's archives and binary carry: releases below 0.7.0
+/// were published under the product's former name, and `self-update
+/// --version` must still reach them to go back.
+fn release_name(version: &str) -> &'static str {
+    if crate::legacy::published_under_former_name(version) == Some(true) {
+        crate::legacy::ASSET_PREFIX
+    } else {
+        "compagnon"
+    }
+}
+
 /// The archive name, as `.github/workflows/release.yml` publishes it.
 pub fn asset_name(version: &str, target: &str) -> Option<String> {
     let target = asset_target(target)?;
     let ext = if is_windows(target) { "zip" } else { "tar.gz" };
-    Some(format!("compagnon-{version}-{target}.{ext}"))
+    Some(format!(
+        "{}-{version}-{target}.{ext}",
+        release_name(version)
+    ))
 }
 
 /// The folder the archive extracts to.
 pub fn archive_root(version: &str, target: &str) -> Option<String> {
-    Some(format!("compagnon-{version}-{}", asset_target(target)?))
+    Some(format!(
+        "{}-{version}-{}",
+        release_name(version),
+        asset_target(target)?
+    ))
 }
 
-pub fn binary_name(target: &str) -> &'static str {
+/// The binary inside the archive of `version`.
+pub fn binary_name(version: &str, target: &str) -> String {
+    let name = release_name(version);
     if is_windows(target) {
-        "compagnon.exe"
+        format!("{name}.exe")
     } else {
-        "compagnon"
+        name.to_string()
     }
 }
 
@@ -827,27 +847,48 @@ mod tests {
     #[test]
     fn asset_names_follow_the_release_workflow() {
         assert_eq!(
-            asset_name("0.5.0", "aarch64-apple-darwin").as_deref(),
-            Some("compagnon-0.5.0-aarch64-apple-darwin.tar.gz")
+            asset_name("0.7.0", "aarch64-apple-darwin").as_deref(),
+            Some("compagnon-0.7.0-aarch64-apple-darwin.tar.gz")
         );
         assert_eq!(
-            asset_name("0.5.0", "x86_64-unknown-linux-gnu").as_deref(),
-            Some("compagnon-0.5.0-x86_64-unknown-linux-musl.tar.gz")
+            asset_name("0.7.0", "x86_64-unknown-linux-gnu").as_deref(),
+            Some("compagnon-0.7.0-x86_64-unknown-linux-musl.tar.gz")
         );
         assert_eq!(
-            asset_name("0.5.0", "x86_64-pc-windows-msvc").as_deref(),
-            Some("compagnon-0.5.0-x86_64-pc-windows-msvc.zip")
+            asset_name("0.7.0", "x86_64-pc-windows-msvc").as_deref(),
+            Some("compagnon-0.7.0-x86_64-pc-windows-msvc.zip")
         );
         assert_eq!(
-            archive_root("0.5.0", "x86_64-apple-darwin").as_deref(),
-            Some("compagnon-0.5.0-x86_64-apple-darwin")
+            archive_root("0.7.0", "x86_64-apple-darwin").as_deref(),
+            Some("compagnon-0.7.0-x86_64-apple-darwin")
         );
-        assert_eq!(binary_name("x86_64-pc-windows-msvc"), "compagnon.exe");
-        assert_eq!(binary_name("aarch64-apple-darwin"), "compagnon");
         assert_eq!(
-            download_url("0.5.0", "SHA256SUMS"),
-            "https://github.com/mairistem/compagnon/releases/download/v0.5.0/SHA256SUMS"
+            binary_name("0.7.0", "x86_64-pc-windows-msvc"),
+            "compagnon.exe"
         );
+        assert_eq!(binary_name("0.7.0", "aarch64-apple-darwin"), "compagnon");
+        assert_eq!(
+            download_url("0.7.0", "SHA256SUMS"),
+            "https://github.com/mairistem/compagnon/releases/download/v0.7.0/SHA256SUMS"
+        );
+    }
+
+    #[test]
+    fn a_downgrade_below_0_7_asks_for_the_codev_archive() {
+        let former = crate::legacy::ASSET_PREFIX;
+        assert_eq!(
+            asset_name("0.6.1", "x86_64-unknown-linux-gnu"),
+            Some(format!("{former}-0.6.1-x86_64-unknown-linux-musl.tar.gz"))
+        );
+        assert_eq!(
+            archive_root("0.6.1", "aarch64-apple-darwin"),
+            Some(format!("{former}-0.6.1-aarch64-apple-darwin"))
+        );
+        assert_eq!(
+            binary_name("0.6.1", "x86_64-pc-windows-msvc"),
+            format!("{former}.exe")
+        );
+        assert_eq!(binary_name("0.6.1", "aarch64-apple-darwin"), former);
     }
 
     #[test]

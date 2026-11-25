@@ -8,7 +8,14 @@
 #
 #   # Specific version
 #   curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | \
-#     COMPAGNON_VERSION=0.2.0 sh
+#     COMPAGNON_VERSION=0.7.0 sh
+#
+# Before 0.7.0 the product had another name, and so did its releases, its
+# binary and this script's version variable (CODEV_VERSION). CI jobs
+# written then still pin with that variable and still call that binary:
+# when only CODEV_VERSION is set, or when the version predates 0.7.0, the
+# former archive is downloaded and the binary installed under its former
+# name, exactly as before.
 #
 # Detects OS and architecture, downloads the matching binary from GitHub
 # Releases, verifies its SHA-256 checksum, then copies it to
@@ -68,6 +75,10 @@ log "detected platform: ${target}"
 # ─────────────────────────── version ───────────────────────────
 
 version="${COMPAGNON_VERSION:-}"
+if [ -z "${version}" ] && [ -n "${CODEV_VERSION:-}" ]; then
+  version="${CODEV_VERSION}"
+  BIN_NAME="codev"
+fi
 
 if [ -z "${version}" ]; then
   log "resolving the latest release from the GitHub API..."
@@ -83,9 +94,15 @@ fi
 
 log "target version: ${version}"
 
+# Releases below 0.7.0 were published under the former name only.
+release_name="compagnon"
+case "${version}" in
+  0.[0-6].*) release_name="codev"; BIN_NAME="codev" ;;
+esac
+
 # ─────────────────────────── download ───────────────────────────
 
-archive="compagnon-${version}-${target}.tar.gz"
+archive="${release_name}-${version}-${target}.tar.gz"
 base_url="https://github.com/${REPO}/releases/download/v${version}"
 tmp="$(mktemp -d)"
 trap 'rm -rf "${tmp}"' EXIT INT TERM
@@ -118,7 +135,7 @@ log "SHA-256 checksum verified"
 log "extracting..."
 tar -xzf "${tmp}/${archive}" -C "${tmp}"
 
-extracted="${tmp}/compagnon-${version}-${target}/${BIN_NAME}"
+extracted="${tmp}/${release_name}-${version}-${target}/${release_name}"
 if [ ! -f "${extracted}" ]; then
   die "binary not found in archive: ${extracted}"
 fi
@@ -134,7 +151,7 @@ log "installed ${INSTALL_DIR}/${BIN_NAME}"
 case ":${PATH:-}:" in
   *":${INSTALL_DIR}:"*)
     log "${INSTALL_DIR} is already on your PATH."
-    log "Check with: compagnon --version"
+    log "Check with: ${BIN_NAME} --version"
     ;;
   *)
     warn "${INSTALL_DIR} is not on your PATH."
@@ -144,4 +161,4 @@ case ":${PATH:-}:" in
     ;;
 esac
 
-log "compagnon v${version} is ready. Next: cd into a repository and run compagnon init"
+log "${BIN_NAME} v${version} is ready. Next: cd into a repository and run ${BIN_NAME} init"

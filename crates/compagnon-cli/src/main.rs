@@ -607,7 +607,20 @@ enum NewCommand {
 }
 
 fn main() {
+    // Before parsing: `--version` and `--help` exit inside the parser, and
+    // a binary still installed under its former name must say so there too.
+    // stderr only, so that a `--json` stdout stays one JSON document.
+    if let Some(notice) = rename_notice(std::env::args_os().next().as_deref()) {
+        eprintln!("{notice}");
+    }
     std::process::exit(run(Cli::parse()));
+}
+
+/// The notice for a binary invoked under the product's former name — as
+/// `argv[0]` names it, so that a link or a copy named after it counts too.
+fn rename_notice(arg0: Option<&std::ffi::OsStr>) -> Option<String> {
+    let stem = std::path::Path::new(arg0?).file_stem()?.to_str()?;
+    compagnon_core::legacy::rename_notice(stem)
 }
 
 fn run(cli: Cli) -> i32 {
@@ -1888,6 +1901,40 @@ mod changelog_tests {
         assert_eq!(since.as_deref(), Some("v1.0.0"));
         assert_eq!(format, ChangelogFormatArg::Markdown);
         assert!(Cli::try_parse_from(["compagnon", "changelog", "--date", "2026-10-20"]).is_err());
+    }
+}
+
+#[cfg(test)]
+mod rename_notice_tests {
+    use std::ffi::OsStr;
+
+    use compagnon_core::legacy::BINARY_STEM;
+
+    use super::rename_notice;
+
+    #[test]
+    fn a_codev_stem_gets_the_rename_notice() {
+        for invoked in [
+            format!("/home/me/.local/bin/{BINARY_STEM}"),
+            format!("{BINARY_STEM}.exe"),
+            BINARY_STEM.to_string(),
+        ] {
+            let notice = rename_notice(Some(OsStr::new(&invoked)));
+            assert!(
+                notice.as_deref().is_some_and(|n| n.contains("compagnon")),
+                "{invoked}: {notice:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_compagnon_stem_gets_no_notice() {
+        assert_eq!(
+            rename_notice(Some(OsStr::new("/usr/local/bin/compagnon"))),
+            None
+        );
+        assert_eq!(rename_notice(Some(OsStr::new("compagnon.exe"))), None);
+        assert_eq!(rename_notice(None), None);
     }
 }
 

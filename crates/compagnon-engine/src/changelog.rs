@@ -58,7 +58,7 @@ pub fn gather(
 
     let names = if is_git_work_tree(runner, root) {
         let until_names = match until {
-            Some(git_ref) => ls_tree(runner, root, git_ref, &archive_rel)?,
+            Some(git_ref) => names_at(runner, root, git_ref, &archive_rel)?,
             None => working_tree_names(fs, layout),
         };
         let since = match since {
@@ -66,7 +66,7 @@ pub fn gather(
             None => version::default_since(&tags(runner, root), until),
         };
         let since_names = match &since {
-            Some(git_ref) => ls_tree(runner, root, git_ref, &archive_rel)?,
+            Some(git_ref) => names_at(runner, root, git_ref, &archive_rel)?,
             None => Vec::new(),
         };
         gathered.since = since;
@@ -147,6 +147,28 @@ fn tags(runner: &dyn ProcessRunner, root: &Path) -> Vec<String> {
                 .collect()
         })
         .unwrap_or_default()
+}
+
+/// The archived change names at `git_ref`. A ref taken before the project
+/// was migrated holds its archive under the former planning root: read it
+/// there, so that a change archived before the migration is never listed
+/// again. This is history read from git, not a layout anyone works in.
+fn names_at(
+    runner: &dyn ProcessRunner,
+    root: &Path,
+    git_ref: &str,
+    archive_rel: &str,
+) -> Result<Vec<String>> {
+    let names = ls_tree(runner, root, git_ref, archive_rel)?;
+    if !names.is_empty() {
+        return Ok(names);
+    }
+    let former = archive_rel.replacen(
+        compagnon_core::layout::PLANNING_DIR,
+        compagnon_core::legacy::PLANNING_DIR,
+        1,
+    );
+    ls_tree(runner, root, git_ref, &former)
 }
 
 /// The archive folder names present at `git_ref`. `-d` keeps folders only:
@@ -279,6 +301,38 @@ mod tests {
                 &["ls-tree", "-d", "--name-only", "v9.9.9"],
                 failed("fatal: Not a valid object name v9.9.9"),
             )
+    }
+
+    #[test]
+    fn a_range_spanning_the_migration_lists_only_changes_archived_after_it() {
+        // `a` was archived while the planning root had its former name, and
+        // tagged v0.6.1; the project was migrated, then `b` was archived.
+        let former_archive = format!("{}/changes/archive/", compagnon_core::legacy::PLANNING_DIR);
+        let runner = MockProcessRunner::new()
+            .with_response("git", &["rev-parse"], ok("true\n"))
+            .with_response("git", &["tag"], ok("v0.6.1\n"))
+            .with_response(
+                "git",
+                &[
+                    "ls-tree",
+                    "-d",
+                    "--name-only",
+                    "v0.6.1",
+                    "--",
+                    &former_archive,
+                ],
+                ok(&format!("{former_archive}2026-01-01-a\n")),
+            )
+            .with_response("git", &["ls-tree", "-d", "--name-only", "v0.6.1"], ok(""));
+        let mut fs = MemoryFileSystem::new().with_file("/p/_compagnon/config.yaml", "");
+        for name in ["2026-01-01-a", "2026-02-01-b"] {
+            fs = fs.with_file(
+                format!("/p/_compagnon/changes/archive/{name}/proposal.md"),
+                format!("# Proposal: {name}\n\n## Release note\n\n- Added: {name}.\n"),
+            );
+        }
+        let gathered = gather(&fs, &runner, &Layout::new("/p"), None, None).unwrap();
+        assert_eq!(names(&gathered), ["2026-02-01-b"]);
     }
 
     fn names(gathered: &Gathered) -> Vec<&str> {

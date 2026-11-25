@@ -4,8 +4,8 @@
 
 Closes #
 
-<!-- compagnon:begin — managed by Compagnon; `compagnon update` rewrites this block, edit outside it -->
-## Compagnon
+<!-- compagnon:begin — managed by compagnon; `compagnon update` rewrites this block, edit outside it -->
+## compagnon
 
 - compagnon change: <!-- folder under `_compagnon/changes/`, or "trivial fix, no change" -->
 - [ ] `compagnon validate --strict` passes.

@@ -155,7 +155,7 @@ checksum = "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570"
 
 [[package]]
 name = "compagnon-agents"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "compagnon-core",
  "compagnon-engine",
@@ -164,7 +164,7 @@ dependencies = [
 
 [[package]]
 name = "compagnon-cli"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -181,7 +181,7 @@ dependencies = [
 
 [[package]]
 name = "compagnon-core"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "globset",
  "regex-automata",
@@ -197,7 +197,7 @@ dependencies = [
 
 [[package]]
 name = "compagnon-engine"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "compagnon-core",
  "serde",
@@ -211,7 +211,7 @@ dependencies = [
 
 [[package]]
 name = "compagnon-evals"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "clap",
  "compagnon-core",

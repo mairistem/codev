@@ -6,8 +6,14 @@
 #   iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 #
 #   # Specific version
-#   $env:COMPAGNON_VERSION = '0.2.0'
+#   $env:COMPAGNON_VERSION = '0.7.0'
 #   iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
+#
+# Before 0.7.0 the product had another name, and so did its releases, its
+# binary and this script's version variable (CODEV_VERSION). When only
+# CODEV_VERSION is set, or when the version predates 0.7.0, the former
+# archive is downloaded and the binary installed under its former name and
+# folder, exactly as before.
 #
 # Detects the architecture, downloads the binary from GitHub Releases,
 # verifies its SHA-256 checksum, then copies it to
@@ -24,9 +30,9 @@
 
 $ErrorActionPreference = 'Stop'
 
-$repo       = 'mairistem/compagnon'
-$installDir = Join-Path $env:LOCALAPPDATA 'Programs\compagnon'
-$binName    = 'compagnon.exe'
+$repo = 'mairistem/compagnon'
+# The installed name: the former one for a pin written before the rename.
+$name = 'compagnon'
 
 function Say([string]$msg)  { Write-Host "==> $msg" }
 function Warn([string]$msg) { Write-Warning $msg }
@@ -51,6 +57,10 @@ Say "detected platform: $target"
 # ----------------------------- version ------------------------------
 
 $version = $env:COMPAGNON_VERSION
+if ([string]::IsNullOrEmpty($version) -and -not [string]::IsNullOrEmpty($env:CODEV_VERSION)) {
+    $version = $env:CODEV_VERSION
+    $name = 'codev'
+}
 if ([string]::IsNullOrEmpty($version)) {
     Say 'resolving the latest release from the GitHub API...'
     try {
@@ -62,9 +72,18 @@ if ([string]::IsNullOrEmpty($version)) {
 }
 Say "target version: $version"
 
+# Releases below 0.7.0 were published under the former name only.
+$releaseName = 'compagnon'
+if ($version -match '^0\.[0-6]\.') {
+    $releaseName = 'codev'
+    $name = 'codev'
+}
+$installDir = Join-Path $env:LOCALAPPDATA "Programs\$name"
+$binName    = "$name.exe"
+
 # ----------------------------- download -----------------------------
 
-$archive     = "compagnon-$version-$target.zip"
+$archive     = "$releaseName-$version-$target.zip"
 $baseUrl     = "https://github.com/$repo/releases/download/v$version"
 $tmp         = New-Item -ItemType Directory -Path (Join-Path $env:TEMP "compagnon-install-$([guid]::NewGuid())") -Force
 $archivePath = Join-Path $tmp $archive
@@ -105,7 +124,7 @@ try {
     Say 'extracting...'
     Expand-Archive -Path $archivePath -DestinationPath $tmp -Force
 
-    $extractedBin = Join-Path $tmp "compagnon-$version-$target\$binName"
+    $extractedBin = Join-Path $tmp "$releaseName-$version-$target\$releaseName.exe"
     if (-not (Test-Path $extractedBin)) {
         Die "binary not found in archive: $extractedBin"
     }
@@ -120,7 +139,7 @@ try {
     $entries  = if ($userPath) { $userPath -split ';' } else { @() }
     if ($entries -contains $installDir) {
         Say "$installDir is already on your user PATH."
-        Say 'Check with: compagnon --version'
+        Say "Check with: $name --version"
     } else {
         Warn "$installDir is not on your user PATH."
         Write-Host ''
@@ -135,7 +154,7 @@ try {
         Write-Host 'Then open a new PowerShell window to reload PATH.'
     }
 
-    Say "compagnon v$version is ready. Next: cd into a repository and run compagnon init"
+    Say "$name v$version is ready. Next: cd into a repository and run $name init"
 }
 finally {
     Remove-Item -Path $tmp -Recurse -Force -ErrorAction SilentlyContinue

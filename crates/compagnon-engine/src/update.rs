@@ -414,7 +414,7 @@ fn download_and_extract(
             return Err(extract_failed(output.stderr_str().trim().to_string()));
         }
         let root = core::archive_root(version, target).unwrap_or_default();
-        let binary = tmp.join(root).join(core::binary_name(target));
+        let binary = tmp.join(root).join(core::binary_name(version, target));
         ports
             .exe
             .read_bytes(&binary)
@@ -525,7 +525,11 @@ mod tests {
     /// What `tar` would have extracted for `version`.
     fn extracted(exe: MemoryExecutable, version: &str, binary: &str) -> MemoryExecutable {
         exe.with_file(
-            format!("{MEMORY_TEMP_DIR}/compagnon-{version}-{TARGET}/compagnon"),
+            format!(
+                "{MEMORY_TEMP_DIR}/{}/{}",
+                core::archive_root(version, TARGET).unwrap(),
+                core::binary_name(version, TARGET)
+            ),
             binary,
         )
     }
@@ -938,7 +942,11 @@ mod tests {
             )
             .with_response(&download_url("0.6.0", &asset), b"zip".to_vec());
         let exe = MemoryExecutable::at(exe_path, "old").with_file(
-            format!("{MEMORY_TEMP_DIR}/compagnon-0.6.0-{target}/compagnon.exe"),
+            format!(
+                "{MEMORY_TEMP_DIR}/{}/{}",
+                core::archive_root("0.6.0", target).unwrap(),
+                core::binary_name("0.6.0", target)
+            ),
             "new",
         );
         let world = World::new(http, exe);
