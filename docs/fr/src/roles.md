@@ -692,4 +692,5 @@ L'agent s'arrête et vous passe la main à ces moments :
   consigne votre décision avec votre nom ; elle n'accepte jamais un risque à
   votre place. `compagnon review` montre ce qui reste.
 - **Archiver.** `/compagnon-apply` n'archive jamais : une fois l'implémentation
-  relue, en commençant par ses notes de relecture, lancez `/compagnon-archive` ou `compagnon archive`.
+  relue, en commençant par ses notes de relecture, dites « archive le change »
+  (raccourci : `/compagnon-archive`, ou `compagnon archive` dans un terminal).

@@ -56,6 +56,10 @@ pub const MEMORY_CAPTURE_PLACEHOLDER: &str = "{{fragment:memory-capture}}";
 /// The workflows whose body carries [`MEMORY_CAPTURE_PLACEHOLDER`].
 pub const MEMORY_CAPTURE_WORKFLOWS: &[&str] = &["propose", "apply", "update"];
 
+/// How a skill suggests what to do next: the plain request first, in the
+/// user's language, the command as a shortcut.
+pub const NEXT_STEPS: &str = include_str!("../../../assets/workflows/fragments/next-steps.md");
+
 /// The fragments of `assets/workflows/fragments/`, by name: text shared by
 /// several skills, pasted wherever a skill — or another fragment — writes
 /// `{{fragment:<name>}}`, so that its copies never drift apart.
@@ -64,6 +68,7 @@ pub const FRAGMENTS: &[(&str, &str)] = &[
     ("review-record", REVIEW_RECORD),
     ("review-isolated", REVIEW_ISOLATED),
     ("memory-capture", MEMORY_CAPTURE),
+    ("next-steps", NEXT_STEPS),
 ];
 
 /// `text` with each `{{fragment:<name>}}` replaced by that fragment, its
@@ -128,7 +133,7 @@ pub const CATALOG: &[Workflow] = &[
                       want to build or fix and a plan ready for implementation is needed. \
                       Modifies no code. Detects a ticket identifier (pattern [A-Z]{2,}-\\d+) \
                       mentioned in the prompt and enriches the proposal through the Jira MCP \
-                      configured for the project, if available.",
+                      configured for the project, if available. Use for requests like \"plan a dark mode\", \"write a proposal for PDF export\", « prépare un plan pour un mode sombre », « rédige une proposition ».",
         // `{{JIRA_MCP_TOOL}}` at the end of the list: a placeholder substituted
         // at rendering time with the name of the Jira MCP tool declared in
         // `_compagnon/config.yaml.mcp.jira_tool`. Without config, the placeholder
@@ -156,7 +161,7 @@ pub const CATALOG: &[Workflow] = &[
         description: "Implement the tasks of an already planned compagnon change: read tasks.md, \
                       work through each unchecked box in order, checking them off along the \
                       way. Modifies project code. Does not modify other changes, does not \
-                      archive and does not sync — those steps stay explicit on the user's side.",
+                      archive and does not sync — those steps stay explicit on the user's side. Use for requests like \"the plan is good, implement it\", \"carry out the tasks of add-dark-mode\", « implémente-le », « réalise les tâches du change ».",
         // General `Bash` in addition to `Bash(compagnon:*)`: tasks cite
         // verification commands (cargo, git, npm, python…) that must be
         // runnable. The `Bash(compagnon:*)` prefix stays first to document the
@@ -171,7 +176,7 @@ pub const CATALOG: &[Workflow] = &[
         description: "Merge the deltas of an already planned compagnon change into the main \
                       specs, without moving the change. Use when a new capability must appear \
                       in the specs before another change consumes it, or to review the merge \
-                      before archiving. Does not archive.",
+                      before archiving. Does not archive. Use for requests like \"merge the specs of this change without archiving\", \"sync the specs now\", « fusionne les specs sans archiver », « synchronise les specs ».",
         // `Read` in addition to `Bash(compagnon:*)` so the skill can re-read
         // `tasks.md` if the user asks a context question — without ever
         // writing. No general `Bash`: the only effective action goes through
@@ -183,7 +188,7 @@ pub const CATALOG: &[Workflow] = &[
         id: "archive",
         description: "Close a compagnon change: merge its deltas into the main specs and move the \
                       folder to the dated archive. Refuses to act if validation reports \
-                      errors, and then points to `compagnon validate` for the details.",
+                      errors, and then points to `compagnon validate` for the details. Use for requests like \"the change is done, archive it\", \"close the change\", « archive le change », « le change est terminé, archive-le ».",
         allowed_tools: "Bash(compagnon:*), Read",
         body: include_str!("../../../assets/workflows/archive.md"),
     },
@@ -192,7 +197,7 @@ pub const CATALOG: &[Workflow] = &[
         description: "Revise an already written planning artifact of an active compagnon change — \
                       proposal, specs, design or tasks — while keeping it consistent with the \
                       other artifacts. Modifies no project code, creates no missing artifact, \
-                      touches no archived change.",
+                      touches no archived change. Use for requests like \"in the plan, keep the user's choice\", \"update the design: we store it in a cookie\", « dans le plan, garde le choix de l'utilisateur », « mets à jour la conception ».",
         // Direct markdown editing via Edit/Write, no general Bash: the skill
         // revises text, it does not run tests. The rule "only `apply` has
         // general Bash" still holds.
@@ -215,7 +220,7 @@ pub const CATALOG: &[Workflow] = &[
         description: "Enrich a project's `_compagnon/config.yaml` by analyzing its code: read \
                       README, CONTRIBUTING, docs and a sample of sources, then propose a \
                       detailed `context:` and per-artifact `rules:`. Shows a diff, writes only \
-                      on confirmation. Never touches the workflows, the MCPs or the schema.",
+                      on confirmation. Never touches the workflows, the MCPs or the schema. Use for requests like \"configure Compagnon for this project\", \"suggest rules for the plans\", « configure Compagnon pour ce projet », « propose des règles pour les plans ».",
         // Targeted editing of a single file (_compagnon/config.yaml) via Edit,
         // with Read/Glob/Grep to explore the project. No general Bash: the
         // skill runs no tests, no git, no external tool — the rule "only
@@ -1353,7 +1358,7 @@ mod tests {
         let archive = flat(find("archive").unwrap().body);
         for keyword in [
             "`code == \"review_blocked\"`",
-            "The review record blocks archiving. Run `compagnon review --change <name>` to see what is left to decide.",
+            "The review record blocks archiving. Say “show me what is left to decide” (shortcut: `compagnon review --change <name>`).",
             "Do not edit `review.md`",
             "Do not work around a review refusal",
         ] {
@@ -1537,5 +1542,214 @@ mod tests {
             update.contains("keep the language the artifact you revise already writes them in"),
             "{update}"
         );
+    }
+}
+
+/// The plain-words rule of the skills that suggest next steps: checks on
+/// their text, run without a model.
+#[cfg(test)]
+mod plain_words {
+    use super::*;
+
+    /// The skills whose next steps lead with a plain request; `explore` and
+    /// `onboard` wait for a change that first covers them in the evaluation
+    /// suite (decision 0008).
+    const SIX: [&str; 6] = ["propose", "apply", "update", "sync", "archive", "configure"];
+
+    /// A line that names a slash command without being a suggestion: the
+    /// marker `configure` writes above what it adds.
+    const CONFIGURE_MARKER: &str = "# written by /compagnon-configure";
+
+    /// The lines of `body` naming a `/compagnon-…` command without giving
+    /// it as a shortcut.
+    fn commands_not_given_as_shortcuts(body: &str) -> Vec<&str> {
+        body.lines()
+            .filter(|l| l.contains("/compagnon-"))
+            .filter(|l| !l.contains("shortcut") && !l.contains(CONFIGURE_MARKER))
+            .collect()
+    }
+
+    /// What is wrong with a workflow's description: no English request in
+    /// straight quotes, no French request in guillemets, or longer than
+    /// Claude Code's 1024 characters. Each problem names the workflow.
+    fn description_problems(id: &str, description: &str) -> Vec<String> {
+        let mut problems = Vec::new();
+        if description.matches('"').count() < 2 {
+            problems.push(format!("{id}: no English request in \"…\""));
+        }
+        if !(description.contains('«') && description.contains('»')) {
+            problems.push(format!("{id}: no French request in « … »"));
+        }
+        let length = description.chars().count();
+        if length > 1024 {
+            problems.push(format!("{id}: {length} characters, over 1024"));
+        }
+        problems
+    }
+
+    /// Whether a paragraph of `body` holding every one of `markers` gives a
+    /// quoted plain request before `command`, which it names as a shortcut.
+    fn plain_request_before(body: &str, markers: &[&str], command: &str) -> bool {
+        body.split("\n\n").any(|paragraph| {
+            let flat = paragraph.split_whitespace().collect::<Vec<_>>().join(" ");
+            let Some(at) = flat.find(command) else {
+                return false;
+            };
+            markers.iter().all(|m| flat.contains(m))
+                && flat.contains("shortcut")
+                && flat[..at].contains(['"', '“'])
+        })
+    }
+
+    /// A skill as installed, without its frontmatter.
+    fn body(id: &str) -> String {
+        let rendered = crate::claude::ClaudeCode::render(
+            find(id).unwrap(),
+            "0.6.0",
+            &crate::claude::RenderCtx::default(),
+        );
+        let after = rendered.splitn(3, "---").nth(2).unwrap_or_default();
+        after.to_string()
+    }
+
+    #[test]
+    fn a_slash_command_not_given_as_a_shortcut_is_caught() {
+        let body = "Say “archive it” (shortcut: `/compagnon-archive`).\n\
+                    Run `/compagnon-propose` first.\n";
+        assert_eq!(
+            commands_not_given_as_shortcuts(body),
+            ["Run `/compagnon-propose` first."]
+        );
+    }
+
+    #[test]
+    fn the_configure_marker_is_not_a_suggestion() {
+        let body = "Write `# written by /compagnon-configure` above `context:`.\n";
+        assert!(commands_not_given_as_shortcuts(body).is_empty());
+    }
+
+    #[test]
+    fn a_description_without_a_french_request_is_caught() {
+        let english_only = r#"Archive a change. Use for requests like "archive it"."#;
+        assert_eq!(
+            description_problems("archive", english_only),
+            ["archive: no French request in « … »"]
+        );
+        let both = r#"Archive a change. Use for requests like "archive it", « archive-le »."#;
+        assert!(description_problems("archive", both).is_empty());
+        let long = format!("{both}{}", " x".repeat(520));
+        assert_eq!(
+            description_problems("archive", &long),
+            ["archive: 1109 characters, over 1024"]
+        );
+    }
+
+    #[test]
+    fn the_six_skills_include_the_next_steps_rule() {
+        for id in SIX {
+            assert!(
+                find(id).unwrap().body.contains("{{fragment:next-steps}}"),
+                "{id} does not include the next-steps rule"
+            );
+        }
+    }
+
+    #[test]
+    fn every_slash_command_in_the_six_skills_is_a_shortcut() {
+        for id in SIX {
+            let body = body(id);
+            let lines = commands_not_given_as_shortcuts(&body);
+            assert!(lines.is_empty(), "{id}: {lines:#?}");
+        }
+    }
+
+    #[test]
+    fn every_description_names_english_and_french_requests() {
+        for id in SIX {
+            let problems = description_problems(id, find(id).unwrap().description);
+            assert!(problems.is_empty(), "{problems:?}");
+        }
+    }
+
+    #[test]
+    fn apply_suggests_archiving_in_plain_words_first() {
+        assert!(plain_request_before(
+            &body("apply"),
+            &["ready to be archived"],
+            "/compagnon-archive"
+        ));
+    }
+
+    #[test]
+    fn apply_refusal_suggests_finishing_the_plan_in_plain_words_first() {
+        assert!(plain_request_before(
+            &body("apply"),
+            &["isPlanningComplete"],
+            "/compagnon-propose"
+        ));
+    }
+
+    #[test]
+    fn archive_and_sync_refusals_offer_the_errors_in_plain_words() {
+        for id in ["archive", "sync"] {
+            assert!(
+                plain_request_before(
+                    &body(id),
+                    &["validation_failed"],
+                    "compagnon validate <name>"
+                ),
+                "{id}"
+            );
+        }
+    }
+
+    #[test]
+    fn the_six_skills_still_name_their_commands() {
+        // What each body named before the plain-words rule, `/compagnon-continue`
+        // aside: it names no skill.
+        let named: [(&str, &[&str]); 6] = [
+            ("propose", &[]),
+            (
+                "apply",
+                &[
+                    "/compagnon-archive",
+                    "/compagnon-propose",
+                    "compagnon archive",
+                ],
+            ),
+            (
+                "update",
+                &[
+                    "/compagnon-apply",
+                    "/compagnon-archive",
+                    "/compagnon-propose",
+                    "/compagnon-update",
+                ],
+            ),
+            (
+                "sync",
+                &[
+                    "/compagnon-archive",
+                    "/compagnon-propose",
+                    "compagnon validate <name>",
+                ],
+            ),
+            (
+                "archive",
+                &[
+                    "/compagnon-propose",
+                    "compagnon archive",
+                    "compagnon review --change <name>",
+                    "compagnon validate <name>",
+                ],
+            ),
+            ("configure", &["/compagnon-configure", "No changes made"]),
+        ];
+        for (id, commands) in named {
+            let body = body(id);
+            for command in commands {
+                assert!(body.contains(command), "{id} no longer names `{command}`");
+            }
+        }
     }
 }

@@ -10,6 +10,8 @@ and points to `compagnon validate` for the details.
 
 ---
 
+{{fragment:next-steps}}
+
 ## Input
 
 A change name as argument, or nothing (implicit resolution if there is only
@@ -38,7 +40,8 @@ compagnon status --change "<name>" --json
 {{fragment:version-check}}
 
 If `isPlanningComplete` is `false`, stop: planning is not ready. Name what
-is missing and suggest `/compagnon-propose`; do not run `archive`.
+is missing and suggest finishing the plan, say “finish the plan of <name>”
+(shortcut: `/compagnon-propose`); do not run `archive`.
 
 ### 2. Run the archive in JSON mode
 
@@ -58,13 +61,15 @@ public, versioned contract. Fields to use:
 
 On a **non-zero exit**, read `status[0].code`:
 
-- If `code == "validation_failed"` → reply **exactly**:
-  > The change has errors. Run `compagnon validate <name>` to see the details.
-  Nothing more. Do not retry. Do not guess. Do not quote the human
+- If `code == "validation_failed"` → reply with this sentence, said in
+  the user's language, and nothing more:
+  > The change has errors. Say “show me the errors” and I will list them (shortcut: `compagnon validate <name>`).
+  Do not retry. Do not guess. Do not quote the human
   message (it may be reworded).
-- If `code == "review_blocked"` → reply **exactly**:
-  > The review record blocks archiving. Run `compagnon review --change <name>` to see what is left to decide.
-  Nothing more. Do not retry. Do not edit `review.md`: what blocks is a
+- If `code == "review_blocked"` → reply with this sentence, said in the
+  user's language, and nothing more:
+  > The review record blocks archiving. Say “show me what is left to decide” (shortcut: `compagnon review --change <name>`).
+  Do not retry. Do not edit `review.md`: what blocks is a
   decision for the user, or a review step to run again.
 - For **any other code** → relay `status[0].message` as is, and stop.
   The skill does not interpret.

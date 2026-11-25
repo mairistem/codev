@@ -17,6 +17,8 @@ point the user to `compagnon init` and stop.
 
 ---
 
+{{fragment:next-steps}}
+
 ## Input
 
 None. If the user asks a question, answer within the same boundary — no
@@ -32,8 +34,8 @@ compagnon status --json
 
 If the command fails with `no_compagnon_root`, say:
 
-> This project has no `_compagnon/`. Run `compagnon init` first, then
-> come back to `/compagnon-configure`.
+> This project has no `_compagnon/`. Run `compagnon init` first, then say
+> “configure Compagnon for this project” (shortcut: `/compagnon-configure`).
 
 Then stop.
 
@@ -167,8 +169,8 @@ If `yes`:
 If `no`:
 
 - Write nothing.
-- Say: "No changes made. Run `/compagnon-configure` again whenever you
-  want to retry."
+- Say: "No changes made. Say “configure Compagnon” again whenever you
+  want to retry (shortcut: `/compagnon-configure`)."
 
 ## Output
 

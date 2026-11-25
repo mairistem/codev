@@ -56,7 +56,8 @@ compagnon initialized in /home/you/acme-app
 
   17 file(s) created, 0 updated
 
-→ Recommended next step: in Claude Code, run /compagnon-configure.
+→ Recommended next step: in Claude Code, ask
+  "configure Compagnon for this project" (shortcut: /compagnon-configure).
 ```
 
 La détection, les questions et chaque fichier écrit sont décrits dans

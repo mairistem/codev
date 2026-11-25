@@ -6,7 +6,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 
 ## 1. The checks, on synthetic text
 
-- [ ] 1.1 In `crates/compagnon-agents/src/workflows.rs`, add pure checks
+- [x] 1.1 In `crates/compagnon-agents/src/workflows.rs`, add pure checks
   returning the offending items: the lines of a body naming `/compagnon-`
   without the word `shortcut` (the `# written by /compagnon-configure`
   marker excepted), and the descriptions lacking a `"…"` request, a `« … »`
@@ -15,7 +15,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   `the_configure_marker_is_not_a_suggestion` and
   `a_description_without_a_french_request_is_caught` (which asserts the
   workflow's id is named); verified by these tests passing.
-- [ ] 1.2 Add the tests applying them to the catalog:
+- [x] 1.2 Add the tests applying them to the catalog:
   `the_six_skills_include_the_next_steps_rule`,
   `every_slash_command_in_the_six_skills_is_a_shortcut`,
   `every_description_names_english_and_french_requests`,
@@ -36,14 +36,14 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 
 ## 2. The skills
 
-- [ ] 2.1 Write `assets/workflows/fragments/next-steps.md` (the rule of the
+- [x] 2.1 Write `assets/workflows/fragments/next-steps.md` (the rule of the
   design: plain words first, in the user's language, the command in
   parentheses as a shortcut, never removed) and register it in
   `workflows.rs`; include it in `propose`, `apply`, `update`, `sync`,
   `archive` and `configure`; verified by
   `the_six_skills_include_the_next_steps_rule` and the existing
   `every_workflow_has_a_usable_body_and_description`.
-- [ ] 2.2 Rewrite every suggested step, refusal and fix of the six bodies
+- [x] 2.2 Rewrite every suggested step, refusal and fix of the six bodies
   as plain request then shortcut, keeping each command they named — the
   apply refusals and closing summary, the archive and sync refusals (still
   naming `compagnon validate <name>` and `compagnon review --change
@@ -58,7 +58,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   `apply_refusal_suggests_finishing_the_plan_in_plain_words_first`,
   `archive_and_sync_refusals_offer_the_errors_in_plain_words` and
   `the_six_skills_still_name_their_commands`.
-- [ ] 2.3 Rewrite the descriptions of the six skills in the `CATALOG`
+- [x] 2.3 Rewrite the descriptions of the six skills in the `CATALOG`
   (`explore` and `onboard` unchanged): what the skill
   does, then `Use for requests like "…", « … »` with requests specific to
   the step; verified by `every_description_names_english_and_french_requests`
@@ -67,7 +67,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 
 ## 3. The init hint and the documentation
 
-- [ ] 3.1 In `crates/compagnon-cli/src/render.rs`, write the closing hint of
+- [x] 3.1 In `crates/compagnon-cli/src/render.rs`, write the closing hint of
   `compagnon init` as the modified requirement gives it, thin and not
   thin; update `setup_thin_config_with_configure_points_to_configure`
   (the plain request "configure Compagnon for this project" comes before
@@ -80,7 +80,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   `/compagnon-propose` nor `/compagnon-configure`); the JSON output stays
   unchanged, as the existing init JSON tests check; verified by these
   tests.
-- [ ] 3.2 Update the init output shown in the "Under the hood" block of
+- [x] 3.2 Update the init output shown in the "Under the hood" block of
   `docs/en/src/quickstart.md` and `docs/fr/src/quickstart.md`, from a real
   run of `compagnon init --yes`, and the "Archiving" step of
   `docs/en/src/roles.md` and `docs/fr/src/roles.md` (say "archive it",

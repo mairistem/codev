@@ -650,4 +650,5 @@ The agent stops and hands over at these points:
   change or an issue. The skill records your decision with your name; it
   never accepts a risk for you. `compagnon review` shows what is left.
 - **Archiving.** `/compagnon-apply` never archives: once you have reviewed the
-  implementation, starting with its Review notes, run `/compagnon-archive` or `compagnon archive`.
+  implementation, starting with its Review notes, say "archive the change"
+  (shortcut: `/compagnon-archive`, or `compagnon archive` in a terminal).
