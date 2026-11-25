@@ -439,7 +439,7 @@ fn banned_phrase(lang: Lang) -> &'static str {
 fn prose_paragraphs(md: &str, headings: bool) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     let mut current = String::new();
-    let mut flush = |current: &mut String, out: &mut Vec<String>| {
+    let flush = |current: &mut String, out: &mut Vec<String>| {
         if !current.trim().is_empty() {
             out.push(std::mem::take(current));
         }
@@ -608,7 +608,7 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         "commits",
     ];
     let mut found: Vec<String> = Vec::new();
-    let mut add = |w: &str, found: &mut Vec<String>| {
+    let add = |w: &str, found: &mut Vec<String>| {
         if !found.iter().any(|f| f == w) {
             found.push(w.to_string());
         }
