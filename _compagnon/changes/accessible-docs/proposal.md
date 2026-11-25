@@ -40,6 +40,8 @@ reader sees now.
   whole.
 - README and README.fr shrink to the promise, three steps and links per
   profile; the landing page follows the same paths.
+- The logo becomes "Compagnon by Mairistem", built on the Mairistem logo's
+  grid: the C, the black wordmark centred on it, "BY MAIRISTEM" beneath.
 - A test caps the length of the Start here path, so that it stays short.
 
 ## Capabilities
@@ -59,6 +61,7 @@ reader sees now.
   `glossary.md`, `guides/review-a-plan.md`, `origins.md`; the same in both
   languages (French in *vouvoiement*).
 - `README.md`, `README.fr.md`, `docs/site/index.html`.
+- `docs/assets/compagnon-logo.svg` and `compagnon-logo-dark.svg`.
 - The offline manual (`compagnon docs`) follows the new order and renders
   the collapsible blocks; `crates/compagnon-cli` tests for the
   documentation are updated and extended.

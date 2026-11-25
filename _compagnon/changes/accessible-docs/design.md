@@ -127,6 +127,27 @@ in the pull request.
 **Alternatives considered**: a CI script — the project's checks live in the
 test suite.
 
+### Decision: The logo is drawn on the Mairistem logo's grid
+
+"Compagnon by Mairistem" copies the measures of the Mairistem logo's SVG:
+a 238-unit square icon (the C, cropped to its own bounds); the wordmark
+59 units to its right, its capitals centred on the icon; the byline
+"BY MAIRISTEM" — "BY" light, "MAIRISTEM" bold, capitals 35 units high — on
+a baseline 10 units under the icon, right-aligned with the wordmark. The
+wordmark is black, white on dark backgrounds, like Mairistem's. Compagnon
+has descenders where Mairistem has none, so its capitals are 109 units
+instead of 118, the largest that keeps the "g" clear of the byline.
+
+The Mairistem logo exists only as outlines, without its typeface: the
+wordmark uses Outfit (SIL Open Font License), the closest free typeface
+(single-storey "a", round forms), outlined into paths so that no font is
+needed to render it. `logo-draft/generate-logo.py` regenerates it, and
+takes the official typeface in its place when Mairistem provides it.
+
+**Alternatives considered**: the wordmark in IBM Plex Sans, the
+documentation's typeface — further from Mairistem's; a 2 × 2 icon like
+Mairistem's — the C was chosen by the user and kept.
+
 ## Risks / Trade-offs
 
 - [A cap blocks a useful sentence later] → the cap is the point: the
