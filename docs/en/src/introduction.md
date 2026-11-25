@@ -95,6 +95,13 @@ own choices on top.
   output shape.
 - Documentation embedded in the binary (`compagnon docs`), readable offline.
 
+**The name.** Compagnon comes from *compagnonnage*, the French tradition of
+craft guilds: a master leads the work, the *compagnons* carry it out, and
+everyone follows plans agreed beforehand. Here you are the master and the
+Claude agents are your compagnons. Until 0.6 the product was named codev;
+[Moving from codev](guides/moving-from-codev.md) explains how to convert a
+project set up then.
+
 ## Built with Compagnon
 
 Compagnon is developed with Compagnon: every change to its repository is planned,

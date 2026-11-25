@@ -205,7 +205,7 @@ renames the crates and the repository.
 
 ## 7. Documentation
 
-- [ ] 7.1 Write the migration guide in `docs/en/src/guides/` and
+- [x] 7.1 Write the migration guide in `docs/en/src/guides/` and
   `docs/fr/src/guides/` (vouvoiement), listed at the same place in both
   `SUMMARY.md`, and document `compagnon migrate` in both CLI references; the guide covers
   CI jobs and GitLab snippets to switch by hand, `compagnon sources update`
@@ -215,7 +215,7 @@ renames the crates and the repository.
   verified by CLI tests `both_editions_list_the_migration_guide` and
   `migration_guides_name_compagnon_migrate_dry_run`, plus the existing
   same-chapters test.
-- [ ] 7.2 Rewrite the product presentation in README(.fr),
+- [x] 7.2 Rewrite the product presentation in README(.fr),
   CONTRIBUTING(.fr), ROADMAP, SECURITY, CODE_OF_CONDUCT, the
   introduction chapters and `docs/site/index.html` (title, description,
   brand) so that they read naturally with the new name, beyond the
@@ -224,7 +224,7 @@ renames the crates and the repository.
   site's `<title>` and description and both introduction chapters, and a
   manual reading of the prose listed in the pull request — manual because
   it is an editorial judgement.
-- [ ] 7.3 Add the 0.7.0 entry to `CHANGELOG.md` from
+- [x] 7.3 Add the 0.7.0 entry to `CHANGELOG.md` from
   `compagnon changelog`, with a "Moving from codev" note linking the guide;
   verified by `compagnon doctor` reporting `changelog` `ok`.
 

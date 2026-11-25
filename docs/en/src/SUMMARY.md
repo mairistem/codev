@@ -17,6 +17,7 @@
 
 # Guides
 
+- [Moving from codev](guides/moving-from-codev.md)
 - [Inherited sources](guides/inherited-sources.md)
 - [Repository integration and compagnon doctor](guides/repository-integration.md)
 - [Release notes and CHANGELOG](guides/release-notes.md)

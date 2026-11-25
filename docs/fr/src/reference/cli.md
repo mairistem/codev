@@ -212,6 +212,47 @@ lorsque sa première ligne est `# compagnon:managed` — ce qui aligne sa versio
 crée jamais ces fichiers et n'ajoute aucune section, si bien qu'un projet
 initialisé avec `--no-integration` reste tel quel.
 
+### compagnon migrate
+
+```text
+Convert a project set up before the rename to Compagnon
+
+Usage: compagnon migrate [OPTIONS]
+
+Options:
+      --dry-run  Print the operations without performing them
+      --json
+  -h, --help     Print help (see more with '--help')
+```
+
+Convertit sur place un projet créé avec codev, le nom du produit avant la
+0.7.0. Il trouve le projet depuis le dossier courant comme toute autre
+commande, sous `_codev/` ou `_compagnon/`, puis :
+
+- déplace `_codev/` vers `_compagnon/`, et `codev.lock` vers `compagnon.lock` ;
+- renomme la clé `codev_version` en `compagnon_version` dans
+  `_compagnon/config.yaml`, en conservant sa valeur, ses commentaires et tout
+  le reste du fichier à l'octet près ;
+- réécrit les marqueurs de format de `review.md` et `corrections.md`, ainsi
+  que les marqueurs des sections gérées de `CLAUDE.md` et du modèle de pull
+  request ;
+- remplace les skills générées `codev-*` et `.github/workflows/codev.yml` par
+  leurs versions Compagnon, puis rafraîchit le tout comme
+  `compagnon update`.
+
+Une skill `codev-*` ou un `codev.yml` modifiés à la main sont conservés et
+signalés. La prose des specs, des décisions et des changes n'est jamais
+réécrite. `--dry-run` affiche les opérations sans rien écrire. Une exécution
+interrompue par une erreur (`migration_incomplete`) indique le chemin en
+cause et ce qui était déjà fait : corrigez la cause et relancez la commande
+pour terminer. Un projet déjà migré est laissé tel quel. La commande refuse,
+sans rien écrire, un dossier qui contient à la fois `_codev/` et
+`_compagnon/` (`migration_conflict`) et une exigence de version que le
+Compagnon en cours d'exécution ne satisfait pas
+(`migration_version_unsatisfied`). Lorsque le projet déclare des sources git,
+elle vous rappelle de lancer `compagnon sources update`. Voir
+[Migrer depuis codev](../guides/moving-from-codev.md).
+
 ### compagnon self-update
 
 ```text

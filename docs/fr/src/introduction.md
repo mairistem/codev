@@ -101,6 +101,12 @@ Rust et fait ses propres choix par-dessus.
 - Une documentation embarquée dans le binaire (`compagnon docs`), consultable hors
   ligne.
 
+**Le nom.** Compagnon vient du compagnonnage : un maître mène l'ouvrage, les
+compagnons le réalisent, et chacun suit des plans arrêtés à l'avance. Ici,
+vous êtes le maître et les agents Claude sont vos compagnons. Jusqu'à la 0.6,
+le produit s'appelait codev ; [Migrer depuis codev](guides/moving-from-codev.md)
+explique comment convertir un projet créé à cette époque.
+
 ## Développé avec Compagnon
 
 Compagnon est développé avec Compagnon : chaque évolution de son dépôt est planifiée,

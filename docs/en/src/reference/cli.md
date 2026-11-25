@@ -200,6 +200,46 @@ is `# compagnon:managed` — which moves its pinned version to the running one. 
 only refreshes what exists: it never creates these files nor adds a section,
 so a project initialized with `--no-integration` stays as it is.
 
+### compagnon migrate
+
+```text
+Convert a project set up before the rename to Compagnon
+
+Usage: compagnon migrate [OPTIONS]
+
+Options:
+      --dry-run  Print the operations without performing them
+      --json
+  -h, --help     Print help (see more with '--help')
+```
+
+Converts a project set up with codev, the product's name before 0.7.0, in
+place. It finds the project from the current directory like any other
+command, under `_codev/` or `_compagnon/`, then:
+
+- moves `_codev/` to `_compagnon/`, and `codev.lock` to `compagnon.lock`;
+- renames the `codev_version` key to `compagnon_version` in
+  `_compagnon/config.yaml`, keeping its value, its comments and every other
+  byte;
+- rewrites the format markers of `review.md` and `corrections.md`, and the
+  markers of the managed sections of `CLAUDE.md` and of the pull request
+  template;
+- replaces the generated `codev-*` skills and `.github/workflows/codev.yml`
+  with their Compagnon versions, then refreshes everything as
+  `compagnon update` does.
+
+A `codev-*` skill or a `codev.yml` edited by hand is kept and reported. The
+prose of specs, decisions and changes is never rewritten. `--dry-run` prints
+the operations and writes nothing. A run that stops on an error
+(`migration_incomplete`) names the failing path and what was already done:
+fix the cause and run it again to complete it. A project already migrated is
+left as it is. The command refuses, without writing, a directory holding
+both `_codev/` and `_compagnon/` (`migration_conflict`) and a version
+requirement the running Compagnon does not satisfy
+(`migration_version_unsatisfied`). When the project declares git sources, it
+reminds you to run `compagnon sources update`. See
+[Moving from codev](../guides/moving-from-codev.md).
+
 ### compagnon self-update
 
 ```text

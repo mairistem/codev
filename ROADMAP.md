@@ -34,7 +34,7 @@ To weigh in, open an issue or comment on an existing one.
 - A generic skills target (`.agents/skills/`), for agents other than Claude
   Code.
 - Machine-wide preferences, next to the per-project configuration.
-- A notice when a newer compagnon version is available.
+- A notice when a newer Compagnon version is available.
 - An interactive dashboard of changes, specs and decisions.
 
 ## Out of scope

@@ -213,7 +213,7 @@ compagnon docs
 ## Contributing
 
 Contributions are welcome. Compagnon is developed with Compagnon: small fixes go
-through a regular pull request, and everything else starts as a compagnon change.
+through a regular pull request, and everything else starts as a Compagnon change.
 See [CONTRIBUTING.md](CONTRIBUTING.md), and the [roadmap](ROADMAP.md) for what
 is planned.
 
