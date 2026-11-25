@@ -237,7 +237,7 @@ skill stops once the plan is written, and waits for you.
 - the product owner writes the proposal, including its release note for
   end users, sorted by category, or `None` for a change users will not
   notice;
-- the QA analyst writes the specs;
+- the quality (QA) analyst writes the specs;
 - the architect writes the design;
 - the tech lead writes the tasks. Their criteria require a task that updates
   the documentation affected, and an automated test for every scenario,

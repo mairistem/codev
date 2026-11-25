@@ -21,7 +21,7 @@ Dans un projet Compagnon, chaque modification passe par les cinq mêmes
 À chaque étape, vous formulez votre demande à Claude avec vos mots, et
 Claude suit une compétence (skill) : un ensemble d'instructions écrit pour
 cette étape. La plupart des compétences ont aussi une commande à taper dans
-un [terminal](glossary.md#terminal) (la CLI), qui effectue le travail de
+un [terminal](glossary.md#terminal) (l'outil en ligne de commande), qui effectue le travail de
 fond. La réalisation n'a pas de commande : c'est le travail de
 l'[agent](glossary.md#agent). Les compétences, dans l'ordre où vous les
 utilisez :

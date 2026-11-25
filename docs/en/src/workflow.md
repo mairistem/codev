@@ -15,7 +15,7 @@ the same order. This fixed sequence is the Compagnon
 
 At each step, you ask Claude in your own words, and Claude follows a skill: a
 set of instructions written for that step. Most skills also have a command
-you can type in a [terminal](glossary.md#terminal) (the CLI), which does the
+you can type in a [terminal](glossary.md#terminal) (the command-line tool), which does the
 underlying work. Building the change has no command: that is the
 [agent](glossary.md#agent)'s job. The skills, in the order you use them:
 
@@ -38,7 +38,7 @@ Two more skills help along the way. `/compagnon-explore` lets you think an
 idea through before you propose anything. `/compagnon-update` revises a plan
 that is already written. See [Claude Code skills](skills.md).
 
-At each step, Claude works in a set [role](glossary.md#role): product owner, QA analyst,
+At each step, Claude works in a set [role](glossary.md#role): product owner, quality (QA) analyst,
 architect, tech lead, skeptical reviewer or developer. Each role has
 criteria it checks before moving on. Claude stops at the points where you
 decide. See [Roles](roles.md).

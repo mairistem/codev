@@ -327,6 +327,6 @@ In `spec-driven`, each part of the plan has a responsible
 it is finished:
 
 - the product owner, for the proposal (why and what);
-- the QA analyst, for the specs (behavior someone can observe);
+- the quality (QA) analyst, for the specs (behavior someone can observe);
 - the architect, for the design (how);
 - the tech lead, for the tasks (their order, and how to check each one).
