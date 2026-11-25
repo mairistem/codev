@@ -16,9 +16,12 @@ and the quickstart puts the internals of `compagnon init` and the CLI
 equivalent of each step in the reader's way.
 
 Tests already pin parts of chapters: `docs.rs` checks the roles,
-configuration, CLI, JSON and skills chapters, and that the manual starts
-with the `# Compagnon` title; `tests/repository.rs` checks the READMEs, the
-migration guide and the site. The distribution spec requires the README's
+configuration, CLI, JSON and skills chapters, that the manual starts with
+the `# Compagnon` title, and that `quickstart.md` holds "prose and
+structural keywords in" (`both_languages_document_the_keyword_language`);
+`tests/repository.rs` checks the READMEs, the migration guide, the site,
+and that `introduction.md` holds "compagnonnage"
+(`site_and_introductions_name_compagnon`). The rewrite keeps both phrases. The distribution spec requires the README's
 "Getting started" section to show the `curl … | sh` and `iwr … | iex`
 one-liners. No decision in `_compagnon/decisions/` governs the
 documentation's structure.
@@ -53,15 +56,20 @@ documentation's structure.
 | Contributing / Contribuer | origins, architecture, reliability |
 
 The introduction stays first and keeps its `# Compagnon` title, so the
-manual still opens on it. "Why Compagnon" shrinks into the introduction's
-plain-words pitch; "Origins" and "Built with Compagnon" move to a new
-`origins.md` under Contributing.
+manual still opens on it, and keeps the paragraph on the name
+(compagnonnage). "Why Compagnon", "Origins" and "Built with Compagnon" move,
+whole, to a new `origins.md` under Contributing: nothing is cut.
 
 **Alternatives considered**: a separate beginners' book — two texts to keep
 in step, twice, which drift; trimming the documentation — loses what the
 advanced profiles use; a new "Start here" folder with copies — duplicates.
 
 ### Decision: The quickstart is the Claude Code path; the rest folds away
+
+Each block's summary starts with "Under the hood" and names what it
+explains ("Under the hood: what /compagnon-propose runs"), so that a
+screen reader listing the page's controls tells the blocks apart.
+
 
 `quickstart.md` becomes "Your first change": install (one line, linking
 the Installation chapter), `compagnon init`, then four Claude Code steps —
@@ -97,13 +105,24 @@ MCP).
 **Alternatives considered**: a table — long definitions wrap badly and a
 row has no anchor.
 
-### Decision: Word caps checked by the documentation tests
+### Decision: Pure checks, tested on synthetic inputs, applied to the chapters
 
-A helper in `crates/compagnon-cli/src/docs.rs` tests counts the words of a
-chapter outside fenced code blocks and `<details>` blocks, and the tests
-apply the caps of the spec to the embedded chapters of both languages; the
-README checks join the existing ones in `tests/repository.rs`. The caps
-leave French 25 % more room, the usual growth of a translation.
+The checks — word count outside fenced code and `<details>` blocks, the
+Start here part, shell commands outside the blocks, glossary entries,
+profile links, the blocks' form — are pure functions in
+`crates/compagnon-cli/src/docs.rs` returning what they find wrong. Each is
+unit-tested on synthetic inputs, so that its failure branch is exercised
+for good; the chapter tests then apply it to the embedded chapters of both
+languages, and the README checks join `tests/repository.rs`. The caps are
+set well under today's lengths — the quickstart at 500 words of prose, a
+third of today's — and leave French 25 % more room, the usual growth of a
+translation.
+
+The website's rendering of `<details>` is the same pulldown-cmark
+rendering the offline manual's test checks; its keyboard behavior is the
+browser's native control. What remains — the focus outline and the marker
+in both schemes — is a visual judgement, checked by hand once and recorded
+in the pull request.
 
 **Alternatives considered**: a CI script — the project's checks live in the
 test suite.

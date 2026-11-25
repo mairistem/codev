@@ -26,7 +26,7 @@ reader sees now.
     only — `/compagnon-propose`, read the plan, `/compagnon-apply`,
     `/compagnon-archive`; the CLI equivalents and what `compagnon init` does
     underneath move into collapsible "Under the hood" blocks.
-  - A **Glossary**: every term the documentation uses, in plain words.
+  - A **Glossary**: every term the Start here path uses, in plain words.
 - A **Choose your path** page names five profiles and the pages each one
   reads, in order: discovering AI agents; not coding but reading and
   approving plans; developing; configuring Compagnon for a team; contributing
@@ -36,7 +36,8 @@ reader sees now.
 - The table of contents is regrouped in layers — Start here, Everyday use,
   Going further, Reference, Contributing — without removing content: the
   origins (moved out of the introduction), the architecture and the
-  reliability report go under Contributing.
+  reliability report go under Contributing, with "Why Compagnon", moved
+  whole.
 - README and README.fr shrink to the promise, three steps and links per
   profile; the landing page follows the same paths.
 - A test caps the length of the Start here path, so that it stays short.
