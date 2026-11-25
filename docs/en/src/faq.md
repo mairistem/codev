@@ -7,13 +7,14 @@
 No. The `compagnon` program never talks to an AI model. It goes online for
 two things only:
 
-- to download rules shared from another repository, when you ask for it
+- to download rules shared from another [repository](glossary.md#repository),
+  when you ask for it
   (`compagnon sources update`);
 - to see whether a newer version of Compagnon exists (`compagnon status`,
   `compagnon self-update`).
 
-The writing is done by your agent, Claude Code. It has the same access as in
-any other session.
+The writing is done by your [agent](glossary.md#agent), Claude Code. It can
+read and do exactly what it can usually do on your computer.
 
 ### Does Compagnon check for updates?
 
@@ -25,8 +26,9 @@ answer on your computer.
   kind.
 - If the request fails, nothing is shown, and Compagnon does not try again
   before the next day.
-- The check never runs in automated pipelines (when the `CI` variable is
-  set), so their results stay the same from one run to the next.
+- The check never runs during the project's automatic checks
+  ([CI](glossary.md#ci)), so their results stay the same from one run to
+  the next.
 - To turn it off on your computer, set `COMPAGNON_NO_UPDATE_CHECK=1`.
 - Nothing is ever installed without your consent. To update, you run
   `compagnon self-update`, or you answer "Update now" when a skill asks.
@@ -37,7 +39,8 @@ answer on your computer.
 The request is a single anonymous HTTPS call to GitHub's public API:
 `https://api.github.com/repos/mairistem/compagnon/releases/latest`. It reads
 the latest release number and caches it in
-`~/.cache/compagnon/update-check.json`, for 24 hours.
+`~/.cache/compagnon/update-check.json`, for 24 hours. It is skipped whenever
+the `CI` environment variable is set.
 
 </details>
 
@@ -50,9 +53,10 @@ change and write its plan documents (the
 change. What you lose are the skills: they do the writing for you, and they
 work only in Claude Code.
 
-### Should I commit `_compagnon/` and `.claude/skills/`?
+### Should I save `_compagnon/` and `.claude/skills/` in the project's history (commit them)?
 
-Yes, both.
+Yes, both. Saving a version of the project's files in its history (kept by
+[git](glossary.md#git)) is called a [commit](glossary.md#commit).
 
 - `_compagnon/` is the record of your specs, your decisions and your
   changes. Commit all of it, including `_compagnon/decisions/seal.yaml` and
@@ -72,9 +76,11 @@ set `skip_specs: true` in its `change.yaml`: it then needs no spec at all.
 
 Yes. When you set up the project, tell `compagnon init` what to leave alone:
 
-- `--no-claude-md` leaves `CLAUDE.md` alone;
+- `--no-claude-md` leaves `CLAUDE.md` (the instructions file Claude reads in
+  every project) alone;
 - `--no-ci` adds no automatic check (CI);
-- `--no-pr-template` leaves the pull request template alone;
+- `--no-pr-template` leaves the [pull request](glossary.md#pull-request)
+  template alone;
 - `--no-integration` does all three.
 
 `compagnon update` never adds them later.
@@ -91,11 +97,12 @@ See [Repository integration and compagnon doctor](guides/repository-integration.
 ### Should my reviewers work in isolation?
 
 By default, the skill that wrote the plan or the code also reviews it. It
-plays each reviewing role in turn, in the same conversation. This is the
-`inline` mode.
+plays each reviewing [role](glossary.md#role) in turn, in the same
+conversation. This is the inline mode (`inline`).
 
-In the `isolated` mode, each reviewing role works alone, as a separate
-helper (a Claude Code sub-agent) that never sees your conversation. The skill
+In the isolated mode (`isolated`), each reviewing role works alone, as a
+separate helper (a Claude Code [sub-agent](glossary.md#sub-agent)) that
+never sees your conversation. The skill
 then gathers what they found.
 
 Isolated review costs more, because each reviewer reads everything again.
@@ -193,7 +200,8 @@ folder holds no delta. Do one of these:
 ### `compagnon validate` reports `decision_seal_mismatch`
 
 Someone changed the text of an accepted decision, by hand or with a
-formatting tool. Accepted decisions are sealed: they must not change. You
+formatting tool. Accepted decisions are
+[sealed](glossary.md#seal): they must not change. You
 can:
 
 - **restore** the original text (`git diff` shows what changed); the seal
@@ -239,13 +247,12 @@ Move other Markdown files, such as a README, out of that folder.
 
 ### A spec archived with an earlier Compagnon holds a cut requirement
 
-This is a bug of Compagnon 0.6.1 and earlier (builds made before the fix).
+This is a bug of Compagnon 0.6.1 and earlier (copies installed before the fix).
 It happened when archiving a change that did two things at once: it modified
 the last requirement of a spec, and it added new requirements.
 
-The added requirements could then land in the middle of a line of the
-modified one. The spec holds the start of that requirement, then the added
-ones, then the end of the cut requirement, glued after them.
+The modified requirement could then be cut in two, in the middle of a line,
+with the added requirements stuck in the middle.
 
 `compagnon validate` does not detect it, and syncing or archiving the change
 again does not repair it.
@@ -426,19 +433,28 @@ Otherwise, an older Compagnon could pass what a teammate's would fail.
 Run the fix the message names:
 
 - `compagnon self-update`;
-- or `compagnon self-update --version <X.Y.Z>`, when your Compagnon is above
-  an upper limit such as `^0.6`. You can also widen `compagnon_version`, if
-  the team is moving to the newer version.
+- or `compagnon self-update --version <X.Y.Z>`, when your Compagnon is newer
+  than the highest version the project allows. You can also widen
+  `compagnon_version`, if the team is moving to the newer version.
 
-In CI, raise the `COMPAGNON_VERSION=` pin whenever `compagnon_version` is
-raised. Every other command, including `compagnon status` and
-`compagnon doctor`, keeps working.
+In the project's automatic checks (CI), raise the Compagnon version they
+install whenever `compagnon_version` is raised. Every other command,
+including `compagnon status` and `compagnon doctor`, keeps working.
+
+<details>
+<summary>Under the hood: upper limits and the CI pin</summary>
+
+An upper limit is a `compagnon_version` such as `^0.6`, which allows 0.6.x
+but not 0.7. In CI, the installed version is pinned by `COMPAGNON_VERSION=`:
+raise that pin whenever `compagnon_version` is raised.
+
+</details>
 
 ### `compagnon self-update` reports `update_checksum_mismatch`
 
 The downloaded file does not match the fingerprint published with the
 release (its line in `SHA256SUMS`), or that line is missing. Nothing was
-installed. Try again later: a proxy may have altered the download. If it
+installed. Try again later: your network may have altered the download. If it
 keeps happening, report it. This check is what protects you from a tampered
 file.
 
@@ -458,6 +474,6 @@ updates to that tool, and prints the command to run, such as
 
 ### `compagnon: command not found`
 
-Your terminal does not know where Compagnon is installed: its folder is not
+Your [terminal](glossary.md#terminal) does not know where Compagnon is installed: its folder is not
 on your `PATH`. See
 [Check the installation](installation.md#check-the-installation).
