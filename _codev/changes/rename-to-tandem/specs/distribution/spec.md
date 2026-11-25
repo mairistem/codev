@@ -78,3 +78,40 @@ The workflow MUST NOT write to the repository.
 - **WHEN** GitHub Actions runs
 - **THEN** no GitHub Release is created
 - **AND** no binary is published
+
+## ADDED Requirements
+
+### Requirement: Installers and self-update still reach the releases published as codev
+
+`install.sh` and `install.ps1` SHALL read the version to install from
+`TANDEM_VERSION`, and, when it is unset, from `CODEV_VERSION`. When the
+version to install is below `0.7.0`, they MUST download
+`codev-<version>-<target>.<ext>` and install the binary under the name
+`codev`, exactly as the codev installers did; from `0.7.0` on they
+download `tandem-*` and install `tandem`. When only `CODEV_VERSION` is
+set, they SHALL also install the binary under the name `codev`, so that
+a CI job written for codev keeps finding the command it calls.
+`tandem self-update --version X.Y.Z` with `X.Y.Z` below `0.7.0` MUST
+download the `codev-*` archive of that release, so that a user can go
+back to codev 0.6.
+
+#### Scenario: A CI job pinned to codev 0.6 keeps working
+
+- **GIVEN** a workflow running
+  `curl -sSL <installer URL> | CODEV_VERSION=0.6.1 sh` then
+  `codev validate --strict`
+- **WHEN** the job runs after this change is merged
+- **THEN** `codev-0.6.1-<target>.tar.gz` is downloaded and verified
+- **AND** `~/.local/bin/codev` is installed and `codev validate` runs
+
+#### Scenario: A codev pin to the bridge release
+
+- **GIVEN** `CODEV_VERSION=0.7.0` and no `TANDEM_VERSION`
+- **WHEN** the installer runs
+- **THEN** the Tandem 0.7.0 binary is installed as `~/.local/bin/codev`
+
+#### Scenario: Going back to codev 0.6
+
+- **GIVEN** Tandem 0.7.0 installed by its installer
+- **WHEN** the user runs `tandem self-update --version 0.6.1 --yes`
+- **THEN** `codev-0.6.1-<target>.<ext>` is downloaded and verified

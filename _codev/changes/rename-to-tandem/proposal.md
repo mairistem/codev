@@ -35,8 +35,12 @@ acceptable and before more projects adopt the current names.
   `_tandem/`) is detected. Tandem refuses to work on it silently and
   points to `tandem migrate`.
 - New: `tandem migrate` converts such a project in place: planning root,
-  lock file, configuration key, skills, managed blocks of `CLAUDE.md`,
-  generated CI workflow and review/correction markers.
+  lock file, configuration key, skills, managed blocks of `CLAUDE.md` and
+  of the pull request template, generated CI workflow and review/correction
+  markers; an interrupted run is completed by running it again.
+- The installers and `self-update` still install codev releases below
+  0.7.0 under their former names, so CI jobs pinned to codev keep working
+  and going back to codev 0.6 stays possible.
 - New: during the 0.7 series, each release also publishes legacy-named
   archives so that an installed codev 0.6 can still `self-update`; the
   binary they carry, run under the name `codev`, says it is now Tandem
@@ -72,7 +76,10 @@ acceptable and before more projects adopt the current names.
   `tandem-agents`, `tandem-cli`) and the evaluation crate
   (`tandem-evals`); the workspace manifest and the lock file.
 - The JSON contract v1: renamed codes, consumed by the installed skills —
-  which are reinstalled by `tandem migrate` and `tandem init`.
+  which are reinstalled by `tandem migrate`.
+- Existing CI jobs that install codev with `CODEV_VERSION` keep working;
+  GitLab jobs and hand-edited workflows are updated by hand (migration
+  guide).
 - Release pipeline (`.github/workflows/release.yml`), CI and evaluation
   workflows, `install.sh`, `install.ps1`, the update check's URLs.
 - The GitHub repository itself: renamed `mairistem/tandem` by hand
@@ -100,5 +107,6 @@ acceptable and before more projects adopt the current names.
 - Added: `tandem migrate` converts a project set up with codev — planning folder, lock file, configuration, skills, `CLAUDE.md` and CI workflow — and Tandem tells you to run it when it finds a codev project.
 - Changed: **BREAKING** Release archives are named `tandem-<version>-<target>`, the repository is `mairistem/tandem` (installers and update check), the lock file is `_tandem/tandem.lock`, the generated CI workflow is `.github/workflows/tandem.yml`, the update cache lives in a `tandem` folder, and managed markers read `tandem`. Scripts that download `codev-*` archives or read these paths must be updated; `tandem migrate` handles the project files.
 - Changed: **BREAKING** JSON error codes that contained `codev` are renamed (`no_codev_root` becomes `no_tandem_root`, and so on).
+- Changed: Existing CI jobs that install codev with `CODEV_VERSION` keep installing codev; switch them to `TANDEM_VERSION` and `tandem` when you migrate. GitLab jobs and hand-edited workflows are not changed by `tandem migrate`.
 - Changed: A codev 0.6 binary can still `self-update` during the 0.7 series; it then tells you to rename it to `tandem`.
 - Added: Tandem has its own logo, in the documentation, the README and the site.

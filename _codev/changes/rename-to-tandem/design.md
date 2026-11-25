@@ -70,10 +70,15 @@ place (`layout.rs`, `claude.rs`, `update.rs`, `integration.rs`, …), as
 0003 intended: "changing it costs a recompilation, not a refactoring".
 
 The deliberate exceptions to "no codev left" are therefore: this module
-and its tests, the migration spec and guide, the 0.7.0 CHANGELOG entry
-and release note, the legacy-archive step of `release.yml`, decision
-0014, and this change's `proposal.md`, `design.md` and `tasks.md`. Its
-delta specs are swept like the main specs.
+and its tests, the rename notice (whose text lives in the module), the
+migration guide and the `tandem migrate` page of both CLI references, the
+0.7.0 CHANGELOG entry and release note, the legacy-archive step of
+`release.yml` and the legacy branch of both installers, decisions 0003
+and 0014 (see below), and this change's whole folder. Tests anywhere else
+that need a former name build it from the `legacy` constants, never from
+a literal, so the sweep cannot rewrite their fixtures. The one
+`MODIFIED` heading holding the former name — the changelog delta's — is
+renamed by hand together with the main spec's.
 
 **Alternatives considered**: keeping legacy names next to each current
 constant — scatters the exceptions and makes the final `rg -i codev`
@@ -85,13 +90,18 @@ Following 0001, `tandem-core::migrate::plan(facts) -> MigrationPlan`
 decides from facts the engine gathers (which roots exist, the config
 text, the lock file, the installed skills with their generated/hand-edited
 state as `update` already computes it, the `CLAUDE.md` managed block, the
-workflow file) and returns ordered effects: `Rename` (root, then lock),
+workflow file) and returns ordered effects — computed from what is still present, so a
+second run completes an interrupted one — `Rename` (root, then lock),
 `Write` (config with the key renamed by a line edit that keeps comments —
 the same line-preserving approach as `yaml_lines.rs`; review and
-correction markers; skills; managed block; workflow), `Remove`
+correction markers; skills; managed blocks of `CLAUDE.md` and of the pull
+request template; workflow), `Remove`
 (generated `codev-*` skills and `codev.yml`), `Keep` (hand-edited ones,
-reported `kept_modified`). The engine executes it with the existing
-`FileSystem` port; `--dry-run` prints the plan without executing it; the
+reported `kept_modified`). The planner refuses up front, with
+`migration_version_unsatisfied`, a `codev_version` the running version
+does not satisfy. The engine executes the effects with the existing
+`FileSystem` port and stops at the first failure with
+`migration_incomplete`, listing what was applied; `--dry-run` prints the plan without executing it; the
 JSON output is a new `migrate` document in contract v1.
 
 Removing a skill leaves an empty folder: the `FileSystem` port gains
@@ -109,6 +119,8 @@ nothing happens on a codev layout without being asked.
 
 ### Decision: Root discovery knows the former root only to refuse it
 
+`init` refuses with `legacy_root` when its target holds `_codev/` and no
+`_tandem/`, so it never creates a second, empty root beside a codev one.
 `root::discover` checks, at each ancestor, `_tandem/` first; if absent and
 `_codev/` is present it returns `EngineError::LegacyRoot { dir }`
 (`legacy_root`), naming `tandem migrate`. `tandem migrate` uses its
@@ -119,6 +131,23 @@ it never writes to a source (0005).
 **Alternatives considered**: reading `_codev/` with a warning — rejected
 by the user (no silent use of the former layout) and it would make every
 command carry two layouts.
+
+### Decision: Below 0.7.0, installers and self-update use the former names
+
+Codev projects' CI jobs fetch `install.sh` from `main` with
+`CODEV_VERSION=<pin>` and then call `codev`
+(`integration.rs`, `render_gitlab_snippet`). The installers therefore
+read `TANDEM_VERSION`, else `CODEV_VERSION`; for a version below `0.7.0`
+they fetch `codev-*` archives and install `codev`; with only
+`CODEV_VERSION` set they install under the name `codev`. In the core,
+`asset_name`, `archive_root` and `binary_name` take the version and pick
+the `legacy` names below `0.7.0`, so `tandem self-update --version 0.6.1`
+is a working rollback. This is release history, not a project layout:
+the no-silent-use rule is about projects.
+
+**Alternatives considered**: publishing the new installers under a new
+path and freezing the old one — two installers to keep, and the old one
+would never learn about Tandem.
 
 ### Decision: The bridge is a set of legacy-named archives in the 0.7 releases
 
@@ -172,8 +201,11 @@ Order of operations on this repository:
 5. Re-seal the decisions whose body the sweep changed with
    `tandem decision seal <id> --force` — the sanctioned way to rewrite a
    sealed body — and record why in a new ADR 0014 "The product is named
-   Tandem", accepted, which states that the bodies of 0001–0013 were
-   re-sealed for the rename only and that no decision's substance changed.
+   Tandem", accepted, which supersedes 0003 on the name of the planning
+   root (keeping its visible, `_`-prefixed rationale) and states that the
+   other bodies were re-sealed for the rename only. 0003's body is left
+   as written: it is the record of a choice made under the former name,
+   and rewriting it would make it state a false history.
 6. `rg -i codev` audit: every hit must be one of the listed exceptions.
 
 The main specs are converted by the sweep, not by `MODIFIED` deltas: the
@@ -181,10 +213,11 @@ rename touches about 250 of the 278 requirements and 69 of their headings,
 and copying them into deltas would bury the four capabilities whose
 behavior really changes (`migration`, `changelog`, `distribution`,
 `docs`). Those deltas keep the existing headings verbatim, so that they
-still match the main specs at validation time; the sweep renames both
-sides together — the delta specs are not among the exceptions — so that
-`tandem validate --strict` still finds every `MODIFIED` target before
-archive.
+still match the main specs at validation time; after the sweep, the
+changelog delta's heading is renamed by hand like the main spec's, so
+that `tandem validate --strict` still finds every `MODIFIED` target
+before archive. The delta bodies, which describe the former layout on
+purpose, are not swept.
 
 **Alternatives considered**: `MODIFIED` blocks for every requirement — a
 delta of the size of the specs, unreviewable; leaving specs, decisions and
@@ -267,7 +300,12 @@ identity of its own.
 
 Rollback: before tagging, revert the merge. After tagging, a project
 migrated by mistake goes back with `git checkout` of the files listed by
-`tandem migrate` (its output names every path).
+`tandem migrate` (its output names every path), and the binary with
+`tandem self-update --version 0.6.1`. If the bridge fails for codev 0.6
+binaries after `v0.7.0` is out, `v0.7.1` ships corrected legacy archives
+and the release note gives the installer command meanwhile; before
+tagging, the legacy archive layout is rehearsed with a 0.6.1 binary
+against a draft release.
 
 ## Open Questions
 

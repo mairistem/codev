@@ -18,7 +18,12 @@ shown:
 - in the self-contained HTML file written by `tandem docs`, inline, with
   no external asset.
 
-Every mark carries a text alternative naming Tandem.
+A mark that stands alone carries a text alternative naming Tandem: `alt`
+on an image, `role="img"` with `aria-label` on inline SVG — a `<title>`
+inside the SVG file is not enough. A mark placed next to the visible word
+"Tandem", or inside a link that has its own accessible name, is
+decorative (`aria-hidden="true"`). The brand links name Tandem
+("Tandem, by Mairistem — home"; "Accueil du site Tandem" in French).
 
 #### Scenario: The offline manual shows the mark without fetching anything
 
@@ -32,7 +37,7 @@ Every mark carries a text alternative naming Tandem.
 - **GIVEN** the repository's `README.md` and `README.fr.md`
 - **WHEN** the test suite of `tandem-cli` runs
 - **THEN** it fails unless both reference the light and dark variants of
-  the mark under `docs/assets/`
+  the mark under `docs/assets/`, with a non-empty `alt` naming Tandem
 
 #### Scenario: A mark outside the palette is rejected
 

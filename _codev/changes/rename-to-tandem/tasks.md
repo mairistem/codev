@@ -37,13 +37,16 @@ renames the crates and the repository.
   `a_codev_root_is_refused_with_legacy_root`,
   `doctor_in_a_codev_project_fails_with_legacy_root`,
   `tandem_root_wins_over_a_leftover_codev_root`,
-  `no_root_at_all_fails_with_no_tandem_root`, and a CLI test
+  `no_root_at_all_fails_with_no_tandem_root`; make `init` refuse a target
+  holding only `_codev/`; and CLI tests
+  `init_in_a_codev_project_fails_with_legacy_root_and_writes_nothing` and
   `status_json_in_a_codev_project_reports_legacy_root_and_writes_nothing`.
 - [ ] 1.5 In the sources loader, refuse a source holding only
   `_codev/config.yaml` with `legacy_source`, naming the source and
   `tandem migrate`, without writing to it; verified by an engine test
   `a_source_laid_out_for_codev_is_refused_and_left_untouched` and
-  `a_migrated_source_with_a_leftover_codev_folder_is_read_from_tandem`.
+  `a_migrated_source_with_a_leftover_codev_folder_is_read_from_tandem`,
+  and `a_source_pinned_before_its_migration_names_sources_update`.
 
 ## 2. `tandem migrate`
 
@@ -55,7 +58,11 @@ renames the crates and the repository.
   returning ordered rename, write, remove and keep effects: root, lock,
   `codev_version` key renamed by a line edit preserving comments and
   bytes, review/correction markers, generated skills replaced,
-  hand-edited skills kept as `kept_modified`, `CLAUDE.md` managed block,
+  hand-edited skills kept as `kept_modified`, managed blocks of
+  `CLAUDE.md` and of the pull request template, computed from what is
+  still present so a second run completes an interrupted one; a
+  `codev_version` the running version does not satisfy refused up front
+  with `migration_version_unsatisfied`;
   `codev.yml` replaced by `tandem.yml` unless hand-edited; prose never
   touched; outcomes `already_migrated`, `migration_conflict`,
   `no_tandem_root`; verified by unit tests in `migrate.rs`, one per
@@ -70,7 +77,12 @@ renames the crates and the repository.
   `migrate_with_both_roots_fails_with_migration_conflict`,
   `migrate_without_a_planning_root_fails_with_no_tandem_root`,
   `migrate_leaves_spec_prose_alone`, and
-  `a_migrated_project_matches_a_freshly_initialized_one`.
+  `a_migrated_project_matches_a_freshly_initialized_one`,
+  `migrate_failure_names_the_path_and_the_applied_operations`,
+  `migrate_resumes_after_a_failure_past_the_root_rename`,
+  `migrate_refuses_an_unsatisfiable_version_requirement`,
+  `migrate_rewrites_the_pr_template_managed_section`, and
+  `migrate_with_git_sources_says_to_run_sources_update`.
 - [ ] 2.4 Add `migrate` to the shell completions and the CLI help;
   verified by the existing completion golden tests updated.
 
@@ -94,7 +106,9 @@ renames the crates and the repository.
   `INSTALLER_URL` to `mairistem/tandem`; rename `asset_name`,
   `archive_root`, `binary_name` and the staging names to `tandem`; verified
   by the existing `update.rs` tests updated
-  (`asset_names_follow_the_release_workflow`, …).
+  (`asset_names_follow_the_release_workflow`, …); below `0.7.0` the asset,
+  archive root and binary names come from `legacy`, verified by
+  `a_downgrade_below_0_7_asks_for_the_codev_archive`.
 - [ ] 3.4 Update `release.yml`: build `--bin tandem`, stage
   `tandem-<version>-<target>`; when the tag starts with `v0.7.`, also stage
   the same binary as `codev[.exe]` in `codev-<version>-<target>/`, archive
@@ -111,8 +125,13 @@ renames the crates and the repository.
 - [ ] 3.5 Update `install.sh` and `install.ps1`: repository
   `mairistem/tandem`, `TANDEM_VERSION`, archives `tandem-*`, installed as
   `~/.local/bin/tandem` and `%LOCALAPPDATA%\Programs\tandem\tandem.exe`;
-  verified by `sh -n install.sh`, the existing installer checks in
-  `ci.yml`, and a test `installers_name_only_tandem` grepping both files.
+  read `TANDEM_VERSION`, else `CODEV_VERSION`; below `0.7.0` fetch
+  `codev-*` and install `codev`; with only `CODEV_VERSION` set install as
+  `codev`; verified by `sh -n install.sh`, the existing installer checks
+  in `ci.yml`, and a CI job `installers_honor_a_codev_pin` running both
+  installers with `CODEV_VERSION=0.6.1` (installs `codev` 0.6.1) and
+  `TANDEM_VERSION=0.7.0` against the release (installs `tandem`) — run
+  after `v0.7.0` exists, before announcing it.
 
 ## 4. Tandem mark
 
@@ -127,9 +146,13 @@ renames the crates and the repository.
 - [ ] 4.2 Show the mark in `README.md` and `README.fr.md` (`<picture>`
   with light/dark sources), in `docs/theme/header.hbs` next to the
   Mairistem symbol, in `docs/site/index.html` (header, favicon), and
-  inline in the offline manual; verified by CLI tests
+  inline in the offline manual; `alt="Tandem"` on README images,
+  `role="img" aria-label="Tandem"` on a standalone inline mark,
+  `aria-hidden="true"` where the word Tandem or the link's own name sits
+  beside it, brand links renamed in both editions; verified by CLI tests
   `both_readmes_show_the_light_and_dark_mark` and
-  `offline_manual_inlines_the_mark_without_external_images`, and
+  `offline_manual_inlines_the_mark_without_external_images`,
+  `inline_marks_are_named_or_decorative`, and
   `mdbook build docs/en docs/fr` succeeding.
 
 ## 5. Renaming the repository's contents
@@ -142,7 +165,8 @@ renames the crates and the repository.
   `cargo build --release --bin tandem` and `cargo test --workspace`.
 - [ ] 5.2 Run `target/release/tandem migrate --dry-run` then
   `tandem migrate` on this repository: `_codev/` becomes `_tandem/` (this
-  change included), `tandem.lock`, `tandem_version: ">=0.7"`, skills
+  change included), `tandem.lock`, `tandem_version` keeping `">=0.6"`
+  (then bumped by hand to `">=0.7"`), skills
   `.claude/skills/tandem-*`, `CLAUDE.md`, workflows; verified by
   `tandem validate --strict` and `tandem doctor` passing.
 - [ ] 5.3 Sweep every remaining text file with the ordered mapping
@@ -150,15 +174,16 @@ renames the crates and the repository.
   **Tandem** in prose), and `git mv` every path holding `codev` —
   decisions, the archived change `2026-10-23-eval-codev-binary-name`,
   evaluation fixtures' `_codev/` folders — excluding the deliberate
-  exceptions of design.md; replace `changelog.exclude` entries
-  accordingly and add the renamed archived change to it; the delta specs of
-  this change are swept with the main specs, so their `MODIFIED` headings
-  keep matching; verified by `cargo test --workspace`,
+  exceptions of design.md (decision 0003 and this change's folder
+  included); replace `changelog.exclude` entries accordingly and add the
+  renamed archived change to it; rename by hand the changelog delta's
+  `MODIFIED` heading like the main spec's; verified by `cargo test --workspace`,
   `tandem validate --strict` reporting no missing `MODIFIED` target, and
   the audit `rg -i -l codev` listing only the exceptions.
 - [ ] 5.4 Re-seal the decisions the sweep changed with
-  `tandem decision seal <id> --force`, then create and accept ADR 0014
-  "The product is named Tandem" recording the rename and the re-seal;
+  `tandem decision seal <id> --force`, then create ADR 0014 "The product is named Tandem" with
+  `tandem decision supersede 0003`, recording the rename and the re-seal,
+  and accept it;
   verified by `tandem validate --strict` reporting no
   `decision_seal_mismatch` and `git diff` of each re-sealed body showing
   only name changes.
@@ -181,7 +206,11 @@ renames the crates and the repository.
 
 - [ ] 7.1 Write the migration guide in `docs/en/src/guides/` and
   `docs/fr/src/guides/` (vouvoiement), listed at the same place in both
-  `SUMMARY.md`, and document `tandem migrate` in both CLI references;
+  `SUMMARY.md`, and document `tandem migrate` in both CLI references; the guide covers
+  CI jobs and GitLab snippets to switch by hand, `tandem sources update`
+  after migrating, source maintainers keeping a copy of `_codev/` during
+  the transition, a version requirement to widen, and going back with
+  `tandem self-update --version 0.6.1`;
   verified by CLI tests `both_editions_list_the_migration_guide` and
   `migration_guides_name_tandem_migrate_dry_run`, plus the existing
   same-chapters test.

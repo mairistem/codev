@@ -13,7 +13,8 @@ holds `_codev/` and no `_tandem/`, every command that needs a project
 SHALL fail with the code `legacy_root`, naming the directory found
 and telling the user to run `tandem migrate`. No such command MUST read
 or write anything under `_codev/`; `tandem doctor` included, which fails
-with the same code. `tandem migrate`, `tandem docs`,
+with the same code, and `tandem init` run where `_codev/` exists and
+`_tandem/` does not fails with it too and writes nothing. `tandem migrate`, `tandem docs`,
 `tandem self-update`, `tandem completions` and `tandem --version` are not
 affected. When a directory holds both `_codev/` and `_tandem/`,
 `_tandem/` is the project and `_codev/` is ignored.
@@ -25,6 +26,13 @@ affected. When a directory holds both `_codev/` and `_tandem/`,
 - **THEN** the exit code is 1 and `status[0].code` is `legacy_root`
 - **AND** the message names `/p` and `tandem migrate`
 - **AND** nothing under `/p/_codev/` is modified
+
+#### Scenario: Init in a codev project
+
+- **GIVEN** a directory holding `_codev/config.yaml` and no `_tandem/`
+- **WHEN** the user runs `tandem init --yes`
+- **THEN** the command fails with the code `legacy_root`
+- **AND** no `_tandem/` folder and no `tandem-*` skill is created
 
 #### Scenario: Doctor in a codev project
 
@@ -61,15 +69,27 @@ affected. When a directory holds both `_codev/` and `_tandem/`,
   workflows;
 - replace the managed block of `CLAUDE.md` and the generated
   `.github/workflows/codev.yml` by their Tandem versions
-  (`.github/workflows/tandem.yml`), leaving any hand-written content
-  outside the managed block untouched.
+  (`.github/workflows/tandem.yml`), and the managed section of the pull
+  request template by its Tandem version, leaving any hand-written content
+  outside the managed blocks untouched.
 
 A `codev-*` skill or a `codev.yml` workflow modified by hand SHALL be
 kept and reported as `kept_modified`, never deleted. The command MUST
 print every path it moved, wrote, removed or kept, and support `--json`
 (contract v1) and `--dry-run`, which prints the same plan and writes
-nothing. Run where `_tandem/` exists and `_codev/` does not, it SHALL do nothing, exit 0,
-and say the project is already migrated. Run where there is no planning
+nothing. Run where `_tandem/` exists and `_codev/` does not, it SHALL complete
+whatever former name is still present — `codev.lock`, the `codev_version`
+key, a former marker, a generated `codev-*` skill or `codev.yml`, a former
+managed section — and, when none is left, do nothing, exit 0, and say the
+project is already migrated. When an operation fails, it SHALL stop, exit
+1 with the code `migration_incomplete`, name the failing path and the
+system error, list the operations already applied, and tell the user to
+run `tandem migrate` again. Before writing anything, it SHALL check that
+the running version satisfies the `codev_version` requirement; when it
+does not, it SHALL fail with `migration_version_unsatisfied`, naming the
+requirement and asking the user to widen it, and modify nothing. After
+migrating a project that declares git sources, it SHALL say to run
+`tandem sources update`. Run where there is no planning
 root at all, it SHALL fail with `no_tandem_root`. When `_codev/` and
 `_tandem/` both exist it SHALL fail with `migration_conflict` and modify
 nothing.
@@ -128,6 +148,32 @@ MUST NOT rewrite the prose of the planning files.
 - **WHEN** the user runs `tandem migrate --json`
 - **THEN** the exit code is 1 and `status[0].code` is `no_tandem_root`
 
+#### Scenario: An interrupted migration is completed by a second run
+
+- **GIVEN** a migration that failed after renaming `_codev/` to
+  `_tandem/`, leaving `_tandem/codev.lock` and the `codev-*` skills
+- **THEN** that run exited 1 with `migration_incomplete`, naming the
+  failing path and the operations applied
+- **WHEN** the user runs `tandem migrate` again
+- **THEN** the lock is renamed, the skills are replaced, and the project
+  matches a migration that never failed
+
+#### Scenario: A version requirement the running Tandem does not satisfy
+
+- **GIVEN** a codev project whose config holds `codev_version: "^0.6"`
+- **WHEN** the user runs `tandem migrate` with Tandem 0.7.0
+- **THEN** the command fails with `migration_version_unsatisfied` naming
+  `^0.6`
+- **AND** no file is modified
+
+#### Scenario: The pull request template is migrated
+
+- **GIVEN** a codev project whose `.github/pull_request_template.md`
+  holds a codev managed section and hand-written text
+- **WHEN** the user runs `tandem migrate`
+- **THEN** the managed section is the Tandem one and the hand-written
+  text is unchanged
+
 #### Scenario: Prose is left alone
 
 - **GIVEN** a codev project whose spec says "run `codev validate`"
@@ -138,8 +184,10 @@ MUST NOT rewrite the prose of the planning files.
 
 When a source declared under `sources:` in `_tandem/config.yaml` holds
 `_codev/config.yaml` and no `_tandem/config.yaml`, the commands that read
-sources SHALL fail with `legacy_source`, naming the source and
-saying that its maintainers must run `tandem migrate` in it. Tandem MUST
+sources SHALL fail with `legacy_source`, naming the source and both
+possible causes with their fix: the source is not migrated yet (its
+maintainers run `tandem migrate` in it), or, for a git source, the pinned
+commit predates its migration (run `tandem sources update`). Tandem MUST
 NOT read it, and MUST NOT modify it.
 
 #### Scenario: A shared standards repository not migrated yet
@@ -148,7 +196,7 @@ NOT read it, and MUST NOT modify it.
   holding only `_codev/config.yaml`
 - **WHEN** the user runs `tandem validate --json`
 - **THEN** `status[0].code` is `legacy_source` and the message names
-  `standards` and `tandem migrate`
+  `standards`, `tandem migrate` and `tandem sources update`
 - **AND** the source's files are unchanged
 
 #### Scenario: A migrated source is read as usual
