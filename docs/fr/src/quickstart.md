@@ -1,6 +1,6 @@
-# Votre premier change
+# Votre première modification
 
-Cette page vous mène d'un dépôt vide à votre premier change terminé, en une
+Cette page vous mène d'un dépôt vide à votre première modification terminée, en une
 dizaine de minutes. Vous parlez à Claude avec vos mots : chaque étape donne
 la phrase à dire, puis la commande raccourcie, qui fait la même chose.
 
@@ -32,9 +32,9 @@ Les autres façons d'installer sont dans [Installation](installation.md).
 compagnon init
 ```
 
-Il peut poser deux questions — quels workflows installer, et quelques mots
+Il peut poser deux questions — quelles compétences installer, et quelques mots
 sur votre projet — puis ajoute un dossier `_compagnon/` et apprend à Claude
-Code les skills de Compagnon. Redémarrez Claude Code pour qu'il les voie.
+Code les compétences de Compagnon. Redémarrez Claude Code pour qu'il les voie.
 
 <details>
 <summary>Sous le capot : ce qu'écrit init</summary>
@@ -67,7 +67,7 @@ la correction de chaque point.
 
 </details>
 
-## 3. Demander un change (`/compagnon-propose`)
+## 3. Demander une modification (`/compagnon-propose`)
 
 Dans Claude Code, dites ce que vous voulez :
 
@@ -80,7 +80,7 @@ suit le réglage du système`.
 <details>
 <summary>Sous le capot : comment le plan est rédigé</summary>
 
-La skill nomme le change (`add-dark-mode`), crée son dossier, puis demande à
+La compétence nomme la modification (`add-dark-mode`), crée son dossier, puis demande à
 Compagnon, pour chaque partie du plan, quoi écrire et dans quelle langue :
 
 ```bash
@@ -99,7 +99,7 @@ Language: fr — prose and structural keywords in fr
 ## 4. Relire le plan
 
 Le plan se trouve dans `_compagnon/changes/add-dark-mode/`, en quatre
-fichiers courts : la **proposition** (pourquoi), les **specs** (ce qui sera
+fichiers courts : la **proposition** (pourquoi), les **spécifications** (ce qui sera
 vrai ensuite), la **conception** (comment) et les **tâches** (les étapes).
 Lisez-les comme la proposition d'un collègue. Pour changer quelque chose,
 dites-le simplement :
@@ -118,31 +118,31 @@ compagnon validate add-dark-mode
 ```
 
 `status` montre les quatre parties comme rédigées ; `validate` vérifie leur
-format. Un change sans spec échoue volontairement avec
+format. Une modification sans spécification échoue volontairement avec
 `zero_delta_without_marker`.
 
 </details>
 
-## 5. Laisser Claude le réaliser (`/compagnon-apply`)
+## 5. Laisser Claude la réaliser (`/compagnon-apply`)
 
 Une fois le plan à votre goût :
 
-> Le plan me va, implémente-le.
+> Le plan me va, réalise la modification.
 
 Claude traite les tâches une à une, vérifie chacune avec son test, et
 s'arrête pour vous demander si quelque chose n'est pas clair. Raccourci :
 `/compagnon-apply add-dark-mode`.
 
-## 6. Le classer (`/compagnon-archive`)
+## 6. La classer (`/compagnon-archive`)
 
 Vérifiez le résultat, puis :
 
-> Le change est terminé, archive-le.
+> La modification est terminée, archive-la.
 
-Claude fusionne les specs du plan dans celles du projet et range le change
-dans l'archive : le projet se souvient désormais de la raison d'être du mode
-sombre. Raccourci : `/compagnon-archive add-dark-mode`. Commitez le
-résultat.
+Claude reporte les spécifications du plan dans celles du projet et range
+la modification dans l'archive : le projet se souvient désormais de la
+raison d'être du mode sombre. Raccourci : `/compagnon-archive
+add-dark-mode`. Enregistrez ensuite le résultat dans Git (commit).
 
 <details>
 <summary>Sous le capot : ce que fait l'archivage</summary>
@@ -164,8 +164,8 @@ Moved to: /home/you/acme-app/_compagnon/changes/archive/2026-09-30-add-dark-mode
 
 ## Et ensuite
 
-- [Le workflow](workflow.md) détaille chaque étape.
-- [Les skills Claude Code](skills.md#comment-demander) donne, pour chaque
-  skill, des façons de la demander.
+- [Étape par étape](workflow.md) détaille chaque étape.
+- [Les compétences Claude Code](skills.md#comment-demander) donne, pour
+  chaque compétence, des façons de la demander.
 - Dites « fais-moi visiter Compagnon » pour une visite guidée de votre
   projet.

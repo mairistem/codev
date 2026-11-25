@@ -550,7 +550,7 @@ pub fn unexplained_terms(md: &str, lang: Lang, anchors: &[String]) -> Vec<String
             problems.push(banned.to_string());
         }
         let links = links(&paragraph);
-        for (at, word) in words(&paragraph) {
+        for (at, word) in words(&without_link_targets(&paragraph)) {
             for (term, forms) in explained_terms(lang) {
                 if seen.contains(term) || !forms.contains(&word.as_str()) {
                     continue;
@@ -569,6 +569,18 @@ pub fn unexplained_terms(md: &str, lang: Lang, anchors: &[String]) -> Vec<String
         }
     }
     problems
+}
+
+/// `text` with the target of every link, `](…)`, replaced by spaces of
+/// the same length: a path such as `workflow.md` is not prose.
+fn without_link_targets(text: &str) -> String {
+    let mut out = text.to_string();
+    for (range, target) in links(text) {
+        let start = range.end + 2;
+        let end = start + target.len();
+        out.replace_range(start..end, &" ".repeat(target.len()));
+    }
+    out
 }
 
 /// The French determiners after which "change" is the English noun, not
@@ -606,8 +618,10 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         let words: Vec<String> = words(&text).into_iter().map(|(_, w)| w).collect();
         for (i, word) in words.iter().enumerate() {
             let parts: Vec<&str> = word.split('-').collect();
+            // A product's name is not an anglicism: "Spec Kit".
+            let product = word == "spec" && words.get(i + 1).is_some_and(|n| n == "kit");
             for part in &parts {
-                if ENGLISH.contains(part) {
+                if ENGLISH.contains(part) && !product {
                     add(part, &mut found);
                 }
             }
@@ -785,6 +799,12 @@ mod tests {
     }
 
     #[test]
+    fn a_link_target_is_not_prose() {
+        let md = "See [Step by step](workflow.md) and [the plan](concepts.md#delta).\n";
+        assert!(unexplained_terms(md, Lang::En, &anchors()).is_empty());
+    }
+
+    #[test]
     fn a_link_to_the_top_of_the_glossary_is_caught() {
         let bare = "A [delta](glossary.md) lists the change.\n";
         assert_eq!(unexplained_terms(bare, Lang::En, &anchors()), ["delta"]);
@@ -829,6 +849,7 @@ mod tests {
         let md = "Une compétence (skill) se lance avec `/compagnon-apply`, \
                   dans `_compagnon/changes/` ; voir [le guide](guides/review-a-plan.md).\n";
         assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
+        assert!(anglicisms("Spec Kit vous conviendra mieux.\n").is_empty());
     }
 }
 
@@ -1060,7 +1081,10 @@ mod chapter_tests {
     fn review_a_plan_covers_the_plan_without_a_terminal() {
         for (lang, words) in [
             (Lang::En, ["proposal", "specs", "design", "tasks"]),
-            (Lang::Fr, ["proposition", "specs", "conception", "tâches"]),
+            (
+                Lang::Fr,
+                ["proposition", "spécification", "conception", "tâches"],
+            ),
         ] {
             let guide = chapter(lang, "guides/review-a-plan.md");
             assert!(

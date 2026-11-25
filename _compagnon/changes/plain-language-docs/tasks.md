@@ -42,21 +42,21 @@ design, in *vouvoiement*.
 
 ## 2. The rewrite, chapter by chapter, both editions
 
-- [ ] 2.1 Glossary: the new entries (English Artifact, Schema, Workflow,
+- [x] 2.1 Glossary: the new entries (English Artifact, Schema, Workflow,
   Frontmatter, Kebab-case; French Artefact, Schéma, Déroulé, Frontmatter,
   Kebab-case), the French entries Change, Skill, Spec and Revue renamed
   Modification, Compétence, Spécification and Relecture,
   each saying the English word it stands for, every definition in
   everyday words; verified by `the_glossary_defines_every_required_term`
   and `the_french_everyday_pages_hold_no_anglicism` on the glossary.
-- [ ] 2.2 Introduction, Choose your path and Your first change (the French
+- [x] 2.2 Introduction, Choose your path and Your first change (the French
   title becomes « Votre première modification », in `SUMMARY.md` too);
   verified by `every_everyday_chapter_explains_its_terms`,
   `the_french_everyday_pages_hold_no_anglicism` and the existing
   `the_start_here_path_stays_under_its_caps`,
   `each_quickstart_step_leads_with_a_plain_request` and
   `both_editions_open_with_the_start_here_path`.
-- [ ] 2.3 Installation and Reviewing a plan, and the French words
+- [x] 2.3 Installation and Reviewing a plan, and the French words
   `review_a_plan_covers_the_plan_without_a_terminal` looks for (« specs »
   becomes « spécification »); verified by the two new tests and that
   test.

@@ -4,14 +4,14 @@
 
 - [Compagnon en deux minutes](introduction.md)
 - [Choisissez votre parcours](choose-your-path.md)
-- [Votre premier change](quickstart.md)
+- [Votre première modification](quickstart.md)
 - [Glossaire](glossary.md)
 
 # Au quotidien
 
 - [Installation](installation.md)
-- [Le workflow](workflow.md)
-- [Les skills Claude Code](skills.md)
+- [Le déroulé](workflow.md)
+- [Les compétences Claude Code](skills.md)
 - [Relire un plan](guides/review-a-plan.md)
 - [Concepts](concepts.md)
 - [FAQ et dépannage](faq.md)

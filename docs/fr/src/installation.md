@@ -79,8 +79,8 @@ précompilé. Sur ARM64, compilez depuis les sources.
 
 Si vous préférez ne pas exécuter un script directement dans votre shell,
 téléchargez vous-même les fichiers depuis la
-[dernière release](https://github.com/mairistem/compagnon/releases/latest). Chaque
-release contient une archive par cible, nommée
+[dernière version publiée](https://github.com/mairistem/compagnon/releases/latest).
+Chaque version contient une archive par plateforme, nommée
 `compagnon-<version>-<target>.tar.gz` (`.zip` sous Windows), ainsi qu'un fichier
 `SHA256SUMS`.
 
@@ -165,7 +165,7 @@ compagnon completions powershell | Out-String | Invoke-Expression
 
 ## Prérequis
 
-- **Claude Code**, pour utiliser les skills. La CLI elle-même fonctionne
+- **Claude Code**, pour utiliser les compétences. La CLI elle-même fonctionne
   sans.
 - **git**, uniquement pour les [sources héritées](guides/inherited-sources.md)
   hébergées dans un dépôt git.
@@ -180,8 +180,8 @@ compagnon self-update --check          # indique seulement la version installée
 compagnon self-update --version 0.5.0  # une version précise, rétrogradation comprise
 ```
 
-La commande télécharge la release la plus récente pour votre plateforme,
-vérifie son SHA-256 avec le `SHA256SUMS` de la release — comme le font les
+La commande télécharge la version publiée la plus récente pour votre plateforme,
+vérifie son SHA-256 avec le `SHA256SUMS` de cette version — comme le font les
 installateurs — et remplace le binaire sur place. Ensuite, dans un projet
 Compagnon, elle lance `compagnon update` avec le nouveau binaire. Elle a besoin de
 `curl` et de `tar`, fournis par macOS, la plupart des distributions Linux et
@@ -195,13 +195,13 @@ jamais, sauf si vous passez `--version`. Sous Windows, l'ancien binaire est
 conservé sous le nom `compagnon.old.exe` à côté du nouveau, jusqu'à ce que la
 commande Compagnon suivante le supprime.
 
-`compagnon status` vous signale l'existence d'une release plus récente, au plus
+`compagnon status` vous signale l'existence d'une version plus récente, au plus
 une fois par jour ; voir
 [Compagnon vérifie-t-il les mises à jour ?](faq.md#compagnon-vérifie-t-il-les-mises-à-jour-)
 pour le désactiver.
 
-Vous pouvez toujours relancer l'installateur ou télécharger une release plus
-récente. Ensuite, dans chaque projet, régénérez les skills pour qu'elles
+Vous pouvez toujours relancer l'installateur ou télécharger une version plus
+récente. Ensuite, dans chaque projet, régénérez les compétences pour qu'elles
 correspondent à la nouvelle version :
 
 ```bash
@@ -209,8 +209,8 @@ compagnon update
 ```
 
 `compagnon update` rafraîchit aussi les sections gérées par Compagnon dans `CLAUDE.md`
-et dans le modèle de pull request, ainsi que la version de Compagnon épinglée dans
+et dans le modèle de demande de fusion, ainsi que la version de Compagnon épinglée dans
 `.github/workflows/compagnon.yml`, là où `compagnon init` les a écrites. Consultez
 [`compagnon update`](reference/cli.md#compagnon-update) pour savoir comment sont
-traitées les skills modifiées à la main, et `compagnon doctor` pour vérifier le
+traitées les compétences modifiées à la main, et `compagnon doctor` pour vérifier le
 résultat.

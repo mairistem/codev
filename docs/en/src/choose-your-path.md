@@ -29,8 +29,8 @@ You write code and want Claude to plan before it does.
 
 1. [Your first change](quickstart.md): the whole cycle, once.
 2. [Claude Code skills](skills.md): how to ask for each step.
-3. [The workflow](workflow.md): each step in detail.
-4. [Concepts](concepts.md): deltas, capabilities, decisions.
+3. [Step by step](workflow.md): what happens at each step of a change.
+4. [Concepts](concepts.md): how plans, specs and decisions fit together.
 5. [FAQ and troubleshooting](faq.md): when something goes wrong.
 
 ## I set Compagnon up for my team

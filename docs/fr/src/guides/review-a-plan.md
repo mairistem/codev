@@ -13,15 +13,15 @@ Claude et les rôles de relecture s'occupent du côté technique.
 
 ## Où se trouve le plan
 
-Chaque change a son propre dossier, `_compagnon/changes/<nom>/`. Vous
+Chaque modification a son propre dossier, `_compagnon/changes/<nom>/`. Vous
 pouvez aussi simplement demander :
 
 > Montre-moi le plan du mode sombre, en mots simples.
 
 ## La proposition : pourquoi
 
-`proposal.md` dit pourquoi le change est nécessaire, ce qui va changer et
-ce qu'il touche. Vérifiez que :
+`proposal.md` dit pourquoi la modification est nécessaire, ce qui va
+changer et ce qu'elle touche. Vérifiez que :
 
 - le problème décrit est le vrai, tel que les utilisateurs ou les clients
   le vivent ;
@@ -29,7 +29,7 @@ ce qu'il touche. Vérifiez que :
   ajouté ;
 - ce qui est explicitement laissé de côté est acceptable pour l'instant.
 
-## Les specs : ce qui sera vrai ensuite
+## Les spécifications : ce qui sera vrai ensuite
 
 Les fichiers sous `specs/` listent des **exigences** — des règles que le
 produit doit respecter — chacune avec des **scénarios** : une situation,
@@ -76,14 +76,15 @@ cohérentes.
 > Dans le plan, un utilisateur qui choisit un thème à la main le garde,
 > même si le réglage du système change.
 
-> Retire l'export PDF de ce change : on le fera plus tard.
+> Retire l'export PDF de cette modification : on le fera plus tard.
 
 Relisez ensuite les parties modifiées. Recommencez jusqu'à ce que le plan
 dise ce que vous voulez.
 
 ## Valider
 
-Quand le plan vous convient, dites-le : « le plan me va, implémente-le ».
+Quand le plan vous convient, dites-le : « le plan me va, réalise la
+modification ».
 Claude construit alors exactement ce que dit le plan, et rien d'autre. Si
-votre équipe utilise des pull requests, approuvez celle qui contient le
-plan : votre accord y est consigné.
+votre équipe utilise des demandes de fusion (pull requests), approuvez
+celle qui contient le plan : votre accord y est consigné.

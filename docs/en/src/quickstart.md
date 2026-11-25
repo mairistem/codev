@@ -31,7 +31,7 @@ At the root of your repository, run once:
 compagnon init
 ```
 
-It may ask two questions — which workflows to install, and a few words
+It may ask two questions — which skills to install, and a few words
 about your project — then adds a `_compagnon/` folder and teaches Claude
 Code the Compagnon skills. Restart Claude Code so it sees them.
 
@@ -160,7 +160,7 @@ Moved to: /home/you/acme-app/_compagnon/changes/archive/2026-09-30-add-dark-mode
 
 ## What's next
 
-- [The workflow](workflow.md) details each step.
+- [Step by step](workflow.md) details each step.
 - [Claude Code skills](skills.md#how-to-ask) lists, for every skill, ways
   to ask for it.
 - Say "show me around Compagnon" for a guided tour of your project.

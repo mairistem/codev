@@ -50,7 +50,7 @@ vos compagnons.
 
 - [Choisissez votre parcours](choose-your-path.md) : les pages à lire selon
   votre profil, que vous codiez ou non.
-- [Votre premier change](quickstart.md) : essayez en une dizaine de minutes.
+- [Votre première modification](quickstart.md) : essayez en une dizaine de minutes.
 - [Glossaire](glossary.md) : chaque terme, en mots simples.
 
 Jusqu'à la 0.6, Compagnon s'appelait codev : [Migrer depuis codev](guides/moving-from-codev.md)

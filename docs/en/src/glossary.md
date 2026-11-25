@@ -16,6 +16,12 @@ merges the change's specs into the project's specs and moves the change's
 folder to `_compagnon/changes/archive/`, dated. Nothing is lost: the plan
 stays readable as a record.
 
+## Artifact
+
+One of the files that make up a plan: the proposal, the specs, the design
+or the tasks. Compagnon calls them artifacts; you can simply think of them
+as the four parts of the plan.
+
 ## Capability
 
 One area of what the product does, such as "login" or "invoices". The
@@ -50,6 +56,18 @@ merged into the project's specs.
 
 The part of a plan that says how the change will be built: the technical
 choices, the alternatives considered, the risks. Written in `design.md`.
+
+## Frontmatter
+
+The few lines at the very top of a file, between two `---` lines, that
+describe the file rather than belong to its text: its name, its version.
+Each skill starts with one.
+
+## Kebab-case
+
+A way of writing a name in lowercase words joined by hyphens, with no
+spaces: `add-dark-mode`. Claude names each change this way, so that the
+name works as a folder name.
 
 ## MCP
 
@@ -91,6 +109,12 @@ A concrete example of a requirement, in three lines: given a situation,
 when something happens, then the expected result. Each scenario becomes a
 test.
 
+## Schema
+
+The list of the parts a plan holds, and the order they are written in.
+Compagnon's usual schema asks for a proposal, specs, a design and tasks;
+a team can define its own.
+
 ## Skill
 
 A set of instructions Claude Code follows for one kind of task. Compagnon
@@ -108,3 +132,9 @@ are the reference.
 The last part of a plan, in `tasks.md`: the list of steps to build the
 change, each with the test that proves it done. Claude checks them off as it
 goes.
+
+## Workflow
+
+The sequence of steps a change goes through: ask, plan, review, build,
+archive. Each step has its skill. In the configuration, `workflows:` lists
+the skills a project installs.

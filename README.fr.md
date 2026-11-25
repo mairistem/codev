@@ -22,7 +22,7 @@ rédige un plan court, vous le validez, puis Claude construit exactement
 cela — et le plan reste dans votre dépôt.
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="Enregistrement de terminal : compagnon init, un nouveau change dont le plan est validé puis archivé, et la spec vivante qui en résulte" width="800">
+  <img src="docs/assets/demo.gif" alt="Enregistrement de terminal : compagnon init, une nouvelle modification dont le plan est validé puis archivé, et la spécification vivante qui en résulte" width="800">
 </p>
 
 ## Démarrer
@@ -49,7 +49,7 @@ cela — et le plan reste dans votre dépôt.
    compagnon init
    ```
 
-3. **Demandez un change à Claude Code**, avec vos mots — « prépare un plan
+3. **Demandez une modification à Claude Code**, avec vos mots — « prépare un plan
    pour un mode sombre qui suit le réglage du système » — ou avec le
    raccourci :
 
@@ -58,7 +58,7 @@ cela — et le plan reste dans votre dépôt.
    ```
 
    Claude rédige le plan et attend votre accord.
-   [Votre premier change](https://mairistem.github.io/compagnon/fr/quickstart.html) parcourt le cycle complet.
+   [Votre première modification](https://mairistem.github.io/compagnon/fr/quickstart.html) parcourt le cycle complet.
 
 ## Trouver votre chemin
 
@@ -72,7 +72,7 @@ La documentation propose un parcours par profil :
 
 ## Fonctionnement
 
-Chaque change suit le même cycle, avec une skill Claude Code par étape :
+Chaque modification suit le même cycle, avec une compétence Claude Code par étape :
 
 ```text
 ┌───────────┐    ┌───────────┐    ┌───────────┐
@@ -82,7 +82,7 @@ Chaque change suit le même cycle, avec une skill Claude Code par étape :
 ```
 
 Le plan vit dans `_compagnon/changes/` : pourquoi, quoi, comment, les
-tâches, et un **delta de spec** qui énonce le comportement ajouté :
+tâches, et un **delta de spécification** qui énonce le comportement ajouté :
 
 ```markdown
 ### Requirement: Le thème choisi est mémorisé
@@ -96,7 +96,7 @@ L'application SHALL restaurer le dernier thème choisi par l'utilisateur, sur ch
 - **THEN** l'application s'affiche avec le thème sombre
 ```
 
-À l'archivage, Compagnon fusionne le delta dans les specs vivantes de
+À l'archivage, Compagnon reporte le delta dans les spécifications vivantes de
 `_compagnon/specs/`, qui décrivent toujours ce que fait le système
 aujourd'hui. Les décisions d'architecture, une fois acceptées, sont
 scellées : Claude les suit au lieu d'en redébattre. Compagnon n'appelle
@@ -105,15 +105,15 @@ jamais de modèle lui-même : Claude Code écrit, et Compagnon lui dit quoi
 
 ## Développé avec Compagnon
 
-Chaque change de ce dépôt a été planifié, relu et archivé avec Compagnon
-lui-même. Parcourez [les specs vivantes](_compagnon/specs/),
-[les changes archivés](_compagnon/changes/archive/),
-[un compte rendu de revue](_compagnon/changes/archive/2026-10-13-review-record/review.md)
+Chaque modification de ce dépôt a été planifiée, relue et archivée avec Compagnon
+lui-même. Parcourez [les spécifications vivantes](_compagnon/specs/),
+[les modifications archivées](_compagnon/changes/archive/),
+[un compte rendu de relecture](_compagnon/changes/archive/2026-10-13-review-record/review.md)
 et [les décisions scellées](_compagnon/decisions/).
 
 ## Comparaison
 
-Compagnon fait partie des nombreux outils de développement piloté par les specs
+Compagnon fait partie des nombreux outils de développement piloté par les spécifications
 destinés aux agents de code. Voici une synthèse des fonctionnalités
 documentées, en septembre 2026 :
 
@@ -121,13 +121,13 @@ documentées, en septembre 2026 :
 |---|---|---|---|
 | Distribution | Binaire natif unique | Paquet npm (Node.js) | CLI Python (installée avec uv) |
 | Agents pris en charge | Claude Code | Plus de 30 outils | De nombreux agents, dont GitHub Copilot |
-| Deltas de specs fusionnés dans des specs vivantes | Oui | Oui | Non — des artefacts par fonctionnalité |
+| Deltas de spécifications reportés dans des spécifications vivantes | Oui | Oui | Non — des artefacts par fonctionnalité |
 | Décisions d'architecture (ADR) | Oui, scellées contre les modifications | Non | Non — une constitution de projet à la place |
-| Partage entre dépôts | Sources en lecture seule, épinglées par commit git | Stores (bêta) | — |
+| Partage entre dépôts | Sources en lecture seule, épinglées par enregistrement git (commit) | Stores (bêta) | — |
 | Licence | MIT | MIT | MIT |
 
 Compagnon s'appuie directement sur les idées d'OpenSpec : le cycle
-propose → apply → archive, le change comme unité de travail, et les opérations
+propose → apply → archive, la modification comme unité de travail, et les opérations
 de delta `ADDED` / `MODIFIED` / `REMOVED` / `RENAMED` viennent toutes
 d'OpenSpec. Si vous avez besoin d'un autre agent que Claude Code, OpenSpec et
 Spec Kit vous conviendront mieux. Si une information de ce tableau n'est plus à
@@ -146,8 +146,8 @@ compagnon docs
 ## Contribuer
 
 Les contributions sont les bienvenues. Compagnon est développé avec Compagnon : les
-petites corrections passent par une pull request classique, et tout le reste
-commence par un change Compagnon. Consultez [CONTRIBUTING.fr.md](CONTRIBUTING.fr.md),
+petites corrections passent par une demande de fusion (pull request) classique, et tout le reste
+commence par une modification Compagnon. Consultez [CONTRIBUTING.fr.md](CONTRIBUTING.fr.md),
 ainsi que la [feuille de route](ROADMAP.md) (en anglais) pour ce qui est prévu.
 
 Merci de signaler les problèmes de sécurité en privé, comme indiqué dans
