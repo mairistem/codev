@@ -34,16 +34,28 @@ One piece of work, from the request to its archive: a feature, a fix, a
 refactor. Each change has its own folder under `_compagnon/changes/`,
 holding its plan.
 
+## CI
+
+Continuous integration: checks a service such as GitHub runs on its own
+every time someone proposes a change to the project, for example running
+the tests and `compagnon validate`. A red check means something to fix.
+
 ## Claude Code
 
 Anthropic's coding assistant. It works in your terminal, your code editor
 or the Claude desktop and web apps, reads your repository and acts on it at
 your request. Compagnon adds its skills to Claude Code.
 
+## Commit
+
+A saved step in the project's history, with a short message saying what
+changed. Saving your work this way is called committing; Claude can do it
+for you.
+
 ## Decision
 
-A choice the team made once for all changes, such as "dates are stored in
-UTC". Decisions live in `_compagnon/decisions/`; Claude follows them instead
+A choice the team made once for all changes, such as "prices are always
+shown with tax". Decisions live in `_compagnon/decisions/`; Claude follows them instead
 of reopening them.
 
 ## Delta
@@ -57,11 +69,23 @@ merged into the project's specs.
 The part of a plan that says how the change will be built: the technical
 choices, the alternatives considered, the risks. Written in `design.md`.
 
+## Domain
+
+A sensitive area a change may touch: security, personal data, user
+interface, performance, operations, migration. The proposal lists the
+domains it touches, and each one brings its expert to review the plan and
+the code.
+
 ## Frontmatter
 
 The few lines at the very top of a file, between two `---` lines, that
 describe the file rather than belong to its text: its name, its version.
 Each skill starts with one.
+
+## Git
+
+The tool that keeps the history of a project's files: who changed what,
+when, and why. Compagnon's plans live in that history beside the code.
 
 ## Kebab-case
 
@@ -86,11 +110,23 @@ code is written.
 The first part of a plan, in `proposal.md`: why the change is needed, what
 will change, and what it affects.
 
+## Pull request
+
+A request to add work to the shared project, on GitHub or GitLab. Your
+team reads it, comments, then approves or asks for changes; the plan and
+the code usually come together in one.
+
+## Repository
+
+The folder that holds a project's files and their whole history, usually
+shared on GitHub or GitLab. Compagnon keeps its plans in it, in the
+`_compagnon/` folder.
+
 ## Requirement
 
 One rule the product must follow, written so it can be checked: "the
-application SHALL follow the system's color scheme". Each requirement comes
-with scenarios.
+application SHALL follow the system's color scheme" (SHALL means
+"must"). Each requirement comes with scenarios.
 
 ## Review
 
@@ -115,6 +151,12 @@ The list of the parts a plan holds, and the order they are written in.
 Compagnon's usual schema asks for a proposal, specs, a design and tasks;
 a team can define its own.
 
+## Seal
+
+A fingerprint of an accepted decision's text. If someone edits the
+decision afterwards, the fingerprint no longer matches and `compagnon
+validate` reports it.
+
 ## Skill
 
 A set of instructions Claude Code follows for one kind of task. Compagnon
@@ -127,11 +169,28 @@ A description of what the product does, as requirements and scenarios. The
 project's specs, in `_compagnon/specs/`, describe the current behavior and
 are the reference.
 
+## Sub-agent
+
+A separate copy of Claude, started for one job, that does not see your
+conversation. Compagnon uses sub-agents so that a reviewer judges a plan
+or code without knowing what its author intended.
+
 ## Tasks
 
 The last part of a plan, in `tasks.md`: the list of steps to build the
 change, each with the test that proves it done. Claude checks them off as it
 goes.
+
+## Terminal
+
+The window where you type commands, such as `compagnon init`. On macOS
+it is called Terminal, on Windows PowerShell. Claude Code also runs in it.
+
+## Test
+
+A small program that checks the product works as expected, for example
+"in dark mode, the page is dark". Each scenario of a plan becomes a test,
+and Claude runs them to check its own work.
 
 ## Workflow
 
