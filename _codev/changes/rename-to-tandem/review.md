@@ -1,4 +1,4 @@
-# Review record: rename-to-tandem
+# Review record: rename-to-compagnon
 
 <!-- codev-review: 1 -->
 
@@ -28,7 +28,7 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-2 `tandem init` in a codev project is not specified, and the current init creates a second root beside `_codev/`
+#### R-skeptic-2 `compagnon init` in a codev project is not specified, and the current init creates a second root beside `_codev/`
 
 ```yaml
 severity: medium
@@ -36,8 +36,8 @@ confidence: high
 location: "specs/migration/spec.md#Requirement: A codev project is detected and never used silently"
 evidence: |
   SHALL fail with the code `legacy_root`, naming the directory found
-  and telling the user to run `tandem migrate`.
-recommendation: 'Specify that `tandem init` where `_codev/` exists and `_tandem/` does not fails with `legacy_root` and writes nothing; add a scenario and a CLI test.'
+  and telling the user to run `compagnon migrate`.
+recommendation: 'Specify that `compagnon init` where `_codev/` exists and `_compagnon/` does not fails with `legacy_root` and writes nothing; add a scenario and a CLI test.'
 history:
   - status: open
     by: skeptic
@@ -53,10 +53,10 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "specs/migration/spec.md#Requirement: `tandem migrate` converts a codev project in place"
+location: "specs/migration/spec.md#Requirement: `compagnon migrate` converts a codev project in place"
 raised_by: [skeptic, ops]
 evidence: |
-  nothing. Run where `_tandem/` exists and `_codev/` does not, it SHALL do nothing, exit 0,
+  nothing. Run where `_compagnon/` exists and `_codev/` does not, it SHALL do nothing, exit 0,
   and say the project is already migrated.
 recommendation: 'Decide "already migrated" from every item the migration touches so a second run completes an interrupted one; on a failed operation exit 1 with `migration_incomplete`, naming the path, the error and the operations applied; add scenario and tests. (Folded from R-ops-3.)'
 history:
@@ -74,9 +74,9 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "design.md#Decision: The repository is converted by dogfooding `tandem migrate`, then a mechanical sweep"
+location: "design.md#Decision: The repository is converted by dogfooding `compagnon migrate`, then a mechanical sweep"
 evidence: |
-     Tandem", accepted, which states that the bodies of 0001–0013 were
+     Compagnon", accepted, which states that the bodies of 0001–0013 were
      re-sealed for the rename only and that no decision's substance changed.
 recommendation: 'Have ADR 0014 supersede 0003 on the name and leave 0003''s body unchanged, or state explicitly that its content is rewritten.'
 history:
@@ -89,15 +89,15 @@ history:
     by: skeptic
 ```
 
-#### R-skeptic-5 Task 5.2 expects `tandem_version: ">=0.7"`, but the migrate spec keeps the old value
+#### R-skeptic-5 Task 5.2 expects `compagnon_version: ">=0.7"`, but the migrate spec keeps the old value
 
 ```yaml
 severity: low
 confidence: high
 location: "tasks.md#5. Renaming the repository's contents"
 evidence: |
-  `tandem migrate` on this repository: `_codev/` becomes `_tandem/` (this
-    change included), `tandem.lock`, `tandem_version: ">=0.7"`, skills
+  `compagnon migrate` on this repository: `_codev/` becomes `_compagnon/` (this
+    change included), `compagnon.lock`, `compagnon_version: ">=0.7"`, skills
 recommendation: 'Expect the value kept by migrate, then bump it by hand.'
 history:
   - status: open
@@ -118,7 +118,7 @@ location: "design.md#Migration Plan"
 evidence: |
   Rollback: before tagging, revert the merge. After tagging, a project
   migrated by mistake goes back with `git checkout` of the files listed by
-  `tandem migrate` (its output names every path).
+  `compagnon migrate` (its output names every path).
 recommendation: 'State the fallback (v0.7.1) or rehearse the 0.6.1 self-update before tagging.'
 history:
   - status: open
@@ -141,11 +141,11 @@ No finding.
 ```yaml
 severity: medium
 confidence: low
-location: "tasks.md#4. Tandem mark"
+location: "tasks.md#4. Compagnon mark"
 evidence: |
-    `tandem-logo.svg`, `tandem-logo-dark.svg`, each with a `<title>`
-    naming Tandem and only palette colors; replace `docs/theme/favicon.svg`;
-recommendation: 'Put `alt="Tandem"` on README images and `role="img"` with `aria-label` on inline SVG; test both.'
+    `compagnon-logo.svg`, `compagnon-logo-dark.svg`, each with a `<title>`
+    naming Compagnon and only palette colors; replace `docs/theme/favicon.svg`;
+recommendation: 'Put `alt="Compagnon"` on README images and `role="img"` with `aria-label` on inline SVG; test both.'
 history:
   - status: open
     by: accessibility
@@ -161,9 +161,9 @@ history:
 ```yaml
 severity: low
 confidence: low
-location: "specs/docs/spec.md#Requirement: Tandem's mark identifies the product in every documentation surface"
+location: "specs/docs/spec.md#Requirement: Compagnon's mark identifies the product in every documentation surface"
 evidence: |
-  Every mark carries a text alternative naming Tandem.
+  Every mark carries a text alternative naming Compagnon.
 recommendation: 'State the rule per placement: decorative next to the word or inside a named link, named when alone; rename the brand links.'
 history:
   - status: open
@@ -186,7 +186,7 @@ location: "tasks.md#3. Changelog, bridge, update URLs"
 raised_by: [ops, migration]
 evidence: |
   - [ ] 3.5 Update `install.sh` and `install.ps1`: repository
-    `mairistem/tandem`, `TANDEM_VERSION`, archives `tandem-*`, installed as
+    `mairistem/compagnon`, `COMPAGNON_VERSION`, archives `compagnon-*`, installed as
 recommendation: 'Honor `CODEV_VERSION` as a fallback; below 0.7 fetch `codev-*` and install `codev`; with only `CODEV_VERSION` install as `codev`; test a 0.6 and a 0.7 pin; release note and guide on CI files migrate does not touch. (Merged with R-migration-1.)'
 history:
   - status: open
@@ -207,7 +207,7 @@ location: "design.md#Migration Plan"
 evidence: |
   Rollback: before tagging, revert the merge. After tagging, a project
   migrated by mistake goes back with `git checkout` of the files listed by
-  `tandem migrate` (its output names every path).
+  `compagnon migrate` (its output names every path).
 recommendation: 'Below 0.7.0, pick the codev asset names from `legacy`; document the downgrade; test it.'
 history:
   - status: open
@@ -226,10 +226,10 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "specs/migration/spec.md#Requirement: `tandem migrate` converts a codev project in place"
+location: "specs/migration/spec.md#Requirement: `compagnon migrate` converts a codev project in place"
 evidence: |
   - replace the managed block of `CLAUDE.md` and the generated
-    `.github/workflows/codev.yml` by their Tandem versions
+    `.github/workflows/codev.yml` by their Compagnon versions
 recommendation: 'Add the PR template managed section to the migrate facts and plan, with a scenario and a CLI test.'
 history:
   - status: open
@@ -246,10 +246,10 @@ history:
 ```yaml
 severity: medium
 confidence: high
-location: "specs/migration/spec.md#Requirement: `tandem migrate` converts a codev project in place"
+location: "specs/migration/spec.md#Requirement: `compagnon migrate` converts a codev project in place"
 evidence: |
-  - rename the key `codev_version` to `tandem_version` in
-    `_tandem/config.yaml`, keeping its value, its comments and the rest of
+  - rename the key `codev_version` to `compagnon_version` in
+    `_compagnon/config.yaml`, keeping its value, its comments and the rest of
     the file byte for byte;
 recommendation: 'Check the requirement against the running version before writing; refuse with a code naming it, or rewrite it; test and document.'
 history:
@@ -270,8 +270,8 @@ confidence: high
 location: "specs/migration/spec.md#Requirement: An inherited source still laid out for codev is refused with its fix"
 evidence: |
   sources SHALL fail with `legacy_source`, naming the source and
-  saying that its maintainers must run `tandem migrate` in it. Tandem MUST
-recommendation: 'Name both causes and fixes (`tandem migrate` in the source, `tandem sources update`); have migrate say to run sources update; guide; test.'
+  saying that its maintainers must run `compagnon migrate` in it. Compagnon MUST
+recommendation: 'Name both causes and fixes (`compagnon migrate` in the source, `compagnon sources update`); have migrate say to run sources update; guide; test.'
 history:
   - status: open
     by: migration
