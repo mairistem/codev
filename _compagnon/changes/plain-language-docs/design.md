@@ -73,7 +73,11 @@ offending items and tested on synthetic chapters:
 
 - `unexplained_terms(md, terms)`: for each term, its first occurrence in
   prose — outside headings, inline code, fenced code and `<details>` —
-  must sit in the text of a link to `glossary.md`; "main specs" /
+  must sit in the text of a link to the term's own entry,
+  `glossary.md#<anchor>`, the anchor being one the glossary's `## `
+  headings actually produce (mdBook's slug, the French one in the French
+  edition, such as `#déroulé`), so that a keyboard or screen-reader user
+  lands on the definition; "main specs" /
   "specs principales" is reported wherever it appears in prose.
 - `anglicisms(md)`: the words of the lexicon's English side, matched as
   whole words, case-insensitive, in prose and headings, outside inline

@@ -13,6 +13,8 @@ design, in *vouvoiement*.
   `unexplained_terms` and `anglicisms`, with the term lists of each
   edition, and unit tests one per scenario:
   `a_term_used_without_a_link_is_caught`,
+  `a_link_to_the_top_of_the_glossary_is_caught` (a bare `glossary.md`, or
+  an anchor no glossary heading produces),
   `a_term_in_code_or_under_the_hood_is_not_concerned`,
   `the_phrase_main_specs_is_caught`,
   `an_anglicism_in_prose_is_caught`,

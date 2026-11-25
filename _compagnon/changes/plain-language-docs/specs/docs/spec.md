@@ -29,6 +29,14 @@ configuration key such as `workflows:` stays as it is.
 - **WHEN** the check runs on it
 - **THEN** it fails naming "delta"
 
+#### Scenario: A link to the top of the glossary is caught
+
+- **GIVEN** a chapter whose first use of "delta" links to `glossary.md`
+  without an anchor, and another whose link names an anchor no glossary
+  heading produces
+- **WHEN** the check runs on them
+- **THEN** each fails naming "delta"
+
 #### Scenario: A term in code or under the hood is not concerned
 
 - **GIVEN** a chapter that uses "schema" only in inline code, in a fenced
