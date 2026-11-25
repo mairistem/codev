@@ -1,0 +1,67 @@
+## ADDED Requirements
+
+### Requirement: Tandem's mark identifies the product in every documentation surface
+
+The repository SHALL hold the Tandem mark as SVG files under
+`docs/assets/`: a color version for light backgrounds and a version for
+dark backgrounds, drawn only in the Mairistem palette (`#ff5331`,
+`#ffab03`, `#004c66`, `#00c39b`, plus black or white). The mark MUST be
+shown:
+
+- at the top of `README.md` and `README.fr.md`, with the variant matching
+  the reader's color scheme;
+- in the header of the mdBook documentation, in both languages, next to
+  the Mairistem logo;
+- in the header of the landing page `docs/site/index.html`, next to the
+  Mairistem logo;
+- as the favicon of the documentation and of the landing page;
+- in the self-contained HTML file written by `tandem docs`, inline, with
+  no external asset.
+
+Every mark carries a text alternative naming Tandem.
+
+#### Scenario: The offline manual shows the mark without fetching anything
+
+- **WHEN** the user runs `tandem docs --write manual.html`
+- **THEN** `manual.html` holds the Tandem mark as inline SVG with a text
+  alternative naming Tandem
+- **AND** it references no external image
+
+#### Scenario: Both READMEs show the mark
+
+- **GIVEN** the repository's `README.md` and `README.fr.md`
+- **WHEN** the test suite of `tandem-cli` runs
+- **THEN** it fails unless both reference the light and dark variants of
+  the mark under `docs/assets/`
+
+#### Scenario: A mark outside the palette is rejected
+
+- **GIVEN** a mark file under `docs/assets/` using a fill outside the
+  Mairistem palette, black and white
+- **WHEN** the test suite of `tandem-cli` runs
+- **THEN** it fails naming the file and the color
+
+### Requirement: Moving from codev to Tandem is documented in both languages
+
+The documentation SHALL hold, in `docs/en` and `docs/fr`, a guide to
+moving a project from codev to Tandem: what is renamed (binary, planning
+root, lock file, configuration key, skills, environment variables, JSON
+codes, CI workflow), how to install `tandem`, how to run
+`tandem migrate --dry-run` then `tandem migrate`, what to do with a
+shared source repository still laid out for codev, and what a hand-edited
+`codev-*` skill becomes. The CLI reference SHALL document
+`tandem migrate`.
+
+#### Scenario: The migration guide exists in both editions
+
+- **GIVEN** the repository's `docs/en/src/SUMMARY.md` and
+  `docs/fr/src/SUMMARY.md`
+- **WHEN** the test suite of `tandem-cli` runs
+- **THEN** both list the same migration guide chapter
+- **AND** both chapters name `tandem migrate --dry-run`
+
+#### Scenario: A guide missing from one edition is caught
+
+- **GIVEN** the migration guide listed in `docs/en/src/SUMMARY.md` only
+- **WHEN** the test suite of `tandem-cli` runs
+- **THEN** it fails naming the missing chapter
