@@ -7,7 +7,7 @@ need it.
 ## I am discovering AI agents
 
 You have heard of Claude, maybe tried it, and want to see what working
-with an agent looks like, safely.
+with an [agent](glossary.md#agent) looks like, safely.
 
 1. [Compagnon in two minutes](introduction.md): what it does, who decides.
 2. [Glossary](glossary.md): the words you will meet.
@@ -35,12 +35,12 @@ You write code and want Claude to plan before it does.
 
 ## I set Compagnon up for my team
 
-You choose how Compagnon fits your project, your repository and your
-tools.
+You choose how Compagnon fits your project, your
+[repository](glossary.md#repository) and your tools.
 
 1. [Installation](installation.md): every way to install and update.
 2. [Repository integration and compagnon doctor](guides/repository-integration.md):
-   CI, pull requests, checking the setup.
+   [CI](glossary.md#ci), [pull requests](glossary.md#pull-request), checking the setup.
 3. [Roles](roles.md): who reviews plans and code, and when.
 4. [Configuration](reference/configuration.md): every setting.
 5. [Jira and other MCP servers](guides/mcp.md) and
@@ -52,7 +52,7 @@ tools.
 You want to change Compagnon itself.
 
 1. [Origins](origins.md): why Compagnon exists and how it is built.
-2. [Architecture](architecture.md): the crates and how they fit.
+2. [Architecture](architecture.md): the program's modules and how they fit.
 3. [Reliability of the roles](reliability.md): how skill changes are
    evaluated.
 4. [Command-line interface](reference/cli.md): every command.

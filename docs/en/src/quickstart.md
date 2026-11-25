@@ -1,6 +1,7 @@
 # Your first change
 
-This page takes you from an empty repository to your first finished change,
+This page takes you from an empty
+[repository](glossary.md#repository) to your first finished change,
 in about ten minutes. You talk to Claude in plain words: each step shows
 the sentence to say, then the shortcut command, which does the same thing.
 
@@ -25,15 +26,16 @@ Other ways to install are in [Installation](installation.md).
 
 ## 2. Set up your repository
 
-At the root of your repository, run once:
+In a [terminal](glossary.md#terminal) (the window where you type commands), in
+your project's main folder, type once:
 
 ```bash
 compagnon init
 ```
 
-It may ask two questions — which skills to install, and a few words
-about your project — then adds a `_compagnon/` folder and teaches Claude
-Code the Compagnon skills. Restart Claude Code so it sees them.
+It may ask which [skills](glossary.md#skill) to install, and for a few words
+about your project. Then it adds a `_compagnon/` folder and gives Claude Code
+the skills. Restart Claude Code so it sees them.
 
 <details>
 <summary>Under the hood: what init writes</summary>
@@ -126,8 +128,9 @@ Once the plan suits you:
 
 > The plan is good, implement it.
 
-Claude works through the tasks one by one, checks each against its test,
-and stops to ask you if something is unclear. Shortcut:
+Claude works through the tasks one by one, checks each with its
+[test](glossary.md#test) (a small program that proves the task works), and
+stops to ask you if something is unclear. Shortcut:
 `/compagnon-apply add-dark-mode`.
 
 ## 6. File it away (`/compagnon-archive`)
@@ -138,7 +141,8 @@ Check the result, then:
 
 Claude merges the plan's specs into the project's specs and moves the
 change to the archive: the project now remembers why dark mode exists.
-Shortcut: `/compagnon-archive add-dark-mode`. Commit the result.
+Shortcut: `/compagnon-archive add-dark-mode`. Then save the result in the
+project's history ([commit](glossary.md#commit) it), or ask Claude to do it.
 
 <details>
 <summary>Under the hood: what archiving does</summary>

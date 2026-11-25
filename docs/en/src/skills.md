@@ -98,7 +98,7 @@ each skill promises you.
 
 - Every skill may run `compagnon` commands, and read files.
 - Only `/compagnon-apply` may run any command, because it must run your
-  tests and build your project.
+  [tests](glossary.md#test) and build your project.
 - `/compagnon-sync` and `/compagnon-archive` cannot write files at all:
   every change they make goes through Compagnon itself.
 - `/compagnon-explore` and `/compagnon-onboard` write nothing.
@@ -189,8 +189,8 @@ When this happens during `/compagnon-propose`, `/compagnon-apply` or
 `/compagnon-update`, Claude writes the correction down once, in the
 change's [`corrections.md`](reference/file-formats.md#correctionsmd): where
 it was, what it had done, what you asked, one line each. It then shows you
-the entry, so that you can have it changed or removed before it is
-committed. `compagnon review` lists the corrections, and `compagnon validate`
+the entry, so that you can have it changed or removed before it is saved
+in a [commit](glossary.md#commit). `compagnon review` lists the corrections, and `compagnon validate`
 checks their file.
 
 Claude only writes down an instruction that would apply to the next change
@@ -200,7 +200,8 @@ change of scope, or a misunderstanding of your request.
 Where it goes depends on whom it concerns:
 
 - an instruction about the project goes to `corrections.md`, which the team
-  shares through git, and not to Claude Code's personal memory;
+  shares through [git](glossary.md#git). It does not go to Claude Code's
+  personal memory: the notes Claude keeps for you alone, on your computer;
 - a preference about how Claude works with you stays in that personal
   memory.
 
@@ -217,9 +218,9 @@ proposal, the changes to the specs (called
 Before writing, it reads the code your request concerns, and it bases the
 scope on what it finds there. If your request contradicts the existing
 specs, it tells you rather than settling the question alone. It writes the
-whole plan, its text and its structural keywords alike, in
-[your project's language for plans](guides/artifact-language.md), exactly
-as its instructions give them.
+whole plan, headings included, in
+[the language your project uses for plans](guides/artifact-language.md),
+exactly as its instructions give them.
 
 Once the proposal is written, Compagnon gives the skill a list of the
 existing requirements the change probably touches. The skill reads them,
@@ -229,7 +230,8 @@ to them. That list is a starting point: it may miss some.
 Your request only allows planning, even if it says "build" or "fix". The
 skill stops once the plan is written, and waits for you.
 
-**Who writes what.** Each part of the plan is written by a role, with
+**Who writes what.** Each part of the plan is written by a
+[role](glossary.md#role), with
 "Done when" criteria that Claude checks before moving on:
 
 - the product owner writes the proposal, including its release note for
@@ -253,20 +255,27 @@ reviews it in two steps:
    fixed in the plan.
 2. **Contrarian pass**: the skill re-reads the plan as a skeptical
    reviewer would: is it needed, is the scope right, do the decisions
-   hold? Experts join this pass for the areas the plan touches, such as
-   security or accessibility. Each finding is written down, with how
+   hold? Experts join this pass for the sensitive areas the plan touches,
+   such as security or accessibility (each such area is called a
+   [domain](glossary.md#domain)). Each finding is written down, with how
    serious it is and its evidence. The author fixes it or disputes it, and
    the reviewer checks each answer once. This pass never adds scope.
 
-The skill's summary then ends with two lists. **Points to challenge**: at
-most five one-line items, from all roles, the most serious first, each
-tagged with the role that raised it: finding id, status, what, why it
-matters, which part of the plan. If there are none, it says "No point to
-challenge found". **To decide**: the disputes the reviewer maintained, and
-the serious findings still open. Start your own review there.
+The skill's summary then ends with two lists:
 
-**Tickets.** If your request mentions a ticket number such as `PROJ-123`
-(matching `[A-Z]{2,}-\d+`) and a Jira MCP tool is configured, the skill
+- **Points to discuss** (headed "Points to challenge" in the summary): up
+  to five short items, most serious first. Each says what the problem is,
+  why it matters, which part of the plan it concerns, and which role raised
+  it. Each also gives the finding's id and status. If there are none, the
+  summary says "No point to challenge found".
+- **To decide**: disagreements between Claude and its reviewer that only
+  you can settle, and serious problems not yet fixed.
+
+Start your own review there.
+
+**Tickets.** If your request mentions a ticket number (two or more capital
+letters, a hyphen and a number, such as PROJ-123) and Jira is connected
+(through an [MCP](glossary.md#mcp) server), the skill
 reads the first ticket: read-only, in a single call. It then quotes it at
 the top of the proposal. See [Jira and other MCP servers](guides/mcp.md).
 
@@ -364,8 +373,10 @@ This skill builds a planned change. It works like this:
 2. It takes each unticked task of `tasks.md` in order, does it, checks it,
    and ticks it only once the check passes.
 3. It writes tests like your existing ones, then following your
-   language's conventions and your `rules`. It finds the test command in
-   your configuration, manifest or CI, and asks you when it finds none.
+   language's conventions and your `rules`. It finds how to run the
+   [tests](glossary.md#test) in your project's settings (its
+   configuration, its manifest or its [CI](glossary.md#ci)), and asks you
+   when it finds none.
 4. Once every task is ticked, it re-reads the code the change touched as a
    newcomer would, joined by the experts of the areas the proposal ticks.
    It simplifies what is clearly simpler, without widening the scope, and
@@ -375,10 +386,14 @@ This skill builds a planned change. It works like this:
 
 Every finding goes to the [review record](guides/review-record.md), and
 follows the same answer loop as the plan's. In isolated mode, each reviewer
-first works alone as a sub-agent, and the skill merges their findings. The
-summary lists what you must decide, including any area the code now
-suggests that the proposal neither ticks nor justifies: tick it, and its
-expert reviews the code, or justify leaving it out.
+first works alone as a [sub-agent](glossary.md#sub-agent) (a separate copy
+of Claude that does not see your conversation), and the skill merges their
+findings.
+
+The summary lists what you must decide. For example, the code may now
+touch a sensitive area, such as security or personal data, that the plan
+did not list. You choose: have that area's expert review it, or explain
+why it is not needed.
 
 An expert fixes a clear defect within the change's scope, with a test. Any
 other change of behavior, it reports instead of making it. The criteria and

@@ -2,13 +2,13 @@
 
 This guide is for you if you do not write code but are asked to read and
 approve what Claude plans to build: product owner, manager, domain expert.
-You need no terminal: a plan is four short text files, which you can read
+You need no [terminal](../glossary.md#terminal): a plan is four short text files, which you can read
 in your code host (GitHub, GitLab), in an editor, or by asking Claude to
 show them to you.
 
 Your job is not to check the code. It is to check that the plan **solves
 the right problem, in the right way for the people who will use it**.
-Claude and the reviewing roles take care of the technical side.
+Claude and the reviewing [roles](../glossary.md#role) take care of the technical side.
 
 ## Where the plan is
 
@@ -41,6 +41,12 @@ Scenario: No theme chosen yet
 - THEN the application shows the dark theme
 ```
 
+The plan files may show a few English keywords, whatever their language:
+SHALL or MUST means "must"; GIVEN / WHEN / THEN mean "given", "when",
+"then". In the proposal, a "## Domains" section lists the sensitive
+[domains](../glossary.md#domain) the change touches, such as security or
+personal data.
+
 This is the part that matters most to you. Check that:
 
 - each scenario describes what you expect, in your own business terms;
@@ -48,12 +54,12 @@ This is the part that matters most to you. Check that:
   error;
 - no scenario describes something you do not want.
 
-Every scenario becomes a test: if it is written here, it will be checked.
+Every scenario becomes a [test](../glossary.md#test): if it is written here, it will be checked.
 
 ## The design: how
 
 `design.md` explains the technical choices. You do not need to judge them,
-but read its risks and its alternatives: if a risk worries you, or a
+but read its risks and the options it ruled out: if a risk worries you, or a
 trade-off affects users (speed, cost, a feature dropped), say so.
 
 ## The tasks: the steps
@@ -77,6 +83,7 @@ Then read the parts that changed. Repeat until the plan says what you want.
 ## Approve
 
 When the plan suits you, say so: "the plan is good, implement it". Claude
-then builds exactly what the plan says, and nothing else. If your team uses
-pull requests, approve the one that holds the plan: your approval is
-recorded there.
+then builds exactly what the plan says, and nothing else. If your team
+reviews work on GitHub or GitLab, the plan comes as a
+[pull request](../glossary.md#pull-request) (a request to add it to the
+project). Approve it there: your approval is recorded.

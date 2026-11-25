@@ -1,15 +1,16 @@
 # Relire un plan
 
 Ce guide s'adresse à vous si vous n'écrivez pas de code mais devez relire
-et valider ce que Claude prévoit de construire : product owner, manager,
-expert métier. Aucun terminal n'est nécessaire : un plan tient en quatre
+et valider ce que Claude prévoit de construire : responsable produit
+(product owner), manager, expert métier. Aucun
+[terminal](../glossary.md#terminal) n'est nécessaire : un plan tient en quatre
 fichiers texte courts, que vous pouvez lire sur votre hébergeur de code
 (GitHub, GitLab), dans un éditeur, ou en demandant à Claude de vous les
 montrer.
 
 Votre rôle n'est pas de vérifier le code. Il est de vérifier que le plan
 **résout le bon problème, de la bonne façon pour ceux qui l'utiliseront**.
-Claude et les rôles de relecture s'occupent du côté technique.
+Claude et les [rôles](../glossary.md#rôle) de relecture s'occupent du côté technique.
 
 ## Où se trouve le plan
 
@@ -44,6 +45,13 @@ Scénario : Aucun thème encore choisi
 - ALORS l'application affiche le thème sombre
 ```
 
+Les fichiers du plan peuvent montrer quelques mots-clés en anglais, quelle
+que soit leur langue : SHALL ou MUST veut dire « doit » ; GIVEN / WHEN /
+THEN veulent dire « étant donné », « quand », « alors ». Dans la
+proposition, une section « ## Domains » liste les
+[domaines](../glossary.md#domaine) sensibles que la modification touche,
+comme la sécurité ou les données personnelles.
+
 C'est la partie qui compte le plus pour vous. Vérifiez que :
 
 - chaque scénario décrit ce que vous attendez, dans vos propres termes
@@ -52,12 +60,12 @@ C'est la partie qui compte le plus pour vous. Vérifiez que :
   droits, une erreur ;
 - aucun scénario ne décrit quelque chose que vous ne voulez pas.
 
-Chaque scénario devient un test : s'il est écrit ici, il sera vérifié.
+Chaque scénario devient un [test](../glossary.md#test) : s'il est écrit ici, il sera vérifié.
 
 ## La conception : comment
 
 `design.md` explique les choix techniques. Vous n'avez pas à les juger,
-mais lisez ses risques et ses alternatives : si un risque vous inquiète, ou
+mais lisez ses risques et les solutions écartées : si un risque vous inquiète, ou
 si un compromis touche les utilisateurs (rapidité, coût, fonctionnalité
 abandonnée), dites-le.
 
@@ -86,5 +94,7 @@ dise ce que vous voulez.
 Quand le plan vous convient, dites-le : « le plan me va, réalise la
 modification ».
 Claude construit alors exactement ce que dit le plan, et rien d'autre. Si
-votre équipe utilise des demandes de fusion (pull requests), approuvez
-celle qui contient le plan : votre accord y est consigné.
+votre équipe relit le travail sur GitHub ou GitLab, le plan arrive sous
+forme de [demande de fusion](../glossary.md#demande-de-fusion) (pull
+request) : une demande pour l'ajouter au projet. Approuvez-la à cet
+endroit : votre accord y est consigné.

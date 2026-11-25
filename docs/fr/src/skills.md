@@ -8,7 +8,7 @@ suffit de demander avec vos mots. Vous pouvez aussi en lancer une
 directement en tapant son nom, par exemple `/compagnon-propose`.
 
 Vous n'avez rien à installer à la main : `compagnon init` et
-`compagnon update` écrivent chacune dans son propre dossier,
+`compagnon update` installent chaque compétence dans son propre dossier,
 `.claude/skills/compagnon-<workflow>/SKILL.md`.
 
 | Compétence | Ce qu'elle fait | Ce qu'elle peut modifier |
@@ -102,7 +102,8 @@ pour le faire. Cela fait partie de ce que chaque compétence vous promet.
 - Toutes les compétences peuvent lancer des commandes `compagnon` et lire
   des fichiers.
 - Seule `/compagnon-apply` peut lancer n'importe quelle commande, parce
-  qu'elle doit lancer vos tests et compiler votre projet.
+  qu'elle doit lancer vos [tests](glossary.md#test) et compiler votre
+  projet.
 - `/compagnon-sync` et `/compagnon-archive` ne peuvent écrire aucun
   fichier : toutes leurs modifications passent par Compagnon lui-même.
 - `/compagnon-explore` et `/compagnon-onboard` n'écrivent rien.
@@ -198,7 +199,8 @@ plan. Quand cela arrive pendant `/compagnon-propose`, `/compagnon-apply` ou
 [`corrections.md`](reference/file-formats.md#correctionsmd) de la
 modification : où c'était, ce qu'il avait fait, ce que vous avez demandé,
 une ligne chacun. Il vous montre ensuite l'entrée, pour que vous puissiez
-la faire modifier ou retirer avant l'enregistrement (commit).
+la faire modifier ou retirer avant
+l'[enregistrement](glossary.md#enregistrement) (commit).
 `compagnon review` liste les corrections, et `compagnon validate` vérifie
 leur fichier.
 
@@ -210,7 +212,9 @@ demande.
 L'endroit où elle va dépend de qui elle concerne :
 
 - une consigne sur le projet va dans `corrections.md`, que l'équipe partage
-  par git, et non dans la mémoire personnelle de Claude Code ;
+  par [git](glossary.md#git). Elle ne va pas dans la mémoire personnelle de
+  Claude Code : les notes que Claude garde pour vous seul, sur votre
+  ordinateur ;
 - une préférence sur la façon dont Claude travaille avec vous reste dans
   cette mémoire personnelle.
 
@@ -227,8 +231,8 @@ parties : la proposition, les modifications des spécifications (appelées
 Avant d'écrire, elle lit le code que votre demande concerne, et fonde le
 périmètre sur ce qu'elle y trouve. Si votre demande contredit les
 spécifications existantes, elle vous le dit au lieu de trancher seule. Elle
-rédige tout le plan, son texte comme ses mots-clés de structure, dans
-[la langue des plans de votre projet](guides/artifact-language.md),
+rédige tout le plan, titres compris, dans
+[la langue que votre projet utilise pour les plans](guides/artifact-language.md),
 exactement comme ses instructions les donnent.
 
 Une fois la proposition écrite, Compagnon donne à la compétence la liste
@@ -241,16 +245,16 @@ Votre demande n'autorise que la planification, même si elle dit
 « construis » ou « corrige ». La compétence s'arrête une fois le plan
 rédigé, et attend votre retour.
 
-**Qui écrit quoi.** Chaque partie du plan est rédigée par un rôle, avec des
-critères « Done when » (terminé quand) que Claude vérifie avant de passer à
-la suite :
+**Qui écrit quoi.** Chaque partie du plan est rédigée par un
+[rôle](glossary.md#rôle), avec des critères « Terminé quand » que Claude
+vérifie avant de passer à la suite :
 
-- le product owner rédige la proposition, y compris sa note de version pour
+- le responsable produit (product owner) rédige la proposition, y compris sa note de version pour
   les utilisateurs, classée par catégorie, ou `None` pour une modification
   que les utilisateurs ne verront pas ;
-- l'analyste QA rédige les spécifications ;
+- l'analyste qualité (QA) rédige les spécifications ;
 - l'architecte rédige la conception ;
-- le tech lead rédige les tâches. Ses critères exigent une tâche qui met à
+- le référent technique (tech lead) rédige les tâches. Ses critères exigent une tâche qui met à
   jour la documentation concernée, et un test automatisé pour chaque
   scénario, qui suit les conventions de test de votre projet.
 
@@ -268,27 +272,32 @@ la compétence le relit en deux étapes :
 2. **Relecture contradictoire** : la compétence relit le plan comme le
    ferait un relecteur sceptique : est-ce utile, le périmètre est-il juste,
    les décisions tiennent-elles ? Des experts rejoignent cette relecture
-   pour les domaines que le plan touche, comme la sécurité ou
-   l'accessibilité. Chaque constat est noté, avec sa gravité et sa preuve.
+   pour les [domaines](glossary.md#domaine) sensibles que le plan touche,
+   comme la sécurité ou l'accessibilité. Chaque constat est noté, avec sa gravité et sa preuve.
    L'auteur le corrige ou le conteste, et le relecteur vérifie chaque
    réponse une fois. Cette relecture n'élargit jamais le périmètre.
 
-Le résumé de la compétence se termine alors par deux listes. Les **points
-à challenger** : au plus cinq points d'une ligne, tous rôles confondus, les
-plus graves d'abord, chacun marqué du rôle qui l'a relevé : identifiant du
-constat, statut, quoi, pourquoi c'est important, quelle partie du plan.
-S'il n'y en a aucun, le résumé le dit. **À décider** : les contestations
-que le relecteur a maintenues, et les constats graves encore ouverts.
+Le résumé de la compétence se termine alors par deux listes :
+
+- **Points à discuter** : jusqu'à cinq points courts, les plus graves
+  d'abord. Chacun dit quel est le problème, pourquoi il compte, quelle
+  partie du plan il concerne, et quel rôle l'a relevé. Chacun donne aussi
+  l'identifiant et le statut du constat. S'il n'y en a aucun, le résumé le
+  dit.
+- **À décider** : les désaccords entre Claude et son relecteur que vous
+  seul pouvez trancher, et les problèmes graves pas encore corrigés.
+
 Commencez votre propre relecture par là.
 
-**Les tickets.** Si votre demande mentionne un numéro de ticket comme
-`PROJ-123` (de la forme `[A-Z]{2,}-\d+`) et qu'un outil MCP Jira est
-configuré, la compétence lit le premier ticket : en lecture seule, en un
+**Les tickets.** Si votre demande mentionne un numéro de ticket (deux
+lettres capitales ou plus, un tiret et un nombre, comme PROJ-123) et que
+Jira est connecté (par un serveur [MCP](glossary.md#mcp)), la compétence lit le premier ticket : en lecture seule, en un
 seul appel. Elle le cite ensuite en tête de la proposition. Voir
 [Jira et autres serveurs MCP](guides/mcp.md).
 
-Rôles : analyste, enquêteur, product owner, analyste QA, architecte, tech
-lead, contrôleur de traçabilité et contradicteur — voir
+Rôles : analyste, enquêteur, responsable produit (product owner), analyste
+qualité (QA), architecte, référent technique (tech lead), contrôleur de
+traçabilité et contradicteur — voir
 [Rôles intégrés](roles.md#rôles-intégrés).
 
 <details>
@@ -387,9 +396,11 @@ Cette compétence réalise une modification planifiée. Elle procède ainsi :
 2. Elle prend dans l'ordre chaque tâche non cochée de `tasks.md`, la
    réalise, la vérifie, et ne la coche qu'une fois la vérification réussie.
 3. Elle écrit les tests à la manière de vos tests existants, puis selon les
-   conventions de votre langage et vos `rules`. Elle trouve la commande de
-   test dans votre configuration, votre manifeste ou votre CI, et vous la
-   demande si elle n'en trouve aucune.
+   conventions de votre langage et vos `rules`. Elle trouve comment lancer
+   les tests dans les réglages de votre projet (sa configuration, son
+   manifeste ou son
+   [intégration continue](glossary.md#intégration-continue)), et vous le
+   demande si elle ne trouve rien.
 4. Une fois toutes les tâches cochées, elle relit le code touché par la
    modification comme le ferait un nouvel arrivant, rejointe par les
    experts des domaines que coche la proposition. Elle simplifie ce qui ne
@@ -400,11 +411,15 @@ Cette compétence réalise une modification planifiée. Elle procède ainsi :
 
 Chaque constat va dans le [compte rendu de revue](guides/review-record.md),
 et suit la même boucle de réponse que ceux du plan. En mode isolé, chaque
-relecteur travaille d'abord seul comme sous-agent, et la compétence
-fusionne leurs constats. Le résumé liste ce qu'il vous revient de décider,
-y compris tout domaine que le code suggère désormais et que la proposition
-ne coche ni ne justifie : cochez-le, et son expert relit le code, ou
-justifiez-le.
+relecteur travaille d'abord seul comme [sous-agent](glossary.md#sous-agent)
+(une copie distincte de Claude qui ne voit pas votre conversation), et la
+compétence fusionne leurs constats.
+
+Le résumé liste ce qu'il vous revient de décider. Par exemple, le code
+touche peut-être désormais un domaine sensible, comme la sécurité ou les
+données personnelles, que le plan ne listait pas. À vous de choisir :
+faire relire ce domaine par son expert, ou expliquer pourquoi ce n'est pas
+nécessaire.
 
 Un expert corrige un défaut manifeste dans le périmètre de la modification,
 avec un test. Tout autre changement de comportement, il le signale au lieu

@@ -7,13 +7,13 @@
 Non. Le programme `compagnon` ne parle jamais à un modèle d'IA. Il ne va sur
 internet que pour deux choses :
 
-- télécharger des règles partagées depuis un autre dépôt, quand vous le
-  demandez (`compagnon sources update`) ;
+- télécharger des règles partagées depuis un autre
+  [dépôt](glossary.md#dépôt), quand vous le demandez (`compagnon sources update`) ;
 - voir si une version plus récente de Compagnon existe (`compagnon status`,
   `compagnon self-update`).
 
-C'est votre agent, Claude Code, qui rédige. Il a les mêmes accès que dans
-n'importe quelle autre session.
+C'est votre [agent](glossary.md#agent), Claude Code, qui rédige. Il peut
+lire et faire exactement ce qu'il peut faire d'habitude sur votre ordinateur.
 
 ### Compagnon vérifie-t-il les mises à jour ?
 
@@ -25,9 +25,9 @@ Compagnon, et garde la réponse sur votre ordinateur.
   d'aucune sorte.
 - Si la demande échoue, rien ne s'affiche, et Compagnon ne réessaie pas
   avant le lendemain.
-- La vérification ne s'exécute jamais dans les chaînes automatisées
-  (lorsque la variable `CI` est définie) : leurs résultats restent ainsi
-  identiques d'une exécution à l'autre.
+- La vérification ne s'exécute jamais pendant les vérifications
+  automatiques du projet ([intégration continue](glossary.md#intégration-continue),
+  CI) : leurs résultats restent ainsi identiques d'une exécution à l'autre.
 - Pour la désactiver sur votre ordinateur, définissez
   `COMPAGNON_NO_UPDATE_CHECK=1`.
 - Rien n'est jamais installé sans votre accord. Pour mettre à jour, vous
@@ -40,7 +40,8 @@ Compagnon, et garde la réponse sur votre ordinateur.
 La requête est un unique appel HTTPS anonyme à l'API publique de GitHub :
 `https://api.github.com/repos/mairistem/compagnon/releases/latest`. Elle lit
 le numéro de la dernière release et le garde en cache dans
-`~/.cache/compagnon/update-check.json`, pendant 24 heures.
+`~/.cache/compagnon/update-check.json`, pendant 24 heures. Elle est sautée
+dès que la variable d'environnement `CI` est définie.
 
 </details>
 
@@ -56,10 +57,12 @@ Code.
 
 ### Faut-il enregistrer `_compagnon/` et `.claude/skills/` dans git ?
 
-Oui, les deux.
+Oui, les deux. Un [enregistrement](glossary.md#enregistrement) (commit)
+garde une version des fichiers du projet dans son historique, tenu par
+[git](glossary.md#git).
 
 - `_compagnon/` est la mémoire de vos spécifications, de vos décisions et de
-  vos modifications. Enregistrez-le en entier (commit), y compris
+  vos modifications. Enregistrez-le en entier, y compris
   `_compagnon/decisions/seal.yaml` et `_compagnon/compagnon.lock`.
 - Quand `.claude/skills/` est enregistré, toute l'équipe a les mêmes
   compétences, sans avoir à lancer `compagnon init`.
@@ -78,10 +81,11 @@ comportement du logiciel, définissez `skip_specs: true` dans son
 Oui. Lors de la mise en place du projet, dites à `compagnon init` ce qu'il
 doit laisser de côté :
 
-- `--no-claude-md` laisse `CLAUDE.md` tranquille ;
+- `--no-claude-md` laisse tranquille `CLAUDE.md` (le fichier de consignes
+  que Claude lit dans chaque projet) ;
 - `--no-ci` n'ajoute aucune vérification automatique (CI) ;
-- `--no-pr-template` laisse tranquille le modèle de demande de fusion
-  (pull request) ;
+- `--no-pr-template` laisse tranquille le modèle de
+  [demande de fusion](glossary.md#demande-de-fusion) (pull request) ;
 - `--no-integration` fait les trois.
 
 `compagnon update` ne les ajoute jamais par la suite.
@@ -100,11 +104,11 @@ Voir [Intégration au dépôt et compagnon doctor](guides/repository-integration
 ### Mes relecteurs doivent-ils travailler isolément ?
 
 Par défaut, la compétence qui a écrit le plan ou le code le relit aussi.
-Elle joue chaque rôle de relecteur tour à tour, dans la même conversation.
-C'est le mode `inline`.
+Elle joue chaque [rôle](glossary.md#rôle) de relecteur tour à tour, dans la
+même conversation. C'est le mode en ligne (`inline`).
 
-En mode `isolated`, chaque rôle de relecteur travaille seul, comme un
-assistant séparé (un sous-agent de Claude Code) qui ne voit jamais votre
+En mode isolé (`isolated`), chaque rôle de relecteur travaille seul, comme
+un assistant séparé (un [sous-agent](glossary.md#sous-agent) de Claude Code) qui ne voit jamais votre
 conversation. La compétence rassemble ensuite ce qu'ils ont trouvé.
 
 La relecture isolée coûte plus cher, car chaque relecteur relit tout. Son
@@ -208,8 +212,8 @@ dossier `specs/` ne contient aucun delta. Faites l'un ou l'autre :
 ### `compagnon validate` signale `decision_seal_mismatch`
 
 Quelqu'un a modifié le texte d'une décision acceptée, à la main ou avec un
-outil de mise en forme. Les décisions acceptées sont scellées : elles ne
-doivent pas changer. Vous pouvez :
+outil de mise en forme. Les décisions acceptées sont
+[scellées](glossary.md#sceau) : elles ne doivent pas changer. Vous pouvez :
 
 - **restaurer** le texte d'origine (`git diff` montre ce qui a changé) ; le
   sceau redevient valide ;
@@ -257,13 +261,12 @@ exemple.
 ### Une spécification archivée avec un Compagnon antérieur contient une exigence coupée
 
 C'est un défaut de Compagnon 0.6.1 et des versions antérieures (les
-compilations faites avant le correctif). Il se produisait en archivant une
+copies installées avant le correctif). Il se produisait en archivant une
 modification qui faisait deux choses à la fois : elle modifiait la dernière
 exigence d'une spécification, et elle ajoutait de nouvelles exigences.
 
-Les exigences ajoutées pouvaient alors atterrir au milieu d'une ligne de
-l'exigence modifiée. La spécification contient le début de cette exigence,
-puis les ajouts, puis la fin de l'exigence coupée, collée derrière eux.
+L'exigence modifiée pouvait alors être coupée en deux, au milieu d'une
+ligne, avec les exigences ajoutées collées au milieu.
 
 `compagnon validate` ne le détecte pas, et synchroniser ou archiver à
 nouveau la modification ne le répare pas.
@@ -453,20 +456,32 @@ pourrait accepter ce que celui d'un collègue refuserait.
 Appliquez la correction que nomme le message :
 
 - `compagnon self-update` ;
-- ou `compagnon self-update --version <X.Y.Z>`, lorsque votre Compagnon
-  dépasse une limite haute comme `^0.6`. Vous pouvez aussi élargir
-  `compagnon_version`, si l'équipe passe à la version plus récente.
+- ou `compagnon self-update --version <X.Y.Z>`, lorsque votre Compagnon est
+  plus récent que la version la plus haute qu'autorise le projet. Vous
+  pouvez aussi élargir `compagnon_version`, si l'équipe passe à la version
+  plus récente.
 
-En CI, relevez l'épinglage `COMPAGNON_VERSION=` chaque fois que
-`compagnon_version` est relevé. Toutes les autres commandes,
-`compagnon status` et `compagnon doctor` compris, continuent de fonctionner.
+Dans les vérifications automatiques du projet (CI), relevez la version de
+Compagnon qu'elles installent chaque fois que `compagnon_version` est
+relevé. Toutes les autres commandes, `compagnon status` et
+`compagnon doctor` compris, continuent de fonctionner.
+
+<details>
+<summary>Sous le capot : limites hautes et épinglage en CI</summary>
+
+Une limite haute est un `compagnon_version` comme `^0.6`, qui autorise les
+0.6.x mais pas la 0.7. En CI, la version installée est épinglée par
+`COMPAGNON_VERSION=` : relevez cet épinglage chaque fois que
+`compagnon_version` est relevé.
+
+</details>
 
 ### `compagnon self-update` signale `update_checksum_mismatch`
 
 Le fichier téléchargé ne correspond pas à l'empreinte publiée avec la
 version (sa ligne dans `SHA256SUMS`), ou cette ligne manque. Rien n'a été
-installé. Réessayez plus tard : un intermédiaire réseau (proxy) a pu
-altérer le téléchargement. Si le problème persiste, signalez-le. Cette
+installé. Réessayez plus tard : votre réseau a pu altérer le
+téléchargement. Si le problème persiste, signalez-le. Cette
 vérification est ce qui vous protège d'un fichier falsifié.
 
 ### `compagnon self-update` signale `update_not_writable`
@@ -487,6 +502,6 @@ clone à jour.
 
 ### `compagnon: command not found`
 
-Votre terminal ne sait pas où Compagnon est installé : son dossier n'est pas
+Votre [terminal](glossary.md#terminal) ne sait pas où Compagnon est installé : son dossier n'est pas
 dans votre `PATH`. Voir
 [Vérifier l'installation](installation.md#vérifier-linstallation).

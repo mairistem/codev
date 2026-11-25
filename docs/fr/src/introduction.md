@@ -7,7 +7,8 @@ programmation d'Anthropic, sans perdre la main. Avant d'écrire la moindre
 ligne de code, Claude met par écrit ce qu'il s'apprête à construire : un
 plan court que vous pouvez lire, discuter et corriger. Une fois que vous
 êtes d'accord, Claude construit exactement cela, et le plan reste dans votre
-dépôt comme trace de ce qui a été fait, et pourquoi.
+[dépôt](glossary.md#dépôt) (le dossier qui contient les fichiers du projet)
+comme trace de ce qui a été fait, et pourquoi.
 
 Inutile de savoir comment fonctionne l'IA pour l'utiliser. Vous demandez
 avec vos mots — « ajoute un mode sombre qui suit le réglage du système » — et
@@ -32,8 +33,8 @@ où toute votre équipe peut la lire.
 
 Compagnon vient du compagnonnage, la tradition des métiers d'art : un
 maître mène l'ouvrage, les compagnons le réalisent, et chacun suit des plans
-arrêtés à l'avance. Ici, vous êtes le maître, et les agents de Claude sont
-vos compagnons.
+arrêtés à l'avance. Ici, vous êtes le maître, et les [agents](glossary.md#agent) de Claude
+sont vos compagnons.
 
 ## Ce que vous y gagnez
 

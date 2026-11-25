@@ -1,12 +1,23 @@
 # The workflow
 
-In a Compagnon project, every change goes through the same four steps, in the
-same order. This fixed sequence is the Compagnon
-[workflow](glossary.md#workflow). At each step, you ask Claude in your own
-words, and Claude follows a skill: a set of instructions written for that
-step. Three of the steps also have a command you can type in a terminal (the
-CLI), which does the underlying work. Building the change has no command:
-that is the agent's job.
+In a Compagnon project, every change goes through the same five steps, in
+the same order. This fixed sequence is the Compagnon
+[workflow](glossary.md#workflow):
+
+1. **Ask.** You say what you want, in your own words.
+2. **Plan.** Claude writes the plan of the change (see [Propose](#propose)).
+3. **Review.** Claude challenges its own plan, then you read it and decide
+   (see [Propose](#propose) and [Reviewing a plan](guides/review-a-plan.md)).
+   Once the code is written, it is reviewed too (see [Apply](#apply)).
+4. **Build.** Claude writes the code the plan describes (see [Apply](#apply)).
+5. **Archive.** The project's specs are updated and the change is filed away
+   (see [Archive](#archive); [Sync](#sync) can update the specs earlier).
+
+At each step, you ask Claude in your own words, and Claude follows a skill: a
+set of instructions written for that step. Most skills also have a command
+you can type in a [terminal](glossary.md#terminal) (the CLI), which does the
+underlying work. Building the change has no command: that is the
+[agent](glossary.md#agent)'s job. The skills, in the order you use them:
 
 ```text
 ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐
@@ -27,7 +38,7 @@ Two more skills help along the way. `/compagnon-explore` lets you think an
 idea through before you propose anything. `/compagnon-update` revises a plan
 that is already written. See [Claude Code skills](skills.md).
 
-At each step, Claude works in a set role: product owner, QA analyst,
+At each step, Claude works in a set [role](glossary.md#role): product owner, QA analyst,
 architect, tech lead, skeptical reviewer or developer. Each role has
 criteria it checks before moving on. Claude stops at the points where you
 decide. See [Roles](roles.md).
@@ -71,11 +82,12 @@ In Claude Code, `/compagnon-propose` does the whole plan in one go:
    file, studies the code concerned, and writes the file from its template.
 4. It checks that the proposal, the specs and the tasks match each other.
    Then it challenges the plan as a skeptical reviewer. It writes each
-   finding in the change's [review record](guides/review-record.md), fixes
-   what is clear-cut, and lists up to five points for you to look at. See
+   finding in the change's [review record](guides/review-record.md). It
+   fixes what is clear-cut, and lists up to five points for you to look at.
+   See
    [Propose](skills.md#propose-compagnon-propose).
-5. It stops once the plan is complete and shows it to you. It never starts
-   building in the same turn.
+5. It stops once the plan is complete and shows it to you. It waits for
+   your approval before it starts building.
 
 <details>
 <summary>Under the hood: the commands the propose skill runs</summary>
@@ -94,7 +106,7 @@ force. The design then follows them, or openly proposes to replace one. See
 [Decisions](concepts.md#decision).
 
 Some changes do not change what the product does: a cleanup of the code, a
-newer version of a library, documentation. Such a change declares
+newer version of a building block the code uses, documentation. Such a change declares
 `skip_specs: true` in its `change.yaml`. Its plan then has no specs, and
 validation accepts that it has no deltas.
 
@@ -102,7 +114,8 @@ validation accepts that it has no deltas.
 
 `/compagnon-apply <name>` builds what the plan describes. Claude reads
 `tasks.md` and takes each unchecked task (`- [ ]`) in the order of the file.
-For each one, it runs the check the task names: a test, a command, or a
+For each one, it runs the check the task names: a
+[test](glossary.md#test), a command, or a
 behavior you can observe. It ticks the box only once that check passes.
 
 New tests follow your existing tests first, then the usual habits of your
@@ -110,12 +123,14 @@ programming language, then your [`rules`](reference/configuration.md#rules).
 
 Once every task is ticked, Claude re-reads the code it touched, the way a
 newcomer to the project would. The [experts](roles.md#experts-and-domains)
-matching the domains named in the proposal join this reading. Claude
+in the sensitive areas the proposal lists, called
+[domains](glossary.md#domain) (security, personal data…), join this
+reading. Claude
 simplifies what is clear-cut, without widening the scope, and lists up to
 five review notes in its summary. Every finding goes into the change's
 [review record](guides/review-record.md), with the author's answer and the
 reviewer's check. What only you can decide is listed at the end. Then
-Claude runs the full test suite once.
+Claude runs all the project's tests once.
 
 Claude stops at the first blocker or unclear point and asks you, rather
 than guessing. It works only on the change you named. It never archives and
@@ -154,20 +169,31 @@ Archiving closes a change, in four steps:
 1. It validates the change. If validation reports an error, it **refuses**
    and points you to `compagnon validate <name>` for the details.
 2. It checks the [review record](guides/review-record.md). It **refuses**
-   (`review_blocked`) if the record is missing for a step where review roles
-   were active, or if a high-severity finding is still open or disputed.
+   in two cases: a review was expected but not recorded, or a serious
+   problem found in review is not settled yet (`review_blocked`).
    `compagnon review --change <name>` shows what is left.
 3. It copies the deltas into the project's specs, exactly as sync does.
 4. It moves the change's folder, review record included, to
    `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`.
 
-Compagnon works out and checks the whole merge before it writes the first
-file. So a problem is reported before anything on disk changes: an invalid
-change, or a delta that does not fit. For example, a delta may modify
-(`MODIFIED`) a requirement that the project's spec does not have.
+<details>
+<summary>Under the hood: when archiving refuses on the review record</summary>
+
+Archiving reports `review_blocked` when the review record is missing for a
+step where review roles were active, or when a finding of severity `high`
+is still `open` or `disputed`.
+
+</details>
+
+Compagnon prepares and checks the whole update of the project's specs
+before it writes the first file. So a problem is reported before anything
+on disk changes: an invalid change, or a delta that does not fit. For
+example, a delta may modify (`MODIFIED`) a requirement that the project's
+spec does not have.
 
 After archiving, the project's specs describe the behavior you shipped. The
-archived folder keeps why and how it changed. Commit both. If the change has
+archived folder keeps why and how it changed. [Commit](glossary.md#commit)
+both, that is, save them in the project's history. If the change has
 a release note, run `compagnon changelog --write` to add it to
 `CHANGELOG.md` (see [Release notes and CHANGELOG](guides/release-notes.md)).
 
@@ -193,13 +219,14 @@ compagnon validate
 ```
 
 On its own, `compagnon validate` checks every change in progress, every
-spec of the project, and the seals that protect the decisions. To check a
+spec of the project, and the [seals](glossary.md#seal) that protect the
+decisions. To check a
 single item, give the name of a change or a capability. To check one
 family, add `--changes` or `--specs`.
 
 An error makes the command fail (exit status 1). With `--strict`, warnings
-do too. Use `--strict` in continuous integration (CI), the checks that run
-automatically on every push:
+do too. Use `--strict` in continuous integration
+([CI](glossary.md#ci)), the checks that run automatically on every push:
 
 ```bash
 compagnon validate --strict

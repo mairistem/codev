@@ -7,7 +7,7 @@ avez besoin.
 ## Je découvre les agents IA
 
 Vous avez entendu parler de Claude, l'avez peut-être essayé, et voulez voir
-à quoi ressemble le travail avec un agent, en toute sécurité.
+à quoi ressemble le travail avec un [agent](glossary.md#agent), en toute sécurité.
 
 1. [Compagnon en deux minutes](introduction.md) : ce qu'il fait, qui décide.
 2. [Glossaire](glossary.md) : les mots que vous rencontrerez.
@@ -15,7 +15,7 @@ Vous avez entendu parler de Claude, l'avez peut-être essayé, et voulez voir
 
 ## Je ne code pas, je relis et valide des plans
 
-Vous êtes product owner, manager ou expert métier. Claude rédige le plan,
+Vous êtes responsable produit (product owner), manager ou expert métier. Claude rédige le plan,
 vous vérifiez qu'il dit la bonne chose, puis vous le validez.
 
 1. [Compagnon en deux minutes](introduction.md) : les étapes et votre rôle.
@@ -35,14 +35,15 @@ Vous écrivez du code et voulez que Claude planifie avant de coder.
 
 ## Je configure Compagnon pour mon équipe
 
-Vous choisissez comment Compagnon s'intègre à votre projet, votre dépôt et
-vos outils.
+Vous choisissez comment Compagnon s'intègre à votre projet, votre
+[dépôt](glossary.md#dépôt) et vos outils.
 
 1. [Installation](installation.md) : toutes les façons d'installer et de
    mettre à jour.
 2. [Intégration au dépôt et compagnon doctor](guides/repository-integration.md) :
-   intégration continue, demandes de fusion (pull requests), vérification de
-   l'installation.
+   [intégration continue](glossary.md#intégration-continue),
+   [demandes de fusion](glossary.md#demande-de-fusion) (pull requests),
+   vérification de l'installation.
 3. [Rôles](roles.md) : qui relit les plans et le code, et quand.
 4. [Configuration](reference/configuration.md) : chaque réglage.
 5. [Jira et autres serveurs MCP](guides/mcp.md) et
@@ -55,7 +56,7 @@ Vous voulez modifier Compagnon lui-même.
 
 1. [Origines](origins.md) : pourquoi Compagnon existe et comment il est
    construit.
-2. [Architecture](architecture.md) : les crates et leur articulation.
+2. [Architecture](architecture.md) : les modules du programme et leur articulation.
 3. [Fiabilité des rôles](reliability.md) : comment on mesure l'effet d'un
    changement apporté aux compétences.
 4. [Interface en ligne de commande](reference/cli.md) : chaque commande.

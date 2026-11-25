@@ -1,6 +1,7 @@
 # Votre première modification
 
-Cette page vous mène d'un dépôt vide à votre première modification terminée, en une
+Cette page vous mène d'un
+[dépôt](glossary.md#dépôt) vide à votre première modification terminée, en une
 dizaine de minutes. Vous parlez à Claude avec vos mots : chaque étape donne
 la phrase à dire, puis la commande raccourcie, qui fait la même chose.
 
@@ -26,15 +27,17 @@ Les autres façons d'installer sont dans [Installation](installation.md).
 
 ## 2. Préparer votre dépôt
 
-À la racine de votre dépôt, lancez une fois :
+Ouvrez un [terminal](glossary.md#terminal) (la fenêtre où l'on tape des
+commandes) dans le dossier principal de votre projet, puis tapez une fois :
 
 ```bash
 compagnon init
 ```
 
-Il peut poser deux questions — quelles compétences installer, et quelques mots
-sur votre projet — puis ajoute un dossier `_compagnon/` et apprend à Claude
-Code les compétences de Compagnon. Redémarrez Claude Code pour qu'il les voie.
+Il peut vous demander quelles [compétences](glossary.md#compétence)
+installer, et quelques mots sur votre projet. Puis il ajoute un dossier
+`_compagnon/` et donne les compétences à Claude Code. Redémarrez Claude Code
+pour qu'il les voie.
 
 <details>
 <summary>Sous le capot : ce qu'écrit init</summary>
@@ -129,8 +132,9 @@ Une fois le plan à votre goût :
 
 > Le plan me va, réalise la modification.
 
-Claude traite les tâches une à une, vérifie chacune avec son test, et
-s'arrête pour vous demander si quelque chose n'est pas clair. Raccourci :
+Claude traite les tâches une à une, vérifie chacune avec son
+[test](glossary.md#test) (un petit programme qui prouve que la tâche
+fonctionne), et s'arrête pour vous demander si quelque chose n'est pas clair. Raccourci :
 `/compagnon-apply add-dark-mode`.
 
 ## 6. La classer (`/compagnon-archive`)
@@ -140,9 +144,10 @@ Vérifiez le résultat, puis :
 > La modification est terminée, archive-la.
 
 Claude reporte les spécifications du plan dans celles du projet et range
-la modification dans l'archive : le projet se souvient désormais de la
+la modification dans l'archive. Le projet se souvient désormais de la
 raison d'être du mode sombre. Raccourci : `/compagnon-archive
-add-dark-mode`. Enregistrez ensuite le résultat dans Git (commit).
+add-dark-mode`. Enregistrez ensuite le résultat dans l'historique du projet
+([Git](glossary.md#git)), ou demandez-le à Claude.
 
 <details>
 <summary>Sous le capot : ce que fait l'archivage</summary>

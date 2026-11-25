@@ -1,6 +1,10 @@
 # Installation
 
-Compagnon is a single binary. Prebuilt binaries are published on
+This page is for the person who installs the tool; if you only review plans,
+you can skip it.
+
+Compagnon is a single program, ready to use. Ready-made copies (binaries)
+are published on
 [GitHub Releases](https://github.com/mairistem/compagnon/releases) for these
 platforms:
 
@@ -11,8 +15,8 @@ platforms:
 | Linux, x86_64 (statically linked) | `x86_64-unknown-linux-musl` |
 | Windows, x86_64 | `x86_64-pc-windows-msvc` |
 
-There are four ways to install it. The first two are the shortest and do not
-require Rust.
+There are four ways to install it. The first two are the shortest and need no
+developer tools.
 
 ## macOS and Linux: install.sh
 
@@ -20,10 +24,10 @@ require Rust.
 curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 ```
 
-The script detects your OS and architecture, downloads the matching archive
-and the `SHA256SUMS` file from the latest GitHub Release, verifies the
-archive's SHA-256, and installs the binary to `~/.local/bin/compagnon`. It
-refuses to install if the checksum does not match, and it creates
+The script detects your operating system and processor type. It downloads
+the matching archive and the `SHA256SUMS` file from the latest release on
+GitHub. It checks the archive's SHA-256 fingerprint against that file. Then
+it installs the program to `~/.local/bin/compagnon`. It refuses to install if the fingerprint does not match, and it creates
 `~/.local/bin` if needed.
 
 When `~/.local/bin` is not on your `PATH`, the script prints the exact line to
@@ -119,7 +123,7 @@ Then add the folder to your user `PATH` as shown above.
 ## From source: cargo install
 
 With a Rust toolchain (1.89 or later), you can build Compagnon from a clone of the
-repository. This is the path for contributors and for platforms without a
+[repository](glossary.md#repository). This is the path for contributors and for platforms without a
 prebuilt binary.
 
 ```bash
@@ -163,8 +167,9 @@ compagnon completions powershell | Out-String | Invoke-Expression
 
 ## Requirements
 
-- **Claude Code**, to use the skills. The CLI itself works without it.
-- **git**, only for [inherited sources](guides/inherited-sources.md) hosted in
+- **Claude Code**, to use the skills. The `compagnon` command itself works without
+  it.
+- **[git](glossary.md#git)**, only for [inherited sources](guides/inherited-sources.md) hosted in
   a git repository.
 
 ## Upgrading
@@ -201,8 +206,10 @@ each project, regenerate the skills so they match the new version:
 compagnon update
 ```
 
-`compagnon update` also refreshes Compagnon's managed sections in `CLAUDE.md` and the
-pull request template, and the compagnon version pinned in
-`.github/workflows/compagnon.yml`, where `compagnon init` wrote them. See
+`compagnon update` also refreshes three files, where `compagnon init` wrote
+them. In `CLAUDE.md`, it refreshes Compagnon's managed sections. In the
+[pull request](glossary.md#pull-request) template, it refreshes Compagnon's
+managed sections too. In `.github/workflows/compagnon.yml`, it updates the
+pinned Compagnon version. See
 [`compagnon update`](reference/cli.md#compagnon-update) for how hand-edited skills
 are handled, and `compagnon doctor` to check the result.

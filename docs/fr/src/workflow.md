@@ -1,13 +1,30 @@
 # Le déroulé
 
-Dans un projet Compagnon, chaque modification passe par les quatre mêmes
+Dans un projet Compagnon, chaque modification passe par les cinq mêmes
 étapes, dans le même ordre. Cette suite d'étapes est le
-[déroulé](glossary.md#déroulé) de Compagnon. À chaque étape, vous formulez
-votre demande à Claude avec vos mots, et Claude suit une compétence (skill) :
-un ensemble d'instructions écrit pour cette étape. Trois des étapes ont
-aussi une commande à taper dans un terminal (la CLI), qui effectue le
-travail de fond. La réalisation n'a pas de commande : c'est le travail de
-l'agent.
+[déroulé](glossary.md#déroulé) de Compagnon :
+
+1. **Demander.** Vous dites ce que vous voulez, avec vos mots.
+2. **Planifier.** Claude rédige le plan de la modification (voir
+   [Proposer](#proposer)).
+3. **Relire.** Claude remet en question son propre plan, puis vous le lisez
+   et décidez (voir [Proposer](#proposer) et
+   [Relire un plan](guides/review-a-plan.md)). Une fois le code écrit, il
+   est relu à son tour (voir [Réaliser](#réaliser)).
+4. **Réaliser.** Claude écrit le code que décrit le plan (voir
+   [Réaliser](#réaliser)).
+5. **Archiver.** Les spécifications du projet sont mises à jour et la
+   modification est classée (voir [Archiver](#archiver) ;
+   [Synchroniser](#synchroniser) peut mettre à jour les spécifications plus
+   tôt).
+
+À chaque étape, vous formulez votre demande à Claude avec vos mots, et
+Claude suit une compétence (skill) : un ensemble d'instructions écrit pour
+cette étape. La plupart des compétences ont aussi une commande à taper dans
+un [terminal](glossary.md#terminal) (la CLI), qui effectue le travail de
+fond. La réalisation n'a pas de commande : c'est le travail de
+l'[agent](glossary.md#agent). Les compétences, dans l'ordre où vous les
+utilisez :
 
 ```text
 ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐
@@ -29,8 +46,8 @@ permet de mûrir une idée avant de proposer quoi que ce soit.
 `/compagnon-update` révise un plan déjà rédigé. Voir
 [Les compétences de Claude Code](skills.md).
 
-À chaque étape, Claude tient un rôle défini : responsable produit (product
-owner), analyste QA, architecte, référent technique (tech lead), relecteur
+À chaque étape, Claude tient un [rôle](glossary.md#rôle) défini :
+responsable produit (product owner), analyste qualité (QA), architecte, référent technique (tech lead), relecteur
 sceptique ou développeur. Chaque rôle a des critères qu'il vérifie avant de
 passer à la suite. Claude s'arrête aux moments où c'est à vous de décider.
 Voir [Rôles](roles.md).
@@ -77,12 +94,12 @@ Dans Claude Code, `/compagnon-propose` rédige tout le plan d'une traite :
    modèle.
 4. Il vérifie que la proposition, les spécifications et les tâches
    concordent. Puis il relit le plan en relecteur sceptique. Il écrit chaque
-   constat dans le [compte rendu de revue](guides/review-record.md) de la
-   modification, corrige ce qui ne fait pas de doute et liste jusqu'à cinq
-   points à examiner avec vous. Voir
+   constat dans le [compte rendu de revue](guides/review-record.md) de
+   la modification. Il corrige ce qui ne fait pas de doute et liste
+   jusqu'à cinq points à discuter avec vous. Voir
    [Proposer](skills.md#propose-compagnon-propose).
-5. Il s'arrête une fois le plan complet et vous le présente. Il ne commence
-   jamais la réalisation dans le même tour.
+5. Il s'arrête une fois le plan complet et vous le présente. Il attend
+   votre accord avant de commencer la réalisation.
 
 <details>
 <summary>Sous le capot : les commandes que lance la compétence de proposition</summary>
@@ -101,8 +118,8 @@ vigueur. La conception les respecte alors, ou propose ouvertement d'en
 remplacer une. Voir [Décisions](concepts.md#décision).
 
 Certaines modifications ne changent pas ce que fait le produit : un
-nettoyage du code, une nouvelle version d'une bibliothèque, de la
-documentation. Une telle modification déclare `skip_specs: true` dans son
+nettoyage du code, une nouvelle version d'une brique sur laquelle
+s'appuie le code, de la documentation. Une telle modification déclare `skip_specs: true` dans son
 `change.yaml`. Son plan n'a alors pas de spécifications, et la validation
 accepte qu'elle n'ait aucun delta.
 
@@ -111,7 +128,7 @@ accepte qu'elle n'ait aucun delta.
 `/compagnon-apply <name>` construit ce que décrit le plan. Claude lit
 `tasks.md` et prend chaque tâche non cochée (`- [ ]`) dans l'ordre du
 fichier. Pour chacune, il lance la vérification que la tâche indique : un
-test, une commande ou un comportement observable. Il ne coche la case
+[test](glossary.md#test), une commande ou un comportement observable. Il ne coche la case
 qu'une fois cette vérification réussie.
 
 Les nouveaux tests suivent d'abord vos tests existants, puis les habitudes
@@ -120,14 +137,15 @@ de votre langage de programmation, puis vos
 
 Une fois toutes les tâches cochées, Claude relit le code qu'il a touché,
 comme le ferait un nouvel arrivant sur le projet. Les
-[experts](roles.md#experts-et-domaines) qui correspondent aux domaines cités
-dans la proposition se joignent à cette relecture. Claude simplifie ce qui
+[experts](roles.md#experts-et-domaines) des points sensibles que cite la
+proposition, appelés [domaines](glossary.md#domaine) (sécurité, données
+personnelles…), se joignent à cette relecture. Claude simplifie ce qui
 ne fait pas de doute, sans élargir le périmètre, et liste au plus cinq
 notes de relecture dans son résumé. Chaque constat est conservé dans le
 [compte rendu de revue](guides/review-record.md) de la modification, avec la
 réponse de l'auteur et la vérification du relecteur. Ce que vous seul
-pouvez trancher est listé à la fin. Claude lance ensuite une fois la suite
-de tests complète.
+pouvez trancher est listé à la fin. Claude lance ensuite une fois tous les
+tests du projet.
 
 Claude s'arrête au premier blocage ou au premier point flou pour vous
 consulter, plutôt que de deviner. Il ne travaille que sur la modification
@@ -170,24 +188,34 @@ L'archivage clôt une modification, en quatre temps :
    **refuse** de continuer et vous renvoie vers `compagnon validate <name>`
    pour le détail.
 2. Il vérifie le [compte rendu de revue](guides/review-record.md). Il
-   **refuse** de continuer (`review_blocked`) si ce compte rendu manque pour
-   une étape où des rôles de relecture étaient actifs, ou si un constat de
-   gravité haute est encore ouvert ou contesté.
+   **refuse** de continuer dans deux cas : une relecture était attendue mais
+   n'a pas été consignée, ou un problème sérieux relevé en relecture n'est
+   pas encore réglé (`review_blocked`).
    `compagnon review --change <name>` montre ce qui reste.
 3. Il recopie les deltas dans les spécifications du projet, exactement comme
    la synchronisation.
 4. Il déplace le dossier de la modification, compte rendu compris, dans
    `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`.
 
-Compagnon calcule et vérifie toute la fusion avant d'écrire le premier
-fichier. Un problème est donc signalé avant toute modification sur le
+<details>
+<summary>Sous le capot : quand l'archivage refuse à cause du compte rendu</summary>
+
+L'archivage signale `review_blocked` quand le compte rendu manque pour une
+étape où des rôles de relecture étaient actifs, ou quand un constat de
+gravité `high` est encore `open` ou `disputed`.
+
+</details>
+
+Compagnon prépare et vérifie toute la mise à jour des spécifications du
+projet avant d'écrire le premier fichier. Un problème est donc signalé avant toute modification sur le
 disque : une modification invalide, ou un delta qui ne s'applique pas. Par
 exemple, un delta peut modifier (`MODIFIED`) une exigence que la
 spécification du projet ne contient pas.
 
 Après l'archivage, les spécifications du projet décrivent le comportement
 que vous avez livré. Le dossier archivé garde la trace du pourquoi et du
-comment. Enregistrez les deux dans Git (commit). Si la modification a une
+comment. Enregistrez les deux dans [Git](glossary.md#git), l'historique du
+projet : c'est un [enregistrement](glossary.md#enregistrement) (commit). Si la modification a une
 note de version, lancez `compagnon changelog --write` pour l'ajouter à
 `CHANGELOG.md` (voir [Notes de version et CHANGELOG](guides/release-notes.md)).
 
@@ -213,13 +241,14 @@ compagnon validate
 ```
 
 Sans rien d'autre, `compagnon validate` vérifie chaque modification en
-cours, chaque spécification du projet et les sceaux qui protègent les
-décisions. Pour ne vérifier qu'un élément, donnez le nom d'une modification
+cours, chaque spécification du projet et les [sceaux](glossary.md#sceau) qui
+protègent les décisions. Pour ne vérifier qu'un élément, donnez le nom d'une modification
 ou d'une capacité. Pour ne vérifier qu'une famille, ajoutez `--changes` ou
 `--specs`.
 
 Une erreur fait échouer la commande (code de sortie 1). Avec `--strict`,
-les avertissements aussi. Utilisez `--strict` en intégration continue (CI),
+les avertissements aussi. Utilisez `--strict` en
+[intégration continue](glossary.md#intégration-continue) (CI),
 les vérifications lancées automatiquement à chaque envoi de code :
 
 ```bash

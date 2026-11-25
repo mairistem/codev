@@ -6,7 +6,8 @@ Compagnon helps you work with Claude Code, Anthropic's coding assistant,
 without losing control. Before any code is written, Claude writes down what
 it is about to build: a short plan you can read, discuss and correct. Once
 you agree, Claude builds exactly that, and the plan stays in your
-repository as a record of why things are the way they are.
+[repository](glossary.md#repository) (the folder that holds your project's
+files) as a record of why things are the way they are.
 
 You do not need to know how AI works to use it. You ask in plain words —
 "add a dark mode that follows the system setting" — and Compagnon guides
@@ -31,8 +32,8 @@ down where your whole team can see it.
 
 Compagnon comes from *compagnonnage*, the French tradition of craft guilds:
 a master leads the work, the *compagnons* carry it out, and everyone follows
-plans agreed beforehand. Here, you are the master, and Claude's agents are
-your compagnons.
+plans agreed beforehand. Here, you are the master, and Claude's [agents](glossary.md#agent)
+are your compagnons.
 
 ## What you get
 
