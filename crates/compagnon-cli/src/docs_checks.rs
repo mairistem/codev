@@ -433,10 +433,17 @@ fn banned_phrase(lang: Lang) -> &'static str {
     }
 }
 
+/// Whether [`prose_paragraphs`] keeps the heading lines.
+#[derive(Clone, Copy, PartialEq)]
+enum Headings {
+    Keep,
+    Skip,
+}
+
 /// The paragraphs of a chapter's prose, outside fenced code and `<details>`
-/// blocks, with inline code blanked out; `headings` keeps the heading
-/// lines, each as a paragraph of its own.
-fn prose_paragraphs(md: &str, headings: bool) -> Vec<String> {
+/// blocks, with inline code blanked out; with [`Headings::Keep`], each
+/// heading line is a paragraph of its own.
+fn prose_paragraphs(md: &str, headings: Headings) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     let mut current = String::new();
     let flush = |current: &mut String, out: &mut Vec<String>| {
@@ -455,7 +462,7 @@ fn prose_paragraphs(md: &str, headings: bool) -> Vec<String> {
             flush(&mut current, &mut out);
         } else if text.trim_start().starts_with('#') {
             flush(&mut current, &mut out);
-            if headings {
+            if headings == Headings::Keep {
                 out.push(text);
             }
         } else {
@@ -490,6 +497,8 @@ fn without_inline_code(text: &str) -> String {
 fn words(text: &str) -> Vec<(usize, String)> {
     let mut out = Vec::new();
     let mut start: Option<usize> = None;
+    // A trailing space closes the last word; a hyphen is kept inside a word
+    // ("kebab-case") and dropped at its end.
     for (i, c) in text
         .char_indices()
         .chain(std::iter::once((text.len(), ' ')))
@@ -509,7 +518,8 @@ fn words(text: &str) -> Vec<(usize, String)> {
 }
 
 /// The links of a paragraph: the byte range of their text and their
-/// target.
+/// target. A simple scanner for single-level `[text](target)` links: no
+/// `[` inside the text, no `)` inside the target.
 fn links(text: &str) -> Vec<(std::ops::Range<usize>, String)> {
     let mut out = Vec::new();
     let mut from = 0;
@@ -537,32 +547,44 @@ pub fn glossary_anchors(glossary: &str) -> Vec<String> {
         .collect()
 }
 
-/// What is wrong with an everyday chapter's technical terms: a term whose
-/// first use in prose is not a link to its own glossary entry (one of
-/// `anchors`), and the banned phrase wherever it appears.
-pub fn unexplained_terms(md: &str, lang: Lang, anchors: &[String]) -> Vec<String> {
+/// Whether the word at byte `at` of a paragraph sits in the text of a link
+/// to one of the glossary's entries (`anchors`).
+fn links_to_glossary_entry(
+    links: &[(std::ops::Range<usize>, String)],
+    at: usize,
+    anchors: &[String],
+) -> bool {
+    links.iter().any(|(range, target)| {
+        range.contains(&at)
+            && target.split_once('#').is_some_and(|(path, anchor)| {
+                path.ends_with("glossary.md") && anchors.iter().any(|a| a == anchor)
+            })
+    })
+}
+
+/// What is wrong with the vocabulary of an everyday chapter: a technical
+/// term whose first use in prose is not a link to its own glossary entry
+/// (one of `anchors`), and the banned phrase ("main specs") wherever it
+/// appears. Headings are skipped: a heading cannot hold a link.
+pub fn vocabulary_problems(md: &str, lang: Lang, anchors: &[String]) -> Vec<String> {
     let mut problems = Vec::new();
     let mut seen: Vec<&str> = Vec::new();
     let banned = banned_phrase(lang);
-    for paragraph in prose_paragraphs(md, false) {
+    for paragraph in prose_paragraphs(md, Headings::Skip) {
         let lower = paragraph.to_lowercase();
         if lower.contains(banned) && !problems.iter().any(|p: &String| p == banned) {
             problems.push(banned.to_string());
         }
         let links = links(&paragraph);
+        // The offsets match `links`: the targets are blanked to the same
+        // length, only so that a path such as `workflow.md` is not prose.
         for (at, word) in words(&without_link_targets(&paragraph)) {
             for (term, forms) in explained_terms(lang) {
                 if seen.contains(term) || !forms.contains(&word.as_str()) {
                     continue;
                 }
                 seen.push(term);
-                let linked = links.iter().any(|(range, target)| {
-                    range.contains(&at)
-                        && target.split_once('#').is_some_and(|(path, anchor)| {
-                            path.ends_with("glossary.md") && anchors.iter().any(|a| a == anchor)
-                        })
-                });
-                if !linked {
+                if !links_to_glossary_entry(&links, at, anchors) {
                     problems.push((*term).to_string());
                 }
             }
@@ -583,8 +605,10 @@ fn without_link_targets(text: &str) -> String {
     out
 }
 
-/// The French determiners after which "change" is the English noun, not
-/// the verb *changer*.
+/// The words after which "change" is the English noun, not the verb
+/// *changer*: determiners, adjectives that come before a noun (premier,
+/// nouveau…), and the elided articles d' and l', which [`words`] leaves as
+/// "d" and "l".
 const DETERMINERS: &[&str] = &[
     "le", "la", "les", "un", "une", "des", "du", "au", "aux", "ce", "cet", "cette", "ces",
     "chaque", "votre", "vos", "son", "sa", "ses", "leur", "leurs", "quel", "quelle", "d", "l",
@@ -613,7 +637,8 @@ pub fn anglicisms(md: &str) -> Vec<String> {
             found.push(w.to_string());
         }
     };
-    for paragraph in prose_paragraphs(md, true) {
+    // Headings count: a French heading must be French too.
+    for paragraph in prose_paragraphs(md, Headings::Keep) {
         let text = without_parentheses(&paragraph);
         let words: Vec<String> = words(&text).into_iter().map(|(_, w)| w).collect();
         for (i, word) in words.iter().enumerate() {
@@ -793,36 +818,39 @@ mod tests {
     #[test]
     fn a_term_used_without_a_link_is_caught() {
         let md = "A delta lists the change.\n\nA [delta](glossary.md#delta) again.\n";
-        assert_eq!(unexplained_terms(md, Lang::En, &anchors()), ["delta"]);
+        assert_eq!(vocabulary_problems(md, Lang::En, &anchors()), ["delta"]);
         let linked = "A [delta](../glossary.md#delta) lists it; the delta stays.\n";
-        assert!(unexplained_terms(linked, Lang::En, &anchors()).is_empty());
+        assert!(vocabulary_problems(linked, Lang::En, &anchors()).is_empty());
     }
 
     #[test]
     fn a_link_target_is_not_prose() {
         let md = "See [Step by step](workflow.md) and [the plan](concepts.md#delta).\n";
-        assert!(unexplained_terms(md, Lang::En, &anchors()).is_empty());
+        assert!(vocabulary_problems(md, Lang::En, &anchors()).is_empty());
     }
 
     #[test]
     fn a_link_to_the_top_of_the_glossary_is_caught() {
         let bare = "A [delta](glossary.md) lists the change.\n";
-        assert_eq!(unexplained_terms(bare, Lang::En, &anchors()), ["delta"]);
+        assert_eq!(vocabulary_problems(bare, Lang::En, &anchors()), ["delta"]);
         let unknown = "A [delta](glossary.md#deltas) lists the change.\n";
-        assert_eq!(unexplained_terms(unknown, Lang::En, &anchors()), ["delta"]);
+        assert_eq!(
+            vocabulary_problems(unknown, Lang::En, &anchors()),
+            ["delta"]
+        );
     }
 
     #[test]
     fn a_term_in_code_or_under_the_hood_is_not_concerned() {
         let md = "## The schema\n\nSet `schema: spec-driven`.\n\n```yaml\nschema: x\n```\n\n\
                   <details>\n<summary>Under the hood: the schema</summary>\n\nThe schema.\n\n</details>\n";
-        assert!(unexplained_terms(md, Lang::En, &anchors()).is_empty());
+        assert!(vocabulary_problems(md, Lang::En, &anchors()).is_empty());
     }
 
     #[test]
     fn the_phrase_main_specs_is_caught() {
         let md = "It merges the deltas into the main specs.\n";
-        let problems = unexplained_terms(md, Lang::En, &anchors());
+        let problems = vocabulary_problems(md, Lang::En, &anchors());
         assert!(problems.contains(&"main spec".to_string()), "{problems:?}");
     }
 
@@ -841,7 +869,9 @@ mod tests {
 
     #[test]
     fn the_french_verb_changer_is_not_an_anglicism() {
-        assert!(anglicisms("Voici ce qui change, et ce qui changes-tu.\n").is_empty());
+        assert!(anglicisms("Voici ce qui change.\n").is_empty());
+        assert!(anglicisms("Rien ne change.\n").is_empty());
+        assert_eq!(anglicisms("Relisez ce change.\n"), ["change"]);
     }
 
     #[test]
@@ -1137,7 +1167,9 @@ mod chapter_tests {
         );
     }
 
-    /// The chapters of the "Start here" and "Everyday use" parts.
+    /// The chapters of the "Start here" and "Everyday use" parts, as both
+    /// `SUMMARY.md` list them: `the_everyday_list_follows_the_summary`
+    /// fails if a chapter is added to those parts and not here.
     const EVERYDAY: [&str; 10] = [
         "introduction.md",
         "choose-your-path.md",
@@ -1152,12 +1184,24 @@ mod chapter_tests {
     ];
 
     #[test]
+    fn the_everyday_list_follows_the_summary() {
+        for lang in LANGS {
+            let parts = parts(summary(lang));
+            let listed: Vec<&str> = parts[..2]
+                .iter()
+                .flat_map(|(_, chapters)| chapters.iter().map(String::as_str))
+                .collect();
+            assert_eq!(listed, EVERYDAY, "{}", lang.tag());
+        }
+    }
+
+    #[test]
     fn every_everyday_chapter_explains_its_terms() {
         let mut found = Vec::new();
         for lang in LANGS {
             let anchors = glossary_anchors(chapter(lang, "glossary.md"));
             for path in EVERYDAY.iter().filter(|p| **p != "glossary.md") {
-                let problems = unexplained_terms(chapter(lang, path), lang, &anchors);
+                let problems = vocabulary_problems(chapter(lang, path), lang, &anchors);
                 if !problems.is_empty() {
                     found.push(format!("{} {path}: {problems:?}", lang.tag()));
                 }
