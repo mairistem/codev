@@ -75,7 +75,7 @@ design, in *vouvoiement*.
 
 ## 3. Check
 
-- [ ] 3.1 Read the ten chapters of each edition in the built site, as a
+- [x] 3.1 Read the ten chapters of each edition in the built site, as a
   reader who does not code: no sentence needs a term the page has not
   explained; recorded in the pull request. Manual because readability is a
   judgement; the terms it rests on are tested by
