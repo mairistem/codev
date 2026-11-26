@@ -9,6 +9,8 @@ it codes. Three pages, then a first change in about ten minutes.
 
 ## Next, if you need it
 
+- [Adopting Compagnon on an existing project](../guides/existing-project.md):
+  when your project is not empty.
 - [Concepts](../concepts.md): how plans, specs and decisions fit together.
 - [FAQ and troubleshooting](../faq.md), when something goes wrong.
 

@@ -99,6 +99,5 @@ real-world example you can browse:
 
 1. Read the [Architecture](architecture.md): the crates, the pure core, the
    conventions for errors and tests.
-2. Follow the [contributing guide](https://github.com/mairistem/compagnon/blob/main/CONTRIBUTING.md):
-   build, run the tests, and propose a Compagnon change before opening a
-   pull request.
+2. Read [Contributing to Compagnon](contributing.md): build, run the
+   tests, and propose a Compagnon change before opening a pull request.

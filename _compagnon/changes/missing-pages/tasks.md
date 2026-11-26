@@ -48,7 +48,7 @@ both editions, the French one following the documentation's lexicon, in
   `contributing.md`, listed in both `SUMMARY.md`, each fact checked against the code and
   `CONTRIBUTING.md`; verified by `mdbook build` and
   `every_link_of_the_paths_resolves`.
-- [ ] 2.4 Update the four path pages per the design's table, and
+- [x] 2.4 Update the four path pages per the design's table, and
   `origins.md`; verified by
   `both_editions_list_the_new_pages_where_their_readers_look`,
   `every_path_page_has_at_most_three_steps_titled_as_their_pages`,

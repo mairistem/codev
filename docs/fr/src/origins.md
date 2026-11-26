@@ -105,6 +105,6 @@ réel que vous pouvez parcourir :
 
 1. Lisez l'[Architecture](architecture.md) : les crates, le cœur pur, les
    conventions d'erreurs et de tests.
-2. Suivez le [guide de contribution](https://github.com/mairistem/compagnon/blob/main/CONTRIBUTING.fr.md) :
-   compiler, lancer les tests, et proposer une modification Compagnon avant
-   d'ouvrir une demande de fusion.
+2. Lisez [Contribuer à Compagnon](contributing.md) : compiler, lancer les
+   tests, et proposer une modification Compagnon avant d'ouvrir une demande
+   de fusion.

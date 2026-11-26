@@ -10,6 +10,8 @@ une dizaine de minutes.
 
 ## Ensuite, si besoin
 
+- [Adopter Compagnon sur un projet existant](../guides/existing-project.md) :
+  quand votre projet n'est pas vide.
 - [Concepts](../concepts.md) : comment s'articulent plans, spécifications et
   décisions.
 - [FAQ et dépannage](../faq.md), quand quelque chose ne va pas.

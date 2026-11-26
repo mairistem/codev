@@ -10,6 +10,11 @@ besoin d'un terminal.
 
 ## Ensuite, si besoin
 
+- [Un exemple de plan commenté](../guides/example-plan.md) : un plan
+  entier, avec ce qu'on vérifie dans chaque partie.
+- [Approuver un plan sur GitHub ou GitLab](../guides/approve-a-plan.md) :
+  commenter, demander des corrections et approuver là où votre équipe
+  travaille.
 - [FAQ et dépannage](../faq.md), pour les questions qui reviennent.
 
 Ce n'est pas votre cas ? [Choisissez un autre parcours](../choose-your-path.md).

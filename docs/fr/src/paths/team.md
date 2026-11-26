@@ -5,11 +5,12 @@ l'installe, ce que le projet partagé vérifie, qui relit les plans et le
 code. Trois pages, une heure environ.
 
 1. [Installation](../installation.md)
-2. [Intégration au dépôt et compagnon doctor](../guides/repository-integration.md)
-3. [Rôles](../roles.md)
+2. [Déployer Compagnon pour une équipe](../guides/team-rollout.md)
+3. [Intégration au dépôt et compagnon doctor](../guides/repository-integration.md)
 
 ## Ensuite, si besoin
 
+- [Rôles](../roles.md) : qui relit les plans et le code, à quelle étape.
 - [Configuration](../reference/configuration.md) : chaque réglage.
 - [Jira et autres serveurs MCP](../guides/mcp.md) : lire les tickets.
 - [Sources héritées](../guides/inherited-sources.md) : partager des règles
