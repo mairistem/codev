@@ -855,6 +855,28 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         "reviews",
         "commit",
         "commits",
+        "design",
+        "template",
+        "templates",
+    ];
+    // Words that announce "change" as a noun, besides the determiners.
+    const QUANTIFIERS: &[&str] = &[
+        "aucun",
+        "seul",
+        "seuls",
+        "deux",
+        "trois",
+        "plusieurs",
+        "nombre",
+        "de",
+        "autres",
+        "tous",
+        "certains",
+        "quelques",
+        "nouveaux",
+        "derniers",
+        "premiers",
+        "différents",
     ];
     let mut found: Vec<String> = Vec::new();
     let add = |w: &str, found: &mut Vec<String>| {
@@ -863,7 +885,11 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         }
     };
     // Headings count: a French heading must be French too.
-    for paragraph in prose_paragraphs(md, Headings::Keep) {
+    for paragraph in prose_paragraphs(&without_svg(md), Headings::Keep) {
+        let heading = paragraph.trim_start().starts_with('#');
+        if heading && is_identifier_heading(&paragraph) {
+            continue;
+        }
         let text = without_parentheses(&paragraph);
         let words: Vec<String> = words(&text).into_iter().map(|(_, w)| w).collect();
         for (i, word) in words.iter().enumerate() {
@@ -876,17 +902,50 @@ pub fn anglicisms(md: &str) -> Vec<String> {
                 }
             }
             if (word == "change" || word == "changes")
-                && i > 0
-                && DETERMINERS.contains(&words[i - 1].as_str())
+                && ((heading && i == 0)
+                    || i > 0
+                        && (DETERMINERS.contains(&words[i - 1].as_str())
+                            || QUANTIFIERS.contains(&words[i - 1].as_str())))
             {
                 add(word, &mut found);
             }
-            if word == "pull" && words.get(i + 1).is_some_and(|n| n.starts_with("request")) {
-                add("pull request", &mut found);
+            for (first, name) in [("pull", "pull request"), ("merge", "merge request")] {
+                if word == first && words.get(i + 1).is_some_and(|n| n.starts_with("request")) {
+                    add(name, &mut found);
+                }
             }
         }
     }
     found
+}
+
+/// Whether a heading names an identifier rather than saying something: a
+/// file name (`## design.md`), a configuration key alone in lower case
+/// (`## review`), or a command (`### compagnon review`).
+fn is_identifier_heading(heading: &str) -> bool {
+    let text = heading.trim().trim_start_matches('#').trim();
+    let file = !text.contains(' ') && text.contains('.');
+    let key = !text.is_empty()
+        && text
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c == '_' || c == '-');
+    file || key || text.starts_with("compagnon ")
+}
+
+/// `md` without its `<svg>` blocks: an image, whose text alternative is
+/// elsewhere on the page.
+fn without_svg(md: &str) -> String {
+    let mut out = String::with_capacity(md.len());
+    let mut rest = md;
+    while let Some(start) = rest.find("<svg") {
+        out.push_str(&rest[..start]);
+        match rest[start..].find("</svg>") {
+            Some(end) => rest = &rest[start + end + "</svg>".len()..],
+            None => return out,
+        }
+    }
+    out.push_str(rest);
+    out
 }
 
 /// `text` without what stands between parentheses.
@@ -1215,6 +1274,26 @@ mod tests {
                   dans `_compagnon/changes/` ; voir [le guide](guides/review-a-plan.md).\n";
         assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
         assert!(anglicisms("Spec Kit vous conviendra mieux.\n").is_empty());
+    }
+
+    #[test]
+    fn an_anglicism_of_a_technical_page_is_caught() {
+        assert_eq!(
+            anglicisms("Lisez le design et le template du schéma.\n"),
+            ["design", "template"]
+        );
+        assert_eq!(anglicisms("Ouvrez une merge request.\n"), ["merge request"]);
+        assert_eq!(
+            anglicisms("## Changes\n\nAucun change n'est actif.\n"),
+            ["changes", "change"]
+        );
+    }
+
+    #[test]
+    fn identifier_headings_are_not_prose() {
+        let md = "## review\n\n## design.md\n\n### compagnon review\n\n\
+                  <svg><title>skill</title></svg>\n\nLa relecture.\n";
+        assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
     }
 }
 
@@ -1704,9 +1783,13 @@ mod chapter_tests {
     }
 
     #[test]
-    fn the_french_everyday_pages_hold_no_anglicism() {
+    fn the_french_book_holds_no_anglicism() {
         let mut found = Vec::new();
-        for path in EVERYDAY {
+        let chapters: Vec<String> = parts(summary(Lang::Fr))
+            .into_iter()
+            .flat_map(|(_, chapters)| chapters)
+            .collect();
+        for path in &chapters {
             let words = anglicisms(chapter(Lang::Fr, path));
             if !words.is_empty() {
                 found.push(format!("{path}: {words:?}"));

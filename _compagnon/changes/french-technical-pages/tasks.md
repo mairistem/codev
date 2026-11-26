@@ -8,7 +8,7 @@ rewritten (the red state is shown in the pull request).
 
 ## 1. The check
 
-- [ ] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add design,
+- [x] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add design,
   template and templates to the words of `anglicisms`, and « merge
   request » as « pull request » is matched; count « change(s) » after
   numerals and quantifiers too, and as the first word of a heading; skip
