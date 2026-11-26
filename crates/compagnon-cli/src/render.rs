@@ -161,26 +161,19 @@ pub fn setup(outcome: &SetupOutcome, initialized: bool) -> String {
                 out,
                 "\"plan <an-idea>\" (shortcut: /compagnon-propose <an-idea>)."
             );
-        } else {
-            if outcome.skills.iter().any(|s| s.ends_with("propose")) {
-                let _ = writeln!(
-                    out,
-                    "Restart Claude Code so it discovers the skills, then ask it to plan"
-                );
-                let _ = writeln!(out, "your first change (shortcut: /compagnon-propose).");
-            } else {
-                // Without propose, name a skill that is installed.
-                let first = outcome.skills.first().map(String::as_str);
-                let _ = writeln!(
-                    out,
-                    "Restart Claude Code so it discovers the skills, then ask it to use"
-                );
-                let _ = writeln!(
-                    out,
-                    "them (shortcut: /{}).",
-                    first.unwrap_or("compagnon-propose")
-                );
-            }
+        } else if outcome.skills.iter().any(|s| s.ends_with("propose")) {
+            let _ = writeln!(
+                out,
+                "Restart Claude Code so it discovers the skills, then ask it to plan"
+            );
+            let _ = writeln!(out, "your first change (shortcut: /compagnon-propose).");
+        } else if let Some(first) = outcome.skills.first() {
+            // Without propose, name a skill that is installed.
+            let _ = writeln!(
+                out,
+                "Restart Claude Code so it discovers the skills, then ask it to use"
+            );
+            let _ = writeln!(out, "them (shortcut: /{first}).");
         }
     }
     if initialized && let Some(missing) = outcome.doctor_missing.filter(|n| *n > 0) {

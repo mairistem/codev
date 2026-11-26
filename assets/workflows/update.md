@@ -150,7 +150,8 @@ status (accepted by the user, declined, deferred to a separate revision).
   `_compagnon/changes/<name>/`. Refuse if the user asks to adjust code: that is
   the apply step's job after the revision.
 - **No creation** — if the requested artifact does not exist, refuse and
-  suggest finishing the plan (shortcut: `/compagnon-propose`). Never create a `proposal.md`, `design.md` or
+  suggest finishing the plan: say “finish the plan of <name>”
+  (shortcut: `/compagnon-propose`). Never create a `proposal.md`, `design.md` or
   `tasks.md` from scratch in this skill.
 - **Nothing archived** — a change living under `changes/archive/` is
   history. Refuse and remind the user that correcting it requires

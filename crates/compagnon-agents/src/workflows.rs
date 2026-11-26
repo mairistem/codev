@@ -1554,7 +1554,8 @@ mod plain_words {
     /// The skills whose next steps lead with a plain request; `explore` and
     /// `onboard` wait for a change that first covers them in the evaluation
     /// suite (decision 0008).
-    const SIX: [&str; 6] = ["propose", "apply", "update", "sync", "archive", "configure"];
+    const PLAIN_WORDS_SKILLS: [&str; 6] =
+        ["propose", "apply", "update", "sync", "archive", "configure"];
 
     /// A line that names a slash command without being a suggestion: the
     /// marker `configure` writes above what it adds.
@@ -1699,7 +1700,7 @@ mod plain_words {
                 "the next-steps rule lacks `{phrase}`"
             );
         }
-        for id in SIX {
+        for id in PLAIN_WORDS_SKILLS {
             assert!(
                 super::tests::flat(&body(id)).contains("the last line holds one quoted request"),
                 "{id}"
@@ -1718,7 +1719,7 @@ mod plain_words {
 
     #[test]
     fn the_six_skills_include_the_next_steps_rule() {
-        for id in SIX {
+        for id in PLAIN_WORDS_SKILLS {
             assert!(
                 find(id).unwrap().body.contains("{{fragment:next-steps}}"),
                 "{id} does not include the next-steps rule"
@@ -1728,7 +1729,7 @@ mod plain_words {
 
     #[test]
     fn every_slash_command_in_the_six_skills_is_a_shortcut() {
-        for id in SIX {
+        for id in PLAIN_WORDS_SKILLS {
             let body = body(id);
             let lines = commands_not_given_as_shortcuts(&body);
             assert!(lines.is_empty(), "{id}: {lines:#?}");
@@ -1737,7 +1738,7 @@ mod plain_words {
 
     #[test]
     fn every_description_names_english_and_french_requests() {
-        for id in SIX {
+        for id in PLAIN_WORDS_SKILLS {
             let problems = description_problems(id, find(id).unwrap().description);
             assert!(problems.is_empty(), "{problems:?}");
         }
@@ -1832,8 +1833,8 @@ mod plain_words {
         ];
         for (id, commands) in named {
             let body = body(id);
-            for command in commands {
-                assert!(body.contains(command), "{id} no longer names `{command}`");
+            for text in commands {
+                assert!(body.contains(text), "{id} no longer names `{text}`");
             }
         }
     }
