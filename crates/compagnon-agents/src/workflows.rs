@@ -152,7 +152,7 @@ pub const CATALOG: &[Workflow] = &[
         description: "Explore an idea, investigate a problem or clarify a need before \
                       creating a compagnon change. Use when the request is vague, when several \
                       approaches need comparing, or when it is not yet clear what to build. \
-                      Writes no files.",
+                      Writes no files. Use for requests like \"let's explore an idea\", \"should we cache the search results?\", « explorons une idée », « aide-moi à y voir clair avant de planifier ».",
         allowed_tools: "Bash(compagnon:*), Read, Glob, Grep",
         body: include_str!("../../../assets/workflows/explore.md"),
     },
@@ -208,7 +208,7 @@ pub const CATALOG: &[Workflow] = &[
         id: "onboard",
         description: "Introduce compagnon to a user discovering it: what the tool does, the \
                       current state of the project, and the recommended next action. Strictly \
-                      read-only — modifies and creates nothing.",
+                      read-only — modifies and creates nothing. Use for requests like \"show me around Compagnon\", \"what should I do next with Compagnon?\", « fais-moi visiter Compagnon », « par où commencer avec Compagnon ? ».",
         // Read-only: the role is to guide, never to act on the user's behalf.
         // No Write, no Edit, no Grep (known paths), no general Bash — the
         // rule "only `apply` has general Bash" still holds.
@@ -1551,22 +1551,38 @@ mod tests {
 mod plain_words {
     use super::*;
 
-    /// The skills whose next steps lead with a plain request; `explore` and
-    /// `onboard` wait for a change that first covers them in the evaluation
-    /// suite (decision 0008).
-    const PLAIN_WORDS_SKILLS: [&str; 6] =
-        ["propose", "apply", "update", "sync", "archive", "configure"];
+    /// The skills whose next steps lead with a plain request: the eight of
+    /// the catalog.
+    const PLAIN_WORDS_SKILLS: [&str; 8] = [
+        "propose",
+        "apply",
+        "update",
+        "sync",
+        "archive",
+        "configure",
+        "explore",
+        "onboard",
+    ];
 
     /// A line that names a slash command without being a suggestion: the
     /// marker `configure` writes above what it adds.
     const CONFIGURE_MARKER: &str = "# written by /compagnon-configure";
+
+    /// The form in which `onboard` quotes a `fix` of `compagnon doctor`'s
+    /// output: the CLI's text relayed verbatim, after plain words of the
+    /// skill's own, not a suggestion the skill words.
+    const RELAYED_DOCTOR_FIX: &str = "— fix:";
 
     /// The lines of `body` naming a `/compagnon-…` command without giving
     /// it as a shortcut.
     fn commands_not_given_as_shortcuts(body: &str) -> Vec<&str> {
         body.lines()
             .filter(|l| l.contains("/compagnon-"))
-            .filter(|l| !l.contains("shortcut") && !l.contains(CONFIGURE_MARKER))
+            .filter(|l| {
+                !l.contains("shortcut")
+                    && !l.contains(CONFIGURE_MARKER)
+                    && !l.contains(RELAYED_DOCTOR_FIX)
+            })
             .collect()
     }
 
@@ -1661,6 +1677,17 @@ mod plain_words {
     }
 
     #[test]
+    fn a_relayed_doctor_fix_is_not_a_suggestion() {
+        let body = "  >   - your project's rules are not written yet (`config.rules`) \
+                    — fix: `/compagnon-configure`\n\
+                    Then type `/compagnon-propose`.\n";
+        assert_eq!(
+            commands_not_given_as_shortcuts(body),
+            ["Then type `/compagnon-propose`."]
+        );
+    }
+
+    #[test]
     fn a_description_without_a_french_request_is_caught() {
         let english_only = r#"Archive a change. Use for requests like "archive it"."#;
         assert_eq!(
@@ -1718,7 +1745,7 @@ mod plain_words {
     }
 
     #[test]
-    fn the_six_skills_include_the_next_steps_rule() {
+    fn the_eight_skills_include_the_next_steps_rule() {
         for id in PLAIN_WORDS_SKILLS {
             assert!(
                 find(id).unwrap().body.contains("{{fragment:next-steps}}"),
@@ -1728,7 +1755,7 @@ mod plain_words {
     }
 
     #[test]
-    fn every_slash_command_in_the_six_skills_is_a_shortcut() {
+    fn every_slash_command_in_the_eight_skills_is_a_shortcut() {
         for id in PLAIN_WORDS_SKILLS {
             let body = body(id);
             let lines = commands_not_given_as_shortcuts(&body);
@@ -1777,6 +1804,57 @@ mod plain_words {
     }
 
     #[test]
+    fn explore_offers_to_plan_in_plain_words_first() {
+        assert!(plain_request_before(
+            &body("explore"),
+            &["It crystallizes"],
+            "/compagnon-propose"
+        ));
+    }
+
+    #[test]
+    fn onboard_recommends_configuring_in_plain_words_first() {
+        assert!(plain_request_before(
+            &body("onboard"),
+            &["What's next", "config is sparse"],
+            "/compagnon-configure"
+        ));
+    }
+
+    #[test]
+    fn onboard_closes_several_changes_on_a_question() {
+        // The closing rule's case of a choice: each change with its request
+        // and shortcut, then a last line that asks which one, with nothing
+        // to send as it is.
+        let body = body("onboard");
+        let example = body
+            .split("\n\n")
+            .find(|p| p.contains("With several active changes"))
+            .expect("onboard shows a reply for several active changes");
+        assert!(example.matches("shortcut").count() >= 2, "{example}");
+        let last = example
+            .lines()
+            .rev()
+            .find(|l| !l.trim().trim_start_matches('>').trim().is_empty())
+            .unwrap_or_default();
+        assert!(last.to_lowercase().contains("which one"), "{last}");
+        assert!(
+            !last.contains("shortcut") && !last.contains("/compagnon-"),
+            "{last}"
+        );
+    }
+
+    #[test]
+    fn onboard_no_longer_asks_to_quote_the_command_to_type() {
+        let body = super::tests::flat(&body("onboard"));
+        assert!(!body.contains("quote the exact command to type"));
+        assert!(
+            body.contains("give the request to say, then the exact command as the shortcut"),
+            "onboard must ask for the request first"
+        );
+    }
+
+    #[test]
     fn configure_declined_says_no_changes_made_word_for_word() {
         // The plain-words rule rewords quoted requests: the fixed sentence
         // stays apart from the request, said as written.
@@ -1790,10 +1868,10 @@ mod plain_words {
     }
 
     #[test]
-    fn the_six_skills_still_name_their_commands() {
+    fn the_eight_skills_still_name_their_commands() {
         // What each body named before the plain-words rule, `/compagnon-continue`
         // aside: it names no skill.
-        let named: [(&str, &[&str]); 6] = [
+        let named: [(&str, &[&str]); 8] = [
             ("propose", &[]),
             (
                 "apply",
@@ -1830,6 +1908,20 @@ mod plain_words {
                 ],
             ),
             ("configure", &["/compagnon-configure", "No changes made"]),
+            ("explore", &["/compagnon-propose"]),
+            (
+                "onboard",
+                &[
+                    "/compagnon-propose",
+                    "/compagnon-configure",
+                    "/compagnon-apply",
+                    "/compagnon-explore",
+                    "compagnon init",
+                    "compagnon doctor",
+                    "compagnon decision list",
+                    "compagnon list --specs",
+                ],
+            ),
         ];
         for (id, commands) in named {
             let body = body(id);

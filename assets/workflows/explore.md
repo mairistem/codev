@@ -49,13 +49,16 @@ flow, a state machine or a topology.
 The exploration ends in one of these three ways, and you say which one:
 
 1. **It crystallizes.** Summarize in three points: the problem, the chosen
-   approach, the scope. Then offer: "I can create the change — ask me for
-   `/compagnon-propose`."
+   approach, the scope. Then offer to plan it, on the last line:
+   "I can plan this change — say “plan this change”
+   (shortcut: `/compagnon-propose`)."
 2. **Information is missing.** Name precisely what is missing and who or
    what can provide it.
 3. **It was not worth pursuing.** Say so. An exploration that concludes "this
    is not a problem" or "the code already does it" is a successful
    exploration.
+
+{{fragment:next-steps}}
 
 ## Guardrails
 
@@ -63,4 +66,5 @@ The exploration ends in one of these three ways, and you say which one:
 - Do not present an assumption as an observed fact. Say "I assume" when you
   are assuming.
 - If the user asks you to implement during the exploration, do not: tell
-  them you go through `/compagnon-propose` first, and why.
+  them a change is planned first, and why, then offer to plan it — say
+  “plan this change” (shortcut: `/compagnon-propose`).

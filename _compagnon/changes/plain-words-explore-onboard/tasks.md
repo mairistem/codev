@@ -7,7 +7,7 @@ shown in the pull request).
 
 ## 1. The checks
 
-- [ ] 1.1 In `crates/compagnon-agents/src/workflows.rs`, add `explore` and
+- [x] 1.1 In `crates/compagnon-agents/src/workflows.rs`, add `explore` and
   `onboard` to `PLAIN_WORDS_SKILLS`; rename the tests that count them
   (`the_eight_skills_include_the_next_steps_rule`,
   `every_slash_command_in_the_eight_skills_is_a_shortcut`,
@@ -27,7 +27,7 @@ shown in the pull request).
 
 ## 2. The skills
 
-- [ ] 2.1 Include `{{fragment:next-steps}}` in `assets/workflows/explore.md`
+- [x] 2.1 Include `{{fragment:next-steps}}` in `assets/workflows/explore.md`
   and rewrite its outcome offer and its guardrail as a plain request with
   `/compagnon-propose` as the shortcut; verified by
   `the_eight_skills_include_the_next_steps_rule`,
@@ -35,7 +35,7 @@ shown in the pull request).
   `the_eight_skills_still_name_their_commands`,
   `the_reply_ends_with_one_request` and
   `explore_offers_to_plan_in_plain_words_first`.
-- [ ] 2.2 Include the fragment in `assets/workflows/onboard.md` and rewrite
+- [x] 2.2 Include the fragment in `assets/workflows/onboard.md` and rewrite
   as the design says: the opening description, the recommendation table
   (arguments kept; several changes listed, closing on a question), the
   example replies, the thin-config explanation, the non-case, the
@@ -47,7 +47,7 @@ shown in the pull request).
   `onboard_is_in_the_catalog_with_the_right_tools`,
   `onboard_cites_its_three_blocks` and
   `onboard_body_relays_compagnon_doctor`.
-- [ ] 2.3 Rewrite the two descriptions in the `CATALOG` with English and
+- [x] 2.3 Rewrite the two descriptions in the `CATALOG` with English and
   French requests; verified by
   `every_description_names_english_and_french_requests` and the
   frontmatter tests of `crates/compagnon-agents/src/claude.rs`

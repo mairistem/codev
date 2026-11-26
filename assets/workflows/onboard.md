@@ -20,10 +20,10 @@ Exactly three sentences, displayed as markdown:
 
 > **Compagnon** is a versioned planning tool for software projects: every
 > change goes through a **propose → apply → archive** cycle documented
-> in `_compagnon/`. Each step is driven by a Claude Code skill
-> (`/compagnon-<step>`), and the `compagnon` CLI does the atomic work
-> underneath. Your planning lives in the repository, alongside the
-> code.
+> in `_compagnon/`. You move through the steps by asking Claude in your
+> own words — the `/compagnon-<step>` commands are only shortcuts — and the
+> `compagnon` CLI does the atomic work underneath. Your planning lives in
+> the repository, alongside the code.
 
 ### 2. Read the project state (block 2 — "here you have")
 
@@ -75,11 +75,12 @@ Each entry of `checks` has an `id`, a `status` (`ok`, `missing`,
 `warning`) and a `fix`. Add to the "here you have" block:
 
 - the checks whose `status` is `missing` — **at most five**, one line
-  each, with their `fix` verbatim:
+  each: a few plain words of your own saying what is missing, then the
+  check's `id` and its `fix` verbatim:
 
   > - Setup to complete:
-  >   - `config.rules` — fix: `/compagnon-configure`
-  >   - `specs` — fix: `/compagnon-propose <a change>`
+  >   - your project's rules are not written yet (`config.rules`) — fix: `/compagnon-configure`
+  >   - no behavior is specified yet (`specs`) — fix: `/compagnon-propose <a change>`
 
 - or, when none is `missing`, one line: "Compagnon setup complete".
 
@@ -96,18 +97,18 @@ Ordered resolution, from the most constraining to the most general.
 
 | State | Recommendation |
 |---|---|
-| `_compagnon/` missing | `compagnon init` |
-| No active change AND thin config (no entry under `rules:`) | **`/compagnon-configure` first** — Claude will enrich the config from the project; then `/compagnon-propose <an-idea>` |
-| No active change, non-thin config | **Read `README.md`** to get a feel for the project, then `/compagnon-propose <an-idea>`; `/compagnon-explore <topic>` as an alternative |
-| A single active change, planning incomplete | `/compagnon-propose <that-name>` to continue |
-| A single active change, planning complete | `/compagnon-apply <that-name>` |
-| Several active changes | List them; let the user choose the skill |
+| `_compagnon/` missing | `compagnon init`, for the user to type in a terminal |
+| No active change AND thin config (no entry under `rules:`) | **Configure first** — Claude will enrich the config from the project: say “configure Compagnon for this project” (shortcut: `/compagnon-configure`), on the last line; name before it the first change that comes next, say “plan <an idea>” (shortcut: `/compagnon-propose <an-idea>`) |
+| No active change, non-thin config | **Read `README.md`** to get a feel for the project, then say “plan <an idea>” (shortcut: `/compagnon-propose <an-idea>`), on the last line; name before it the alternative, say “let's explore <a topic>” (shortcut: `/compagnon-explore <topic>`) |
+| A single active change, planning incomplete | Say “finish the plan of <that-name>” (shortcut: `/compagnon-propose <that-name>`) |
+| A single active change, planning complete | Say “implement <that-name>” (shortcut: `/compagnon-apply <that-name>`) |
+| Several active changes | List them, each with its request and shortcut as in the two rows above; the last line asks which one to continue, in plain words, without a shortcut |
 
 To assess whether the config is "thin", read `_compagnon/config.yaml` and
 look at the `rules:` key:
 
-- **`rules:` missing or empty** → thin. `/compagnon-configure` really
-  has something to contribute.
+- **`rules:` missing or empty** → thin. Configuring really has
+  something to contribute.
 - **`rules:` has at least one entry** → non-thin. The user has
   already written their rules; the hint no longer applies.
 
@@ -126,29 +127,39 @@ compagnon status --change "<name>"
 The last lines say "Planning: N/N artifacts" and "Planning is
 complete." when everything is ready.
 
-**Make the suggestion actionable**: quote the exact command to type,
-not just "run `compagnon-propose`". A useful example on a new project whose
+**Make the suggestion actionable**: give the request to say, then the
+exact command as the shortcut, not just "the propose step". The reply
+ends on the one recommended request, alone on its last line; any other
+step it names comes before. A useful example on a new project whose
 config is thin:
 
-> **What's next**: your config is sparse. Start with
-> `/compagnon-configure` — Claude will read the project (README, docs,
-> a sample of the code) and enrich `_compagnon/config.yaml`. Then type
-> `/compagnon-propose <an-idea>` for your first change.
+> **What's next**: your config is sparse. Claude can read the project
+> (README, docs, a sample of the code) and enrich `_compagnon/config.yaml`.
+> Once that is done, you will plan your first change — say “plan <an idea>” (shortcut: `/compagnon-propose <an-idea>`).
+> For now, say “configure Compagnon for this project” (shortcut: `/compagnon-configure`).
 
 On a project whose config is already well filled in:
 
 > **What's next**: start by reading `README.md` to get a feel for the
-> project. Then, when an idea comes up, type
-> `/compagnon-propose <an-idea>`. Alternative if you have a question but
-> no idea for an action yet: `/compagnon-explore <topic>`.
+> project. If you have a question but no idea for an action yet, say
+> “let's explore <a topic>” (shortcut: `/compagnon-explore <topic>`).
+> When an idea comes up, say “plan <an idea>” (shortcut: `/compagnon-propose <an-idea>`).
 
-And with an active change:
+With an active change whose plan is not finished:
 
-> **What's next**: you can type `/compagnon-propose add-user-auth` to
-> plan your first change.
+> **What's next**: the plan of `add-user-auth` is not finished.
+> Say “finish the plan of add-user-auth” (shortcut: `/compagnon-propose add-user-auth`).
 
-A non-case: if the user has already typed `/compagnon-onboard` for the
-Nth time, the state is stable; say the same thing again without
+With several active changes, each is listed with its request and
+shortcut, and the last line asks which one, without a shortcut:
+> **What's next**: two changes are in progress.
+> - `add-user-auth`, plan not finished: say “finish the plan of add-user-auth” (shortcut: `/compagnon-propose add-user-auth`)
+> - `export-csv`, plan complete: say “implement export-csv” (shortcut: `/compagnon-apply export-csv`)
+>
+> Which one do you want to continue?
+
+A non-case: if the user has already asked for the tour for the Nth
+time, the state is stable; say the same thing again without
 apologizing — the skill's role is to stay **predictable**.
 
 ## Output
@@ -156,6 +167,10 @@ apologizing — the skill's role is to stay **predictable**.
 The **three blocks** in order: description, state, what's next. Separated
 by a blank line. No introduction ("Here is…"), no conclusion ("I hope
 that…"). The reader wants the map of the terrain, not a guided tour.
+The last line is the one recommended request with its shortcut — or,
+with several active changes, the question of which one.
+
+{{fragment:next-steps}}
 
 ## Guardrails
 
@@ -166,12 +181,13 @@ that…"). The reader wants the map of the terrain, not a guided tour.
 - **Never run `compagnon init`** — if the repository is not initialized,
   display the command and let the user type it.
 - **No excess detail** — numbers, not exhaustive lists. A user who
-  wants the details runs `/compagnon-explore` or the commands
-  `compagnon decision list` / `compagnon list --specs`.
-- **Never suggest a missing skill** — only recommend
-  `/compagnon-<something>` if the workflow exists in the installed
-  catalog. In practice, this skill always ships with the workflows of
-  the default catalog; the opt-in ones (`apply`, `sync`, `archive`,
-  `update`) may not be installed. If you recommend `/compagnon-apply`
-  when it is not installed, the user will not find the skill — check
-  first by listing the skills in `.claude/skills/`.
+  wants the details can say “let's explore <a topic>” (shortcut: `/compagnon-explore`),
+  or run the commands `compagnon decision list` / `compagnon list --specs`.
+- **Never suggest a missing skill** — only recommend a step, and its
+  shortcut, if its workflow exists in the installed catalog. In
+  practice, this skill always ships with the workflows of the default
+  catalog; the opt-in ones (`apply`, `sync`, `archive`, `update`) may
+  not be installed. If you recommend implementing a change when the
+  `apply` skill is not installed, the user will find neither the skill
+  nor its shortcut — check first by listing the skills in
+  `.claude/skills/`.
