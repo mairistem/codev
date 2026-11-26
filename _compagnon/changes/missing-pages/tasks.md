@@ -33,18 +33,18 @@ both editions, the French one following the documentation's lexicon, in
 
 ## 2. The pages
 
-- [ ] 2.1 Write `guides/example-plan.md` (listed in both `SUMMARY.md`) and add to
+- [x] 2.1 Write `guides/example-plan.md` (listed in both `SUMMARY.md`) and add to
   `guides/review-a-plan.md` how to read a modified rule; verified by
   `every_part_of_the_example_is_annotated`,
   `review_a_plan_covers_the_plan_without_a_terminal`, the everyday pages'
   vocabulary and anglicism tests, and the new test
   `the_example_plan_parses_as_compagnon_writes_it` (each edition's spec
   block through `compagnon_core::parser::parse_delta`, no issue).
-- [ ] 2.2 Write `guides/approve-a-plan.md` and
+- [x] 2.2 Write `guides/approve-a-plan.md` and
   `guides/start-from-nothing.md`, listed in both `SUMMARY.md`; verified by
   `the_two_pages_keep_to_what_a_non_developer_can_do` and the everyday
   pages' tests.
-- [ ] 2.3 Write `guides/existing-project.md`, `guides/team-rollout.md` and
+- [x] 2.3 Write `guides/existing-project.md`, `guides/team-rollout.md` and
   `contributing.md`, listed in both `SUMMARY.md`, each fact checked against the code and
   `CONTRIBUTING.md`; verified by `mdbook build` and
   `every_link_of_the_paths_resolves`.
