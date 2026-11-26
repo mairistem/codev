@@ -353,7 +353,7 @@ fn site_and_introductions_name_compagnon() {
     for (lang, needle) in [("en", "compagnonnage"), ("fr", "compagnonnage")] {
         let intro = read(&format!("docs/{lang}/src/introduction.md"));
         assert!(
-            intro.starts_with("# Compagnon\n"),
+            intro.starts_with("# Compagnon "),
             "docs/{lang} introduction title"
         );
         assert!(
@@ -460,6 +460,8 @@ fn link_for(text: &str, label: &str) -> Option<(usize, String)> {
 
 /// What is wrong with the profile links of a page: each label, in order,
 /// linking a target that ends with its path page.
+/// It mirrors `docs_checks::profile_link_problems`, which this integration
+/// test cannot reach, and also reads HTML links: change the two together.
 fn profile_problems(text: &str, labels: &[&str; 4], pages: &[String; 4]) -> Vec<String> {
     let mut problems = Vec::new();
     let mut last = 0;
@@ -545,4 +547,17 @@ fn both_home_pages_lead_with_the_four_profiles() {
         french.contains("href=\"./\" hreflang=\"en\" lang=\"en\""),
         "fr.html does not link the English home page in English"
     );
+    for page in [&english, &french] {
+        for alternate in [
+            "<link rel=\"alternate\" hreflang=\"en\" href=\"./\">",
+            "<link rel=\"alternate\" hreflang=\"fr\" href=\"fr.html\">",
+        ] {
+            assert!(page.contains(alternate), "a home page lacks `{alternate}`");
+        }
+        assert_eq!(
+            page.matches("rel=\"alternate\"").count(),
+            2,
+            "one alternate per language"
+        );
+    }
 }

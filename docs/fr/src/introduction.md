@@ -1,4 +1,4 @@
-# Compagnon
+# Compagnon en deux minutes
 
 **Planifiez avec Claude avant qu'il ne code.**
 

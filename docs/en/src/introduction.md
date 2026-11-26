@@ -1,4 +1,4 @@
-# Compagnon
+# Compagnon in two minutes
 
 **Plan with Claude before it codes.**
 

@@ -155,6 +155,16 @@ pub fn next_heading(lang: Lang) -> &'static str {
     }
 }
 
+/// The chapter a link opens, anchor and leading `../` removed: a path page
+/// links `../glossary.md#delta`, which opens `glossary.md`.
+fn chapter_of(target: &str) -> &str {
+    target
+        .split('#')
+        .next()
+        .unwrap_or_default()
+        .trim_start_matches("../")
+}
+
 /// The links of a text as `(text, target)`, the text with its inner
 /// whitespace collapsed (a link may wrap across lines).
 fn link_pairs(text: &str) -> Vec<(String, String)> {
@@ -167,8 +177,9 @@ fn link_pairs(text: &str) -> Vec<(String, String)> {
 
 /// What is wrong with the profile links of a text: for each label, in
 /// order, a link whose text is the label and whose target ends with the
-/// matching entry of `targets`. Used on Choose your path, the
-/// introduction and the READMEs, whose targets differ only by prefix.
+/// matching entry of `targets`. Used on Choose your path and the
+/// introduction; the READMEs and the home pages are checked by its mirror
+/// in `tests/repository.rs`, which also reads HTML links.
 pub fn profile_link_problems(text: &str, labels: &[&str; 4], targets: &[String; 4]) -> Vec<String> {
     let pairs = link_pairs(text);
     let mut problems = Vec::new();
@@ -208,11 +219,12 @@ pub fn choose_path_problems(md: &str, labels: &[&str; 4]) -> Vec<String> {
             }
         }
     }
-    let after = labels
+    let from_last_profile = labels
         .last()
         .and_then(|l| md.find(&format!("[{l}]")))
         .map_or("", |i| &md[i..]);
-    if !link_pairs(after)
+    // The first link from there is the last profile's own.
+    if !link_pairs(from_last_profile)
         .iter()
         .skip(1)
         .any(|(_, t)| t.split('#').next() == Some("origins.md"))
@@ -265,11 +277,7 @@ pub fn path_page_problems(
             continue;
         }
         let (text, target) = &pairs[0];
-        let path = target
-            .split('#')
-            .next()
-            .unwrap_or_default()
-            .trim_start_matches("../");
+        let path = chapter_of(target);
         match titles.iter().find(|(p, _)| p == path) {
             Some((_, t)) if t == text => {}
             Some((_, t)) => problems.push(format!("step \"{text}\" opens \"{t}\"")),
@@ -707,7 +715,7 @@ pub fn vocabulary_problems(md: &str, lang: Lang, anchors: &[String]) -> Vec<Stri
         let links = links(&paragraph);
         // The offsets match `links`: the targets are blanked to the same
         // length, only so that a path such as `workflow.md` is not prose.
-        for (at, word) in words(&without_link_targets(&paragraph)) {
+        for (at, word) in words(&prose_without_links(&paragraph)) {
             for (term, forms) in explained_terms(lang) {
                 if seen.contains(term) || !forms.contains(&word.as_str()) {
                     continue;
@@ -722,12 +730,12 @@ pub fn vocabulary_problems(md: &str, lang: Lang, anchors: &[String]) -> Vec<Stri
     problems
 }
 
-/// `text` with the target of every link, `](…)`, replaced by spaces of
-/// the same length: a path such as `workflow.md` is not prose. So is the
-/// text of a link to another chapter, which names that chapter as the
-/// table of contents does ("The workflow"); a link to the glossary keeps
-/// its text, the term it explains.
-fn without_link_targets(text: &str) -> String {
+/// `text` with every link blanked to spaces of the same length, so that
+/// offsets are kept: the target always (a path such as `workflow.md` is
+/// not prose), and the visible text of every link except one to the
+/// glossary — a link elsewhere names a page as its title does ("The
+/// workflow"), while a link to the glossary holds the term it explains.
+fn prose_without_links(text: &str) -> String {
     let mut out = text.to_string();
     for (range, target) in links(text) {
         let start = range.end + 2;
@@ -1305,15 +1313,19 @@ mod chapter_tests {
         }
     }
 
-    /// Each chapter's path and title, as the table of contents shows it in
-    /// the sidebar: the name a reader sees and looks for.
+    /// Each chapter's path and `# ` title: what a reader hears on arriving
+    /// at the page. The path pages also match the sidebar, checked below.
     fn chapter_titles(lang: Lang) -> Vec<(String, String)> {
-        summary(lang)
-            .lines()
-            .filter_map(|l| {
-                let l = l.trim_start().strip_prefix("- [")?;
-                let (title, rest) = l.split_once("](")?;
-                Some((rest.trim_end_matches(')').to_string(), title.to_string()))
+        lang.chapters()
+            .iter()
+            .map(|(p, md)| {
+                let title = md
+                    .lines()
+                    .find_map(|l| l.strip_prefix("# "))
+                    .unwrap_or_default()
+                    .trim()
+                    .to_string();
+                (p.to_string(), title)
             })
             .collect()
     }
@@ -1365,11 +1377,7 @@ mod chapter_tests {
                 .split_once(&format!("## {}", next_heading(lang)))
                 .unwrap_or((page, ""));
             for (_, target) in link_pairs(steps) {
-                let path = target
-                    .split('#')
-                    .next()
-                    .unwrap_or_default()
-                    .trim_start_matches("../");
+                let path = chapter_of(&target);
                 if path.ends_with(".md") && path != "choose-your-path.md" {
                     let stray = stray_commands(chapter(lang, path));
                     assert!(stray.is_empty(), "{} {path}: {stray:?}", lang.tag());

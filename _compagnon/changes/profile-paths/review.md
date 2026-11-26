@@ -161,3 +161,125 @@ history:
   - status: fixed
     by: accessibility
 ```
+
+## code.review
+
+Mode: isolated.
+
+### accessibility
+
+#### R-accessibility-3 The French home page declared two English alternates and none for itself
+
+```yaml
+severity: low
+confidence: high
+location: "docs/site/fr.html:17"
+evidence: |
+  <link rel="alternate" hreflang="fr" href="fr.html">
+recommendation: 'fr.html kept index.html''s alternate to the English docs beside the English home page, both hreflang="en", and none for French: keep one alternate per language, the two home pages, on both pages, and check it.'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: "docs/site/index.html and fr.html: alternates en → ./, fr → fr.html; repository.rs both_home_pages_lead_with_the_four_profiles checks them"
+  - status: fixed
+    by: accessibility
+```
+
+#### R-accessibility-4 A path's first step named the introduction differently from its heading
+
+```yaml
+severity: low
+confidence: high
+location: "docs/en/src/introduction.md:1"
+evidence: |
+  # Compagnon in two minutes
+recommendation: 'The step read "Compagnon in two minutes" while the page''s heading was "Compagnon", and the check compared against the sidebar, not the heading: retitle the introduction and check step text against the heading, as the design says.'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: "introduction.md titled Compagnon in two minutes / Compagnon en deux minutes; docs_checks chapter_titles reads each chapter's # heading; repository.rs accepts the longer title"
+  - status: fixed
+    by: accessibility
+```
+
+### newcomer
+
+#### R-newcomer-1 The link-blanking function's name and comment said less than it does
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:738"
+evidence: |
+  fn prose_without_links(text: &str) -> String {
+recommendation: 'It blanks the text of every link but a glossary one, not only targets: rename it and say so.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: without_link_targets renamed prose_without_links, comment states the condition"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 The profile-link check exists twice and the comment pointed at the wrong copy
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:183"
+evidence: |
+  pub fn profile_link_problems(text: &str, labels: &[&str; 4], targets: &[String; 4]) -> Vec<String> {
+recommendation: 'Say which pages each copy checks, and that the integration test mirrors it because it cannot reach it.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs profile_link_problems comment; repository.rs profile_problems comment names its mirror"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 An unexplained skip in the Origins-link check
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:222"
+evidence: |
+      let from_last_profile = labels
+recommendation: 'Name the slice and say why the first link is skipped.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: from_last_profile and its comment"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 The same link clean-up chain repeated without a name
+
+```yaml
+severity: low
+confidence: low
+location: "crates/compagnon-cli/src/docs_checks.rs:160"
+evidence: |
+  fn chapter_of(target: &str) -> &str {
+recommendation: 'Move it into one named helper.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs chapter_of, used by path_page_problems and the build-path test"
+  - status: fixed
+    by: newcomer
+```
