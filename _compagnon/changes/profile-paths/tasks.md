@@ -10,7 +10,7 @@ the documentation (*vouvoiement*, no anglicism).
 
 ## 1. The checks
 
-- [ ] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add
+- [x] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add
   `choose_path_problems` and `path_page_problems`, the per-edition profile
   labels and path page paths, and a gloss check for developer chapters,
   with unit tests on synthetic pages:
@@ -23,7 +23,7 @@ the documentation (*vouvoiement*, no anglicism).
   `a_link_outside_the_table_of_contents_is_caught` and the chapter test
   `choose_your_path_links_five_profiles_to_chapters`; verified by these
   tests passing.
-- [ ] 1.2 Update the chapter tests: `START_HERE` and
+- [x] 1.2 Update the chapter tests: `START_HERE` and
   `both_editions_open_with_the_start_here_path` (the four path pages, the
   quickstart at the head of Everyday use), `the_start_here_path_stays_under_its_caps`
   (Choose your path 200/250, each path page 250/310),

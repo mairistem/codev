@@ -55,7 +55,7 @@ chapter.
 | Path | Steps | Next, if you need it |
 |---|---|---|
 | Review and approve | introduction, Reviewing a plan, Glossary | FAQ |
-| Build without coding | introduction, Your first change, Reviewing a plan | Glossary, FAQ |
+| Build without coding | introduction, Your first change, Reviewing a plan | Glossary |
 | Develop | Your first change, Claude Code skills, The workflow | Concepts, FAQ |
 | Team | Installation, Repository integration and compagnon doctor, Roles | Configuration, MCP servers, Inherited sources |
 
