@@ -655,26 +655,39 @@ configuration key such as `workflows:` stays as it is.
 
 ### Requirement: The French edition speaks French
 
-The French chapters of the "Start here" and "Everyday use" parts, and
-`README.fr.md`, SHALL use the French word wherever one exists, following
-this lexicon: change → modification, skill → compétence, spec →
+Every French chapter listed in `docs/fr/src/SUMMARY.md`, in all its parts,
+and `README.fr.md`, SHALL use the French word wherever one exists,
+following this lexicon: change → modification, skill → compétence, spec →
 spécification, workflow → déroulé, review → relecture, commit →
-enregistrement, pull request → demande de fusion. The English word MAY
-appear only between parentheses, placed after its French equivalent so that
-a reader can match the screen ("une compétence (skill)"), and stays
+enregistrement, pull request and merge request → demande de fusion,
+design → conception, template → modèle, and, checked by hand because
+« issue » is also French, issue → ticket. The English word
+MAY appear only between parentheses, placed after its French equivalent so
+that a reader can match the screen ("une compétence (skill)"), and stays
 untouched in inline code, fenced code, "Under the hood" blocks, command
-names and paths (`/compagnon-apply`, `_compagnon/changes/`). The example
-requests the French edition gives to say to Claude follow the same lexicon
-(« réalise la modification », not « applique le change »).
+names, flags, configuration keys, JSON fields, error codes and paths
+(`/compagnon-apply`, `_compagnon/changes/`), and in headings that name an
+identifier — a file name, a configuration key, a `compagnon` command.
+« artefact » and « delta », defined in the French glossary, are French
+terms of the edition; Compagnon's review is « relecture », not « revue ». The
+example requests the French edition gives to say to Claude follow the same
+lexicon (« réalise la modification », not « applique le change »).
 
-#### Scenario: The French everyday pages hold no anglicism of the lexicon
+#### Scenario: The French book holds no anglicism of the lexicon
 
-- **GIVEN** the French chapters of the "Start here" and "Everyday use"
-  parts and `README.fr.md`
+- **GIVEN** every French chapter listed in `docs/fr/src/SUMMARY.md` and
+  `README.fr.md`
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** none holds, in prose or headings and outside parentheses, the words
-  change, changes, skill, skills, spec, specs, workflow, review, commit or
-  pull request
+  change, changes, skill, skills, spec, specs, workflow, workflows, review,
+  reviews, commit, commits, pull request, merge request, design, template
+  or templates
+
+#### Scenario: A merge request in prose is caught
+
+- **GIVEN** a French chapter saying « Ouvrez une merge request. »
+- **WHEN** the check runs on it
+- **THEN** it fails naming « merge request »
 
 #### Scenario: An anglicism in prose is caught
 
@@ -682,6 +695,26 @@ requests the French edition gives to say to Claude follow the same lexicon
   l'archiver »
 - **WHEN** the check runs on it
 - **THEN** it fails naming « change »
+
+#### Scenario: A change counted after a quantifier or in a heading is caught
+
+- **GIVEN** a French chapter saying « aucun change n'est actif » and
+  holding the heading `## Changes`
+- **WHEN** the check runs on it
+- **THEN** it fails naming « change » and « changes »
+
+#### Scenario: A heading naming an identifier is not prose
+
+- **GIVEN** a French chapter with the headings `## review`, `## design.md`
+  and `### compagnon review`
+- **WHEN** the check runs on it
+- **THEN** it passes
+
+#### Scenario: An anglicism of a technical page is caught
+
+- **GIVEN** a French chapter saying « le design et le template du schéma »
+- **WHEN** the check runs on it
+- **THEN** it fails naming « design » and « template »
 
 #### Scenario: The French verb « changer » is not an anglicism
 
@@ -695,6 +728,14 @@ requests the French edition gives to say to Claude follow the same lexicon
   naming `/compagnon-apply` and `_compagnon/changes/`
 - **WHEN** the check runs on it
 - **THEN** it passes
+
+#### Scenario: A renamed heading keeps its links
+
+- **GIVEN** a French heading renamed from « Écrire un template » to
+  « Écrire un modèle », and a chapter linking to its old anchor
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** the check that every link of the offline manual lands on a
+  heading fails until the link names the new anchor
 
 ### Requirement: Choose your path asks one question with four answers
 
