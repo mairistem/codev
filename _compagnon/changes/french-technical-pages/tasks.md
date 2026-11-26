@@ -10,13 +10,18 @@ rewritten (the red state is shown in the pull request).
 
 - [ ] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add design,
   template and templates to the words of `anglicisms`, and « merge
-  request » as « pull request » is matched; replace
+  request » as « pull request » is matched; count « change(s) » after
+  numerals and quantifiers too, and as the first word of a heading; skip
+  identifier headings (a file name, a lone lower-case key, a `compagnon`
+  command) and `<svg>` blocks; replace
   `the_french_everyday_pages_hold_no_anglicism` by
   `the_french_book_holds_no_anglicism`, which reads every chapter of
   `docs/fr/src/SUMMARY.md` plus `README.fr.md`; add the unit test
   `an_anglicism_of_a_technical_page_is_caught` (« le design et le template
   du schéma » names both words; « Ouvrez une merge request. » names
-  « merge request »); verified by that test passing,
+  « merge request »; « aucun change » and a heading `## Changes` name
+  « change »), and `identifier_headings_are_not_prose` (`## review`,
+  `## design.md`, `### compagnon review` pass); verified by that test passing,
   `an_anglicism_in_prose_is_caught`,
   `the_french_verb_changer_is_not_an_anglicism` and
   `the_english_word_in_parentheses_code_or_path_is_allowed` still passing,
@@ -39,13 +44,17 @@ rewritten (the red state is shown in the pull request).
   `repository-integration.md`, `existing-project.md`, `team-rollout.md`,
   `release-notes.md`, `review-record.md` — titled « Compte rendu de
   relecture », in `SUMMARY.md` too — `mcp.md`, `artifact-language.md`,
-  `custom-schemas.md`); verified by the book test naming none of them and
+  `custom-schemas.md`; in `mcp.md`, « un outil de design » becomes « un
+  outil de conception graphique »); verified by the book test naming none of them and
   `mdbook build docs/fr`.
 - [ ] 2.4 Rewrite `origins.md`, `contributing.md` and `architecture.md`,
-  and the words the wider list now catches in the everyday pages;
-  verified by the book test.
-- [ ] 2.5 Rewrite the French strings of `evals/src/reliability.rs` and
-  regenerate both pages with `cargo run -p compagnon-evals -- docs`;
+  the words the wider list now catches in the everyday pages, and every
+  « revue » naming Compagnon's review in the everyday pages (« compte
+  rendu de relecture », « Relecture en ligne ou isolée »); verified by the
+  book test and the listing of 3.2.
+- [ ] 2.5 Rewrite the French strings of `evals/src/reliability.rs`
+  (« revue » included), write the token sources' labels in inline code in
+  its tables, and regenerate both pages with `cargo run -p compagnon-evals -- docs`;
   verified by `the_reliability_pages_follow_the_baseline` and the book
   test naming no line of `reliability.md`.
 - [ ] 2.6 Update every link of the French book to a heading renamed in
@@ -59,8 +68,9 @@ rewritten (the red state is shown in the pull request).
   neither meets an English word outside parentheses or code; recorded in
   the pull request. Manual because whether a page reads as French is a
   judgement.
-- [ ] 3.2 List every « issue » left in `docs/fr/src/` outside code
-  (`grep -rnwi issue docs/fr/src`) and check by hand that none names a
-  GitHub or Jira issue, which the rewrite calls « ticket »; verified by
-  the list, recorded in the pull request. Manual because « issue » is
-  also French.
+- [ ] 3.2 List every « issue », « revue » and « change » left in
+  `docs/fr/src/` outside code (`grep -rnwiE 'issues?|revues?|changes?'
+  docs/fr/src`) and check by hand that none names a GitHub or Jira issue
+  (« ticket »), Compagnon's review (« relecture ») or a Compagnon change
+  (« modification »); verified by the list, recorded in the pull request.
+  Manual because the three words are also French.

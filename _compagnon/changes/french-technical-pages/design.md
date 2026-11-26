@@ -65,24 +65,49 @@ stays out of the check: it is also a French word (« l'issue d'une
 commande »); the rewrite replaces it by « ticket » where it means a GitHub
 or Jira issue.
 
+« change(s) » keeps being counted only as a noun, but the words that
+announce a noun grow: numerals and quantifiers (« aucun », « seul »,
+« deux », « plusieurs », « nombre de »…) join the determiners, and a
+heading whose first word is « Change » or « Changes » counts too. A bare
+« change » the list still misses is found by the by-hand listing of task
+3.2.
+
+Headings that name an identifier are not prose: a heading that is a file
+name (`## design.md`, `## SKILL.md`), a configuration key written in
+lower case alone (`## review`, `## workflows`, `## triggers`), or a
+command (`### compagnon review`) is skipped by the check. It keeps its
+text, the parity with the English edition, and the tests that pin it
+(`both_languages_document_the_review_modes` splits on `## review`).
+
 **Alternatives considered**: checking « issue » after a determiner —
 rejected, « une issue » is French as well, and a check that refuses
 correct French would push writers to work around it.
 
-### Decision: « artefact », « delta » and « revue » stay
+### Decision: « artefact » and « delta » stay; « revue » becomes « relecture » everywhere
 
 « artefact » is a French word and the glossary defines it (`## Artefact`);
 « delta » is defined there too (`## Delta`); the edition already uses both
-in the checked everyday pages. « revue » is French; the rewrite still
-prefers « relecture » where it names Compagnon's review (the lexicon's
-review → relecture), and the chapter « Compte rendu de revue » becomes
-« Compte rendu de relecture », in `SUMMARY.md` and in its title.
+in the checked everyday pages. « revue » is French, but the glossary names
+Compagnon's review « Relecture »: every « revue » that names it, in every
+French chapter — the everyday pages included — and in the French strings
+of `evals/src/reliability.rs`, becomes « relecture ». The chapter
+« Compte rendu de revue » becomes « Compte rendu de relecture », in
+`SUMMARY.md`, in its title and in every link text; the heading « Revue en
+ligne ou isolée » becomes « Relecture en ligne ou isolée », its links
+updated. « revue » is not checked automatically (« une revue de presse »
+is correct French): task 3.2 lists those left.
 
 **Alternatives considered**: replacing « artefact » by « partie du plan »
 — rejected, a schema's artifacts are not all parts of a plan, and the word
 is in every command's output (`Artifact:`).
 
 ### Decision: The English word stays where the reader meets it as English
+
+The English word between parentheses is not marked with `lang="en"`: it
+is a technical term the reader matches against the screen, which WCAG 2.2
+success criterion 3.1.2 (Language of Parts) exempts, as does RGAA 4
+criterion 8.7; the everyday pages already write it so, and a `<span>` in
+the Markdown would make the source harder to edit for every contributor.
 
 Inline and fenced code, command names, flags (`--change`), configuration
 keys (`skills:`), JSON fields (`changeName`), error codes, paths, and
@@ -93,7 +118,11 @@ parentheses: « une modification (change) ».
 
 ### Decision: `reliability.md` is rewritten at its source
 
-The French strings of `evals/src/reliability.rs` follow the lexicon, then
+The French strings of `evals/src/reliability.rs` follow the lexicon. The
+labels of the token sources come from the baseline's data (`skill`,
+`compagnon review`): the generator writes them in inline code in the
+tables, as identifiers, and the check skips the page's `<svg>` chart,
+an image whose text alternative is that table. Then
 `cargo run -p compagnon-evals -- docs` regenerates both pages from the
 committed baseline. The command reads `evals/baseline/report.json` and
 `run.json` only: it calls no model and costs nothing. The English page is
@@ -117,8 +146,9 @@ read for a changed fact: a code span, a number or a link target that moved.
   English edition's language switch] → the offline manual test fails on
   the French book; links from the English book never point into the French
   one.
-- [A legitimate French « design » or « template » is refused] → none is
-  in the book today; if one appears, it is reworded (« la conception
-  graphique »), which the lexicon prefers anyway.
+- [A legitimate French « design » or « template » is refused] → one is in
+  the book today, « un outil de design » (`guides/mcp.md`, a tool such as
+  Figma): it becomes « un outil de conception graphique »; a later one is
+  reworded the same way.
 - [Size: about 800 replacements] → by groups in parallel, each group
   checked by the test before the next step.

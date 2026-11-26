@@ -13,8 +13,10 @@ MAY appear only between parentheses, placed after its French equivalent so
 that a reader can match the screen ("une compétence (skill)"), and stays
 untouched in inline code, fenced code, "Under the hood" blocks, command
 names, flags, configuration keys, JSON fields, error codes and paths
-(`/compagnon-apply`, `_compagnon/changes/`). « artefact » and « delta »,
-defined in the French glossary, are French terms of the edition. The
+(`/compagnon-apply`, `_compagnon/changes/`), and in headings that name an
+identifier — a file name, a configuration key, a `compagnon` command.
+« artefact » and « delta », defined in the French glossary, are French
+terms of the edition; Compagnon's review is « relecture », not « revue ». The
 example requests the French edition gives to say to Claude follow the same
 lexicon (« réalise la modification », not « applique le change »).
 
@@ -40,6 +42,20 @@ lexicon (« réalise la modification », not « applique le change »).
   l'archiver »
 - **WHEN** the check runs on it
 - **THEN** it fails naming « change »
+
+#### Scenario: A change counted after a quantifier or in a heading is caught
+
+- **GIVEN** a French chapter saying « aucun change n'est actif » and
+  holding the heading `## Changes`
+- **WHEN** the check runs on it
+- **THEN** it fails naming « change » and « changes »
+
+#### Scenario: A heading naming an identifier is not prose
+
+- **GIVEN** a French chapter with the headings `## review`, `## design.md`
+  and `### compagnon review`
+- **WHEN** the check runs on it
+- **THEN** it passes
 
 #### Scenario: An anglicism of a technical page is caught
 
