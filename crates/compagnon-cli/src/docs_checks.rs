@@ -29,47 +29,59 @@ struct Line<'a> {
     details: bool,
 }
 
-/// The language of a fence line (```` ``` ```` or `~~~`), empty when it
-/// names none; `None` for any other line.
-fn fence_marker(trimmed: &str) -> Option<&str> {
-    trimmed
-        .strip_prefix("```")
-        .or_else(|| trimmed.strip_prefix("~~~"))
-        .map(str::trim)
+/// A fence line: its character (a backtick or `~`), how many of them, and
+/// the language it names, empty when none.
+#[derive(Clone, Copy)]
+struct Fence<'a> {
+    ch: char,
+    len: usize,
+    lang: &'a str,
+}
+
+/// The fence a line opens or closes, `None` for any other line.
+fn fence_marker(trimmed: &str) -> Option<Fence<'_>> {
+    let ch = trimmed.chars().next().filter(|c| *c == '`' || *c == '~')?;
+    let len = trimmed.chars().take_while(|c| *c == ch).count();
+    (len >= 3).then(|| Fence {
+        ch,
+        len,
+        lang: trimmed[len..].trim(),
+    })
+}
+
+/// Moves the fence state past one line: `open` is the fence the walk is in.
+/// As in CommonMark, only a bare fence of the same character, at least as
+/// long, closes it, so a four-backtick block may quote a three-backtick
+/// one. Returns whether the line was a fence that opened or closed.
+fn step_fence<'a>(open: &mut Option<Fence<'a>>, trimmed: &'a str) -> bool {
+    let Some(fence) = fence_marker(trimmed) else {
+        return false;
+    };
+    match *open {
+        None => {
+            *open = Some(fence);
+            true
+        }
+        Some(o) if fence.ch == o.ch && fence.len >= o.len && fence.lang.is_empty() => {
+            *open = None;
+            true
+        }
+        Some(_) => false,
+    }
 }
 
 /// Walks a chapter, line by line, keeping track of fences and `<details>`.
 /// Fence lines and `<details>`/`</details>` lines themselves are skipped.
 fn lines(md: &str) -> Vec<Line<'_>> {
     let mut out = Vec::new();
-    let mut fence: Option<&str> = None;
-    // The opening fence: its character and its length. As in CommonMark,
-    // only a bare fence of the same character, at least as long, closes it,
-    // so a ```` ```` ```` block may quote a ```` ``` ```` one.
-    let mut opening: (char, usize) = (' ', 0);
+    let mut open: Option<Fence> = None;
     let mut details = 0usize;
     for text in md.lines() {
         let trimmed = text.trim_start();
-        if let Some(lang) = fence_marker(trimmed) {
-            let c = trimmed.chars().next().unwrap_or('`');
-            let len = trimmed.chars().take_while(|&x| x == c).count();
-            match fence {
-                None => {
-                    fence = Some(lang.trim_start_matches(c).trim());
-                    opening = (c, len);
-                    continue;
-                }
-                Some(_)
-                    if c == opening.0
-                        && len >= opening.1
-                        && lang.trim_start_matches(c).trim().is_empty() =>
-                {
-                    fence = None;
-                    continue;
-                }
-                Some(_) => {}
-            }
+        if step_fence(&mut open, trimmed) {
+            continue;
         }
+        let fence = open.map(|f| f.lang);
         if fence.is_none() {
             if trimmed.starts_with("<details") {
                 details += 1;
@@ -496,13 +508,15 @@ pub fn glossary_problems(md: &str, terms: &[&str], cap: usize) -> Vec<String> {
 /// fences recognised as in [`lines`].
 pub fn shell_blocks(md: &str) -> Vec<String> {
     let mut out = Vec::new();
-    let mut open = false;
+    let mut open: Option<Fence> = None;
     for line in md.lines() {
-        if let Some(lang) = fence_marker(line.trim_start()) {
-            if !open && SHELL_LANGS.contains(&lang) {
-                out.push(lang.to_string());
-            }
-            open = !open;
+        let was_open = open.is_some();
+        if step_fence(&mut open, line.trim_start())
+            && !was_open
+            && let Some(f) = open
+            && SHELL_LANGS.contains(&f.lang)
+        {
+            out.push(f.lang.to_string());
         }
     }
     out
@@ -858,8 +872,10 @@ const DETERMINERS: &[&str] = &[
 ];
 
 /// The anglicisms of a French chapter: the English words of the lexicon in
-/// prose and headings, outside code, `<details>` blocks and parentheses;
-/// "change" counts only as a noun, after a determiner.
+/// prose and headings, outside code, `<details>` blocks, `<svg>` blocks,
+/// identifier headings and parentheses. "change" counts only as a noun:
+/// after a determiner or a word of [`NOUN_MARKERS`], or as a heading's
+/// first word.
 pub fn anglicisms(md: &str) -> Vec<String> {
     const ENGLISH: &[&str] = &[
         "skill",
@@ -875,25 +891,6 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         "design",
         "template",
         "templates",
-    ];
-    // Words that announce "change" as a noun, besides the determiners.
-    const QUANTIFIERS: &[&str] = &[
-        "aucun",
-        "seul",
-        "seuls",
-        "deux",
-        "trois",
-        "plusieurs",
-        "nombre",
-        "de",
-        "autres",
-        "tous",
-        "certains",
-        "quelques",
-        "nouveaux",
-        "derniers",
-        "premiers",
-        "différents",
     ];
     let mut found: Vec<String> = Vec::new();
     let add = |w: &str, found: &mut Vec<String>| {
@@ -918,12 +915,7 @@ pub fn anglicisms(md: &str) -> Vec<String> {
                     add(part, &mut found);
                 }
             }
-            if (word == "change" || word == "changes")
-                && ((heading && i == 0)
-                    || i > 0
-                        && (DETERMINERS.contains(&words[i - 1].as_str())
-                            || QUANTIFIERS.contains(&words[i - 1].as_str())))
-            {
+            if is_noun_change(&words, i, heading) {
                 add(word, &mut found);
             }
             for (first, name) in [("pull", "pull request"), ("merge", "merge request")] {
@@ -934,6 +926,44 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         }
     }
     found
+}
+
+/// Words after which "change" is a noun, beyond [`DETERMINERS`]: numerals,
+/// quantifiers and the plural adjectives that come before a noun.
+const NOUN_MARKERS: &[&str] = &[
+    "aucun",
+    "seul",
+    "seuls",
+    "deux",
+    "trois",
+    "plusieurs",
+    "nombre",
+    "de",
+    "autres",
+    "tous",
+    "certains",
+    "quelques",
+    "nouveaux",
+    "derniers",
+    "premiers",
+    "différents",
+];
+
+/// Whether `words[i]` is "change(s)" used as a noun: a heading's first word,
+/// or after a determiner or a word of [`NOUN_MARKERS`]. « ce qui change »
+/// stays a verb.
+fn is_noun_change(words: &[String], i: usize, heading: bool) -> bool {
+    let word = words[i].as_str();
+    if word != "change" && word != "changes" {
+        return false;
+    }
+    if heading && i == 0 {
+        return true;
+    }
+    i > 0 && {
+        let before = words[i - 1].as_str();
+        DETERMINERS.contains(&before) || NOUN_MARKERS.contains(&before)
+    }
 }
 
 /// Whether a heading names an identifier rather than saying something: a
@@ -1310,6 +1340,8 @@ mod tests {
     fn a_fence_quoted_in_a_longer_fence_stays_code() {
         let md = "````markdown\n```yaml\nlocation: design.md\n```\n````\n\nLa relecture.\n";
         assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
+        let quoted = "````markdown\n```bash\nls\n```\n````\n\n```sh\npwd\n```\n";
+        assert_eq!(shell_blocks(quoted), ["sh"]);
     }
 
     #[test]

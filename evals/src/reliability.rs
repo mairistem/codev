@@ -1134,7 +1134,7 @@ fn implement_section(out: &mut String, i: &ImplementFigures, lang: Lang) {
             ),
             Lang::Fr => format!(
                 "{} cas d'implémentation posent le plan d'une modification archivée sur le dépôt tel qu'il \
-                 était avant lui, et demandent à `/compagnon-apply` de l'implémenter, relecture comprise. \
+                 était avant elle, et demandent à `/compagnon-apply` de l'implémenter, relecture comprise. \
                  Après chaque exécution, l'évaluation formate, analyse, teste et construit \
                  elle-même le code, puis lance un script caché qui pilote le `compagnon` construit \
                  comme le ferait un utilisateur, écrit d'après les scénarios de la modification et éprouvé \
@@ -1285,7 +1285,7 @@ fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lan
         ),
         (Step::ChangeSync | Step::ChangeArchive, Lang::Fr) => format!(
             "{n} cas (`{step}`) posent une modification de l'archive de ce dépôt sur le dépôt tel qu'il \
-             était avant lui, et lancent `/compagnon-{skill}` dessus. Chaque exécution est vérifiée \
+             était avant elle, et lancent `/compagnon-{skill}` dessus. Chaque exécution est vérifiée \
              sans modèle{c}les fichiers sous `_compagnon/` sont ceux que `compagnon {skill}` laisse \
              lui-même sur une copie — ou tels qu'ils étaient, quand la compétence doit s'arrêter —, \
              aucun fichier hors de l'étape n'est modifié, et la réponse dit ce que le cas attend. \
