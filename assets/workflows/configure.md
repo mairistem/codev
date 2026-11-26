@@ -169,8 +169,9 @@ If `yes`:
 If `no`:
 
 - Write nothing.
-- Say: "No changes made. Say “configure Compagnon” again whenever you
-  want to retry (shortcut: `/compagnon-configure`)."
+- Begin the reply with "No changes made." word for word.
+- Then, alone on the last line, the way to retry: say “configure
+  Compagnon” (shortcut: `/compagnon-configure`).
 
 ## Output
 
