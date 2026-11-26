@@ -4,7 +4,7 @@ For pull request mairistem/compagnon#65 (tasks 4.1 and 4.2).
 
 ## 4.1 — The suite against the baseline
 
-**Result: against the baseline, quality outside its range; against `main`, run the same way, one regression was this change's own (`configure-answer-no`), now fixed, and the others are the model's drift since the baseline. `code.implement` is not run yet: task 4.1 is not done.**
+**Result: against the baseline, quality outside its range. Against `main`, run the same way, one regression was this change's own (`configure-answer-no`), now fixed; the others are the model's drift since the baseline. `code.implement` fails on the `format` check, which the case's own reference solution fails in this environment without any model. Task 4.1 is not checked: the user decides.**
 
 Run on Claude Code 2.1.289, the version `.github/workflows/evals.yml` pins
 and the baseline was recorded with. The installed 2.1.332 refuses the
@@ -17,9 +17,131 @@ cargo run -p compagnon-evals -- run --claude <2.1.289> --step plan.update --step
 cargo run -p compagnon-evals -- compare evals/baseline target/evals/plain-small --quality-only
 ```
 
-The `code.implement` run (`target/evals/plain-implement`) was stopped
-before any case finished, once the first comparison had failed; it can
-be resumed in the same directory.
+### `code.implement`
+
+Run on the build with the configure fix, Claude Code 2.1.289, as
+`CONTRIBUTING.md` gives it (`--repeat 3 --jobs 2`; the baseline ran with
+`--jobs 4`, which `compare` flags):
+
+```bash
+cargo run -p compagnon-evals -- run --claude <2.1.289> --compagnon <this build> --step code.implement --repeat 3 --jobs 2 --out target/evals/plain-implement
+cargo run -p compagnon-evals -- compare evals/baseline target/evals/plain-implement --quality-only
+```
+
+`compare` fails: 0 of 12 runs pass, against 1.00 in the baseline. The
+acceptance assertions (1.00) and the refusals (1.00) hold. Every failing
+run fails on one of two checks, never on the code the change asked for:
+
+- **`format`** (7 runs): `cargo fmt --all --check` reports hunks in code
+  no run touched. `cargo run -p compagnon-evals -- calibrate
+  implement-decision-accept-command`, which runs no model and no skill,
+  fails it the same way on the case's merged reference commit
+  ("`format` fails on the merged commit"), while the same commit passes
+  `cargo fmt --all --check` in a plain checkout here (rustfmt 1.9.0). The
+  check fails in the runner's environment whatever the skill does.
+- **the last verification task left unchecked** (7 runs, 4.1 or 5.1):
+  that task asks for `cargo fmt --all --check` and `validate --strict`;
+  the agents reported the format hunks on untouched code and the
+  committed decisions 0001–0006 failing their seals
+  (`decision_seal_mismatch`), outside the change, and stopped rather
+  than reformat or reseal them. Two runs of
+  `implement-forward-compatible-config` ran `cargo fmt --all` over
+  untouched files to pass `format`, then stopped on the seals.
+
+The closing lines follow the rule, e.g. « Say “finish the tasks of
+forward-compatible-config” (shortcut: `/compagnon-apply`) ».
+
+Not run on `main`: that would cost about as much again (about 40 USD),
+over the budget agreed. Cost: median sum 13.58 USD against 12.09 at the
+baseline's floor (+4.3 % on its median 13.02); reported, not deciding.
+
+```
+# Comparison with the baseline
+
+- Verdict: **fail** (quality only: the consumption is reported, it does not decide)
+- Model: Claude Code's default
+- Review mode: inline
+- Appended configuration: none
+- Claude Code: baseline 2.1.289 (Claude Code), candidate 2.1.289 (Claude Code)
+- Runs at the same time: baseline 4, candidate 2 — **they differ**: the runs did not share the prompt cache alike
+- Cases compared: 4; repetitions: baseline 5, candidate 3
+
+## Quality
+
+The candidate's median must stay within the range of the baseline's repetitions.
+
+| Role | Recall: baseline (min–max) | candidate | False positives: baseline (min–max) | candidate | Evidence validity: baseline (min–max) | candidate |
+|---|---|---|---|---|---|---|
+
+## `code.implement`
+
+The candidate's shares of runs, acceptance assertions and refusals passing must not fall under the baseline's minimum, nor its runs modifying a file outside the step rise above its maximum; the share of checks passing is reported and never decides.
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 1.00 (1.00–1.00) | 0.00 |
+| Checks passing | 1.00 (1.00–1.00) | 0.92 |
+| Acceptance | 1.00 (1.00–1.00) | 1.00 |
+| Refusals passing | 1.00 (1.00–1.00) | 1.00 |
+| Runs modifying a file outside the step | 0 (0–0) | 0 |
+
+## Consumption
+
+Sums, over the compared cases, of each case's median over its repetitions. The candidate's cost must be lower than the baseline's floor, 12.0912 USD: each case at its cheapest run. The duration and the output are reported and never decide: the output carries the model's reasoning, which the quality measures guard.
+
+| Measure | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| Cost (USD) | 13.0224 | 13.5836 | +4.3 % |
+| Duration (s) | 1317 | 1138 | -13.7 % |
+| API duration (s) | 1570 | 1417 | -9.7 % |
+| Turns | 173 | 155 | -10.4 % |
+| Permission denials | 0 | 1 | — |
+| Input tokens, uncached | 4424 | 4470 | +1.0 % |
+| Tokens written to the cache | 647272 | 632615 | -2.3 % |
+| Tokens read from the cache | 23805148 | 27179371 | +14.2 % |
+| Output tokens | 165762 | 171950 | +3.7 % |
+| Calls to the model | 182 | 199 | +9.3 % |
+| Input per call | 137355 | 139467 | +1.5 % |
+| Output per call | 839 | 820 | -2.3 % |
+
+## Where the tokens go
+
+Tokens written to the cache, by source: per case the median over its repetitions, summed over the compared cases. Reported, never deciding: the cost decides.
+
+| Source | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| file | 203767 | 211863 | +4.0 % |
+| shell | 131286 | 158895 | +21.0 % |
+| skill | 62131 | 48938 | -21.2 % |
+| search | 33879 | 35555 | +4.9 % |
+| edit | 29210 | 20485 | -29.9 % |
+| prompt | 26618 | 23751 | -10.8 % |
+| output | 16731 | 20853 | +24.6 % |
+| compagnon status | 12816 | 2957 | -76.9 % |
+| agent | 9587 | 6352 | -33.7 % |
+| compagnon roles | 6547 | 18669 | +185.2 % |
+| compagnon review | 4305 | 1921 | -55.4 % |
+| compagnon validate | 577 | 449 | -22.2 % |
+
+## Per case
+
+| Case | Cost: baseline | candidate | Turns: baseline | candidate | Tokens read from the cache: baseline | candidate |
+|---|---:|---:|---:|---:|---:|---:|
+| implement-decision-accept-command | 3.7309 | 3.7162 | 82 | 62 | 7618619 | 7987858 |
+| implement-fix-merge-and-skill-refresh | 3.8572 | 4.4964 | 8 | 10 | 5176862 | 7848034 |
+| implement-forward-compatible-config | 5.2307 | 5.2152 | 80 | 80 | 10911140 | 11241331 |
+| implement-refuse-missing-tasks | 0.2036 | 0.1558 | 3 | 3 | 98527 | 102148 |
+
+## Not compared
+
+Cases only one run holds: the cases of the other steps, not run here.
+
+## Failures
+
+- code.implement: pass share 0.00 is under the baseline's minimum 1.00
+- (not deciding, `--quality-only`) cost 13.5836 USD is not lower than the baseline's floor, 12.0912 USD (each case at its cheapest run; the baseline's median is 13.0224 USD)
+fail: code.implement: pass share 0.00 is under the baseline's minimum 1.00
+```
 
 ### What regressed
 
