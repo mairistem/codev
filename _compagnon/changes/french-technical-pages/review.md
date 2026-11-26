@@ -123,3 +123,89 @@ history:
   - status: fixed
     by: accessibility
 ```
+
+## code.review
+
+Mode: isolated.
+
+### accessibility
+
+No finding.
+
+### newcomer
+
+#### R-newcomer-1 shell_blocks and lines recognised fences differently
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:509"
+evidence: |
+  pub fn shell_blocks(md: &str) -> Vec<String> {
+recommendation: 'Share one fence walk between lines and shell_blocks, so a quoted fence is handled the same in both.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: step_fence used by lines and shell_blocks; a_fence_quoted_in_a_longer_fence_stays_code checks shell_blocks too"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 fence_marker returned a language still holding fence characters
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:56"
+evidence: |
+  fn step_fence<'a>(open: &mut Option<Fence<'a>>, trimmed: &'a str) -> bool {
+recommendation: 'Return a Fence with its character, length and stripped language.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: struct Fence, fence_marker returns it"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 The change rule was split across two lists and undocumented
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:955"
+evidence: |
+  fn is_noun_change(words: &[String], i: usize, heading: bool) -> bool {
+recommendation: 'One NOUN_MARKERS list beside DETERMINERS, an is_noun_change helper, and a doc comment listing every exclusion.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: NOUN_MARKERS, is_noun_change, anglicisms doc comment"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 « avant lui » referred to a feminine noun
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/reliability.rs:1137"
+evidence: |
+  était avant elle, et demandent à `/compagnon-apply` de l'implémenter, relecture comprise. \
+recommendation: 'Write « avant elle » in the three strings, then regenerate.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/reliability.rs: three strings; docs/fr/src/reliability.md regenerated"
+  - status: fixed
+    by: newcomer
+```
