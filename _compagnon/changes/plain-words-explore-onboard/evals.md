@@ -141,11 +141,139 @@ Other cases, run 1:
 
 None: every run of every case passes its checks.
 
-## Which skill text was measured
+## Which skill text was measured (first measure)
 
 The runs measured the skills as of commit `6ca5b87` (tasks 1.1–2.4). A
 code review pushed meanwhile, `e97ebdc`, changed `assets/workflows/onboard.md`
 again (it explains `compagnon init`, and the closing requests carry no
 placeholders). The onboard cases have not been run on that text: the
 `project.onboard` result above holds for the text before the review. To
-cover it, run again with `--step project.onboard` (about 3.5 USD).
+cover it, both steps were run again: see the second measure below.
+
+# Second measure, on the reviewed text — the measure of record
+
+The skills as of commit `4695379`, which holds the code review `e97ebdc`
+(onboard explains `compagnon init` in plain words; its closing requests carry
+no placeholder). Same conditions: Claude Code 2.1.289, compagnon rebuilt from
+the branch, five repetitions, four at a time. 45 runs, none in error,
+**7.16 USD** (both measures together: 14.35 USD).
+
+```bash
+cargo build -p compagnon-cli
+cargo run -p compagnon-evals -- run --claude /tmp/cc289/node_modules/.bin/claude \
+  --step idea.explore --step project.onboard --repeat 5 --jobs 4 --out target/evals/pweo2
+cargo run -p compagnon-evals -- compare evals/baseline target/evals/pweo2 --quality-only
+cargo run -p compagnon-evals -- compare evals/baseline target/evals/pweo2
+```
+
+## Quality (`--quality-only`): pass
+
+```
+- Verdict: **pass** (quality only: the consumption is reported, it does not decide)
+- Model: Claude Code's default
+- Review mode: inline
+- Appended configuration: none
+- Claude Code: baseline 2.1.289 (Claude Code), candidate 2.1.289 (Claude Code)
+- Runs at the same time: baseline 4, candidate 4
+- Cases compared: 9; repetitions: baseline 5, candidate 5
+
+## `idea.explore`
+
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 1.00 | 1.00 |
+| Checks passing | 1.00 | 1.00 |
+| Runs modifying a file outside the step | 0 | 0 |
+
+Every case passes in all its candidate runs.
+
+## `project.onboard`
+
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 1.00 | 1.00 |
+| Checks passing | 1.00 | 1.00 |
+| Runs modifying a file outside the step | 0 | 0 |
+
+Every case passes in all its candidate runs.
+
+## Failures
+
+None.
+- (not deciding, `--quality-only`) cost 1.4265 USD is not lower than the baseline's floor, 1.2906 USD (each case at its cheapest run; the baseline's median is 1.3680 USD)
+```
+
+## Cost (without `--quality-only`): fail, not deciding for this change
+
++4.3 % on the sum of the medians (the first measure: +7.4 %), again mostly
+the longer skill texts; turns fall by 11 %.
+
+```
+- Verdict: **fail**
+
+| Measure | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| Cost (USD) | 1.3680 | 1.4265 | +4.3 % |
+| Duration (s) | 139 | 134 | -3.3 % |
+| API duration (s) | 130 | 126 | -3.2 % |
+| Turns | 70 | 62 | -11.4 % |
+| Permission denials | 7 | 6 | -14.3 % |
+| Input tokens, uncached | 8817 | 8813 | -0.0 % |
+| Tokens written to the cache | 105535 | 114361 | +8.4 % |
+| Tokens read from the cache | 1316985 | 1271557 | -3.4 % |
+| Output tokens | 13047 | 12484 | -4.3 % |
+| Calls to the model | 41 | 39 | -4.9 % |
+| Input per call | 34916 | 35778 | +2.5 % |
+| Output per call | 312 | 330 | +5.8 % |
+
+| Source | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| prompt | 58130 | 59201 | +1.8 % |
+| skill | 24446 | 33119 | +35.5 % |
+| compagnon doctor | 8184 | 6495 | -20.6 % |
+| file | 8058 | 5171 | -35.8 % |
+| compagnon list | 3903 | 7105 | +82.0 % |
+| compagnon status | 1069 | 1044 | -2.3 % |
+| search | 536 | 458 | -14.6 % |
+| shell | 448 | 814 | +81.7 % |
+| compagnon decision | 179 | 143 | -20.1 % |
+
+| Case | Cost: baseline | candidate | Turns: baseline | candidate |
+|---|---:|---:|---:|---:|
+| explore-crystallizes-overdue-csv | 0.1490 | 0.1552 | 4 | 4 |
+| explore-missing-sms-reminders | 0.1568 | 0.1668 | 5 | 5 |
+| explore-not-worth-gateway-retry | 0.1447 | 0.1414 | 4 | 4 |
+| onboard-configured | 0.1616 | 0.1719 | 10 | 10 |
+| onboard-no-compagnon | 0.1128 | 0.1233 | 4 | 4 |
+| onboard-planning-complete | 0.1652 | 0.1740 | 11 | 10 |
+| onboard-planning-incomplete | 0.1595 | 0.1513 | 10 | 4 |
+| onboard-several-changes | 0.1652 | 0.1798 | 12 | 12 |
+| onboard-thin-config | 0.1532 | 0.1628 | 10 | 9 |
+|
+fail: cost 1.4265 USD is not lower than the baseline's floor, 1.2906 USD (each case at its cheapest run; the baseline's median is 1.3680 USD)
+```
+
+## The final messages read
+
+`onboard-several-changes`: the last line of all five replies is again
+"Which one do you want to continue?" — a plain question, no shortcut.
+
+`onboard-no-compagnon`: all five say in plain words what is missing and
+what the command does before giving it, then end on the command alone. Run 1:
+
+> **What's next**: Compagnon isn't set up in this project yet. One command sets it up; type it in a terminal, in the project folder:
+> `compagnon init`
+
+`onboard-configured`: all five close on a request with no `<…>`
+placeholder (the only `<…>` of the replies is `/compagnon-<step>` in the
+opening description). Run 1:
+
+> **What's next**: start by reading `README.md` to get a feel for the project. If you have a question but no idea for a change yet, say "let's explore an idea" (shortcut: `/compagnon-explore`).
+> When an idea comes up, say "I want to plan a change" (shortcut: `/compagnon-propose`).
+
+## Failures
+
+None: every run of every case passes its checks. Task 3.1 stays ticked on
+this measure.
