@@ -2493,14 +2493,27 @@ pub fn ensure_run_info(out: &Path, info: &RunInfo) -> std::io::Result<()> {
 /// already laid out under the current names is left as it is. The cases
 /// and baselines were renamed with the repository; the history they replay
 /// is renamed when it is replayed, so that both speak the same names.
+///
+/// The tree stays as clean as the commit left it: a decision whose seal
+/// matched its body before the rename is sealed again with its renamed
+/// body, and the Rust files the rename changed are formatted again, since
+/// the longer name can push a line past rustfmt's width.
 pub fn bring_through_rename(dir: &Path) -> Result<(), String> {
+    bring_through_rename_with(dir, Path::new("rustfmt"))
+}
+
+/// [`bring_through_rename`], formatting with the rustfmt at `rustfmt`.
+pub fn bring_through_rename_with(dir: &Path, rustfmt: &Path) -> Result<(), String> {
     use compagnon_core::legacy;
     let io = |e: std::io::Error| format!("renaming the fixture: {e}");
     if !dir.join(legacy::PLANNING_DIR).exists() {
         return Ok(());
     }
+    let decisions = |root: &str| dir.join(root).join("decisions");
+    let sealed = matching_seals(&decisions(legacy::PLANNING_DIR));
     let mut files = Vec::new();
     collect_files(dir, dir, &mut files).map_err(io)?;
+    let mut rust_changed = Vec::new();
     for (relative, is_link) in files {
         let from = dir.join(&relative);
         let renamed = legacy::through_rename(&relative.to_string_lossy());
@@ -2509,6 +2522,9 @@ pub fn bring_through_rename(dir: &Path) -> Result<(), String> {
             let through = legacy::through_rename(&text);
             if through != text {
                 fs::write(&from, through).map_err(io)?;
+                if renamed.ends_with(".rs") {
+                    rust_changed.push(PathBuf::from(&renamed));
+                }
             }
         }
         if to != from {
@@ -2519,7 +2535,166 @@ pub fn bring_through_rename(dir: &Path) -> Result<(), String> {
         }
     }
     remove_empty_dirs(dir).map_err(io)?;
+    if let Some(sealed) = sealed {
+        reseal(&decisions(compagnon_core::layout::PLANNING_DIR), &sealed).map_err(io)?;
+    }
+    if dir.join("Cargo.toml").is_file() {
+        for file in rust_changed.iter().filter(|f| formatted_by_cargo(f)) {
+            rustfmt_in_place(rustfmt, dir, file)?;
+        }
+    }
     Ok(())
+}
+
+/// The id of a decision file, the digits its name starts with.
+fn decision_id(path: &Path) -> Option<String> {
+    let name = path.file_name()?.to_str()?;
+    let id: String = name.chars().take_while(char::is_ascii_digit).collect();
+    (!id.is_empty() && name.ends_with(".md")).then_some(id)
+}
+
+/// The ids of the decisions under `decisions` whose seal matches their
+/// body; `None` when there is no seal file, or one that does not parse —
+/// it is then left as the commit holds it.
+fn matching_seals(decisions: &Path) -> Option<Vec<String>> {
+    use compagnon_core::decisions::seal;
+    let source = fs::read_to_string(decisions.join("seal.yaml")).ok()?;
+    let file = seal::parse_seal_file(&source).ok()?;
+    let mut ids = Vec::new();
+    for entry in fs::read_dir(decisions).ok()?.flatten() {
+        let path = entry.path();
+        let (Some(id), Ok(text)) = (decision_id(&path), fs::read_to_string(&path)) else {
+            continue;
+        };
+        if let (Some(recorded), Ok(hash)) = (file.find(&id), seal::body_hash(&text))
+            && recorded.body_sha256 == hash
+        {
+            ids.push(id);
+        }
+    }
+    Some(ids)
+}
+
+/// Records again, after the rename, the seal of each decision of `ids`,
+/// with the hash of its renamed body; every other seal is kept as it is.
+fn reseal(decisions: &Path, ids: &[String]) -> std::io::Result<()> {
+    use compagnon_core::decisions::seal;
+    let path = decisions.join("seal.yaml");
+    let Ok(mut file) = seal::parse_seal_file(&fs::read_to_string(&path)?) else {
+        return Ok(());
+    };
+    let mut changed = false;
+    for entry in fs::read_dir(decisions)?.flatten() {
+        let path = entry.path();
+        let Some(id) = decision_id(&path).filter(|id| ids.contains(id)) else {
+            continue;
+        };
+        let Ok(hash) = seal::body_hash(&fs::read_to_string(&path)?) else {
+            continue;
+        };
+        if let Some(recorded) = file.seals.iter_mut().find(|s| s.id == id)
+            && recorded.body_sha256 != hash
+        {
+            recorded.body_sha256 = hash;
+            changed = true;
+        }
+    }
+    if changed {
+        fs::write(&path, seal::render_seal_file(&file))?;
+    }
+    Ok(())
+}
+
+/// Whether `cargo fmt --all` formats `file`, a path relative to the
+/// workspace: under a crate's `src/`, `tests/`, `benches/` or
+/// `examples/`, or a crate's `build.rs`.
+fn formatted_by_cargo(file: &Path) -> bool {
+    let parts: Vec<&str> = file.iter().filter_map(|p| p.to_str()).collect();
+    parts.last() == Some(&"build.rs")
+        || parts
+            .iter()
+            .any(|p| matches!(*p, "src" | "tests" | "benches" | "examples"))
+}
+
+/// The edition of the crate holding `file`: the `edition` of the nearest
+/// `Cargo.toml` above it, the workspace's when it inherits it, `2021`
+/// when none is set.
+fn edition_of(dir: &Path, file: &Path) -> String {
+    let field = |manifest: &str, workspace: bool| -> Option<String> {
+        let mut in_section = !workspace;
+        for line in manifest.lines() {
+            let t = line.trim();
+            if t.starts_with('[') {
+                in_section = if workspace {
+                    t == "[workspace.package]"
+                } else {
+                    t == "[package]"
+                };
+                continue;
+            }
+            if in_section && let Some(rest) = t.strip_prefix("edition") {
+                let rest = rest.trim_start();
+                if rest.starts_with(".workspace") {
+                    return Some("workspace".into());
+                }
+                if let Some(value) = rest.strip_prefix('=') {
+                    let value = value.trim().trim_matches('"');
+                    if value == "{ workspace = true }" {
+                        return Some("workspace".into());
+                    }
+                    return Some(value.to_string());
+                }
+            }
+        }
+        None
+    };
+    let root = fs::read_to_string(dir.join("Cargo.toml")).unwrap_or_default();
+    let workspace = || field(&root, true).unwrap_or_else(|| "2021".into());
+    let mut at = file.parent();
+    while let Some(parent) = at {
+        if let Ok(manifest) = fs::read_to_string(dir.join(parent).join("Cargo.toml")) {
+            return match field(&manifest, false) {
+                Some(e) if e == "workspace" => workspace(),
+                Some(e) => e,
+                None if parent.as_os_str().is_empty() => workspace(),
+                None => "2021".into(),
+            };
+        }
+        at = parent.parent();
+    }
+    workspace()
+}
+
+/// Formats `file` (relative to `dir`) with rustfmt through standard input,
+/// which, unlike a path, does not make rustfmt format the module files it
+/// declares; run from the file's directory so that rustfmt finds the
+/// project's configuration.
+fn rustfmt_in_place(rustfmt: &Path, dir: &Path, file: &Path) -> Result<(), String> {
+    use std::io::Write;
+    let path = dir.join(file);
+    let fail = |why: String| format!("formatting {} with rustfmt: {why}", file.display());
+    let text = fs::read_to_string(&path).map_err(|e| fail(e.to_string()))?;
+    let mut child = Command::new(rustfmt)
+        .args(["--edition", &edition_of(dir, file), "--emit", "stdout"])
+        .current_dir(path.parent().unwrap_or(dir))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| fail(e.to_string()))?;
+    child
+        .stdin
+        .take()
+        .ok_or_else(|| fail("no standard input".into()))?
+        .write_all(text.as_bytes())
+        .map_err(|e| fail(e.to_string()))?;
+    let out = child.wait_with_output().map_err(|e| fail(e.to_string()))?;
+    if !out.status.success() {
+        return Err(fail(
+            String::from_utf8_lossy(&out.stderr).trim().to_string(),
+        ));
+    }
+    fs::write(&path, &out.stdout).map_err(|e| fail(e.to_string()))
 }
 
 /// The files under `dir`, relative to `root`, `.git` excluded, each with

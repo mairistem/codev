@@ -6,7 +6,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 
 ## 1. The fixture
 
-- [ ] 1.1 In `bring_through_rename` (`evals/src/runner.rs`), carry the seals
+- [x] 1.1 In `bring_through_rename` (`evals/src/runner.rs`), carry the seals
   through the rename as the design says; extend
   `a_case_pinned_before_the_rename_is_migrated_before_it_runs`
   (`evals/tests/fixture.rs`) with a sealed decision naming the former name
@@ -17,7 +17,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   `an_unparsable_seal_file_is_left_as_it_is` and
   `a_tree_under_the_current_names_is_left_as_it_is` (seal file and an
   unformatted `.rs` file unchanged) in `evals/tests/fixture.rs`.
-- [ ] 1.2 Format the Rust files the rename changed, as the design says;
+- [x] 1.2 Format the Rust files the rename changed, as the design says;
   extend the same test with a `Cargo.toml` (edition 2024) and a `.rs`
   file formatted under the former name whose line the new name pushes
   past the width, and an unformatted `.rs` file not naming it, declared
