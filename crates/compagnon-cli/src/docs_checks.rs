@@ -296,6 +296,80 @@ pub fn path_page_problems(
     problems
 }
 
+/// The links a path page lacks: `steps`, chapters it must take as numbered
+/// steps, and `next`, chapters its `next` section must name.
+pub fn missing_path_links(
+    md: &str,
+    next: &str,
+    steps: &[&str],
+    next_links: &[&str],
+) -> Vec<String> {
+    let (body, after) = md.split_once(&format!("## {next}")).unwrap_or((md, ""));
+    let step_lines: String = body
+        .lines()
+        .filter(|l| l.chars().next().is_some_and(|c| c.is_ascii_digit()))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let opens = |text: &str, chapter: &str| {
+        link_pairs(text)
+            .iter()
+            .any(|(_, t)| chapter_of(t) == chapter)
+    };
+    let mut missing: Vec<String> = steps
+        .iter()
+        .filter(|c| !opens(&step_lines, c))
+        .map(|c| format!("no step {c}"))
+        .collect();
+    missing.extend(
+        next_links
+            .iter()
+            .filter(|c| !opens(after, c))
+            .map(|c| format!("no {c} under \"{next}\"")),
+    );
+    missing
+}
+
+/// What is wrong with an annotated example: one of `parts` (`## ` headings)
+/// missing, or a part without a quoted `markdown` block followed by its
+/// `### note` heading.
+pub fn example_problems(md: &str, parts: &[&str; 4], note: &str) -> Vec<String> {
+    // The quoted plan holds `## ` headings of its own: a part runs from its
+    // heading to the next part's, not to the next `## `.
+    let starts: Vec<Option<usize>> = parts
+        .iter()
+        .map(|p| md.find(&format!("## {p}\n")))
+        .collect();
+    parts
+        .iter()
+        .enumerate()
+        .filter_map(|(i, part)| {
+            let Some(start) = starts[i] else {
+                return Some(format!("no part \"{part}\""));
+            };
+            let end = starts[i + 1..]
+                .iter()
+                .flatten()
+                .next()
+                .copied()
+                .unwrap_or(md.len());
+            let body = &md[start..end.max(start)];
+            let fence = body.find("```markdown");
+            let annotated = fence.is_some_and(|f| body[f..].contains(&format!("### {note}")));
+            (!annotated).then(|| format!("\"{part}\" lacks its quoted plan or its note"))
+        })
+        .collect()
+}
+
+/// The text of the first fenced `markdown` block under the `## part`
+/// heading of a chapter.
+pub fn quoted_block<'a>(md: &'a str, part: &str) -> Option<&'a str> {
+    let start = md.find(&format!("## {part}\n"))?;
+    let rest = &md[start..];
+    let open = rest.find("```markdown\n")? + "```markdown\n".len();
+    let close = rest[open..].find("\n```")?;
+    Some(&rest[open..open + close])
+}
+
 /// The explanations of everyday developer words that pages read by
 /// developers leave out.
 const GLOSSES: [&str; 4] = [
@@ -955,6 +1029,51 @@ mod tests {
     }
 
     #[test]
+    fn a_path_page_that_does_not_link_its_new_page_is_caught() {
+        let page = "# Review\n\nFor you.\n\n1. [A](../introduction.md)\n\n## Next, if you need it\n\n\
+                    - [Example](../guides/example-plan.md)\n";
+        assert_eq!(
+            missing_path_links(
+                page,
+                "Next, if you need it",
+                &["introduction.md"],
+                &["guides/example-plan.md", "guides/approve-a-plan.md"]
+            ),
+            ["no guides/approve-a-plan.md under \"Next, if you need it\""]
+        );
+    }
+
+    #[test]
+    fn a_part_of_the_example_without_its_note_is_caught() {
+        let parts = ["The proposal", "The specs", "The design", "The tasks"];
+        let mut md = String::from("# Example\n");
+        for part in parts {
+            md.push_str(&format!(
+                "\n## {part}\n\n```markdown\n## Why\n```\n\n### What to check here\n\nCheck.\n"
+            ));
+        }
+        assert!(example_problems(&md, &parts, "What to check here").is_empty());
+        let bare = md.replacen(
+            "## The design\n\n```markdown\n## Why\n```\n\n### What to check here",
+            "## The design\n\n```markdown\n## Why\n```\n\n### Elsewhere",
+            1,
+        );
+        assert_eq!(
+            example_problems(&bare, &parts, "What to check here"),
+            ["\"The design\" lacks its quoted plan or its note"]
+        );
+    }
+
+    #[test]
+    fn a_command_in_a_page_for_non_developers_is_caught() {
+        assert_eq!(shell_blocks("```bash\ncompagnon status\n```\n"), ["bash"]);
+        assert_eq!(
+            stray_commands("```bash\ncompagnon validate\n```\n"),
+            ["compagnon validate"]
+        );
+    }
+
+    #[test]
     fn a_gloss_for_developers_is_caught() {
         assert_eq!(
             developer_glosses("a terminal (the window where you\ntype commands)"),
@@ -1449,10 +1568,25 @@ mod chapter_tests {
     #[test]
     fn review_a_plan_covers_the_plan_without_a_terminal() {
         for (lang, words) in [
-            (Lang::En, ["proposal", "specs", "design", "tasks"]),
+            (
+                Lang::En,
+                [
+                    "proposal", "specs", "design", "tasks", "added", "modified", "removed",
+                    "renamed",
+                ],
+            ),
             (
                 Lang::Fr,
-                ["proposition", "spécification", "conception", "tâches"],
+                [
+                    "proposition",
+                    "spécification",
+                    "conception",
+                    "tâches",
+                    "ajoutées",
+                    "modifiées",
+                    "supprimées",
+                    "renommées",
+                ],
             ),
         ] {
             let guide = chapter(lang, "guides/review-a-plan.md");
@@ -1514,7 +1648,7 @@ mod chapter_tests {
     /// The chapters of the "Start here" and "Everyday use" parts, as both
     /// `SUMMARY.md` list them: `the_everyday_list_follows_the_summary`
     /// fails if a chapter is added to those parts and not here.
-    const EVERYDAY: [&str; 14] = [
+    const EVERYDAY: [&str; 17] = [
         "introduction.md",
         "choose-your-path.md",
         "paths/review.md",
@@ -1527,6 +1661,9 @@ mod chapter_tests {
         "workflow.md",
         "skills.md",
         "guides/review-a-plan.md",
+        "guides/example-plan.md",
+        "guides/approve-a-plan.md",
+        "guides/start-from-nothing.md",
         "concepts.md",
         "faq.md",
     ];
@@ -1572,5 +1709,155 @@ mod chapter_tests {
             found.push(format!("README.fr.md: {readme:?}"));
         }
         assert!(found.is_empty(), "{found:#?}");
+    }
+
+    /// The six pages the profiles asked for, each with the part that lists it.
+    const NEW_PAGES: [(&str, usize); 6] = [
+        ("guides/example-plan.md", 1),
+        ("guides/approve-a-plan.md", 1),
+        ("guides/start-from-nothing.md", 1),
+        ("guides/existing-project.md", 2),
+        ("guides/team-rollout.md", 2),
+        ("contributing.md", 4),
+    ];
+
+    #[test]
+    fn both_editions_list_the_new_pages_where_their_readers_look() {
+        for lang in LANGS {
+            let parts = parts(summary(lang));
+            for (page, part) in NEW_PAGES {
+                assert!(
+                    parts[part].1.iter().any(|p| p == page),
+                    "{}: {page} not in part {}",
+                    lang.tag(),
+                    parts[part].0
+                );
+            }
+            let next = next_heading(lang);
+            for (path, steps, next_links) in [
+                (
+                    "paths/review.md",
+                    &[][..],
+                    &["guides/example-plan.md", "guides/approve-a-plan.md"][..],
+                ),
+                (
+                    "paths/build.md",
+                    &["guides/start-from-nothing.md"][..],
+                    &["guides/example-plan.md"][..],
+                ),
+                (
+                    "paths/develop.md",
+                    &[][..],
+                    &["guides/existing-project.md"][..],
+                ),
+                (
+                    "paths/team.md",
+                    &["guides/team-rollout.md"][..],
+                    &["roles.md"][..],
+                ),
+            ] {
+                let missing = missing_path_links(chapter(lang, path), next, steps, next_links);
+                assert!(missing.is_empty(), "{} {path}: {missing:?}", lang.tag());
+            }
+            assert!(
+                chapter(lang, "origins.md").contains("](contributing.md)"),
+                "{}: origins.md does not link contributing.md",
+                lang.tag()
+            );
+        }
+    }
+
+    /// The parts of the example plan and the heading of their notes.
+    fn example_parts(lang: Lang) -> ([&'static str; 4], &'static str) {
+        match lang {
+            Lang::En => (
+                ["The proposal", "The specs", "The design", "The tasks"],
+                "What to check here",
+            ),
+            Lang::Fr => (
+                [
+                    "La proposition",
+                    "Les spécifications",
+                    "La conception",
+                    "Les tâches",
+                ],
+                "Ce qu'on vérifie ici",
+            ),
+        }
+    }
+
+    #[test]
+    fn every_part_of_the_example_is_annotated() {
+        for lang in LANGS {
+            let (parts, note) = example_parts(lang);
+            let page = chapter(lang, "guides/example-plan.md");
+            let problems = example_problems(page, &parts, note);
+            assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
+        }
+        let french = chapter(Lang::Fr, "guides/example-plan.md");
+        for keyword in ["### Exigence :", "#### Scénario :"] {
+            assert!(
+                french.contains(keyword),
+                "the French example lacks `{keyword}`"
+            );
+        }
+    }
+
+    #[test]
+    fn the_example_plan_parses_as_compagnon_writes_it() {
+        for lang in LANGS {
+            let (parts, _) = example_parts(lang);
+            let spec = quoted_block(chapter(lang, "guides/example-plan.md"), parts[1])
+                .unwrap_or_else(|| panic!("{}: no quoted spec", lang.tag()));
+            let parsed = compagnon_core::parser::parse_delta(spec);
+            assert!(
+                parsed.findings.is_empty(),
+                "{}: {:?}",
+                lang.tag(),
+                parsed.findings
+            );
+            assert!(
+                !parsed.value.sections.is_empty(),
+                "{}: no delta section",
+                lang.tag()
+            );
+        }
+    }
+
+    #[test]
+    fn the_two_pages_keep_to_what_a_non_developer_can_do() {
+        for lang in LANGS {
+            let approve = chapter(lang, "guides/approve-a-plan.md");
+            assert!(
+                shell_blocks(approve).is_empty(),
+                "{}: {:?}",
+                lang.tag(),
+                shell_blocks(approve)
+            );
+            for name in ["GitHub", "GitLab", "_compagnon/changes/"] {
+                assert!(
+                    approve.contains(name),
+                    "{}: the approving page lacks {name}",
+                    lang.tag()
+                );
+            }
+            let start = chapter(lang, "guides/start-from-nothing.md");
+            let stray = stray_commands(start);
+            assert!(stray.is_empty(), "{}: {stray:?}", lang.tag());
+            let first_block = start.find("```").unwrap_or(start.len());
+            assert!(
+                start[..first_block].contains("Claude Code"),
+                "{}: the starting page does not name Claude Code before its first command",
+                lang.tag()
+            );
+        }
+        // French labels between parentheses, never as code.
+        let approve = chapter(Lang::Fr, "guides/approve-a-plan.md");
+        for label in ["Approve", "Request changes"] {
+            assert!(
+                !approve.contains(&format!("`{label}`")),
+                "the French approving page writes « {label} » as code"
+            );
+        }
     }
 }

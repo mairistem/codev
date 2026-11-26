@@ -15,7 +15,7 @@ both editions, the French one following the documentation's lexicon, in
 
 ## 1. The checks
 
-- [ ] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add the chapter
+- [x] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add the chapter
   tests `both_editions_list_the_new_pages_where_their_readers_look` (the
   six pages in their parts; each path page linking the pages of the
   design's table; `origins.md` linking `contributing.md`),

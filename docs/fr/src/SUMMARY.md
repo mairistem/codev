@@ -17,6 +17,9 @@
 - [Le déroulé](workflow.md)
 - [Les compétences Claude Code](skills.md)
 - [Relire un plan](guides/review-a-plan.md)
+- [Un exemple de plan commenté](guides/example-plan.md)
+- [Approuver un plan sur GitHub ou GitLab](guides/approve-a-plan.md)
+- [Partir de rien](guides/start-from-nothing.md)
 - [Concepts](concepts.md)
 - [FAQ et dépannage](faq.md)
 
@@ -26,6 +29,8 @@
 - [Migrer depuis codev](guides/moving-from-codev.md)
 - [Sources héritées](guides/inherited-sources.md)
 - [Intégration au dépôt et compagnon doctor](guides/repository-integration.md)
+- [Adopter Compagnon sur un projet existant](guides/existing-project.md)
+- [Déployer Compagnon pour une équipe](guides/team-rollout.md)
 - [Notes de version et CHANGELOG](guides/release-notes.md)
 - [Compte rendu de revue](guides/review-record.md)
 - [Jira et autres serveurs MCP](guides/mcp.md)
@@ -42,5 +47,6 @@
 # Contribuer
 
 - [Origines](origins.md)
+- [Contribuer à Compagnon](contributing.md)
 - [Architecture](architecture.md)
 - [Fiabilité des rôles](reliability.md)
