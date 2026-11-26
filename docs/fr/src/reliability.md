@@ -6,7 +6,7 @@ Les rôles de relecture de compagnon sont mesurés, pas supposés. Cette page mo
 
 ## Ce que la suite mesure
 
-La suite est un ensemble de petits projets, chacun avec une modification planifiée. Un cas **ensemencé** cache des défauts qu'un rôle devrait trouver, chacun avec sa gravité, son emplacement et sa catégorie de problème ; un **témoin propre** n'en cache aucun. Claude Code exécute une étape de compétence sur chaque cas avec un seul rôle, et la suite note le compte rendu de relecture que le rôle écrit : les défauts trouvés et manqués, les constats qui ne correspondent à aucun défaut (**faux positifs**), si chaque preuve citée se trouve vraiment aux lignes indiquées, et si la gravité concorde avec celle attendue. [Mesurer les rôles](roles.md#mesurer-les-rôles) en donne les règles.
+La suite est un ensemble de petits projets, chacun avec une modification planifiée. Un cas **ensemencé** cache des défauts qu'un rôle devrait trouver, chacun avec sa gravité, son emplacement et sa catégorie de problème ; un **témoin propre** n'en dissimule aucun. Claude Code exécute une étape de compétence sur chaque cas avec un seul rôle, et la suite note le compte rendu de relecture que le rôle écrit : les défauts trouvés et manqués, les constats qui ne correspondent à aucun défaut (**faux positifs**), si chaque preuve citée se trouve vraiment aux lignes indiquées, et si la gravité concorde avec celle attendue. [Mesurer les rôles](roles.md#mesurer-les-rôles) en donne les règles.
 
 ## Ce qu'elle ne mesure pas
 

@@ -377,13 +377,13 @@ restent en anglais : Compagnon les lit.
 
 | Champ | Type | Signification |
 |---|---|---|
-| `severity` | `high`, `medium` ou `low` | Voir [l'échelle](../roles.md#gravité-confiance-et-compte-rendu-de-revue) |
+| `severity` | `high`, `medium` ou `low` | Voir [l'échelle](../roles.md#gravité-confiance-et-compte-rendu-de-relecture) |
 | `confidence` | `high` ou `low` | Un constat `low` n'est pas présenté à la personne |
 | `location` | chaîne | `<path>:<line>` ou `<path>:<start>-<end>` depuis la racine du projet, ou `<file>#<heading>` depuis le dossier de la modification. Relatif, sans `..`, sans lecteur ; `\` se lit `/`. Mettez-le entre guillemets s'il contient `: ` |
 | `evidence` | chaîne | Le texte cité, mot pour mot : des lignes entières ou un fragment de chacune |
 | `recommendation` | chaîne | Ce qu'il faut faire |
 | `history` | liste | Les réponses, de la plus ancienne à la plus récente ; la dernière donne le statut |
-| `raised_by` | liste, facultative | Chaque rôle qui a relevé le constat, son propre rôle en premier, chacun une fois : un constat fusionné à partir de plusieurs relecteurs lors d'une [relecture isolée](../guides/review-record.md#les-revues-isolées) |
+| `raised_by` | liste, facultative | Chaque rôle qui a relevé le constat, son propre rôle en premier, chacun une fois : un constat fusionné à partir de plusieurs relecteurs lors d'une [relecture isolée](../guides/review-record.md#les-relectures-isolées) |
 
 | Clé de `history[]` | Signification |
 |---|---|
@@ -613,12 +613,12 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `decision_field_type_mismatch` | erreur | Un champ du frontmatter n'a pas la forme attendue |
 | `decision_seal_mismatch` | erreur | Le contenu d'une décision scellée a été modifié |
 | `decision_conflicting_deviations` | erreur | Deux décisions locales acceptées s'écartent de la même décision héritée |
-| `release_note_invalid` | erreur | La section `## Release note` de la proposal a une catégorie inconnue, un élément sans texte, ou est vide |
-| `release_note_missing` | avertissement | La proposal d'une modification active n'a pas de section `## Release note` |
-| `unknown_domain` | erreur | La section `## Domains` de la proposal nomme un domaine hors des six |
-| `domains_invalid` | erreur | La section `## Domains` de la proposal a une ligne qui n'est ni un élément ni `None`, ou `None` à côté d'un domaine coché |
-| `domains_missing` | avertissement | La proposal d'une modification active n'a pas de section `## Domains` |
-| `domain_suggested` | avertissement | Le diff de la modification suggère un domaine que la proposal ne coche pas et ne garde pas non coché avec une raison |
+| `release_note_invalid` | erreur | La section `## Release note` de la proposition a une catégorie inconnue, un élément sans texte, ou est vide |
+| `release_note_missing` | avertissement | La proposition d'une modification active n'a pas de section `## Release note` |
+| `unknown_domain` | erreur | La section `## Domains` de la proposition nomme un domaine hors des six |
+| `domains_invalid` | erreur | La section `## Domains` de la proposition a une ligne qui n'est ni un élément ni `None`, ou `None` à côté d'un domaine coché |
+| `domains_missing` | avertissement | La proposition d'une modification active n'a pas de section `## Domains` |
+| `domain_suggested` | avertissement | Le diff de la modification suggère un domaine que la proposition ne coche pas et ne garde pas non coché avec une raison |
 | `invalid_trigger` | erreur | Un groupe de `triggers:` dans `_compagnon/config.yaml` n'a pas de domaine connu, pas de déclencheur, ou un glob ou une expression qui ne compile pas (un avertissement pour une clé que Compagnon ne connaît pas) |
 | `review_invalid` | erreur | La structure du compte rendu de relecture, un champ, un identifiant ou un emplacement de constat, un statut ou une transition est incorrect |
 | `review_decision_incomplete` | erreur | Une entrée d'historique n'a pas son `ref`, sa `note` ou son `to`, ou un risque est accepté, ou un constat haut reporté, par quelqu'un d'autre qu'une personne |

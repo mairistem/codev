@@ -315,7 +315,7 @@ votre configuration désactive le rôle est sautée, et le résumé le signale
    scénario une tâche dont la vérification le couvre par un test
    automatisé, une tâche met à jour la documentation lorsque la section
    Impact touche un comportement documenté, et la
-   [note de version](reference/file-formats.md#release-note) de la proposal
+   [note de version](reference/file-formats.md#release-note) de la proposition
    concorde avec le plan — chaque élément incompatible de What Changes, et
    chaque exigence supprimée ou modifiée de façon incompatible, a son élément
    **BREAKING**. Les manques sont corrigés dans les artefacts.
@@ -326,7 +326,7 @@ votre configuration désactive le rôle est sautée, et le résumé le signale
    contradicteur ne relit lui-même aucun domaine : sécurité, données
    personnelles, migration, exploitation, performance et accessibilité
    reviennent à leurs experts. Les
-   [experts](roles.md#experts-et-domaines) dont la proposal coche le
+   [experts](roles.md#experts-et-domaines) dont la proposition coche le
    domaine dans `## Domains` — sécurité, données personnelles,
    accessibilité, performance, exploitation, migration — rejoignent cette
    relecture avec leurs propres connaissances. Avant d'écrire
@@ -455,7 +455,7 @@ spécifications du projet, sans archiver la modification. Elle lance
 `compagnon sync`, puis vous dit quelles spécifications du projet ont été
 créées, mises à jour ou laissées inchangées.
 
-Posture : [mainteneur des spécifications vivantes](roles.md#mainteneur-des-specs-vivantes-compagnon-sync-compagnon-archive).
+Posture : [mainteneur des spécifications vivantes](roles.md#mainteneur-des-spécifications-vivantes-compagnon-sync-compagnon-archive).
 
 ### Archive (`/compagnon-archive`)
 
@@ -466,7 +466,7 @@ contourner. Si le compte rendu de relecture bloque l'archivage
 (`review_blocked`), elle vous renvoie vers `compagnon review`, et ne
 consigne jamais une décision à votre place.
 
-Posture : [mainteneur des spécifications vivantes](roles.md#mainteneur-des-specs-vivantes-compagnon-sync-compagnon-archive).
+Posture : [mainteneur des spécifications vivantes](roles.md#mainteneur-des-spécifications-vivantes-compagnon-sync-compagnon-archive).
 
 ## Choisir les compétences à installer
 
@@ -512,8 +512,8 @@ détecte la modification et laisse le fichier en place :
     /home/you/acme-app/.claude/skills/compagnon-apply/SKILL.md
 ```
 
-`compagnon update --force` l'écrase avec la version générée. Les skills issues
-d'une autre version de Compagnon sont toujours régénérées, tout comme les skills
+`compagnon update --force` l'écrase avec la version générée. Les compétences issues
+d'une autre version de Compagnon sont toujours régénérées, tout comme les compétences
 de cette version que Compagnon a rendues lui-même — une compilation antérieure, ou
 l'autre mode de relecture —, puisqu'elles correspondent encore à leur empreinte.
 Une skill de cette version générée avant les empreintes est préservée comme

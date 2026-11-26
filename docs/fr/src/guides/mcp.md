@@ -18,7 +18,7 @@ outil MCP Jira est configuré, la compétence :
    trouvé ;
 2. utilise le titre, la description, le statut et le type du ticket comme
    contexte pour le plan ;
-3. cite le ticket en tête de la proposal :
+3. cite le ticket en tête de la proposition :
 
    ```markdown
    # Proposal: Ajouter un mode sombre
@@ -34,7 +34,7 @@ mentionne plusieurs tickets, seul le premier est récupéré ; les autres sont
 listés sous la citation, pour la traçabilité.
 
 Si un ticket est mentionné mais que le serveur MCP n'est pas disponible dans la
-session, la compétence le signale, rédige la proposal à partir de votre seule
+session, la compétence le signale, rédige la proposition à partir de votre seule
 demande et cite le ticket avec la mention « contenu non récupéré ».
 
 ## Configurer l'intégration

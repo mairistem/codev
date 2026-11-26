@@ -39,7 +39,7 @@ Compagnon, et garde la réponse sur votre ordinateur.
 
 La requête est un unique appel HTTPS anonyme à l'API publique de GitHub :
 `https://api.github.com/repos/mairistem/compagnon/releases/latest`. Elle lit
-le numéro de la dernière release et le garde en cache dans
+le numéro de la dernière version publiée et le garde en cache dans
 `~/.cache/compagnon/update-check.json`, pendant 24 heures. Elle est sautée
 dès que la variable d'environnement `CI` est définie.
 

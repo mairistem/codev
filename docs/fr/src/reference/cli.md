@@ -345,12 +345,12 @@ Options:
 Installe un Compagnon plus récent à la place de celui qui s'exécute, en une
 commande et jamais dans votre dos :
 
-1. détermine la version cible — `--version`, ou la release la plus récente,
+1. détermine la version cible — `--version`, ou la version publiée la plus récente,
    demandée à GitHub sur le moment, quels que soient le cache, `CI` ou
    `COMPAGNON_NO_UPDATE_CHECK` ;
 2. dans un terminal, demande confirmation, sauf avec `--yes` ;
 3. télécharge `compagnon-<version>-<target>.tar.gz` (`.zip` sous Windows) et
-   `SHA256SUMS` depuis la release GitHub, puis vérifie le SHA-256 de
+   `SHA256SUMS` depuis la version publiée sur GitHub, puis vérifie le SHA-256 de
    l'archive ;
 4. écrit le nouveau binaire à côté de celui qui s'exécute, puis le renomme à
    sa place, si bien que le chemin du binaire contient toujours un binaire
@@ -360,19 +360,19 @@ commande et jamais dans votre dos :
 Un binaire installé par `cargo install`, compilé dans un dossier `target/` de
 cargo ou installé par un gestionnaire de paquets (Homebrew, Nix, Scoop,
 `/usr/bin`) n'est pas touché : la commande qui le met à jour est affichée et
-le code de sortie vaut `0`. Une release plus ancienne que le binaire en cours
+le code de sortie vaut `0`. Une version publiée plus ancienne que le binaire en cours
 est refusée (`update_downgrade_refused`), sauf si vous la demandez avec
 `--version`.
 
 `--check` affiche la version installée et la plus récente, rafraîchit le
 cache de vérification et sort avec `0`, qu'une mise à jour soit disponible ou
 non. `--snooze` fait taire, pendant 7 jours, l'annonce de `compagnon status` et
-des compétences pour la dernière version connue ; une release plus récente est de
+des compétences pour la dernière version connue ; une version publiée plus récente est de
 nouveau annoncée.
 
 | Code | Signification |
 |---|---|
-| `update_check_failed` | L'API des releases est injoignable, ou ne renvoie aucune release |
+| `update_check_failed` | L'API des versions publiées est injoignable, ou ne renvoie aucune version publiée |
 | `update_unsupported_platform` | Aucun binaire publié pour cette plateforme ; compilez depuis les sources |
 | `update_download_failed` | L'archive ou `SHA256SUMS` ne peut pas être téléchargé |
 | `update_checksum_mismatch` | `SHA256SUMS` n'a pas d'entrée pour l'archive, ou son SHA-256 diffère |
@@ -421,7 +421,7 @@ seule.
 | `config.roles` | chaque entrée de `roles:` est valide — informatif, il liste les rôles actifs, les rôles actifs selon le domaine avec leurs domaines, et les rôles désactivés ; sinon un avertissement `roles_invalid` | `compagnon validate` |
 | `skills` | chaque compétence configurée est installée et générée par cette version de Compagnon | `compagnon update` |
 | `sources` | chaque source git est épinglée dans `compagnon.lock` et présente dans le cache | `compagnon sources update` |
-| `compagnon_version` | le Compagnon en cours satisfait `compagnon_version`, et le cache de vérification ne connaît aucune release plus récente — simple avertissement dans ce second cas | `compagnon self-update`, ou `compagnon self-update --version <X.Y.Z>` lorsque le Compagnon en cours dépasse l'exigence |
+| `compagnon_version` | le Compagnon en cours satisfait `compagnon_version`, et le cache de vérification ne connaît aucune version publiée plus récente — simple avertissement dans ce second cas | `compagnon self-update`, ou `compagnon self-update --version <X.Y.Z>` lorsque le Compagnon en cours dépasse l'exigence |
 | `specs` | au moins une spécification principale existe | `/compagnon-propose` |
 | `decisions` | au moins une décision est acceptée — simple avertissement | `compagnon decision new` |
 | `validate` | `compagnon validate` ne signale rien | `compagnon validate` |
@@ -659,10 +659,10 @@ lancer. Un `--change` qui nomme une modification inexistante échoue avec
 `unknown_change` ; `--change archive` échoue avec `invalid_change_id`, car ce
 nom est réservé aux modifications archivées.
 
-Lorsqu'une release plus récente de Compagnon est connue et que vous ne l'avez pas
+Lorsqu'une version publiée plus récente de Compagnon est connue et que vous ne l'avez pas
 mise en sourdine, stderr porte aussi
 ``Compagnon X.Y.Z is available (you have A.B.C) — run `compagnon self-update` ``. Pour
-le savoir, `compagnon status` demande à GitHub la dernière release au plus une
+le savoir, `compagnon status` demande à GitHub la dernière version publiée au plus une
 fois toutes les 24 heures, avec un délai de 2 secondes, et garde la réponse
 en cache dans `~/.cache/compagnon/update-check.json`. Il ne vérifie jamais
 lorsque `CI` est défini ou avec `COMPAGNON_NO_UPDATE_CHECK=1`, et une

@@ -258,7 +258,7 @@ de rôle ; sa valeur est soit une activation, soit une table :
 
 | Clé | Signification |
 |---|---|
-| `when` | `always`, `never` ou `on_domain` ; la valeur par défaut est `on_domain` pour les experts, `always` pour tous les autres rôles. `on_domain` n'active un rôle que pour une modification dont la proposal coche l'un de ses domaines. Une étape dont tous les rôles sont inactifs est sautée, et la compétence le signale |
+| `when` | `always`, `never` ou `on_domain` ; la valeur par défaut est `on_domain` pour les experts, `always` pour tous les autres rôles. `on_domain` n'active un rôle que pour une modification dont la proposition coche l'un de ses domaines. Une étape dont tous les rôles sont inactifs est sautée, et la compétence le signale |
 | `done_when` | Critères ajoutés après ceux du rôle, avec l'origine `project` ; les entrées vides sont ignorées |
 | `model` | Le modèle sur lequel tourne le sous-agent du rôle dans le [mode de relecture](#review) `isolated` : `opus`, `sonnet` ou `haiku`, ou `inherit` pour le modèle de la session. Aucun rôle n'en fixe par défaut — voir [Les modèles des relecteurs](../roles.md#les-modèles-des-relecteurs). En mode `inline`, chaque rôle tourne sur le modèle de la session |
 
@@ -394,7 +394,7 @@ la matière par le nombre de rôles, et son bénéfice n'est pas encore
 mesuré : les évaluations des rôles de Compagnon font travailler un rôle à la
 fois, sans conversation d'écriture, et ne peuvent donc pas comparer les
 deux modes. Voir
-[Relecture en ligne ou isolée](../roles.md#revue-en-ligne-ou-isolée).
+[Relecture en ligne ou isolée](../roles.md#relecture-en-ligne-ou-isolée).
 
 Compagnon 0.6 et les versions antérieures ne connaissent pas cette clé :
 elles émettent l'avertissement `unknown_config_key` — qui fait échouer

@@ -491,7 +491,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                 "La suite est un ensemble de petits projets, chacun avec une modification planifiée. Un \
                  cas **ensemencé** cache des défauts qu'un rôle devrait trouver, chacun avec sa \
                  gravité, son emplacement et sa catégorie de problème{NBSP}; un **témoin propre** \
-                 n'en cache aucun. Claude Code exécute une étape de compétence sur chaque cas avec un \
+                 n'en dissimule aucun. Claude Code exécute une étape de compétence sur chaque cas avec un \
                  seul rôle, et la suite note le compte rendu de relecture que le rôle écrit{c}les \
                  défauts trouvés et manqués, les constats qui ne correspondent à aucun défaut \
                  (**faux positifs**), si chaque preuve citée se trouve vraiment aux lignes \

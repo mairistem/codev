@@ -36,7 +36,7 @@ history:
   jamais renuméroté ni réutilisé, si bien qu'une discussion peut le citer.
 - **La gravité** dit à quel point c'est grave si le relecteur a raison, et
   **la confiance** à quel point il en est sûr — voir les échelles dans
-  [Rôles](../roles.md#gravité-confiance-et-compte-rendu-de-revue). Un
+  [Rôles](../roles.md#gravité-confiance-et-compte-rendu-de-relecture). Un
   constat de confiance basse est conservé et reçoit une réponse, mais il ne
   vous est présenté que si vous devez le trancher.
 - **L'emplacement** est `path:line` ou `path:start-end` depuis la racine du
@@ -52,7 +52,7 @@ lit.
 
 ## Les relectures isolées
 
-En [mode isolé](../roles.md#revue-en-ligne-ou-isolée), le compte rendu dit
+En [mode isolé](../roles.md#relecture-en-ligne-ou-isolée), le compte rendu dit
 aussi comment l'étape s'est déroulée, et qui a relevé quoi :
 
 ````markdown

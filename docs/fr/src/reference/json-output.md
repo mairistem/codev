@@ -366,8 +366,8 @@ Le `status` d'un artefact vaut `done`, `ready`, `blocked` ou `skipped`.
 `planningHome` est la racine du projet ; les compétences s'en servent plutôt que de
 supposer le répertoire courant.
 
-`update` est présent lorsque la dernière release de Compagnon est connue :
-`current` est la version en cours, `latest` la dernière release, `url` sa
+`update` est présent lorsque la dernière version publiée de Compagnon est connue :
+`current` est la version en cours, `latest` la dernière version publiée, `url` sa
 page, `available` indique si `latest` est plus récente, et `snoozed` si
 `compagnon self-update --snooze` l'a mise en sourdine. Il est absent lorsque la
 vérification est désactivée (`CI`, `COMPAGNON_NO_UPDATE_CHECK=1`) ou n'a encore
@@ -751,7 +751,7 @@ champs que le fichier omet ou rend invalides valent `null`.
 | `roles[].steps` | Toutes les étapes que sert le rôle, dans l'ordre du déroulé : un expert sert `plan.challenge` et `code.review` |
 | `roles[].domains` | Les domaines qui activent un expert, comme `["personal-data"]` ; vide pour les autres rôles |
 | `roles[].when`, `roles[].whenOrigin` | `always`, `never` ou `on_domain`, fixé par `default`, `project` ou `change` |
-| `roles[].activatedBy` | Pourquoi le rôle est actif : `always`, `project`, `change`, ou `domain:<nom>` pour un expert dont la proposal coche le domaine ; `null` lorsqu'il est inactif |
+| `roles[].activatedBy` | Pourquoi le rôle est actif : `always`, `project`, `change`, ou `domain:<nom>` pour un expert dont la proposition coche le domaine ; `null` lorsqu'il est inactif |
 | `roles[].model`, `roles[].modelOrigin` | Le modèle sur lequel tourne le sous-agent du rôle dans le mode de relecture `isolated` — `opus`, `sonnet` ou `haiku`, ou `null` pour le modèle de la session —, fixé par `default` (celui du rôle) ou `project` (`model:` sous [`roles`](configuration.md#roles), `inherit` donnant `null`). Le mode en ligne l'ignore |
 | `roles[].disableable` | `false` pour les rôles d'artefact, l'`analyst` et le `developer` |
 | `roles[].knowledge` | Les connaissances du rôle, en markdown dans les sections Scope, Signals, By stack, References et Reporting, pour un rôle actif qui en a, sa partie `By stack` filtrée comme l'indique `stacks.filter` ; `null` sinon |
@@ -761,7 +761,7 @@ champs que le fichier omet ou rend invalides valent `null`.
 | `review.material` | Avec `--change` à `plan.trace`, `plan.challenge` ou `code.review`, ce que lisent les relecteurs : les fichiers de planification de la modification sauf `change.yaml` et `review.md` aux étapes du plan, les fichiers du diff à `code.review` — aucun fichier de planification, vendorisé, généré, de verrouillage ou binaire, aucun lien symbolique ; un fichier supprimé compte 0 octet. Chaque fichier a ses `bytes` et son `treatment` : `full`, ou `summarize` dès que les fichiers pris du plus petit au plus gros ne tiennent plus dans `limitBytes` (160 Kio). `null` sinon, et à `code.review` sans diff. Un fichier écarté parce que sa taille ne peut pas être lue ou que son nom contient un caractère de contrôle est nommé par un avertissement `review_material_incomplete` dans `status` |
 
 Avec `--at`, `roles` ne contient que les rôles actifs, éventuellement
-aucun : l'étape est alors sautée. Sans `--change`, aucune proposal n'est
+aucun : l'étape est alors sautée. Sans `--change`, aucune proposition n'est
 lue : les experts sont donc inactifs. Un échec — `unknown_step`, `unknown_role`,
 `invalid_role_activation`, `role_not_disableable` — conserve cette forme,
 avec `roles`, `disabled` et `suggestions` vides, `stacks`, `diff` et `review` à `null`,

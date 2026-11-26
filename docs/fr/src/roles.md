@@ -7,8 +7,8 @@ la suite. Vous et votre équipe validez à des moments définis — l'agent ne
 décide jamais à votre place.
 
 Les rôles sont des critères, pas un jeu de rôle. L'agent ne se fait pas
-passer pour un product owner : il vérifie la proposal à l'aide de la liste
-du product owner. Un rôle dont les critères sont remplis est terminé, quel
+passer pour un responsable produit (product owner) : il vérifie la proposition à l'aide de la liste
+du responsable produit. Un rôle dont les critères sont remplis est terminé, quel
 que soit le ton de la prose. Certains rôles portent aussi des
 **connaissances** — les signaux concrets, les pièges par langage et les
 références dont ils ont besoin pour bien vérifier leurs critères — voir
@@ -89,7 +89,7 @@ domaine ? — et à `code.review` — l'implémentation le respecte-t-elle ?
 | `operations` | `ops` | Journaux structurés sans secret, santé et métriques, délais d'expiration et nouvelles tentatives, chemin de retour arrière, erreurs exploitables |
 | `migration` | `migration` | Changements incompatibles annoncés, chemins de migration, ordre de déploiement, migrations de schéma réversibles, dépréciation |
 
-**Domaines.** La proposal liste les domaines que touche la modification dans sa
+**Domaines.** La proposition liste les domaines que touche la modification dans sa
 section `## Domains` — les six ci-dessus, à cocher, ou la seule ligne
 `None` :
 
@@ -111,8 +111,8 @@ absente sur une modification active (`domains_missing`) comme un avertissement �
 voir [Formats de fichiers](reference/file-formats.md#proposalmd).
 
 **Activation `on_domain`.** Un expert n'est actif à ses étapes que lorsque
-la proposal de la modification coche son domaine. Sans modification — `compagnon roles` sans
-`--change` — ou tant que la proposal n'a pas de section `## Domains`, il
+la proposition de la modification coche son domaine. Sans modification — `compagnon roles` sans
+`--change` — ou tant que la proposition n'a pas de section `## Domains`, il
 est inactif. `compagnon roles --json` indique pourquoi chaque rôle actif l'est
 dans `activatedBy` : `always`, `project`, `change` ou `domain:<nom>`. Vous
 pouvez toujours forcer un expert, pour le projet ou pour une modification — voir
@@ -144,7 +144,7 @@ ceux qui lui manquent. Le `skeptic` porte des signaux de planification
 fragile : il conteste la logique et les preuves du plan — besoin,
 périmètre, spécifications, décisions, hypothèses, tâches, et étapes sans retour
 possible — et laisse chaque domaine à son expert, en vérifiant seulement
-que la section `## Domains` de la proposal coche chaque domaine que le
+que la section `## Domains` de la proposition coche chaque domaine que le
 plan touche, pour que son expert le relise. Les autres rôles d'étape n'en
 portent pas. Les connaissances ne sont servies qu'aux rôles actifs : un
 expert inactif ne coûte rien à l'agent. Lisez-les avec
@@ -208,9 +208,9 @@ diff indique alors qu'il a été tronqué.
 **Les suggestions.** `compagnon roles --change <nom>` présente le diff et
 chaque domaine suggéré avec son état :
 
-- `ticked` — la proposal le coche ;
-- `justified` — la proposal le laisse décoché avec une raison sur sa ligne ;
-- `unticked` — ni l'un ni l'autre : la proposal doit y répondre.
+- `ticked` — la proposition le coche ;
+- `justified` — la proposition le laisse décoché avec une raison sur sa ligne ;
+- `unticked` — ni l'un ni l'autre : la proposition doit y répondre.
 
 ```markdown
 ## Domains
@@ -227,7 +227,7 @@ l'arbre de travail : deux modifications actives sur une même branche le
 partagent. Un rôle réglé sur `never` n'apporte aucune suggestion.
 
 `/compagnon-propose` lit les suggestions avant d'écrire `## Domains`, et le
-skeptic consigne un constat pour chacune restée `unticked`. Avant que le
+sceptique (`skeptic`) consigne un constat pour chacune restée `unticked`. Avant que le
 code existe, le diff est en général vide : c'est la relecture qui tranche.
 `/compagnon-apply` liste chaque suggestion encore `unticked` sous **To
 decide** — cochez-la, et son expert relit le code, ou justifiez-la.
@@ -562,7 +562,7 @@ Done when :
 - la révision respecte le contrat de l'artefact — sections attendues,
   format des scénarios, cases à cocher ;
 - les répercussions sont annoncées : un fichier de spécification orphelin ou manquant
-  après une modification de la proposal, une tâche qui cite une exigence
+  après une modification de la proposition, une tâche qui cite une exigence
   supprimée ou un scénario renommé, une décision de la conception qui ne
   correspond plus, une tâche qui contredit une exigence — avec une action
   suivante suggérée, appliquée seulement après votre confirmation ;

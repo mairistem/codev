@@ -43,15 +43,32 @@ fn fence_marker(trimmed: &str) -> Option<&str> {
 fn lines(md: &str) -> Vec<Line<'_>> {
     let mut out = Vec::new();
     let mut fence: Option<&str> = None;
+    // The opening fence: its character and its length. As in CommonMark,
+    // only a bare fence of the same character, at least as long, closes it,
+    // so a ```` ```` ```` block may quote a ```` ``` ```` one.
+    let mut opening: (char, usize) = (' ', 0);
     let mut details = 0usize;
     for text in md.lines() {
         let trimmed = text.trim_start();
         if let Some(lang) = fence_marker(trimmed) {
-            fence = match fence {
-                Some(_) => None,
-                None => Some(lang),
-            };
-            continue;
+            let c = trimmed.chars().next().unwrap_or('`');
+            let len = trimmed.chars().take_while(|&x| x == c).count();
+            match fence {
+                None => {
+                    fence = Some(lang.trim_start_matches(c).trim());
+                    opening = (c, len);
+                    continue;
+                }
+                Some(_)
+                    if c == opening.0
+                        && len >= opening.1
+                        && lang.trim_start_matches(c).trim().is_empty() =>
+                {
+                    fence = None;
+                    continue;
+                }
+                Some(_) => {}
+            }
         }
         if fence.is_none() {
             if trimmed.starts_with("<details") {
@@ -1287,6 +1304,12 @@ mod tests {
             anglicisms("## Changes\n\nAucun change n'est actif.\n"),
             ["changes", "change"]
         );
+    }
+
+    #[test]
+    fn a_fence_quoted_in_a_longer_fence_stays_code() {
+        let md = "````markdown\n```yaml\nlocation: design.md\n```\n````\n\nLa relecture.\n";
+        assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
     }
 
     #[test]

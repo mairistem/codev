@@ -94,7 +94,7 @@ Compagnon ne modifie jamais aucun autre fichier de déroulé. Sur un dépôt Git
 ```
 
 Ailleurs, l'étape est écartée avec une indication : ajoutez
-`compagnon validate --strict` à votre pipeline.
+`compagnon validate --strict` à votre chaîne d'intégration continue.
 
 ### Modèle de demande de fusion
 
@@ -203,7 +203,7 @@ que génère `compagnon changelog` ; la correction est `compagnon changelog --w
 voir [Notes de version et CHANGELOG](release-notes.md). La vérification `compagnon_version` est manquante
 lorsque le Compagnon en cours ne satisfait pas le
 [`compagnon_version`](../reference/configuration.md#compagnon_version) du projet, et
-devient un avertissement lorsque le cache de vérification connaît une release
+devient un avertissement lorsque le cache de vérification connaît une version publiée
 plus récente ; la correction est `compagnon self-update`, ou
 `compagnon self-update --version <X.Y.Z>` lorsque le Compagnon en cours est plus récent
 que ce que l'exigence autorise. La vérification `config.keys` signale les clés

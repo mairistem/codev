@@ -2,15 +2,15 @@
 
 Chaque modification archivée dit déjà pourquoi elle a été faite et ce qui a
 changé.
-Compagnon en tire les notes de version : chaque proposal porte une courte section
+Compagnon en tire les notes de version : chaque proposition porte une courte section
 `## Release note` destinée aux utilisateurs, et `compagnon changelog` rassemble
 les notes des modifications archivées depuis la dernière version. Le choix du numéro
 de version, le tag et la publication restent entre vos mains et celles de vos
-outils de release.
+outils de publication.
 
-## Rédiger la note de version avec la proposal
+## Rédiger la note de version avec la proposition
 
-`/compagnon-propose` rédige la section avec le reste de la proposal, après
+`/compagnon-propose` rédige la section avec le reste de la proposition, après
 `## Impact` :
 
 ```markdown
@@ -67,7 +67,7 @@ compagnon changelog --until v1.4.0 --format markdown
 
 `--until v1.4.0` commence après le tag de version juste en dessous, `v1.3.x`.
 `--format markdown` retire le titre de version, ce qui convient au texte
-d'une release ; `--format json` fournit les éléments aux scripts (voir
+d'une version publiée ; `--format json` fournit les éléments aux scripts (voir
 [Sortie JSON](../reference/json-output.md#changelog)).
 
 Les modifications archivées avant l'existence des notes de version n'ont pas de
@@ -130,8 +130,8 @@ place dans la section gérée. Enregistrez, puis posez aussitôt le tag `v1.4.0`
 tant que le tag n'existe pas, `compagnon changelog` compte encore ces modifications
 comme non publiées.
 
-Sur GitHub, le déroulé de release peut reprendre les mêmes notes pour le
-texte de la release, produites par le Compagnon de l'enregistrement tagué :
+Sur GitHub, le déroulé de publication peut reprendre les mêmes notes pour le
+texte de la version publiée, produites par le Compagnon de l'enregistrement tagué :
 
 ```bash
 compagnon changelog --until "$GITHUB_REF_NAME" --format markdown > release-notes.md

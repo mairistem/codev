@@ -29,17 +29,17 @@ rewritten (the red state is shown in the pull request).
 
 ## 2. The pages
 
-- [ ] 2.1 Rewrite `docs/fr/src/roles.md` to the lexicon; verified by
+- [x] 2.1 Rewrite `docs/fr/src/roles.md` to the lexicon; verified by
   `the_french_book_holds_no_anglicism` naming no line of it, and the
   Roles chapter tests of `crates/compagnon-cli/src/docs.rs`
   (`roles_chapters_list_exactly_the_catalog`,
   `roles_chapters_document_triggers_and_the_stack_filter`,
   `roles_chapters_carry_the_review_scales`) still passing.
-- [ ] 2.2 Rewrite `docs/fr/src/reference/cli.md`, `configuration.md`,
+- [x] 2.2 Rewrite `docs/fr/src/reference/cli.md`, `configuration.md`,
   `file-formats.md` and `json-output.md`; verified by the book test naming
   none of them and `git diff --word-diff` showing no inline code span
   changed.
-- [ ] 2.3 Rewrite the French "Going further" guides
+- [x] 2.3 Rewrite the French "Going further" guides
   (`guides/moving-from-codev.md`, `inherited-sources.md`,
   `repository-integration.md`, `existing-project.md`, `team-rollout.md`,
   `release-notes.md`, `review-record.md` — titled « Compte rendu de
@@ -47,17 +47,17 @@ rewritten (the red state is shown in the pull request).
   `custom-schemas.md`; in `mcp.md`, « un outil de design » becomes « un
   outil de conception graphique »); verified by the book test naming none of them and
   `mdbook build docs/fr`.
-- [ ] 2.4 Rewrite `origins.md`, `contributing.md` and `architecture.md`,
+- [x] 2.4 Rewrite `origins.md`, `contributing.md` and `architecture.md`,
   the words the wider list now catches in the everyday pages, and every
   « revue » naming Compagnon's review in the everyday pages (« compte
   rendu de relecture », « Relecture en ligne ou isolée »); verified by the
   book test and the listing of 3.2.
-- [ ] 2.5 Rewrite the French strings of `evals/src/reliability.rs`
+- [x] 2.5 Rewrite the French strings of `evals/src/reliability.rs`
   (« revue » included), write the token sources' labels in inline code in
   its tables, and regenerate both pages with `cargo run -p compagnon-evals -- docs`;
   verified by `the_reliability_pages_follow_the_baseline` and the book
   test naming no line of `reliability.md`.
-- [ ] 2.6 Update every link of the French book to a heading renamed in
+- [x] 2.6 Update every link of the French book to a heading renamed in
   2.1–2.5; verified by `the_offline_manual_links_land_on_their_heading`.
 
 ## 3. Check
