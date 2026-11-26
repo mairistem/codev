@@ -45,6 +45,30 @@ command the skill runs itself — is not concerned.
 - **AND** every line naming a `/compagnon-…` command presents it as a
   shortcut, apart from the `# written by /compagnon-configure` marker
 
+### Requirement: A reply ends with the one request to say next
+
+When one of the six skills ends its reply with a next step, the reply
+SHALL close on that step alone, on its last line: one plain request, quoted,
+in the user's language, followed by its shortcut — one request, not a list
+of options — so that Claude Code's suggested next prompt, drawn from the
+conversation, is likely to be that request. A refusal or a summary that
+leaves several choices to the user names them before that last line.
+
+#### Scenario: The shared rule asks for one closing request
+
+- **GIVEN** the shared rule for suggesting next steps, as the six skills
+  render it
+- **WHEN** the test suite of `compagnon-agents` runs
+- **THEN** it asks to end the reply with the next step alone on the last
+  line, one quoted request with its shortcut
+
+#### Scenario: Propose closes on the request to build the plan
+
+- **GIVEN** the propose skill as Compagnon renders it
+- **WHEN** the test suite of `compagnon-agents` runs
+- **THEN** its summary ends with a quoted plain request to build the plan,
+  with `/compagnon-apply` as the shortcut
+
 ### Requirement: Skill descriptions name the plain requests that start them
 
 The description of the `propose`, `apply`, `update`, `sync`, `archive` and

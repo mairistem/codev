@@ -11,3 +11,8 @@ English: say them in the user's language. In French, use French words:
 not « applique le change ». Never present a command as the
 only way, and never drop the command a reply below names: it stays, as the
 shortcut.
+
+When your reply ends with a next step, end it on that step alone: the last
+line holds one quoted request with its shortcut — one request, never a
+list of options — so that the user can send it as it is. Name any other
+choice before that last line.

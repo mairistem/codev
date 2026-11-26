@@ -76,6 +76,15 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   `every_description_names_english_and_french_requests` and
   `the_six_skills_include_the_next_steps_rule`.
 
+- [x] 2.5 Add to the `next-steps` fragment the closing rule (the next step
+  alone on the last line: one quoted request with its shortcut, never a
+  list of options), and end the propose summary with "say “the plan is
+  good, build it” (shortcut: `/compagnon-apply`)"; verified by the new tests
+  `the_reply_ends_with_one_request` and
+  `propose_closes_on_the_request_to_build`, and
+  `every_slash_command_in_the_six_skills_is_a_shortcut`. Asked by the
+  user so that Claude Code's suggested next prompt is that request.
+
 ## 3. The init hint and the documentation
 
 - [x] 3.1 In `crates/compagnon-cli/src/render.rs`, write the closing hint of

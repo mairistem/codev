@@ -772,7 +772,7 @@ mod tests {
 
     /// A workflow body with its whitespace collapsed, so that an assertion
     /// survives rewrapping and line-ending changes.
-    fn flat(text: &str) -> String {
+    pub(super) fn flat(text: &str) -> String {
         text.split_whitespace().collect::<Vec<_>>().join(" ")
     }
 
@@ -1685,6 +1685,35 @@ mod plain_words {
         );
         let verb = r#"Plan. Use for requests like "plan it", « dis-moi ce qui change »."#;
         assert!(description_problems("propose", verb).is_empty());
+    }
+
+    #[test]
+    fn the_reply_ends_with_one_request() {
+        let rule = super::tests::flat(NEXT_STEPS);
+        for phrase in [
+            "the last line holds one quoted request with its shortcut",
+            "never a list of options",
+        ] {
+            assert!(
+                rule.contains(phrase),
+                "the next-steps rule lacks `{phrase}`"
+            );
+        }
+        for id in SIX {
+            assert!(
+                super::tests::flat(&body(id)).contains("the last line holds one quoted request"),
+                "{id}"
+            );
+        }
+    }
+
+    #[test]
+    fn propose_closes_on_the_request_to_build() {
+        assert!(plain_request_before(
+            &body("propose"),
+            &["When you are ready", "last line"],
+            "/compagnon-apply"
+        ));
     }
 
     #[test]
