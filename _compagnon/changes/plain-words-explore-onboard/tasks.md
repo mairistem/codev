@@ -65,7 +65,7 @@ shown in the pull request).
 
 ## 3. Evaluation (decision 0008)
 
-- [ ] 3.1 Ask the user's agreement on the cost (about 7 to 8 USD), then run
+- [x] 3.1 Ask the user's agreement on the cost (about 7 to 8 USD), then run
   `cargo run -p compagnon-evals -- run --claude <path to Claude Code
   2.1.289> --step idea.explore --step project.onboard --repeat 5` and
   `compare` against `evals/baseline` with `--quality-only`; read the
