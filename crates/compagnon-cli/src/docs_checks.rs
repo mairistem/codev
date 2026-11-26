@@ -385,25 +385,6 @@ pub fn glossary_problems(md: &str, terms: &[&str], cap: usize) -> Vec<String> {
     problems
 }
 
-/// The local chapter paths a text links to, anchors removed.
-fn chapter_links(md: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut rest = md;
-    while let Some(i) = rest.find("](") {
-        rest = &rest[i + 2..];
-        let Some(end) = rest.find(')') else { break };
-        let target = &rest[..end];
-        if !target.contains("://") {
-            let path = target.split('#').next().unwrap_or(target);
-            if path.ends_with(".md") {
-                out.push(path.trim_start_matches("./").to_string());
-            }
-        }
-        rest = &rest[end..];
-    }
-    out
-}
-
 /// The shell languages of a chapter's fenced blocks, one entry per block,
 /// fences recognised as in [`lines`].
 pub fn shell_blocks(md: &str) -> Vec<String> {
