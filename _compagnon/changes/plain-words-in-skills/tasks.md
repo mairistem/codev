@@ -117,7 +117,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 
 ## 4. Evaluation (decision 0008)
 
-- [ ] 4.1 Ask the user's agreement on the estimated cost, then run
+- [x] 4.1 Ask the user's agreement on the estimated cost, then run
   `cargo run -p compagnon-evals -- run` on the steps `plan.update`,
   `code.implement`, `change.sync`, `change.archive` and
   `configure.enrich` — `plan.write` left out by the user's decision on
@@ -127,7 +127,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   verified by `compare` reporting the quality within the baseline's range,
   its output pasted in the pull request, and any cost rise reported with
   its numbers.
-- [ ] 4.2 In a Claude Code session on a scratch project, ask in French to
+- [x] 4.2 In a Claude Code session on a scratch project, ask in French to
   implement a change whose tasks are done, then to implement a change
   whose plan is incomplete: the closing summary suggests archiving in
   French, the refusal suggests finishing the plan in French, each with its
