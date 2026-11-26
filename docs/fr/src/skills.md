@@ -111,10 +111,10 @@ pour le faire. Cela fait partie de ce que chaque compétence vous promet.
 <details>
 <summary>Sous le capot : les outils autorisés de chaque compétence</summary>
 
-Chaque skill déclare les outils qu'elle peut utiliser dans le champ
+Chaque compétence déclare les outils qu'elle peut utiliser dans le champ
 `allowed-tools` de son frontmatter.
 
-| Skill | `allowed-tools` |
+| Compétence | `allowed-tools` |
 |---|---|
 | `compagnon-propose` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep`, plus l'outil MCP Jira s'il est configuré, plus `Agent` en mode de relecture isolé |
 | `compagnon-explore` | `Bash(compagnon:*), Read, Glob, Grep` |
@@ -125,7 +125,7 @@ Chaque skill déclare les outils qu'elle peut utiliser dans le champ
 | `compagnon-sync` | `Bash(compagnon:*), Read` |
 | `compagnon-archive` | `Bash(compagnon:*), Read` |
 
-`Bash(compagnon:*)` permet à une skill de lancer des commandes `compagnon`, et rien
+`Bash(compagnon:*)` permet à une compétence de lancer des commandes `compagnon`, et rien
 d'autre. Seule `compagnon-apply` obtient un accès général à `Bash`, parce qu'elle
 doit lancer vos tests et vos commandes de build. `compagnon-sync` et
 `compagnon-archive` ne peuvent écrire aucun fichier : toutes leurs modifications
@@ -138,10 +138,10 @@ passent par la CLI.
 rôle relecteur travaille alors comme sous-agent. `compagnon-apply` le demande
 aussi quand le `developer` a un modèle : il lui confie alors les tâches
 dans un sous-agent ([Le modèle du développeur](roles.md#le-modèle-du-développeur)).
-Aucune autre skill ne le demande jamais. Après avoir changé de mode, lancez `compagnon update` ;
+Aucune autre compétence ne le demande jamais. Après avoir changé de mode, lancez `compagnon update` ;
 `compagnon doctor` signale `skills_review_mode` tant que vous ne l'avez pas
-fait. Les deux skills décrivent la relecture isolée dans les deux modes, car
-le `change.yaml` d'un change peut remplacer le mode du projet : sans
+fait. Les deux compétences décrivent la relecture isolée dans les deux modes, car
+le `change.yaml` d'une modification peut remplacer le mode du projet : sans
 l'outil pré-autorisé, Claude Code demande avant de lancer un sous-agent,
 et s'il ne peut pas en lancer, les rôles relisent en ligne.
 
@@ -184,8 +184,8 @@ la vérification `compagnon_version` dit la même chose.
 <details>
 <summary>Sous le capot : comment une compétence apprend qu'une version existe</summary>
 
-Les cinq skills lisent les objets `update` et `versionRequirement` de leur
-premier `compagnon status --json`. Aucune skill n'a besoin de plus que
+Les cinq compétences lisent les objets `update` et `versionRequirement` de leur
+premier `compagnon status --json`. Aucune compétence n'a besoin de plus que
 `Bash(compagnon:*)` pour cela.
 
 </details>
@@ -304,13 +304,13 @@ traçabilité et contradicteur — voir
 <summary>Sous le capot : les rôles de chaque étape et les deux relectures en détail</summary>
 
 Le rôle de chaque artefact est déclaré par le schéma et renvoyé par
-`compagnon instructions`. À chaque étape, la skill demande
+`compagnon instructions`. À chaque étape, la compétence demande
 `compagnon roles --at <step>` les rôles de l'étape et applique leurs
 critères, y compris les critères ajoutés par votre projet ; une étape dont
 votre configuration désactive le rôle est sautée, et le résumé le signale
 (voir [Configurer les rôles](roles.md#configurer-les-rôles)).
 
-1. **Traçabilité** — chaque capacité a son fichier de spec, chaque exigence
+1. **Traçabilité** — chaque capacité a son fichier de spécification, chaque exigence
    un scénario nominal et un scénario d'erreur ou de cas limite, chaque
    scénario une tâche dont la vérification le couvre par un test
    automatisé, une tâche met à jour la documentation lorsque la section
@@ -319,8 +319,8 @@ votre configuration désactive le rôle est sautée, et le résumé le signale
    concorde avec le plan — chaque élément incompatible de What Changes, et
    chaque exigence supprimée ou modifiée de façon incompatible, a son élément
    **BREAKING**. Les manques sont corrigés dans les artefacts.
-2. **Relecture contradictoire** — la skill relit le plan en relecteur
-   sceptique : besoin, périmètre, specs, décisions, hypothèses, tâches,
+2. **Relecture contradictoire** — la compétence relit le plan en relecteur
+   sceptique : besoin, périmètre, spécifications, décisions, hypothèses, tâches,
    et si `## Domains` coche chaque domaine que le plan touche, ainsi que
    les [`rules`](reference/configuration.md#rules) de votre projet. Le
    contradicteur ne relit lui-même aucun domaine : sécurité, données
@@ -330,16 +330,16 @@ votre configuration désactive le rôle est sautée, et le résumé le signale
    domaine dans `## Domains` — sécurité, données personnelles,
    accessibilité, performance, exploitation, migration — rejoignent cette
    relecture avec leurs propres connaissances. Avant d'écrire
-   `## Domains`, la skill lit les
-   [domaines que suggère le diff du change](roles.md#les-déclencheurs-et-les-domaines-suggérés)
+   `## Domains`, la compétence lit les
+   [domaines que suggère le diff de la modification](roles.md#les-déclencheurs-et-les-domaines-suggérés)
    et coche chacun ou le garde non coché avec une raison ; le contradicteur
    consigne un constat pour chacun resté `unticked`. Chaque constat est écrit
-   dans le [compte rendu de relecture](guides/review-record.md) du change, avec
+   dans le [compte rendu de relecture](guides/review-record.md) de la modification, avec
    sa gravité et sa preuve citée ; l'auteur le corrige ou le conteste, le
    relecteur vérifie chaque réponse une fois, et la relecture n'élargit
    jamais le périmètre. En [mode isolé](roles.md#relecture-en-ligne-ou-isolée),
    le contrôleur de traçabilité et chaque relecteur travaillent comme des
-   sous-agents distincts qui ne voient jamais la conversation, et la skill
+   sous-agents distincts qui ne voient jamais la conversation, et la compétence
    fusionne leurs constats avant de les consigner.
 
 </details>
@@ -503,7 +503,7 @@ générée : vérifiez d'abord vos modifications (`git diff`), car il les
 <summary>Sous le capot : comment Compagnon repère une modification à la main</summary>
 
 Chaque `SKILL.md` généré enregistre la version de Compagnon qui l'a produit et
-une empreinte (`checksum`) de son propre contenu. Si vous modifiez une skill
+une empreinte (`checksum`) de son propre contenu. Si vous modifiez une compétence
 à la main, son contenu ne correspond plus à son empreinte : `compagnon update`
 détecte la modification et laisse le fichier en place :
 
@@ -516,7 +516,7 @@ détecte la modification et laisse le fichier en place :
 d'une autre version de Compagnon sont toujours régénérées, tout comme les compétences
 de cette version que Compagnon a rendues lui-même — une compilation antérieure, ou
 l'autre mode de relecture —, puisqu'elles correspondent encore à leur empreinte.
-Une skill de cette version générée avant les empreintes est préservée comme
+Une compétence de cette version générée avant les empreintes est préservée comme
 une modification : lancez une fois `compagnon update --force` pour lui donner son
 empreinte — vérifiez d'abord `git diff`, car il écrase aussi vos vraies
 modifications, puis réappliquez-les.
