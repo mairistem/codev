@@ -64,7 +64,8 @@ Linux, macOS et Windows, vérifie que l'espace de travail compile avec Rust
 
 Un changement de comportement commence par une modification Compagnon,
 avant le code. Le fichier `CLAUDE.md` du dépôt le rappelle à Claude Code à
-chaque session : « Do not modify behavior without a compagnon change. »
+chaque session : « Do not modify behavior without a compagnon change. » (ne modifiez
+pas un comportement sans modification Compagnon)
 Les corrections triviales — coquilles, formulation de la documentation —
 en sont dispensées.
 

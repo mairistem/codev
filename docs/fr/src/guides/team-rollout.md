@@ -47,8 +47,9 @@ Avec une version hors de cet intervalle :
 - les compétences qui agissent sur le projet (`/compagnon-propose`,
   `/compagnon-apply`, `/compagnon-update`, `/compagnon-sync`,
   `/compagnon-archive`) le signalent avant de commencer et proposent
-  **Update now** ou **Later** ; quand l'équipe exige la version, **Later**
-  ne fait rien taire ;
+  de mettre à jour maintenant (**Update now**) ou plus tard (**Later**) ;
+  quand l'équipe exige la version, « plus tard » ne fait pas taire
+  l'alerte ;
 - `compagnon validate`, `compagnon sync` et `compagnon archive` refusent de
   s'exécuter, avec `compagnon_version_unsatisfied` et le correctif :
   `compagnon self-update`, ou `compagnon self-update --version <X.Y.Z>`

@@ -62,13 +62,13 @@ rewritten (the red state is shown in the pull request).
 
 ## 3. Check
 
-- [ ] 3.1 Have a French reader who does not know the English words — the
+- [x] 3.1 Have a French reader who does not know the English words — the
   readers' test of `missing-pages`, Julie and Tom — follow Roles,
   Origins and Contributing from the French home page: it passes when
   neither meets an English word outside parentheses or code; recorded in
   the pull request. Manual because whether a page reads as French is a
   judgement.
-- [ ] 3.2 List every « issue », « revue » and « change » left in
+- [x] 3.2 List every « issue », « revue » and « change » left in
   `docs/fr/src/` outside code (`grep -rnwiE 'issues?|revues?|changes?'
   docs/fr/src`) and check by hand that none names a GitHub or Jira issue
   (« ticket »), Compagnon's review (« relecture ») or a Compagnon change

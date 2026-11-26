@@ -455,7 +455,7 @@ Cette tolérance commence avec la version de Compagnon qui l'a introduite :
 **Compagnon 0.5 et les versions antérieures rejettent toute clé inconnue**, à tout
 niveau, et **Compagnon 0.6.1 et les versions antérieures rejettent une clé
 inconnue dans un rôle, dans `change.yaml`, dans un schéma de projet et dans
-l'en-tête d'un ADR**. Lorsque vous ajoutez une clé que seules les versions récentes
+l'en-tête d'une décision d'architecture (ADR)**. Lorsque vous ajoutez une clé que seules les versions récentes
 connaissent, relevez aussi `compagnon_version` : les membres de l'équipe restés
 sur un Compagnon plus ancien apprendront par `compagnon doctor` et les compétences quelle
 version installer.

@@ -2,7 +2,7 @@
 
 Une compétence Compagnon est un seul agent, mais il n'aborde pas chaque étape dans le
 même état d'esprit. Chaque étape reçoit un rôle : une question dont il a la
-charge, et des critères « Done when » que l'agent vérifie avant de passer à
+charge, et des critères de fin (« Done when ») que l'agent vérifie avant de passer à
 la suite. Vous et votre équipe validez à des moments définis — l'agent ne
 décide jamais à votre place.
 
@@ -333,8 +333,8 @@ de son côté :
 
 - **Fusionner.** Les constats de plusieurs rôles sur le même défaut — au
   même endroit, avec la même correction — deviennent un seul constat,
-  inscrit sous le rôle qui l'a jugé le plus grave et qui crédite chaque
-  rôle qui l'a relevé (`raised_by`). Des constats au même endroit qui
+  inscrit sous le rôle qui l'a jugé le plus grave ; le constat crédite
+  chaque rôle qui l'a relevé (`raised_by`). Des constats au même endroit qui
   demandent des corrections différentes restent distincts.
 - **Classer.** Par gravité, puis confiance, puis ordre des rôles ; le
   résumé en montre cinq au plus, comme en ligne.
@@ -679,8 +679,8 @@ L'agent s'arrête et vous passe la main à ces moments :
 - **Appliquer une répercussion.** `/compagnon-update` signale ce que la révision
   affecte par ailleurs ; vous acceptez, refusez ou reportez chaque suite.
 - **Mettre à jour Compagnon.** Lorsqu'un Compagnon plus récent est disponible ou que
-  le projet exige une autre version, la compétence demande **Update now** ou
-  **Later** avant d'agir (voir
+  le projet exige une autre version, la compétence propose de mettre à jour
+  maintenant (**Update now**) ou plus tard (**Later**) avant d'agir (voir
   [Annonce des mises à jour](skills.md#annonce-des-mises-à-jour)).
 - **Configurer les rôles.** Les rôles de relecture qui s'exécutent, et les
   critères qu'ils ajoutent, relèvent du choix de votre projet dans

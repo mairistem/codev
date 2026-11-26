@@ -1216,7 +1216,7 @@ fn update_section(out: &mut String, u: &CheckStepFigures, lang: Lang) {
             ),
             Lang::Fr => format!(
                 "{} cas de révision posent une modification archivée sur le dépôt tel qu'il était avant \
-                 lui, et demandent à `/compagnon-update` de réviser l'un de ses artefacts comme le \
+                 elle, et demandent à `/compagnon-update` de réviser l'un de ses artefacts comme le \
                  ferait son auteur. Chaque exécution est vérifiée sans modèle{c}l'artefact demandé \
                  est révisé, les autres fichiers restent tels quels, une conséquence sur un autre \
                  artefact est signalée plutôt qu'appliquée, la modification passe toujours la \
@@ -2068,7 +2068,7 @@ fn meter_chart(b: &Baseline, lang: Lang) -> String {
             ),
             Lang::Fr => format!(
                 "Chaque jauge va de 0 à 1 et se termine par sa fraction. La ligne pointillée du \
-                 rappel est le seuil{NBSP}; {} marque un rôle en deçà. Un rôle sans cas ensemencé \
+                 rappel est le seuil{NBSP}; {} marque un rôle sous le seuil. Un rôle sans cas ensemencé \
                  n'a pas de rappel (—).",
                 "▲ en deçà"
             ),
