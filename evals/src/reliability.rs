@@ -667,6 +667,8 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             note: match (lang, failing.len()) {
                 (Lang::En, 0) => "every role meets every threshold".to_string(),
                 (Lang::Fr, 0) => "chaque rôle respecte chaque seuil".to_string(),
+                (Lang::En, 1) => "1 fails at least one".to_string(),
+                (Lang::Fr, 1) => "1 en dépasse au moins un".to_string(),
                 (Lang::En, n) => format!("{n} fail at least one"),
                 (Lang::Fr, n) => format!("{n} en dépassent au moins un"),
             },
@@ -763,7 +765,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         let _ = writeln!(
             out,
             "| {} | {}{NBSP}({}/{}) | {} | {} | {} | {} | {} | {} |",
-            r.role,
+            role_id(lang, &r.role),
             r.cases,
             r.seeded,
             r.controls,
@@ -867,7 +869,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                 out,
                 "- {} **{}** {}{c}{}",
                 over_icon(),
-                r.role,
+                role_id(lang, &r.role),
                 lang.pick("fails", "dépasse"),
                 details.join(", ")
             );
@@ -876,7 +878,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             .roles
             .iter()
             .filter(|r| r.fails(t).is_empty())
-            .map(|r| format!("**{}**", r.role))
+            .map(|r| format!("**{}**", role_id(lang, &r.role)))
             .collect();
         if !ok.is_empty() {
             let _ = writeln!(
@@ -1302,7 +1304,7 @@ fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lan
         ),
         (_, Lang::Fr) => format!(
             "{n} cas (`configure.enrich`) lancent `/compagnon-configure` sur un petit projet, la \
-             réponse de l'auteur à sa confirmation fixée par le cas. Chaque exécution est vérifiée \
+             réponse de l'auteur à la demande de confirmation étant fixée par le cas. Chaque exécution est vérifiée \
              sans modèle{c}les autres champs et les commentaires de la configuration sont \
              conservés, `context:` et `rules:` ont la forme attendue et nomment ce que font les \
              tests du projet, compagnon lit toujours le fichier — ou rien n'est écrit sur un non, et \
@@ -1363,9 +1365,9 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
         "- {}{c}{}\n- {}{c}{}\n- {}{c}{}\n",
         lang.pick("One run of the suite", "Une exécution de la suite"),
         lang.usd(b.cost_usd),
-        lang.pick("Input per call, in tokens", "Entrée par appel, en tokens"),
+        lang.pick("Input per call, in tokens", "Entrée par appel, en jetons"),
         tokens(m.input_per_call),
-        lang.pick("Output per call, in tokens", "Sortie par appel, en tokens"),
+        lang.pick("Output per call, in tokens", "Sortie par appel, en jetons"),
         tokens(m.output_per_call),
     );
     if b.sources.is_empty() {
@@ -1380,12 +1382,12 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
              among what brought them in: the skill read, each `compagnon` subcommand, the files, the \
              searches, the model's own output; `prompt` is Claude Code's own prompt and the \
              request. Per case the median over its runs, summed over the cases.",
-            "Chaque appel au modèle est enregistré. Les tokens qu'un appel écrit dans le cache — ce \
+            "Chaque appel au modèle est enregistré. Les jetons qu'un appel écrit dans le cache — ce \
              qui est entré dans son contexte depuis l'appel précédent, l'essentiel du coût d'une \
              exécution — sont répartis entre ce qui les a apportés\u{a0}: la lecture de la compétence, \
              chaque sous-commande `compagnon`, les fichiers, les recherches, la sortie du modèle \
-             lui-même\u{a0}; `prompt` est le prompt propre de Claude Code et la demande. Par cas la \
-             médiane sur ses exécutions, sommée sur les cas."
+             lui-même\u{a0}; `prompt` est la consigne (prompt) propre de Claude Code et la demande. Pour chaque \
+             cas, on prend la médiane de ses exécutions, puis on additionne les cas."
         )
     );
     let _ = writeln!(out, "{}\n", sources_chart(&b.sources, lang));
@@ -1394,7 +1396,7 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
         "| {} |\n|---|---:|---:|",
         lang.pick(
             "Source | Tokens | Share of the cost",
-            "Source | Tokens | Part du coût"
+            "Source | Jetons | Part du coût"
         )
     );
     for s in &b.sources {
@@ -1407,6 +1409,29 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
         );
     }
     out.push('\n');
+}
+
+/// A role id as the reader types it: in inline code in French prose, where
+/// the English id would otherwise read as an untranslated word.
+fn role_id(lang: Lang, role: &str) -> String {
+    match lang {
+        Lang::En => role.to_string(),
+        Lang::Fr => format!("`{role}`"),
+    }
+}
+
+/// `1 rôle` or `3 rôles`.
+fn fr_roles(n: usize) -> String {
+    if n == 1 {
+        "1 rôle".to_string()
+    } else {
+        format!("{n} rôles")
+    }
+}
+
+/// The singular or plural form, by count.
+fn fr_verb(n: usize, one: &'static str, many: &'static str) -> &'static str {
+    if n == 1 { one } else { many }
 }
 
 /// `60 %`, with a no-break space in French.
@@ -1427,7 +1452,7 @@ fn sources_chart(sources: &[SourceShare], lang: Lang) -> String {
     let bottom = first + row_h * sources.len() as f64;
     let height = bottom + 22.0;
     let c = lang.colon();
-    let title = lang.pick("Where the tokens go", "Où vont les tokens");
+    let title = lang.pick("Where the tokens go", "Où vont les jetons");
     let mut desc = lang
         .pick(
             "Horizontal bars, one per source, ranked by their share of the cost. ",
@@ -1446,7 +1471,7 @@ fn sources_chart(sources: &[SourceShare], lang: Lang) -> String {
                 number(s.tokens)
             ),
             Lang::Fr => format!(
-                "{}{c}{} tokens, {share} du coût",
+                "{}{c}{} jetons, {share} du coût",
                 s.source,
                 number(s.tokens)
             ),
@@ -1515,7 +1540,7 @@ fn sources_chart(sources: &[SourceShare], lang: Lang) -> String {
         lang.pick(
             "The share of the cost of the tokens written to the cache, per source, over every case \
              of the suite.",
-            "La part du coût des tokens écrits dans le cache, par source, sur tous les cas de la \
+            "La part du coût des jetons écrits dans le cache, par source, sur tous les cas de la \
              suite.",
         ),
     )
@@ -1564,7 +1589,7 @@ fn verdict(b: &Baseline, lang: Lang) -> String {
     }
     let list = |rs: &[&RoleRow]| {
         rs.iter()
-            .map(|r| r.role.as_str())
+            .map(|r| role_id(lang, &r.role))
             .collect::<Vec<_>>()
             .join(", ")
     };
@@ -1579,8 +1604,9 @@ fn verdict(b: &Baseline, lang: Lang) -> String {
                 list(&fp)
             ),
             Lang::Fr => format!(
-                "{} rôles sur {roles} signalent plus de {} faux positifs{c}{}.",
-                fp.len(),
+                "{} sur {roles} {} plus de {} faux positifs{c}{}.",
+                fr_roles(fp.len()),
+                fr_verb(fp.len(), "signale", "signalent"),
                 t.max_false_positives,
                 list(&fp)
             ),
@@ -1596,9 +1622,11 @@ fn verdict(b: &Baseline, lang: Lang) -> String {
                 list(&recall)
             ),
             Lang::Fr => format!(
-                "{} rôles sur {roles} trouvent moins de {} de leurs défauts ensemencés{c}{}.",
-                recall.len(),
+                "{} sur {roles} {} moins de {} de {} défauts ensemencés{c}{}.",
+                fr_roles(recall.len()),
+                fr_verb(recall.len(), "trouve", "trouvent"),
                 lang.ratio(t.min_recall),
+                fr_verb(recall.len(), "ses", "leurs"),
                 list(&recall)
             ),
         });
@@ -1613,8 +1641,9 @@ fn verdict(b: &Baseline, lang: Lang) -> String {
                 list(&evidence)
             ),
             Lang::Fr => format!(
-                "{} rôles sur {roles} citent une preuve valide moins de {} du temps{c}{}.",
-                evidence.len(),
+                "{} sur {roles} {} une preuve valide moins de {} du temps{c}{}.",
+                fr_roles(evidence.len()),
+                fr_verb(evidence.len(), "cite", "citent"),
                 lang.ratio(t.min_evidence),
                 list(&evidence)
             ),
@@ -1750,22 +1779,32 @@ fn false_positive_chart(b: &Baseline, lang: Lang) -> String {
         let cy = y + row_h / 2.0;
         let over = r.false_positives > f64::from(t.max_false_positives);
         let fp = number(r.false_positives);
+        let en_fp = if r.false_positives == 1.0 {
+            "false positive"
+        } else {
+            "false positives"
+        };
+        let fr_fp = if r.false_positives < 2.0 {
+            "faux positif"
+        } else {
+            "faux positifs"
+        };
         let tip = match (lang, over) {
             (Lang::En, true) => format!(
-                "{}: {} false positives, over the threshold of {}",
-                r.role, fp, t.max_false_positives
+                "{}: {} {}, over the threshold of {}",
+                r.role, fp, en_fp, t.max_false_positives
             ),
             (Lang::En, false) => format!(
-                "{}: {} false positives, within the threshold of {}",
-                r.role, fp, t.max_false_positives
+                "{}: {} {}, within the threshold of {}",
+                r.role, fp, en_fp, t.max_false_positives
             ),
             (Lang::Fr, true) => format!(
-                "{}{c}{} faux positifs, au-delà du seuil de {}",
-                r.role, fp, t.max_false_positives
+                "{}{c}{} {}, au-delà du seuil de {}",
+                r.role, fp, fr_fp, t.max_false_positives
             ),
             (Lang::Fr, false) => format!(
-                "{}{c}{} faux positifs, dans le seuil de {}",
-                r.role, fp, t.max_false_positives
+                "{}{c}{} {}, dans le seuil de {}",
+                r.role, fp, fr_fp, t.max_false_positives
             ),
         };
         let _ = write!(desc, "{tip}. ");

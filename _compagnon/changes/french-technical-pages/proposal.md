@@ -63,7 +63,7 @@ words in 22 pages, most in `roles.md`, `reference/cli.md` and
 - [ ] security
 - [ ] personal-data — the match is the English word "phone" in the example scenario of the English home page (`docs/site/index.html`), from another change on the branch; not personal data
 - [x] user-interface
-- [ ] performance
+- [ ] performance — the matches are the French sentences of `evals/src/reliability.rs` describing the model's prompt cache, reworded only (« tokens » → « jetons »); no code path or cost changes
 - [ ] operations
 - [ ] migration
 
