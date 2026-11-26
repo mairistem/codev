@@ -55,7 +55,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   against another case of the same step, that a reply concluding on
   another outcome or state fails; verified by the runs' output and those
   scores, recorded in the pull request.
-- [ ] 3.2 Record the five repetitions into `evals/baseline/`, regenerate
+- [x] 3.2 Record the five repetitions into `evals/baseline/`, regenerate
   the reliability chapter (`cargo run -p compagnon-evals -- docs`), and
   commit; verified by `every_baseline_case_has_five_repetitions`,
   `no_baseline_repetition_is_in_error`,

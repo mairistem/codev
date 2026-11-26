@@ -1,0 +1,85 @@
+{
+  "format": 2,
+  "case": "explore-not-worth-gateway-retry",
+  "error": null,
+  "costUsd": 0.15613620000000003,
+  "durationMs": 17158,
+  "consumption": {
+    "durationApiMs": 15518,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 993,
+      "cacheCreation": 11599,
+      "cacheRead": 160006,
+      "output": 1528
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 6605,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6605
+        }
+      },
+      {
+        "cacheCreation": 1332,
+        "cacheRead": 31733,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 1332
+        }
+      },
+      {
+        "cacheCreation": 615,
+        "cacheRead": 33065,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon list": 615
+        }
+      },
+      {
+        "cacheCreation": 2720,
+        "cacheRead": 33680,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2720
+        }
+      },
+      {
+        "cacheCreation": 327,
+        "cacheRead": 36400,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 327
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "## Exploration: retrying payment gateway calls that time out\n\n**Outcome 3: not worth pursuing. The specs and the code already do this.**\n\n### What I checked\n- **Spec.** `_compagnon/specs/payment-gateway/spec.md` already has the requirement *\"A timed-out call is retried with exponential backoff\"*. It allows up to 4 retries, waiting 200 ms, then 400 ms, 800 ms and 1.6 s. Each wait has up to ±20 % random jitter, and only timeouts are retried. It has two scenarios: two timeouts then success, and a declined card that is not retried.\n- **Code.** `internal/gateway/retry.go:31` (`withRetry`) does exactly this. It checks for a timeout with `net.Error.Timeout()`, starts at `firstWait = 200ms`, doubles the wait each time, applies `jitter = 0.2`, allows `maxRetries = 4`, and stops early if the context is cancelled. `Client.Charge` (`internal/gateway/client.go:25`) sends every call through it.\n- **Tests.** `internal/gateway/retry_test.go` has one test for each scenario. I didn't run them: this skill can't run `go test`.\n- **Changes and decisions.** No change is in progress and there are no recorded decisions, so nothing conflicts or duplicates this.\n\nOpening a change for this topic would only restate behavior that is already specified and built.\n\n### Side issues (not part of this topic)\nThese are only worth exploring separately if they matter to you:\n1. **Risk of charging twice.** A client-side timeout (`http.Client{Timeout: 3s}` in `cmd/payments/main.go`) doesn't prove the gateway did nothing. The bank may have received and processed the `POST /charges`. Retrying it without an idempotency key could charge the card twice. I assume the bank's gateway accepts an idempotency key, but I haven't confirmed it; the gateway's API documentation would settle that. This looks like the real gap, and it would be its own change.\n2. **Worst-case delay.** Five attempts at 3 s each, plus about 3 s of waits, comes to roughly 18 s before checkout gets a 502. It's worth checking whether checkout's own timeout is longer than that.\n3. **Thin test coverage.** The tests don't check the wait times themselves (the \"about 200 ms then 400 ms\" in the scenario) or what happens after the last retry."
+  ],
+  "readOnly": {
+    "finalMessage": "## Exploration: retrying payment gateway calls that time out\n\n**Outcome 3: not worth pursuing. The specs and the code already do this.**\n\n### What I checked\n- **Spec.** `_compagnon/specs/payment-gateway/spec.md` already has the requirement *\"A timed-out call is retried with exponential backoff\"*. It allows up to 4 retries, waiting 200 ms, then 400 ms, 800 ms and 1.6 s. Each wait has up to ±20 % random jitter, and only timeouts are retried. It has two scenarios: two timeouts then success, and a declined card that is not retried.\n- **Code.** `internal/gateway/retry.go:31` (`withRetry`) does exactly this. It checks for a timeout with `net.Error.Timeout()`, starts at `firstWait = 200ms`, doubles the wait each time, applies `jitter = 0.2`, allows `maxRetries = 4`, and stops early if the context is cancelled. `Client.Charge` (`internal/gateway/client.go:25`) sends every call through it.\n- **Tests.** `internal/gateway/retry_test.go` has one test for each scenario. I didn't run them: this skill can't run `go test`.\n- **Changes and decisions.** No change is in progress and there are no recorded decisions, so nothing conflicts or duplicates this.\n\nOpening a change for this topic would only restate behavior that is already specified and built.\n\n### Side issues (not part of this topic)\nThese are only worth exploring separately if they matter to you:\n1. **Risk of charging twice.** A client-side timeout (`http.Client{Timeout: 3s}` in `cmd/payments/main.go`) doesn't prove the gateway did nothing. The bank may have received and processed the `POST /charges`. Retrying it without an idempotency key could charge the card twice. I assume the bank's gateway accepts an idempotency key, but I haven't confirmed it; the gateway's API documentation would settle that. This looks like the real gap, and it would be its own change.\n2. **Worst-case delay.** Five attempts at 3 s each, plus about 3 s of waits, comes to roughly 18 s before checkout gets a 502. It's worth checking whether checkout's own timeout is longer than that.\n3. **Thin test coverage.** The tests don't check the wait times themselves (the \"about 200 ms then 400 ms\" in the scenario) or what happens after the last retry.",
+    "changesCreated": []
+  }
+}

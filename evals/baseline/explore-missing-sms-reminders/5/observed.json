@@ -1,0 +1,85 @@
+{
+  "format": 2,
+  "case": "explore-missing-sms-reminders",
+  "error": null,
+  "costUsd": 0.156758,
+  "durationMs": 22180,
+  "consumption": {
+    "durationApiMs": 20811,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 987,
+      "cacheCreation": 10765,
+      "cacheRead": 157580,
+      "output": 1915
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 6592,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6592
+        }
+      },
+      {
+        "cacheCreation": 1333,
+        "cacheRead": 31720,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 1333
+        }
+      },
+      {
+        "cacheCreation": 668,
+        "cacheRead": 33053,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon list": 668
+        }
+      },
+      {
+        "cacheCreation": 237,
+        "cacheRead": 33721,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 237
+        }
+      },
+      {
+        "cacheCreation": 1935,
+        "cacheRead": 33958,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "file": 1935
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "I explored the request without writing any file. **Outcome: information is missing.** The reminder can't be planned until the clinic picks a messaging provider, and only Claire Dubois (operations) can say which one and when.\n\n## What the repository already knows\n\n- **Specs.** There is one capability, `appointments`, with one requirement: a confirmation by mail when the booking is saved (`_compagnon/specs/appointments/spec.md`). Nothing covers reminders or text messages.\n- **Changes in progress.** None, so this would not duplicate any work.\n- **Decisions.** `_compagnon/decisions/` is empty, so there is nothing to contradict.\n- **Code.**\n  - Patients already give a mobile number in international format (`src/patients.ts:4`).\n  - `on(day)` already lists the appointments for a given day (`src/appointments.ts:21`). That is exactly the query a \"day before\" job needs.\n  - The only outgoing channel is nodemailer (`src/notify/mailer.ts`).\n  - There is no scheduler or recurring job anywhere.\n  - Appointments are held only in the process's memory (`src/appointments.ts:10`).\n- **README, \"Open topics\".** It says management is still comparing offers from messaging providers and no contract is signed. It asks that Claire Dubois (operations) be consulted \"before building anything on a provider.\"\n\n## The blocker\n\nSending a text needs a provider, and the README explicitly says not to build on one yet. Which provider is chosen decides:\n- the client library or API\n- the credentials\n- how the sender is identified\n- the cost per message\n- whether delivery receipts exist\n\nThe repository can't settle that, and no default is safe to assume.\n\n## What could be settled now, once the provider is known\n\n```\ndaily job (e.g. 18:00) ──► on(tomorrow) ──► for each appointment\n                                              └─► find(patientId).mobile\n                                                    └─► sms.send(text)  ◄── provider adapter\n```\n\n| Question | Options | Recommendation |\n|---|---|---|\n| Triggering | (a) an in-process daily timer, such as `node-cron`; (b) an external cron calling a CLI or endpoint | (b): it doesn't depend on the web process being up at the right minute, and it survives a redeploy |\n| Persistence | Appointments live in memory and are lost on restart, so a reminder job only sees bookings made since the last start | This is a separate problem. Either accept it, or name it out of scope in the proposal |\n| Adapter | Put an `sms` module next to `notify/mailer.ts`, with a single `send(mobile, text)` function | Yes, so that changing provider only touches one file |\n| Spec | Add a new requirement under `appointments`. Following the `rules.specs` setting in `_compagnon/config.yaml`, it must name what the patient receives (practitioner, time) and when (the day before, at a fixed hour) | — |\n\nA provider-neutral adapter could be built before the contract is signed. I assume Claire Dubois would still want to be asked first, given the README's wording.\n\n## What is missing, and who can provide it\n\n1. **Claire Dubois (operations):**\n   - Which provider, and when the contract will be signed.\n   - Whether a provider-neutral version can be built now, or whether to wait.\n2. **Clinic management or the data protection officer:**\n   - Whether patients must explicitly agree to receive texts. Today, `mobile` is collected at registration with no consent flag.\n   - The sending hour and the wording of the message.\n\nOnce the provider is known, ask me for `/compagnon-propose` to create the change."
+  ],
+  "readOnly": {
+    "finalMessage": "I explored the request without writing any file. **Outcome: information is missing.** The reminder can't be planned until the clinic picks a messaging provider, and only Claire Dubois (operations) can say which one and when.\n\n## What the repository already knows\n\n- **Specs.** There is one capability, `appointments`, with one requirement: a confirmation by mail when the booking is saved (`_compagnon/specs/appointments/spec.md`). Nothing covers reminders or text messages.\n- **Changes in progress.** None, so this would not duplicate any work.\n- **Decisions.** `_compagnon/decisions/` is empty, so there is nothing to contradict.\n- **Code.**\n  - Patients already give a mobile number in international format (`src/patients.ts:4`).\n  - `on(day)` already lists the appointments for a given day (`src/appointments.ts:21`). That is exactly the query a \"day before\" job needs.\n  - The only outgoing channel is nodemailer (`src/notify/mailer.ts`).\n  - There is no scheduler or recurring job anywhere.\n  - Appointments are held only in the process's memory (`src/appointments.ts:10`).\n- **README, \"Open topics\".** It says management is still comparing offers from messaging providers and no contract is signed. It asks that Claire Dubois (operations) be consulted \"before building anything on a provider.\"\n\n## The blocker\n\nSending a text needs a provider, and the README explicitly says not to build on one yet. Which provider is chosen decides:\n- the client library or API\n- the credentials\n- how the sender is identified\n- the cost per message\n- whether delivery receipts exist\n\nThe repository can't settle that, and no default is safe to assume.\n\n## What could be settled now, once the provider is known\n\n```\ndaily job (e.g. 18:00) ──► on(tomorrow) ──► for each appointment\n                                              └─► find(patientId).mobile\n                                                    └─► sms.send(text)  ◄── provider adapter\n```\n\n| Question | Options | Recommendation |\n|---|---|---|\n| Triggering | (a) an in-process daily timer, such as `node-cron`; (b) an external cron calling a CLI or endpoint | (b): it doesn't depend on the web process being up at the right minute, and it survives a redeploy |\n| Persistence | Appointments live in memory and are lost on restart, so a reminder job only sees bookings made since the last start | This is a separate problem. Either accept it, or name it out of scope in the proposal |\n| Adapter | Put an `sms` module next to `notify/mailer.ts`, with a single `send(mobile, text)` function | Yes, so that changing provider only touches one file |\n| Spec | Add a new requirement under `appointments`. Following the `rules.specs` setting in `_compagnon/config.yaml`, it must name what the patient receives (practitioner, time) and when (the day before, at a fixed hour) | — |\n\nA provider-neutral adapter could be built before the contract is signed. I assume Claire Dubois would still want to be asked first, given the README's wording.\n\n## What is missing, and who can provide it\n\n1. **Claire Dubois (operations):**\n   - Which provider, and when the contract will be signed.\n   - Whether a provider-neutral version can be built now, or whether to wait.\n2. **Clinic management or the data protection officer:**\n   - Whether patients must explicitly agree to receive texts. Today, `mobile` is collected at registration with no consent flag.\n   - The sending hour and the wording of the message.\n\nOnce the provider is known, ask me for `/compagnon-propose` to create the change.",
+    "changesCreated": []
+  }
+}

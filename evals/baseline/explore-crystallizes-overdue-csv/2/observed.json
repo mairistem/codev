@@ -1,0 +1,66 @@
+{
+  "format": 2,
+  "case": "explore-crystallizes-overdue-csv",
+  "error": null,
+  "costUsd": 0.1490494,
+  "durationMs": 25086,
+  "consumption": {
+    "durationApiMs": 23578,
+    "turns": 4,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 997,
+      "cacheCreation": 10747,
+      "cacheRead": 90842,
+      "output": 2205
+    },
+    "toolCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 6616,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 6616
+        }
+      },
+      {
+        "cacheCreation": 2226,
+        "cacheRead": 31744,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 758,
+          "skill": 1468
+        }
+      },
+      {
+        "cacheCreation": 1905,
+        "cacheRead": 33970,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "compagnon list": 1905
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "I followed the `compagnon-explore` skill. It is read-only, so I created and changed no files.\n\n## What the repository already knows\n\n- **Spec `loans`** (`_compagnon/specs/loans/spec.md`): the page `/loans/overdue` lists every loan that is late and not yet returned, most overdue first. Each row shows the book's title, the member's name and the number of days late. Nothing is specified about exporting.\n- **Changes in progress:** none (`compagnon list`), so nothing would be duplicated.\n- **Decisions:** `_compagnon/decisions/` is empty, so no settled choice gets in the way.\n- **Code:** `library/loans.py:39` `overdue(today, db)` already returns the right list. Each `OverdueLoan` holds `title`, `member`, `due` and `days_late`. `library/app.py:23` only puts that list into an HTML table. The CSV is a second way to show data the code already produces; it needs no new query.\n- **Config rules:** a requirement must describe what a librarian sees, not the Flask route. Tests go in `tests/`, one file per module.\n\n## Options\n\n| | Approach | Cost | What it rules out |\n|---|---|---|---|\n| **A** | A \"Download as CSV\" link on the overdue page. It returns the same list as a CSV file, built with Python's built-in `csv` module | Small: one route, one formatting function, two tests | Nothing. The automatic options can be added on top later |\n| B | The app emails the CSV to the town hall every month on its own | Needs email server settings, a scheduler and the town hall's address. Today the app is just Flask and SQLite | Adds infrastructure the app doesn't have |\n| C | A report per month: \"loans that were overdue during October\" | A new query covering past dates, and a new behaviour to specify | It's a different list from what the page shows; nothing in the request asks for it |\n\n**Recommendation: A.** The request says the librarians download the file and send it themselves, so the \"each month\" part is the librarians' routine, not something the app has to schedule. B and C solve problems nobody raised.\n\n## Choices I made without asking (the user could not answer)\n\n1. **Content:** the same loans in the same order as the page, plus the **due date**. The data already has it, and it's useful to someone reading the file without the page. Columns: title, member, due date, days late.\n2. **Format:** semicolon separators and UTF-8 with a BOM (a marker at the start of the file). I assume the town hall opens the file in a French-locale Excel. With commas and no BOM, Excel would put everything in one column and garble names like \"Léo\".\n3. **File name:** dated, e.g. `overdue-loans-2026-11-26.csv`, so each month's file is distinct.\n4. **No overdue loans:** the file still downloads, with the header row only.\n\nThe CSV adds no new exposure: there is no login, and the HTML page already shows the same data. One thing to keep in mind: member names will leave the library in this file. That's a data-protection question for the library, not a code one, and it doesn't block the change.\n\n## Outcome: **it crystallizes**\n\n1. **Problem:** each month the librarians must send the town hall the list of overdue loans, but the app only shows it as a web page.\n2. **Approach:** add a \"Download as CSV\" link on the overdue page. It produces a file with the same loans in the same order, with columns title, member, due date and days late, in the Excel-friendly format above. The code reuses `loans.overdue()`, adds a CSV-formatting function in `library/loans.py` and a route in `library/app.py`.\n3. **Scope:** one new requirement in the `loans` spec, with scenarios for \"two late loans, most overdue first\" and \"no late loans, header only\", plus tests in `tests/test_loans.py`. Left out: sending by email, scheduling, per-month history, logins.\n\nI can create the change — ask me for `/compagnon-propose`."
+  ],
+  "readOnly": {
+    "finalMessage": "I followed the `compagnon-explore` skill. It is read-only, so I created and changed no files.\n\n## What the repository already knows\n\n- **Spec `loans`** (`_compagnon/specs/loans/spec.md`): the page `/loans/overdue` lists every loan that is late and not yet returned, most overdue first. Each row shows the book's title, the member's name and the number of days late. Nothing is specified about exporting.\n- **Changes in progress:** none (`compagnon list`), so nothing would be duplicated.\n- **Decisions:** `_compagnon/decisions/` is empty, so no settled choice gets in the way.\n- **Code:** `library/loans.py:39` `overdue(today, db)` already returns the right list. Each `OverdueLoan` holds `title`, `member`, `due` and `days_late`. `library/app.py:23` only puts that list into an HTML table. The CSV is a second way to show data the code already produces; it needs no new query.\n- **Config rules:** a requirement must describe what a librarian sees, not the Flask route. Tests go in `tests/`, one file per module.\n\n## Options\n\n| | Approach | Cost | What it rules out |\n|---|---|---|---|\n| **A** | A \"Download as CSV\" link on the overdue page. It returns the same list as a CSV file, built with Python's built-in `csv` module | Small: one route, one formatting function, two tests | Nothing. The automatic options can be added on top later |\n| B | The app emails the CSV to the town hall every month on its own | Needs email server settings, a scheduler and the town hall's address. Today the app is just Flask and SQLite | Adds infrastructure the app doesn't have |\n| C | A report per month: \"loans that were overdue during October\" | A new query covering past dates, and a new behaviour to specify | It's a different list from what the page shows; nothing in the request asks for it |\n\n**Recommendation: A.** The request says the librarians download the file and send it themselves, so the \"each month\" part is the librarians' routine, not something the app has to schedule. B and C solve problems nobody raised.\n\n## Choices I made without asking (the user could not answer)\n\n1. **Content:** the same loans in the same order as the page, plus the **due date**. The data already has it, and it's useful to someone reading the file without the page. Columns: title, member, due date, days late.\n2. **Format:** semicolon separators and UTF-8 with a BOM (a marker at the start of the file). I assume the town hall opens the file in a French-locale Excel. With commas and no BOM, Excel would put everything in one column and garble names like \"Léo\".\n3. **File name:** dated, e.g. `overdue-loans-2026-11-26.csv`, so each month's file is distinct.\n4. **No overdue loans:** the file still downloads, with the header row only.\n\nThe CSV adds no new exposure: there is no login, and the HTML page already shows the same data. One thing to keep in mind: member names will leave the library in this file. That's a data-protection question for the library, not a code one, and it doesn't block the change.\n\n## Outcome: **it crystallizes**\n\n1. **Problem:** each month the librarians must send the town hall the list of overdue loans, but the app only shows it as a web page.\n2. **Approach:** add a \"Download as CSV\" link on the overdue page. It produces a file with the same loans in the same order, with columns title, member, due date and days late, in the Excel-friendly format above. The code reuses `loans.overdue()`, adds a CSV-formatting function in `library/loans.py` and a route in `library/app.py`.\n3. **Scope:** one new requirement in the `loans` spec, with scenarios for \"two late loans, most overdue first\" and \"no late loans, header only\", plus tests in `tests/test_loans.py`. Left out: sending by email, scheduling, per-month history, logins.\n\nI can create the change — ask me for `/compagnon-propose`.",
+    "changesCreated": []
+  }
+}

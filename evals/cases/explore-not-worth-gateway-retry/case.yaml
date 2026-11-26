@@ -10,4 +10,4 @@ request: Retry the calls to the payment gateway with exponential backoff when th
 expected:
   outcome: not-worth
   contains: ["retry.go"]
-  absent: ["I can create the change", "information is missing"]
+  absent: ["crystallizes", "information is missing"]

@@ -1,0 +1,85 @@
+{
+  "format": 2,
+  "case": "explore-missing-sms-reminders",
+  "error": null,
+  "costUsd": 0.1565574,
+  "durationMs": 21514,
+  "consumption": {
+    "durationApiMs": 19923,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 987,
+      "cacheCreation": 10751,
+      "cacheRead": 157462,
+      "output": 1911
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 6592,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6592
+        }
+      },
+      {
+        "cacheCreation": 1333,
+        "cacheRead": 31720,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 1333
+        }
+      },
+      {
+        "cacheCreation": 594,
+        "cacheRead": 33053,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon list": 594
+        }
+      },
+      {
+        "cacheCreation": 267,
+        "cacheRead": 33647,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 267
+        }
+      },
+      {
+        "cacheCreation": 1965,
+        "cacheRead": 33914,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "file": 1965
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "**Outcome: information is missing.** The exploration can't settle into a change yet, because the SMS provider hasn't been chosen and the README says not to build on one until it is.\n\n## What the repository already knows\n\n- **Specs:** the only capability is `appointments`, with one requirement: a booking is confirmed **by mail** (`_compagnon/specs/appointments/spec.md`). Nothing covers reminders or text messages.\n- **Changes in progress:** none, so this wouldn't duplicate other work.\n- **Decisions:** `_compagnon/decisions/` is empty, so no accepted decision gets in the way.\n- **Code:**\n  - Patients already give a mobile number in international format (`src/patients.ts:4-5`).\n  - `on(day)` in `src/appointments.ts:22` already returns the appointments for a given day, which is what a \"day before\" job needs.\n  - Nothing runs on a schedule. `src/server.ts` only handles `POST /appointments`.\n  - Appointments are stored in memory, so they are lost when the process restarts.\n- **The blocker:** the README says: *\"Text-message reminders: the clinic's management is comparing offers from messaging providers; no contract is signed. Ask Claire Dubois (operations) before building anything on a provider.\"*\n\n## How reminders would fit in\n\n```\n daily trigger (e.g. 18:00) ──► on(tomorrow) ──► for each appointment\n                                                   │ find(patientId).mobile\n                                                   ▼\n                                     src/notify/sms.ts ──► provider API (unknown)\n```\n\nThe main options:\n\n1. **Build on a provider now:** rejected. It goes against the README instruction, and the provider's API, sender ID rules and costs would decide much of the design.\n2. **Write a provider-neutral `sms.ts` with a stub sender, and add the scheduling and spec now:** possible, but it still builds \"toward\" a provider before operations has agreed, so it also needs Claire Dubois's go-ahead first.\n3. **Wait for the provider decision, then propose the whole thing as one change:** recommended. The work is small, and the provider affects the design.\n\n## Other points the code can't settle (I recommend a default for each)\n\n- **When reminders are sent:** I recommend a fixed time the evening before, such as 18:00 Europe/Paris, rather than exactly 24 hours before each appointment. It's simpler, and the existing `on(day)` already supports it.\n- **Where the scheduler runs:** I assume an in-process daily timer is acceptable. With in-memory storage there is nothing to share between processes anyway. If several instances or restarts are possible, an external cron would be safer.\n- **Patient consent and opt-out for SMS:** I recommend asking operations, because it may be a legal question (GDPR and medical confidentiality). Separately, I recommend keeping the message minimal: practitioner, day and time, with no medical detail.\n- **Appointments booked for tomorrow after the daily send:** I recommend sending no reminder, since the mail confirmation already covers them.\n\n## What is missing, and who can provide it\n\n1. **The chosen SMS provider, and confirmation that work can start.** From Claire Dubois (operations), who is waiting on management's comparison of offers.\n2. **Consent and opt-out rules, and the sender name.** From operations, and the clinic's DPO if it has one.\n\nOnce those answers exist, the change can be planned with `/compagnon-propose`. It would add a new spec requirement (what the patient receives, and when, following the config rule), a `src/notify/sms.ts` module, a daily scheduling entry point, and Jest tests next to each module."
+  ],
+  "readOnly": {
+    "finalMessage": "**Outcome: information is missing.** The exploration can't settle into a change yet, because the SMS provider hasn't been chosen and the README says not to build on one until it is.\n\n## What the repository already knows\n\n- **Specs:** the only capability is `appointments`, with one requirement: a booking is confirmed **by mail** (`_compagnon/specs/appointments/spec.md`). Nothing covers reminders or text messages.\n- **Changes in progress:** none, so this wouldn't duplicate other work.\n- **Decisions:** `_compagnon/decisions/` is empty, so no accepted decision gets in the way.\n- **Code:**\n  - Patients already give a mobile number in international format (`src/patients.ts:4-5`).\n  - `on(day)` in `src/appointments.ts:22` already returns the appointments for a given day, which is what a \"day before\" job needs.\n  - Nothing runs on a schedule. `src/server.ts` only handles `POST /appointments`.\n  - Appointments are stored in memory, so they are lost when the process restarts.\n- **The blocker:** the README says: *\"Text-message reminders: the clinic's management is comparing offers from messaging providers; no contract is signed. Ask Claire Dubois (operations) before building anything on a provider.\"*\n\n## How reminders would fit in\n\n```\n daily trigger (e.g. 18:00) ──► on(tomorrow) ──► for each appointment\n                                                   │ find(patientId).mobile\n                                                   ▼\n                                     src/notify/sms.ts ──► provider API (unknown)\n```\n\nThe main options:\n\n1. **Build on a provider now:** rejected. It goes against the README instruction, and the provider's API, sender ID rules and costs would decide much of the design.\n2. **Write a provider-neutral `sms.ts` with a stub sender, and add the scheduling and spec now:** possible, but it still builds \"toward\" a provider before operations has agreed, so it also needs Claire Dubois's go-ahead first.\n3. **Wait for the provider decision, then propose the whole thing as one change:** recommended. The work is small, and the provider affects the design.\n\n## Other points the code can't settle (I recommend a default for each)\n\n- **When reminders are sent:** I recommend a fixed time the evening before, such as 18:00 Europe/Paris, rather than exactly 24 hours before each appointment. It's simpler, and the existing `on(day)` already supports it.\n- **Where the scheduler runs:** I assume an in-process daily timer is acceptable. With in-memory storage there is nothing to share between processes anyway. If several instances or restarts are possible, an external cron would be safer.\n- **Patient consent and opt-out for SMS:** I recommend asking operations, because it may be a legal question (GDPR and medical confidentiality). Separately, I recommend keeping the message minimal: practitioner, day and time, with no medical detail.\n- **Appointments booked for tomorrow after the daily send:** I recommend sending no reminder, since the mail confirmation already covers them.\n\n## What is missing, and who can provide it\n\n1. **The chosen SMS provider, and confirmation that work can start.** From Claire Dubois (operations), who is waiting on management's comparison of offers.\n2. **Consent and opt-out rules, and the sender name.** From operations, and the clinic's DPO if it has one.\n\nOnce those answers exist, the change can be planned with `/compagnon-propose`. It would add a new spec requirement (what the patient receives, and when, following the config rule), a `src/notify/sms.ts` module, a daily scheduling entry point, and Jest tests next to each module.",
+    "changesCreated": []
+  }
+}

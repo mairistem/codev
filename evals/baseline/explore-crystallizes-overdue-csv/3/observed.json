@@ -1,0 +1,75 @@
+{
+  "format": 2,
+  "case": "explore-crystallizes-overdue-csv",
+  "error": null,
+  "costUsd": 0.1557074,
+  "durationMs": 24829,
+  "consumption": {
+    "durationApiMs": 23249,
+    "turns": 4,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 999,
+      "cacheCreation": 10760,
+      "cacheRead": 123622,
+      "output": 2206
+    },
+    "toolCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 6616,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6616
+        }
+      },
+      {
+        "cacheCreation": 1336,
+        "cacheRead": 31744,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 1336
+        }
+      },
+      {
+        "cacheCreation": 590,
+        "cacheRead": 33080,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon list": 590
+        }
+      },
+      {
+        "cacheCreation": 2218,
+        "cacheRead": 33670,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "file": 2218
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "## Exploring: overdue loans as a CSV for the town hall\n\n### What the repository already has\n\n- **Spec `loans`** (`_compagnon/specs/loans/spec.md`): the page `/loans/overdue` lists the loans that are not returned and past due. It shows the most overdue first, with the book's title, the member's name and the number of days late. Nothing in the spec covers an export.\n- **No change in progress** (`compagnon list`) and **no accepted decisions** (`_compagnon/decisions/` is empty), so there's nothing to conflict with or duplicate.\n- **Code:** `library/loans.py:39` already has `overdue(today, db)`, which returns `OverdueLoan(title, member, due, days_late)` rows in the right order. `library/app.py:23` just renders them as HTML. The data side of the CSV is already built; this feature is only another way of showing it.\n- **Config rules:**\n  - Requirements describe what a librarian sees, not the Flask route.\n  - The design must name the module it touches.\n  - Tests go in `tests/`, one file per module.\n\n  There's no `tests/test_app.py` yet, so the change would create it.\n\n```\nloans.overdue(today) ──┬──> /loans/overdue      (HTML table, existing)\n                       └──> /loans/overdue.csv  (download, new)\n```\n\n### Options\n\n1. **A separate download route `/loans/overdue.csv`, linked from the overdue page.** Recommended. It reuses `loans.overdue()` unchanged and needs only the standard-library `csv` module, with no new dependency. The HTML page and the CSV stay in sync by construction, and it's easy to test with Flask's test client.\n2. **`/loans/overdue?format=csv` on the existing route.** Same cost, but one route then does two jobs. It's less clear to test and to describe in the spec. No real advantage.\n3. **Automatic monthly email to the town hall.** It would need a scheduler, SMTP setup and the recipient's address, none of which exist. The request says the librarians *download* and send the file, so this goes beyond it. Rule it out.\n\n### Points the code can't settle, with the defaults I'd take\n\nNobody is available to answer during this run, so I'm stating each default as an assumption:\n\n- **What \"each month\" means.** I assume the file is a **snapshot of the loans overdue on the day it's downloaded**, the same content as the page. A report of every loan that was overdue during the month would need history and a different query, which is a separate feature.\n- **Columns.** The page's three columns plus the **due date**, which a reader outside the library needs. That's: title, member, due date, days late.\n- **Format for French office software.** I assume the town hall opens the file in Excel or LibreOffice with French settings. So: **`;` as the separator, UTF-8 with a BOM** (names like \"Léo\" must show correctly), and ISO dates.\n- **File name.** `retards-AAAA-MM-JJ.csv`, so each month's file is distinct.\n- **Members' personal data.** Sending members' names to the town hall is a data-protection question (France, GDPR), not a technical one. The code can't settle it. I assume the library has agreed to send names, because the request shows the same data as the page. The proposal should **flag it as an open point** for the library to confirm. If names must be left out, it's one column less and the rest of the plan doesn't change.\n- **Access.** The app has no authentication today. The export is exactly as exposed as the existing page, so it adds no new risk, and I'd leave access control out of scope.\n\n### Conclusion: it crystallizes\n\n1. **Problem:** each month, the librarians must send the list of overdue loans to the town hall. Today they can only view it as a web page.\n2. **Approach:** add a \"Download as CSV\" link on the overdue page. It serves the same loans, in the same order (most overdue first), as a `;`-separated UTF-8 file with a BOM. The columns are title, member, due date and days late, and the file is named by the date. It reuses `loans.overdue()` and touches only `library/app.py`, tested in a new `tests/test_app.py`.\n3. **Scope:**\n   - **In:** one new requirement in the `loans` spec (\"The librarians download the overdue loans as a file\") with a scenario checking the order and columns, the route and the link.\n   - **Out:** monthly history, automatic emailing, authentication.\n   - **Open point to record in the proposal:** the library must confirm that members' names may be sent to the town hall.\n\nI can create the change — ask me for `/compagnon-propose`."
+  ],
+  "readOnly": {
+    "finalMessage": "## Exploring: overdue loans as a CSV for the town hall\n\n### What the repository already has\n\n- **Spec `loans`** (`_compagnon/specs/loans/spec.md`): the page `/loans/overdue` lists the loans that are not returned and past due. It shows the most overdue first, with the book's title, the member's name and the number of days late. Nothing in the spec covers an export.\n- **No change in progress** (`compagnon list`) and **no accepted decisions** (`_compagnon/decisions/` is empty), so there's nothing to conflict with or duplicate.\n- **Code:** `library/loans.py:39` already has `overdue(today, db)`, which returns `OverdueLoan(title, member, due, days_late)` rows in the right order. `library/app.py:23` just renders them as HTML. The data side of the CSV is already built; this feature is only another way of showing it.\n- **Config rules:**\n  - Requirements describe what a librarian sees, not the Flask route.\n  - The design must name the module it touches.\n  - Tests go in `tests/`, one file per module.\n\n  There's no `tests/test_app.py` yet, so the change would create it.\n\n```\nloans.overdue(today) ──┬──> /loans/overdue      (HTML table, existing)\n                       └──> /loans/overdue.csv  (download, new)\n```\n\n### Options\n\n1. **A separate download route `/loans/overdue.csv`, linked from the overdue page.** Recommended. It reuses `loans.overdue()` unchanged and needs only the standard-library `csv` module, with no new dependency. The HTML page and the CSV stay in sync by construction, and it's easy to test with Flask's test client.\n2. **`/loans/overdue?format=csv` on the existing route.** Same cost, but one route then does two jobs. It's less clear to test and to describe in the spec. No real advantage.\n3. **Automatic monthly email to the town hall.** It would need a scheduler, SMTP setup and the recipient's address, none of which exist. The request says the librarians *download* and send the file, so this goes beyond it. Rule it out.\n\n### Points the code can't settle, with the defaults I'd take\n\nNobody is available to answer during this run, so I'm stating each default as an assumption:\n\n- **What \"each month\" means.** I assume the file is a **snapshot of the loans overdue on the day it's downloaded**, the same content as the page. A report of every loan that was overdue during the month would need history and a different query, which is a separate feature.\n- **Columns.** The page's three columns plus the **due date**, which a reader outside the library needs. That's: title, member, due date, days late.\n- **Format for French office software.** I assume the town hall opens the file in Excel or LibreOffice with French settings. So: **`;` as the separator, UTF-8 with a BOM** (names like \"Léo\" must show correctly), and ISO dates.\n- **File name.** `retards-AAAA-MM-JJ.csv`, so each month's file is distinct.\n- **Members' personal data.** Sending members' names to the town hall is a data-protection question (France, GDPR), not a technical one. The code can't settle it. I assume the library has agreed to send names, because the request shows the same data as the page. The proposal should **flag it as an open point** for the library to confirm. If names must be left out, it's one column less and the rest of the plan doesn't change.\n- **Access.** The app has no authentication today. The export is exactly as exposed as the existing page, so it adds no new risk, and I'd leave access control out of scope.\n\n### Conclusion: it crystallizes\n\n1. **Problem:** each month, the librarians must send the list of overdue loans to the town hall. Today they can only view it as a web page.\n2. **Approach:** add a \"Download as CSV\" link on the overdue page. It serves the same loans, in the same order (most overdue first), as a `;`-separated UTF-8 file with a BOM. The columns are title, member, due date and days late, and the file is named by the date. It reuses `loans.overdue()` and touches only `library/app.py`, tested in a new `tests/test_app.py`.\n3. **Scope:**\n   - **In:** one new requirement in the `loans` spec (\"The librarians download the overdue loans as a file\") with a scenario checking the order and columns, the route and the link.\n   - **Out:** monthly history, automatic emailing, authentication.\n   - **Open point to record in the proposal:** the library must confirm that members' names may be sent to the town hall.\n\nI can create the change — ask me for `/compagnon-propose`.",
+    "changesCreated": []
+  }
+}

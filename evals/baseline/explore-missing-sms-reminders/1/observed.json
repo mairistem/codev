@@ -1,0 +1,85 @@
+{
+  "format": 2,
+  "case": "explore-missing-sms-reminders",
+  "error": null,
+  "costUsd": 0.1556186,
+  "durationMs": 21437,
+  "consumption": {
+    "durationApiMs": 19752,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 987,
+      "cacheCreation": 10771,
+      "cacheRead": 157468,
+      "output": 1856
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 6592,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6592
+        }
+      },
+      {
+        "cacheCreation": 1333,
+        "cacheRead": 31720,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 1333
+        }
+      },
+      {
+        "cacheCreation": 594,
+        "cacheRead": 33053,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon list": 594
+        }
+      },
+      {
+        "cacheCreation": 273,
+        "cacheRead": 33647,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 273
+        }
+      },
+      {
+        "cacheCreation": 1979,
+        "cacheRead": 33920,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "file": 1979
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "I explored this. **The outcome is ending 2: information is missing.** I wrote no files and created no change.\n\n## What the repository already settles\n\n- **The spec has one requirement for telling patients about appointments.** `_compagnon/specs/appointments/spec.md` covers only the booking confirmation sent by mail. Nothing covers reminders or text messages. There are no active changes and no decisions in `_compagnon/decisions/`, so this wouldn't duplicate or contradict anything.\n- **Patients already have a mobile number.** `Patient.mobile` in `src/patients.ts` is collected at registration, in international format.\n- **The clinic sends no text messages today.** There is no SMS dependency in `package.json`, and the only outgoing channel is nodemailer in `src/notify/mailer.ts`.\n- **The README names this as an open topic:** management is still comparing messaging providers, no contract is signed, and Claire Dubois (operations) should be asked before building anything on a provider.\n\n## What's blocking\n\nThe main choice can't be made from the code: **which SMS provider to use, and on what terms.** Who signs that contract decides the SDK or API, the sender ID, the cost per message, and possibly where patient data is processed. That matters for a medical clinic under GDPR. The README is explicit that this is not ours to decide.\n\n**Who can unblock it:** Claire Dubois (operations), who can say which provider is chosen, or when one will be.\n\n## Points to settle alongside it (with my recommended defaults)\n\n1. **What triggers the reminder.** Nothing in `src/` runs on a schedule, and appointments live in an in-memory array (`src/appointments.ts`). Options:\n   - **A daily job inside the service** that calls `on(tomorrow)` and sends one SMS per appointment. This is the cheapest option and reuses the existing `on(day)`. The catch: the in-memory store is lost on restart, and if several instances run, each one sends the reminders, so patients get duplicates. **Recommended**, as long as the service runs as a single instance (I assume it does; I haven't verified this).\n   - **An external cron hitting an endpoint.** This is more robust to restarts, but it needs a deployment change and the endpoint has to be protected.\n2. **Avoiding duplicate sends.** If the job runs twice, should a patient get two texts? I recommend recording on the appointment that the reminder was sent.\n3. **Consent and opt-out.** Do patients have to agree to receive text messages? This is a question for operations or legal, like the provider. I recommend sending only to patients who have opted in.\n4. **Isolating the provider.** I recommend a small `src/notify/sms.ts` module next to `mailer.ts`, kept behind a single function, so the provider can be swapped without touching the reminder logic.\n\n## Scope once the provider is known\n\n- **Problem:** patients receive a confirmation when they book, but nothing the day before.\n- **Approach:** a daily job sends a text the day before the appointment to the patient's mobile, naming the practitioner and the time, through a `notify/sms` module.\n- **Scope:** one new requirement in the `appointments` spec, the scheduler, the SMS module and Jest tests. The provider contract and consent policy stay out of scope.\n\nOnce Claire Dubois confirms the provider and the consent rules, this is ready to become a change. Ask me for `/compagnon-propose` at that point."
+  ],
+  "readOnly": {
+    "finalMessage": "I explored this. **The outcome is ending 2: information is missing.** I wrote no files and created no change.\n\n## What the repository already settles\n\n- **The spec has one requirement for telling patients about appointments.** `_compagnon/specs/appointments/spec.md` covers only the booking confirmation sent by mail. Nothing covers reminders or text messages. There are no active changes and no decisions in `_compagnon/decisions/`, so this wouldn't duplicate or contradict anything.\n- **Patients already have a mobile number.** `Patient.mobile` in `src/patients.ts` is collected at registration, in international format.\n- **The clinic sends no text messages today.** There is no SMS dependency in `package.json`, and the only outgoing channel is nodemailer in `src/notify/mailer.ts`.\n- **The README names this as an open topic:** management is still comparing messaging providers, no contract is signed, and Claire Dubois (operations) should be asked before building anything on a provider.\n\n## What's blocking\n\nThe main choice can't be made from the code: **which SMS provider to use, and on what terms.** Who signs that contract decides the SDK or API, the sender ID, the cost per message, and possibly where patient data is processed. That matters for a medical clinic under GDPR. The README is explicit that this is not ours to decide.\n\n**Who can unblock it:** Claire Dubois (operations), who can say which provider is chosen, or when one will be.\n\n## Points to settle alongside it (with my recommended defaults)\n\n1. **What triggers the reminder.** Nothing in `src/` runs on a schedule, and appointments live in an in-memory array (`src/appointments.ts`). Options:\n   - **A daily job inside the service** that calls `on(tomorrow)` and sends one SMS per appointment. This is the cheapest option and reuses the existing `on(day)`. The catch: the in-memory store is lost on restart, and if several instances run, each one sends the reminders, so patients get duplicates. **Recommended**, as long as the service runs as a single instance (I assume it does; I haven't verified this).\n   - **An external cron hitting an endpoint.** This is more robust to restarts, but it needs a deployment change and the endpoint has to be protected.\n2. **Avoiding duplicate sends.** If the job runs twice, should a patient get two texts? I recommend recording on the appointment that the reminder was sent.\n3. **Consent and opt-out.** Do patients have to agree to receive text messages? This is a question for operations or legal, like the provider. I recommend sending only to patients who have opted in.\n4. **Isolating the provider.** I recommend a small `src/notify/sms.ts` module next to `mailer.ts`, kept behind a single function, so the provider can be swapped without touching the reminder logic.\n\n## Scope once the provider is known\n\n- **Problem:** patients receive a confirmation when they book, but nothing the day before.\n- **Approach:** a daily job sends a text the day before the appointment to the patient's mobile, naming the practitioner and the time, through a `notify/sms` module.\n- **Scope:** one new requirement in the `appointments` spec, the scheduler, the SMS module and Jest tests. The provider contract and consent policy stay out of scope.\n\nOnce Claire Dubois confirms the provider and the consent rules, this is ready to become a change. Ask me for `/compagnon-propose` at that point.",
+    "changesCreated": []
+  }
+}

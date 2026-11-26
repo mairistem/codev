@@ -1,0 +1,90 @@
+{
+  "format": 2,
+  "case": "onboard-planning-incomplete",
+  "error": null,
+  "costUsd": 0.181127,
+  "durationMs": 17370,
+  "consumption": {
+    "durationApiMs": 16635,
+    "turns": 12,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 974,
+      "cacheCreation": 13713,
+      "cacheRead": 165170,
+      "output": 1882
+    },
+    "toolCalls": 11,
+    "calls": [
+      {
+        "cacheCreation": 6569,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6569
+        }
+      },
+      {
+        "cacheCreation": 3330,
+        "cacheRead": 31697,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3330
+        }
+      },
+      {
+        "cacheCreation": 285,
+        "cacheRead": 35027,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 7,
+        "sources": {
+          "compagnon list": 285
+        }
+      },
+      {
+        "cacheCreation": 2694,
+        "cacheRead": 35312,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "compagnon decision": 40,
+          "compagnon doctor": 1816,
+          "compagnon list": 38,
+          "file": 603,
+          "search": 198
+        }
+      },
+      {
+        "cacheCreation": 835,
+        "cacheRead": 38006,
+        "input": 2,
+        "output": 333,
+        "toolCalls": 0,
+        "sources": {
+          "compagnon status": 348,
+          "skill": 487
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "**Compagnon** is a versioned planning tool for software projects: every change goes through a **propose → apply → archive** cycle, recorded in `_compagnon/`. A Claude Code skill (`/compagnon-<step>`) drives each step, and the `compagnon` CLI does the underlying work. Your planning is stored in the repository next to the code.\n\nHere you have:\n- 1 main spec: `tasks`\n- 0 local decisions in effect, 0 inherited\n- 1 active change: `add-due-dates` (planning 1/4: proposal done; specs, design and tasks not yet written)\n- Setup to complete:\n  - `validate` — fix: `compagnon validate`\n  - `ci` — fix: add `compagnon validate --strict` to your CI pipeline\n- 2 warnings, see `compagnon doctor`\n\n**What's next**: the planning for `add-due-dates` is incomplete. Type `/compagnon-propose add-due-dates` to write the specs and design next, then the tasks."
+  ],
+  "readOnly": {
+    "finalMessage": "**Compagnon** is a versioned planning tool for software projects: every change goes through a **propose → apply → archive** cycle, recorded in `_compagnon/`. A Claude Code skill (`/compagnon-<step>`) drives each step, and the `compagnon` CLI does the underlying work. Your planning is stored in the repository next to the code.\n\nHere you have:\n- 1 main spec: `tasks`\n- 0 local decisions in effect, 0 inherited\n- 1 active change: `add-due-dates` (planning 1/4: proposal done; specs, design and tasks not yet written)\n- Setup to complete:\n  - `validate` — fix: `compagnon validate`\n  - `ci` — fix: add `compagnon validate --strict` to your CI pipeline\n- 2 warnings, see `compagnon doctor`\n\n**What's next**: the planning for `add-due-dates` is incomplete. Type `/compagnon-propose add-due-dates` to write the specs and design next, then the tasks.",
+    "changesCreated": []
+  }
+}

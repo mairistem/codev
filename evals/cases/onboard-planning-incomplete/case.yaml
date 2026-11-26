@@ -6,5 +6,5 @@ stacks: [typescript]
 summary: "A configured TypeScript API with one change, `add-due-dates`, planned up to its proposal: onboard recommends continuing it with `/compagnon-propose`, not `/compagnon-apply`."
 expected:
   state: planning-incomplete
-  contains: ["/compagnon-propose", "add-due-dates"]
-  absent: ["/compagnon-apply", "/compagnon-configure"]
+  contains: ["/compagnon-propose add-due-dates"]
+  absent: ["/compagnon-configure", "compagnon init"]

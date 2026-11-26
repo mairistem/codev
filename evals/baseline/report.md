@@ -4,9 +4,9 @@
 - Model: Claude Code's default
 - Claude Code: 2.1.289 (Claude Code)
 - compagnon: compagnon 0.6.1
-- Cases: 92
+- Cases: 101
 - Repetitions: 5
-- Cost: 77.13 USD for one run of the suite (sum of the cases' medians), 388.20 USD in all
+- Cost: 78.50 USD for one run of the suite (sum of the cases' medians), 395.05 USD in all
 - Thresholds: recall ≥ 0.50, false positives ≤ 2, evidence validity ≥ 0.80
 - Verdict: **fail**
 
@@ -82,6 +82,22 @@ Per repetition, every configure run pooled: the share of runs whose every check 
 |---|---|---|---|---|
 | 5 | 0.40 (0.20–0.60) | 0.91 (0.71–0.94) | 0 | 1.31 |
 
+## `idea.explore`
+
+Per repetition, every explore run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges these against the baseline, step by step and case by case.
+
+| Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
+|---|---|---|---|---|
+| 3 | 1.00 | 1.00 | 0 | 0.45 |
+
+## `project.onboard`
+
+Per repetition, every onboard run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `compagnon-evals compare` judges these against the baseline, step by step and case by case.
+
+| Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
+|---|---|---|---|---|
+| 6 | 1.00 | 1.00 | 0 | 0.92 |
+
 ## Consumption
 
 Per case, the median over its runs not in error; per role and for the suite, the sum of those medians. Tokens are summed over every model a run used.
@@ -97,7 +113,7 @@ Per case, the median over its runs not in error; per role and for the suite, the
 | security | 1.92 | 154 | 153 | 46 | 2 | 7042 | 167082 | 1479147 | 13753 | 38 | 44545 | 365 |
 | skeptic | 1.20 | 109 | 109 | 31 | 6 | 3488 | 95501 | 1069377 | 10733 | 25 | 46659 | 418 |
 | tracer | 0.58 | 39 | 39 | 19 | 4 | 2180 | 53041 | 444499 | 3896 | 12 | 41555 | 344 |
-| **Suite** | 77.13 | 9390 | 10259 | 1391 | 94 | 103952 | 4907598 | 95251885 | 986327 | 1374 | 72396 | 702 |
+| **Suite** | 78.50 | 9528 | 10389 | 1461 | 101 | 112769 | 5013133 | 96568870 | 999374 | 1415 | 71310 | 691 |
 
 ## Where the tokens go
 
@@ -105,24 +121,26 @@ The tokens written to the cache, by source: per case the median over its runs, s
 
 | Source | Tokens | Share |
 |---|---:|---:|
-| skill | 1085907 | 22 % |
-| file | 1060226 | 22 % |
-| prompt | 702154 | 14 % |
+| skill | 1110353 | 22 % |
+| file | 1068284 | 22 % |
+| prompt | 760284 | 15 % |
 | edit | 428935 | 9 % |
-| search | 403335 | 8 % |
-| shell | 347590 | 7 % |
+| search | 403871 | 8 % |
+| shell | 348038 | 7 % |
 | output | 184447 | 4 % |
 | compagnon instructions | 172598 | 4 % |
 | compagnon roles | 111141 | 2 % |
 | compagnon review | 100105 | 2 % |
 | compagnon validate | 81415 | 2 % |
 | compagnon new | 62257 | 1 % |
-| compagnon status | 44523 | 1 % |
+| compagnon status | 45592 | 1 % |
 | agent | 36667 | 1 % |
-| compagnon list | 26508 | 0 % |
+| compagnon list | 30411 | 1 % |
+| compagnon doctor | 8184 | 0 % |
 | compagnon archive | 3084 | 0 % |
 | compagnon --help | 2347 | 0 % |
 | compagnon sync | 1943 | 0 % |
+| compagnon decision | 179 | 0 % |
 
 ### `change.archive`
 
@@ -188,6 +206,16 @@ The tokens written to the cache, by source: per case the median over its runs, s
 | shell | 2513 | 2 % |
 | output | 2149 | 2 % |
 
+### `idea.explore`
+
+| Source | Tokens | Share |
+|---|---:|---:|
+| prompt | 19813 | 61 % |
+| file | 6541 | 20 % |
+| skill | 4001 | 12 % |
+| compagnon list | 1800 | 6 % |
+| shell | 267 | 1 % |
+
 ### `plan.challenge`
 
 | Source | Tokens | Share |
@@ -247,6 +275,20 @@ The tokens written to the cache, by source: per case the median over its runs, s
 | compagnon --help | 2347 | 0 % |
 | compagnon list | 507 | 0 % |
 | compagnon status | 295 | 0 % |
+
+### `project.onboard`
+
+| Source | Tokens | Share |
+|---|---:|---:|
+| prompt | 38317 | 53 % |
+| skill | 20445 | 28 % |
+| compagnon doctor | 8184 | 11 % |
+| compagnon list | 2103 | 3 % |
+| file | 1517 | 2 % |
+| compagnon status | 1069 | 2 % |
+| search | 536 | 1 % |
+| shell | 181 | 0 % |
+| compagnon decision | 179 | 0 % |
 
 ## Failures
 
@@ -1239,6 +1281,214 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Check `compagnon status --json` reads the configuration: passed
 - Check no file modified outside the step: passed
 
+### explore-crystallizes-overdue-csv
+
+- Role: planner at `idea.explore`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.15 · 25 · 23 · 4 · 0 · 999 · 10760 · 123621 · 2205 · 4 · 33847 · 552
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.15 USD, 21 s
+- Tool calls: 3, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "information is missing": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.15 USD, 25 s
+- Tool calls: 3, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "information is missing": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.16 USD, 24 s
+- Tool calls: 3, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "information is missing": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.15 USD, 26 s
+- Tool calls: 3, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "information is missing": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.15 USD, 23 s
+- Tool calls: 3, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "information is missing": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+### explore-missing-sms-reminders
+
+- Role: planner at `idea.explore`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.16 · 22 · 21 · 5 · 1 · 987 · 10765 · 157462 · 1915 · 5 · 33845 · 383
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.16 USD, 21 s
+- Tool calls: 4, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "provider": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.16 USD, 24 s
+- Tool calls: 4, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "provider": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.18 USD, 29 s
+- Tool calls: 12, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "provider": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.16 USD, 21 s
+- Tool calls: 4, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "provider": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.16 USD, 22 s
+- Tool calls: 4, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "provider": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "not worth pursuing": passed
+- Check the final message does not say "wasn't worth pursuing": passed
+
+### explore-not-worth-gateway-retry
+
+- Role: planner at `idea.explore`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.14 · 17 · 16 · 4 · 0 · 991 · 11209 · 123605 · 1559 · 4 · 34024 · 399
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.16 USD, 17 s
+- Tool calls: 4, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "retry.go": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "information is missing": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.14 USD, 17 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "retry.go": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "information is missing": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.14 USD, 17 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "retry.go": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "information is missing": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.14 USD, 17 s
+- Tool calls: 2, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "retry.go": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "information is missing": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.15 USD, 18 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "retry.go": passed
+- Check the final message does not say "crystallizes": passed
+- Check the final message does not say "information is missing": passed
+
 ### implement-decision-accept-command
 
 - Role: planner at `code.implement`, seeded
@@ -2101,6 +2351,422 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Outcome: scored
 - Cost: 0.24 USD, 10 s
 - Tool calls: 4, 2 before the first artifact
+
+### onboard-configured
+
+- Role: planner at `project.onboard`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.16 · 13 · 13 · 10 · 1 · 974 · 12746 · 164725 · 1295 · 5 · 35689 · 259
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.16 USD, 13 s
+- Tool calls: 10, no artifact written
+- Checks: 7 of 7 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "README.md": passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.16 USD, 12 s
+- Tool calls: 9, no artifact written
+- Checks: 7 of 7 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "README.md": passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.16 USD, 13 s
+- Tool calls: 9, no artifact written
+- Checks: 7 of 7 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "README.md": passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.16 USD, 12 s
+- Tool calls: 9, no artifact written
+- Checks: 7 of 7 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "README.md": passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.16 USD, 13 s
+- Tool calls: 9, no artifact written
+- Checks: 7 of 7 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "README.md": passed
+- Check the final message says "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+### onboard-no-compagnon
+
+- Role: planner at `project.onboard`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.11 · 8 · 8 · 4 · 1 · 972 · 9267 · 126427 · 632 · 4 · 34167 · 158
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.11 USD, 8 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "compagnon init": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.11 USD, 8 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "compagnon init": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.11 USD, 7 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "compagnon init": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.11 USD, 8 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "compagnon init": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.11 USD, 8 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "compagnon init": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+### onboard-planning-complete
+
+- Role: planner at `project.onboard`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.17 · 14 · 13 · 11 · 1 · 974 · 12985 · 164743 · 1332 · 5 · 35764 · 266
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.16 USD, 13 s
+- Tool calls: 10, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-apply": passed
+- Check the final message says "add-ingredient-search": passed
+- Check the final message does not say "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.18 USD, 16 s
+- Tool calls: 11, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-apply": passed
+- Check the final message says "add-ingredient-search": passed
+- Check the final message does not say "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.17 USD, 13 s
+- Tool calls: 10, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-apply": passed
+- Check the final message says "add-ingredient-search": passed
+- Check the final message does not say "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.16 USD, 11 s
+- Tool calls: 9, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-apply": passed
+- Check the final message says "add-ingredient-search": passed
+- Check the final message does not say "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.17 USD, 14 s
+- Tool calls: 10, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-apply": passed
+- Check the final message says "add-ingredient-search": passed
+- Check the final message does not say "/compagnon-propose": passed
+- Check the final message does not say "/compagnon-configure": passed
+
+### onboard-planning-incomplete
+
+- Role: planner at `project.onboard`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.16 · 13 · 13 · 10 · 1 · 974 · 12469 · 164241 · 1309 · 5 · 35537 · 262
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.14 USD, 9 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose add-due-dates": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.17 USD, 14 s
+- Tool calls: 9, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose add-due-dates": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.16 USD, 13 s
+- Tool calls: 9, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose add-due-dates": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.18 USD, 17 s
+- Tool calls: 11, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose add-due-dates": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.14 USD, 9 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-propose add-due-dates": passed
+- Check the final message does not say "/compagnon-configure": passed
+- Check the final message does not say "compagnon init": passed
+
+### onboard-several-changes
+
+- Role: planner at `project.onboard`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.17 · 14 · 13 · 12 · 1 · 974 · 12781 · 164360 · 1470 · 5 · 35628 · 272
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.15 USD, 11 s
+- Tool calls: 4, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "add-bookmark-tags": passed
+- Check the final message says "import-browser-bookmarks": passed
+- Check the final message does not say "/compagnon-apply add-bookmark-tags": passed
+- Check the final message does not say "/compagnon-apply import-browser-bookmarks": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.17 USD, 14 s
+- Tool calls: 11, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "add-bookmark-tags": passed
+- Check the final message says "import-browser-bookmarks": passed
+- Check the final message does not say "/compagnon-apply add-bookmark-tags": passed
+- Check the final message does not say "/compagnon-apply import-browser-bookmarks": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.14 USD, 10 s
+- Tool calls: 3, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "add-bookmark-tags": passed
+- Check the final message says "import-browser-bookmarks": passed
+- Check the final message does not say "/compagnon-apply add-bookmark-tags": passed
+- Check the final message does not say "/compagnon-apply import-browser-bookmarks": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.18 USD, 16 s
+- Tool calls: 11, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "add-bookmark-tags": passed
+- Check the final message says "import-browser-bookmarks": passed
+- Check the final message does not say "/compagnon-apply add-bookmark-tags": passed
+- Check the final message does not say "/compagnon-apply import-browser-bookmarks": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.17 USD, 13 s
+- Tool calls: 11, no artifact written
+- Checks: 6 of 6 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "add-bookmark-tags": passed
+- Check the final message says "import-browser-bookmarks": passed
+- Check the final message does not say "/compagnon-apply add-bookmark-tags": passed
+- Check the final message does not say "/compagnon-apply import-browser-bookmarks": passed
+
+### onboard-thin-config
+
+- Role: planner at `project.onboard`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.15 · 12 · 12 · 10 · 1 · 972 · 12553 · 127801 · 1330 · 4 · 35275 · 287
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.15 USD, 12 s
+- Tool calls: 9, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-configure": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.17 USD, 14 s
+- Tool calls: 9, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-configure": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.15 USD, 12 s
+- Tool calls: 8, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-configure": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.15 USD, 11 s
+- Tool calls: 7, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-configure": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "compagnon init": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.16 USD, 13 s
+- Tool calls: 9, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check no file modified, created or removed: passed
+- Check no change created under `_compagnon/changes/`: passed
+- Check the final message says "/compagnon-configure": passed
+- Check the final message does not say "/compagnon-apply": passed
+- Check the final message does not say "compagnon init": passed
 
 ### ops-code-no-timeout
 

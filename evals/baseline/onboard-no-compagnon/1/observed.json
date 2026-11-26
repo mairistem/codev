@@ -1,0 +1,75 @@
+{
+  "format": 2,
+  "case": "onboard-no-compagnon",
+  "error": null,
+  "costUsd": 0.1128024,
+  "durationMs": 8325,
+  "consumption": {
+    "durationApiMs": 7714,
+    "turns": 4,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 972,
+      "cacheCreation": 9267,
+      "cacheRead": 126427,
+      "output": 632
+    },
+    "toolCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 5511,
+        "cacheRead": 25754,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 5511
+        }
+      },
+      {
+        "cacheCreation": 3329,
+        "cacheRead": 31265,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3329
+        }
+      },
+      {
+        "cacheCreation": 220,
+        "cacheRead": 34594,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon list": 220
+        }
+      },
+      {
+        "cacheCreation": 207,
+        "cacheRead": 34814,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "compagnon list": 207
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "> **Compagnon** is a versioned planning tool for software projects: every change goes through a **propose → apply → archive** cycle, documented in `_compagnon/`. A Claude Code skill (`/compagnon-<step>`) drives each step, and the `compagnon` CLI does the underlying work. Your planning lives in the repository, next to the code.\n\n**Here you have:** Compagnon isn't set up in this repository yet. There is no `_compagnon/` folder under the current directory, so `compagnon list` stopped with \"no compagnon project found\".\n\n**What's next:** at the project root, type:\n\n```bash\ncompagnon init\n```\n\nThis creates `_compagnon/`. Then run `/compagnon-onboard` again to see the project's state and your first step."
+  ],
+  "readOnly": {
+    "finalMessage": "> **Compagnon** is a versioned planning tool for software projects: every change goes through a **propose → apply → archive** cycle, documented in `_compagnon/`. A Claude Code skill (`/compagnon-<step>`) drives each step, and the `compagnon` CLI does the underlying work. Your planning lives in the repository, next to the code.\n\n**Here you have:** Compagnon isn't set up in this repository yet. There is no `_compagnon/` folder under the current directory, so `compagnon list` stopped with \"no compagnon project found\".\n\n**What's next:** at the project root, type:\n\n```bash\ncompagnon init\n```\n\nThis creates `_compagnon/`. Then run `/compagnon-onboard` again to see the project's state and your first step.",
+    "changesCreated": []
+  }
+}

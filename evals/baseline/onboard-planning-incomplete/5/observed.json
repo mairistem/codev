@@ -1,0 +1,75 @@
+{
+  "format": 2,
+  "case": "onboard-planning-incomplete",
+  "error": null,
+  "costUsd": 0.1376806,
+  "durationMs": 9248,
+  "consumption": {
+    "durationApiMs": 8183,
+    "turns": 4,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 972,
+      "cacheCreation": 12007,
+      "cacheRead": 128718,
+      "output": 757
+    },
+    "toolCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 6569,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6569
+        }
+      },
+      {
+        "cacheCreation": 3330,
+        "cacheRead": 31697,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3330
+        }
+      },
+      {
+        "cacheCreation": 1839,
+        "cacheRead": 35027,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon list": 1839
+        }
+      },
+      {
+        "cacheCreation": 269,
+        "cacheRead": 36866,
+        "input": 2,
+        "output": 353,
+        "toolCalls": 0,
+        "sources": {
+          "compagnon status": 269
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "**Compagnon** is a versioned planning tool for software projects: every change goes through a **propose → apply → archive** cycle documented in `_compagnon/`. Each step is driven by a Claude Code skill (`/compagnon-<step>`), and the `compagnon` CLI does the atomic work underneath. Your planning lives in the repository, alongside the code.\n\nHere's the current state of the project:\n- 1 main spec: `tasks`\n- 0 local decisions in effect, 0 inherited\n- 1 active change: `add-due-dates` (planning 1/4: the proposal is written; specs, design and tasks are still missing)\n- Setup to complete:\n  - `validate`: fix with `compagnon validate`\n  - `ci`: fix with `add \\`compagnon validate --strict\\` to your CI pipeline`\n- 2 warnings, see `compagnon doctor`\n\n**What's next**: the planning for `add-due-dates` is not finished. The next artifact it needs is `specs`. Type `/compagnon-propose add-due-dates` to finish its planning."
+  ],
+  "readOnly": {
+    "finalMessage": "**Compagnon** is a versioned planning tool for software projects: every change goes through a **propose → apply → archive** cycle documented in `_compagnon/`. Each step is driven by a Claude Code skill (`/compagnon-<step>`), and the `compagnon` CLI does the atomic work underneath. Your planning lives in the repository, alongside the code.\n\nHere's the current state of the project:\n- 1 main spec: `tasks`\n- 0 local decisions in effect, 0 inherited\n- 1 active change: `add-due-dates` (planning 1/4: the proposal is written; specs, design and tasks are still missing)\n- Setup to complete:\n  - `validate`: fix with `compagnon validate`\n  - `ci`: fix with `add \\`compagnon validate --strict\\` to your CI pipeline`\n- 2 warnings, see `compagnon doctor`\n\n**What's next**: the planning for `add-due-dates` is not finished. The next artifact it needs is `specs`. Type `/compagnon-propose add-due-dates` to finish its planning.",
+    "changesCreated": []
+  }
+}
