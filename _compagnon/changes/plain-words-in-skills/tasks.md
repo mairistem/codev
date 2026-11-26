@@ -56,8 +56,12 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   `every_slash_command_in_the_six_skills_is_a_shortcut`,
   `apply_suggests_archiving_in_plain_words_first`,
   `apply_refusal_suggests_finishing_the_plan_in_plain_words_first`,
-  `archive_and_sync_refusals_offer_the_errors_in_plain_words` and
-  `the_six_skills_still_name_their_commands`.
+  `archive_and_sync_refusals_offer_the_errors_in_plain_words`,
+  `the_six_skills_still_name_their_commands` and
+  `configure_declined_says_no_changes_made_word_for_word` (the declined
+  configure reply begins with "No changes made." word for word, the
+  request to retry on its own line: run 4.1 showed the rule rewording
+  the sentence when the request sat inside it).
 - [x] 2.3 Rewrite the descriptions of the six skills in the `CATALOG`
   (`explore` and `onboard` unchanged): what the skill
   does, then `Use for requests like "…", « … »` with requests specific to

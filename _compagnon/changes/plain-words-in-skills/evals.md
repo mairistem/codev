@@ -4,7 +4,7 @@ For pull request mairistem/compagnon#65 (tasks 4.1 and 4.2).
 
 ## 4.1 — The suite against the baseline
 
-**Result: quality outside the baseline's range. Against `main`, one regression is this change's own (`configure-answer-no`); the others are the model's drift. Task 4.1 is not done.**
+**Result: against the baseline, quality outside its range; against `main`, run the same way, one regression was this change's own (`configure-answer-no`), now fixed, and the others are the model's drift since the baseline. `code.implement` is not run yet: task 4.1 is not done.**
 
 Run on Claude Code 2.1.289, the version `.github/workflows/evals.yml` pins
 and the baseline was recorded with. The installed 2.1.332 refuses the
@@ -76,8 +76,105 @@ One difference remains, and it is this change's:
   the fixed sentence around them. The fix is in this change's scope (task
   2.2, the configure messages): keep "No changes made." as a fixed first
   sentence the fragment does not reword, as the archive and sync refusals
-  already are ("reply with this sentence … and nothing more"). It is not
-  applied here: it waits for the user's decision.
+  already are ("reply with this sentence … and nothing more"). Applied below, on the user's request.
+
+**Fixed.** The configure body now says: begin the reply with "No changes
+made." word for word, then, alone on the last line, the request to retry
+(test `configure_declined_says_no_changes_made_word_for_word`, which fails
+on the earlier body). The configure cases run again on the fixed build
+(`target/evals/plain-configure`, same settings): `configure-answer-no`
+passes 3 of 3, and the comparison against `main` passes:
+
+```
+# Comparison with the baseline
+
+- Verdict: **pass** (quality only: the consumption is reported, it does not decide)
+- Model: Claude Code's default
+- Review mode: inline
+- Appended configuration: none
+- Claude Code: baseline 2.1.289 (Claude Code), candidate 2.1.289 (Claude Code)
+- Runs at the same time: baseline 4, candidate 4
+- Cases compared: 5; repetitions: baseline 3, candidate 3
+
+## Quality
+
+The candidate's median must stay within the range of the baseline's repetitions.
+
+| Role | Recall: baseline (min–max) | candidate | False positives: baseline (min–max) | candidate | Evidence validity: baseline (min–max) | candidate |
+|---|---|---|---|---|---|---|
+
+## `configure.enrich`
+
+The candidate's share of runs passing must not fall under the baseline's minimum, nor its runs modifying a file outside the step rise above its maximum, nor any case's share of runs passing fall under its share in the baseline; the share of checks passing is reported and never decides.
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 0.40 | 0.60 |
+| Checks passing | 0.91 | 0.94 |
+| Runs modifying a file outside the step | 0 | 0 |
+
+Cases not passing in all their candidate runs: `configure-python-preserves` (1 of 3), `configure-ts-jest` (0 of 3).
+
+## Quality improved
+
+The candidate's median does better than the baseline's best repetition:
+
+- configure.enrich: pass rate, from 0.40 at best to 0.60
+
+## Consumption
+
+Sums, over the compared cases, of each case's median over its repetitions. The candidate's cost must be lower than the baseline's floor, 0.8927 USD: each case at its cheapest run. The duration and the output are reported and never decide: the output carries the model's reasoning, which the quality measures guard.
+
+| Measure | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| Cost (USD) | 0.9271 | 0.8781 | -5.3 % |
+| Duration (s) | 109 | 94 | -13.8 % |
+| API duration (s) | 105 | 90 | -14.2 % |
+| Turns | 34 | 32 | -5.9 % |
+| Permission denials | 7 | 6 | -14.3 % |
+| Input tokens, uncached | 4999 | 4989 | -0.2 % |
+| Tokens written to the cache | 60146 | 62749 | +4.3 % |
+| Tokens read from the cache | 1081713 | 908056 | -16.1 % |
+| Output tokens | 11178 | 9636 | -13.8 % |
+| Calls to the model | 32 | 27 | -15.6 % |
+| Input per call | 35843 | 36255 | +1.1 % |
+| Output per call | 347 | 344 | -0.9 % |
+
+## Where the tokens go
+
+Tokens written to the cache, by source: per case the median over its repetitions, summed over the compared cases. Reported, never deciding: the cost decides.
+
+| Source | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| prompt | 25816 | 27516 | +6.6 % |
+| skill | 17227 | 19610 | +13.8 % |
+| file | 5765 | 2620 | -54.6 % |
+| compagnon status | 4183 | 5090 | +21.7 % |
+| output | 2885 | 2618 | -9.3 % |
+| edit | 2404 | 1933 | -19.6 % |
+| shell | 1420 | 1989 | +40.1 % |
+
+## Per case
+
+| Case | Cost: baseline | candidate | Turns: baseline | candidate | Tokens read from the cache: baseline | candidate |
+|---|---:|---:|---:|---:|---:|---:|
+| configure-answer-no | 0.1282 | 0.1325 | 4 | 4 | 126246 | 128172 |
+| configure-go-no-tests | 0.2237 | 0.1946 | 9 | 8 | 275247 | 168261 |
+| configure-no-config | 0.1102 | 0.1163 | 4 | 4 | 125694 | 127641 |
+| configure-python-preserves | 0.2418 | 0.2208 | 9 | 8 | 277606 | 241055 |
+| configure-ts-jest | 0.2232 | 0.2139 | 8 | 8 | 276920 | 242927 |
+
+## Not compared
+
+Cases only one run holds: the cases of the other steps, not run here.
+
+## Failures
+
+None.
+```
+
+Against the committed baseline, the only case still under its share is
+`configure-ts-jest` (0 of 3, baseline 1 of 5), which `main` fails alike.
 
 `compare target/evals/main-small target/evals/plain-small --quality-only`:
 

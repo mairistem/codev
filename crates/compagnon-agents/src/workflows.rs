@@ -1776,6 +1776,19 @@ mod plain_words {
     }
 
     #[test]
+    fn configure_declined_says_no_changes_made_word_for_word() {
+        // The plain-words rule rewords quoted requests: the fixed sentence
+        // stays apart from the request, said as written.
+        let body = body("configure");
+        let line = body
+            .lines()
+            .find(|l| l.contains("No changes made"))
+            .expect("configure names its declined reply");
+        assert!(line.contains("word for word"), "{line}");
+        assert!(!line.contains("configure Compagnon"), "{line}");
+    }
+
+    #[test]
     fn the_six_skills_still_name_their_commands() {
         // What each body named before the plain-words rule, `/compagnon-continue`
         // aside: it names no skill.
