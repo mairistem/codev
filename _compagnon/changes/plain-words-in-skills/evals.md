@@ -4,7 +4,7 @@ For pull request mairistem/compagnon#65 (tasks 4.1 and 4.2).
 
 ## 4.1 — The suite against the baseline
 
-**Result: quality outside the baseline's range. Task 4.1 is not done.**
+**Result: quality outside the baseline's range. Against `main`, one regression is this change's own (`configure-answer-no`); the others are the model's drift. Task 4.1 is not done.**
 
 Run on Claude Code 2.1.289, the version `.github/workflows/evals.yml` pins
 and the baseline was recorded with. The installed 2.1.332 refuses the
@@ -48,10 +48,155 @@ be resumed in the same directory.
    were written for it), not the skills. The cases are stale, independent
    of this change.
 
-To tell this change's effect from a drift of the model behind Claude
-Code's default since the baseline (2026-10-15), the same cases can be run
-on `main`'s build with `--compagnon <folder>/compagnon` (the archive and
-configure steps, about 3 USD for three repetitions) and compared.
+### Against `main`: what this change causes
+
+The archive and configure cases were run again on `main`'s build
+(`2b945b0`, this branch's base), same runner, same Claude Code 2.1.289,
+`--repeat 3 --jobs 4`, passed with `--compagnon`
+(`target/evals/main-small`). `main` fails exactly like this branch on
+`archive-unchecked-tasks` (0 of 3), `configure-go-no-tests`,
+`configure-python-preserves` and `configure-ts-jest` (0 of 3 each), and on
+the stale `archive-version-later`. Those drops come from the model behind
+Claude Code's default having moved since the baseline (2026-10-15), not
+from this change: points 1 and 2 above are withdrawn as this change's
+regressions.
+
+One difference remains, and it is this change's:
+
+- **`configure-answer-no`: 1 of 3 here, 3 of 3 on `main`.** The case
+  expects the reply to say "No changes made" when the author declines.
+  `main`'s body says: "No changes made. Run `/compagnon-configure` again
+  whenever you want to retry." — the three `main` runs say it word for
+  word. This branch's body says: "No changes made. Say “configure
+  Compagnon” again whenever you want to retry (shortcut:
+  `/compagnon-configure`)." Two of three runs paraphrase it: « I made no
+  changes. `_compagnon/config.yaml` still has its current content. »,
+  « I didn't make any changes. ». The `next-steps` fragment tells the
+  agent to say the quoted requests in the user's own words, which loosens
+  the fixed sentence around them. The fix is in this change's scope (task
+  2.2, the configure messages): keep "No changes made." as a fixed first
+  sentence the fragment does not reword, as the archive and sync refusals
+  already are ("reply with this sentence … and nothing more"). It is not
+  applied here: it waits for the user's decision.
+
+`compare target/evals/main-small target/evals/plain-small --quality-only`:
+
+```
+# Comparison with the baseline
+
+- Verdict: **fail** (quality only: the consumption is reported, it does not decide)
+- Model: Claude Code's default
+- Review mode: inline
+- Appended configuration: none
+- Claude Code: baseline 2.1.289 (Claude Code), candidate 2.1.289 (Claude Code)
+- Runs at the same time: baseline 4, candidate 4
+- Cases compared: 11; repetitions: baseline 3, candidate 3
+
+## Quality
+
+The candidate's median must stay within the range of the baseline's repetitions.
+
+| Role | Recall: baseline (min–max) | candidate | False positives: baseline (min–max) | candidate | Evidence validity: baseline (min–max) | candidate |
+|---|---|---|---|---|---|---|
+
+## `change.archive`
+
+The candidate's share of runs passing must not fall under the baseline's minimum, nor its runs modifying a file outside the step rise above its maximum, nor any case's share of runs passing fall under its share in the baseline; the share of checks passing is reported and never decides.
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 0.80 | 0.80 |
+| Checks passing | 0.89 | 0.89 |
+| Runs modifying a file outside the step | 0 | 0 |
+
+Cases not passing in all their candidate runs: `archive-unchecked-tasks` (0 of 3).
+
+## `configure.enrich`
+
+The candidate's share of runs passing must not fall under the baseline's minimum, nor its runs modifying a file outside the step rise above its maximum, nor any case's share of runs passing fall under its share in the baseline; the share of checks passing is reported and never decides.
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 0.40 | 0.20 |
+| Checks passing | 0.91 | 0.88 |
+| Runs modifying a file outside the step | 0 | 0 |
+
+Cases not passing in all their candidate runs: `configure-answer-no` (1 of 3), `configure-go-no-tests` (0 of 3), `configure-python-preserves` (0 of 3), `configure-ts-jest` (0 of 3).
+
+## Consumption
+
+Sums, over the compared cases, of each case's median over its repetitions. The candidate's cost must be lower than the baseline's floor, 1.4934 USD: each case at its cheapest run. The duration and the output are reported and never decide: the output carries the model's reasoning, which the quality measures guard.
+
+| Measure | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| Cost (USD) | 1.5314 | 1.8563 | +21.2 % |
+| Duration (s) | 150 | 147 | -2.4 % |
+| API duration (s) | 141 | 135 | -4.6 % |
+| Turns | 56 | 55 | -1.8 % |
+| Permission denials | 10 | 9 | -10.0 % |
+| Input tokens, uncached | 9944 | 9946 | +0.0 % |
+| Tokens written to the cache | 109750 | 151097 | +37.7 % |
+| Tokens read from the cache | 1771093 | 1894346 | +7.0 % |
+| Output tokens | 14436 | 13544 | -6.2 % |
+| Calls to the model | 54 | 55 | +1.9 % |
+| Input per call | 35017 | 37370 | +6.7 % |
+| Output per call | 266 | 253 | -4.9 % |
+
+## Where the tokens go
+
+Tokens written to the cache, by source: per case the median over its repetitions, summed over the compared cases. Reported, never deciding: the cost decides.
+
+| Source | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| prompt | 56895 | 60238 | +5.9 % |
+| skill | 27907 | 29185 | +4.6 % |
+| file | 8297 | 45461 | +447.9 % |
+| compagnon status | 7518 | 7852 | +4.4 % |
+| output | 3020 | 2898 | -4.0 % |
+| edit | 2404 | 2116 | -12.0 % |
+| compagnon archive | 1864 | 1807 | -3.1 % |
+| shell | 1420 | 1288 | -9.3 % |
+
+## Per case
+
+| Case | Cost: baseline | candidate | Turns: baseline | candidate | Tokens read from the cache: baseline | candidate |
+|---|---:|---:|---:|---:|---:|---:|
+| archive-merges-and-moves | 0.1249 | 0.2937 | 5 | 6 | 158605 | 246329 |
+| archive-planning-incomplete | 0.1017 | 0.2576 | 3 | 4 | 90008 | 141261 |
+| archive-review-blocked | 0.1204 | 0.1285 | 5 | 5 | 158512 | 161315 |
+| archive-unchecked-tasks | 0.1385 | 0.1450 | 4 | 4 | 124211 | 126189 |
+| archive-validation-failed | 0.1188 | 0.1267 | 5 | 5 | 158044 | 160623 |
+| archive-version-later | — | — | — | — | — | — |
+| configure-answer-no | 0.1282 | 0.1326 | 4 | 4 | 126246 | 128139 |
+| configure-go-no-tests | 0.2237 | 0.2007 | 9 | 7 | 275247 | 240645 |
+| configure-no-config | 0.1102 | 0.1177 | 4 | 4 | 125694 | 127615 |
+| configure-python-preserves | 0.2418 | 0.2243 | 9 | 8 | 277606 | 280349 |
+| configure-ts-jest | 0.2232 | 0.2295 | 8 | 8 | 276920 | 281881 |
+
+## Not compared
+
+Cases only one run holds: the cases of the other steps, not run here.
+
+## Failures
+
+- baseline: case `archive-version-later` (repetition 1) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- baseline: case `archive-version-later` (repetition 2) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- baseline: case `archive-version-later` (repetition 3) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- candidate: case `archive-version-later` (repetition 1) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- candidate: case `archive-version-later` (repetition 2) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- candidate: case `archive-version-later` (repetition 3) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- configure.enrich: pass rate 0.20 is under the baseline's minimum 0.40
+- configure.enrich: case `configure-answer-no` passes in 0.33 of its runs, under its baseline share 1.00
+- (not deciding, `--quality-only`) the consumption cannot be compared: case `archive-version-later` has no cost in the baseline; case `archive-version-later` has no cost in the candidate
+fail: baseline: case `archive-version-later` (repetition 1) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: baseline: case `archive-version-later` (repetition 2) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: baseline: case `archive-version-later` (repetition 3) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: candidate: case `archive-version-later` (repetition 1) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: candidate: case `archive-version-later` (repetition 2) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: candidate: case `archive-version-later` (repetition 3) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: configure.enrich: pass rate 0.20 is under the baseline's minimum 0.40
+fail: configure.enrich: case `configure-answer-no` passes in 0.33 of its runs, under its baseline share 1.00
+```
 
 The other steps hold: `plan.update` 1.00 (baseline 1.00), `change.sync`
 1.00 (baseline 1.00, range 0.75–1.00). The cost falls by 21 % over the
