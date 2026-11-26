@@ -27,5 +27,7 @@ fn without_rustfmt_the_preparation_fails() {
     let missing = dir.join("no-bin/rustfmt");
     let error = runner::bring_through_rename_with(&dir, &missing).unwrap_err();
     assert!(error.contains("rustfmt"), "{error}");
-    assert!(error.contains("src/lib.rs"), "{error}");
+    // The path as the platform writes it: `src\lib.rs` on Windows.
+    let file = std::path::Path::new("src").join("lib.rs");
+    assert!(error.contains(&file.display().to_string()), "{error}");
 }
