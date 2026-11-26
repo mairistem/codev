@@ -4,7 +4,220 @@ For pull request mairistem/compagnon#65 (tasks 4.1 and 4.2).
 
 ## 4.1 — The suite against the baseline
 
-<!-- EVALS -->
+**Result: quality outside the baseline's range. Task 4.1 is not done.**
+
+Run on Claude Code 2.1.289, the version `.github/workflows/evals.yml` pins
+and the baseline was recorded with. The installed 2.1.332 refuses the
+runner's sandbox settings (`sandbox.credentials.envVars.0: Expected
+object, but received string`), so every case stopped before starting;
+the pinned version was passed with `--claude`.
+
+```bash
+cargo run -p compagnon-evals -- run --claude <2.1.289> --step plan.update --step change.sync --step change.archive --step configure.enrich --repeat 3 --jobs 4 --out target/evals/plain-small
+cargo run -p compagnon-evals -- compare evals/baseline target/evals/plain-small --quality-only
+```
+
+The `code.implement` run (`target/evals/plain-implement`) was stopped
+before any case finished, once the first comparison had failed; it can
+be resumed in the same directory.
+
+### What regressed
+
+1. **`archive-unchecked-tasks`, 0 of 3 (baseline 3 of 5).** The case
+   expects the archive to go through on a change whose last task (6.1)
+   is unchecked, as `compagnon archive` allows. In all three runs the
+   agent refused and ended on a request to finish the task (« finish the
+   tasks of fewer-review-turns », shortcut `/compagnon-apply`). The
+   archive body's "When to use it" line (every task checked) predates
+   this change; what is new is the `next-steps` fragment, which tells the
+   agent to name "the way out" of a problem as one request. It plausibly
+   makes stopping on the unchecked task, and offering the way out, the
+   easier reply. This is the regression this change likely causes.
+2. **`configure-go-no-tests` 0 of 3 (baseline 3 of 5),
+   `configure-python-preserves` and `configure-ts-jest` 0 of 3
+   (baseline 1 of 5 each).** Every failing run fails the same check,
+   "`context` spans two to five lines" (9 of 15 runs; 10 of 25 in the
+   baseline). The configure body changed only in its messages and the
+   fragment, not in what it says about `context`; with three runs against
+   five, noise cannot be ruled out, but the drop on `configure-go-no-tests`
+   is large.
+3. **`archive-version-later` and `sync-version-later`: stopped, not
+   scored.** `compagnon archive` and `compagnon sync` now refuse with
+   `compagnon_version_unsatisfied` on the fixture, where the case expects
+   them to go on: the CLI changed after the baseline (0.6.1, the cases
+   were written for it), not the skills. The cases are stale, independent
+   of this change.
+
+To tell this change's effect from a drift of the model behind Claude
+Code's default since the baseline (2026-10-15), the same cases can be run
+on `main`'s build with `--compagnon <folder>/compagnon` (the archive and
+configure steps, about 3 USD for three repetitions) and compared.
+
+The other steps hold: `plan.update` 1.00 (baseline 1.00), `change.sync`
+1.00 (baseline 1.00, range 0.75–1.00). The cost falls by 21 % over the
+compared cases.
+
+### `compare` output
+
+```
+# Comparison with the baseline
+
+- Verdict: **fail** (quality only: the consumption is reported, it does not decide)
+- Model: Claude Code's default
+- Review mode: inline
+- Appended configuration: none
+- Claude Code: baseline 2.1.289 (Claude Code), candidate 2.1.289 (Claude Code)
+- Runs at the same time: baseline 4, candidate 4
+- Cases compared: 21; repetitions: baseline 5, candidate 3
+
+## Quality
+
+The candidate's median must stay within the range of the baseline's repetitions.
+
+| Role | Recall: baseline (min–max) | candidate | False positives: baseline (min–max) | candidate | Evidence validity: baseline (min–max) | candidate |
+|---|---|---|---|---|---|---|
+
+## `plan.update`
+
+The candidate's share of runs passing must not fall under the baseline's minimum, nor its runs modifying a file outside the step rise above its maximum; the share of checks passing is reported and never decides.
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 1.00 | 1.00 |
+| Checks passing | 1.00 | 1.00 |
+| Runs modifying a file outside the step | 0 | 0 |
+
+## `change.sync`
+
+The candidate's share of runs passing must not fall under the baseline's minimum, nor its runs modifying a file outside the step rise above its maximum, nor any case's share of runs passing fall under its share in the baseline; the share of checks passing is reported and never decides.
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 1.00 (0.75–1.00) | 1.00 |
+| Checks passing | 1.00 (0.92–1.00) | 1.00 |
+| Runs modifying a file outside the step | 0 | 0 |
+
+Cases not passing in all their candidate runs: `sync-merges` (2 of 3).
+
+## `change.archive`
+
+The candidate's share of runs passing must not fall under the baseline's minimum, nor its runs modifying a file outside the step rise above its maximum, nor any case's share of runs passing fall under its share in the baseline; the share of checks passing is reported and never decides.
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 1.00 (0.83–1.00) | 0.80 |
+| Checks passing | 1.00 (0.91–1.00) | 0.89 |
+| Runs modifying a file outside the step | 0 | 0 |
+
+Cases not passing in all their candidate runs: `archive-unchecked-tasks` (0 of 3).
+
+## `configure.enrich`
+
+The candidate's share of runs passing must not fall under the baseline's minimum, nor its runs modifying a file outside the step rise above its maximum, nor any case's share of runs passing fall under its share in the baseline; the share of checks passing is reported and never decides.
+
+| Measure | Baseline (min–max) | Candidate |
+|---|---|---|
+| Runs passing | 0.40 (0.20–0.60) | 0.20 |
+| Checks passing | 0.91 (0.71–0.94) | 0.88 |
+| Runs modifying a file outside the step | 0 | 0 |
+
+Cases not passing in all their candidate runs: `configure-answer-no` (1 of 3), `configure-go-no-tests` (0 of 3), `configure-python-preserves` (0 of 3), `configure-ts-jest` (0 of 3).
+
+## Consumption
+
+Sums, over the compared cases, of each case's median over its repetitions. The candidate's cost must be lower than the baseline's floor, 4.7906 USD: each case at its cheapest run. The duration and the output are reported and never decide: the output carries the model's reasoning, which the quality measures guard.
+
+| Measure | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| Cost (USD) | 5.1150 | 4.0338 | -21.1 % |
+| Duration (s) | 428 | 307 | -28.2 % |
+| API duration (s) | 440 | 284 | -35.4 % |
+| Turns | 135 | 118 | -12.6 % |
+| Permission denials | 20 | 19 | -5.0 % |
+| Input tokens, uncached | 21477 | 19596 | -8.8 % |
+| Tokens written to the cache | 445019 | 334987 | -24.7 % |
+| Tokens read from the cache | 3990307 | 3843362 | -3.7 % |
+| Output tokens | 35139 | 29666 | -15.6 % |
+| Calls to the model | 113 | 107 | -5.3 % |
+| Input per call | 39535 | 39240 | -0.7 % |
+| Output per call | 315 | 291 | -7.6 % |
+
+## Where the tokens go
+
+Tokens written to the cache, by source: per case the median over its repetitions, summed over the compared cases. Reported, never deciding: the cost decides.
+
+| Source | Baseline | Candidate | Change |
+|---|---:|---:|---:|
+| prompt | 169076 | 119635 | -29.2 % |
+| skill | 150222 | 73063 | -51.4 % |
+| compagnon status | 31412 | 9814 | -68.8 % |
+| file | 26248 | 93887 | +257.7 % |
+| compagnon list | 26001 | 18077 | -30.5 % |
+| edit | 6389 | 4862 | -23.9 % |
+| search | 4741 | 1678 | -64.6 % |
+| output | 3206 | 3735 | +16.5 % |
+| compagnon archive | 3084 | 1807 | -41.4 % |
+| compagnon validate | 3021 | 3569 | +18.1 % |
+| shell | 2718 | 1809 | -33.4 % |
+| compagnon sync | 1943 | 1073 | -44.8 % |
+
+## Per case
+
+| Case | Cost: baseline | candidate | Turns: baseline | candidate | Tokens read from the cache: baseline | candidate |
+|---|---:|---:|---:|---:|---:|---:|
+| archive-merges-and-moves | 0.1980 | 0.2937 | 5 | 6 | 174136 | 246329 |
+| archive-planning-incomplete | 0.1712 | 0.2576 | 3 | 4 | 89571 | 141261 |
+| archive-review-blocked | 0.1891 | 0.1285 | 5 | 5 | 164187 | 161315 |
+| archive-unchecked-tasks | 0.2082 | 0.1450 | 5 | 4 | 164471 | 126189 |
+| archive-validation-failed | 0.1846 | 0.1267 | 5 | 5 | 167116 | 160623 |
+| archive-version-later | 0.1924 | — | 5 | — | 163955 | — |
+| configure-answer-no | 0.2082 | 0.1326 | 4 | 4 | 125725 | 128139 |
+| configure-go-no-tests | 0.2878 | 0.2007 | 8 | 7 | 258828 | 240645 |
+| configure-no-config | 0.1898 | 0.1177 | 5 | 4 | 129158 | 127615 |
+| configure-python-preserves | 0.2990 | 0.2243 | 8 | 8 | 256342 | 280349 |
+| configure-ts-jest | 0.3253 | 0.2295 | 10 | 8 | 335934 | 281881 |
+| sync-merges | 0.2205 | 0.1260 | 6 | 5 | 175996 | 160154 |
+| sync-planning-incomplete | 0.1836 | 0.2562 | 4 | 4 | 90778 | 141067 |
+| sync-validation-failed | 0.1896 | 0.1255 | 5 | 5 | 167032 | 160229 |
+| sync-version-later | 0.1974 | — | 5 | — | 163898 | — |
+| update-design-decision | 0.3300 | 0.2932 | 10 | 11 | 252767 | 296770 |
+| update-proposal-ripple | 0.4326 | 0.4651 | 13 | 12 | 278859 | 379888 |
+| update-refuse-missing | 0.1658 | 0.1743 | 3 | 3 | 89399 | 99036 |
+| update-specs-ripple-tasks | 0.4066 | 0.3011 | 11 | 9 | 376897 | 322596 |
+| update-specs-scenario | 0.2599 | 0.1973 | 8 | 6 | 183562 | 174493 |
+| update-tasks-add | 0.2754 | 0.2388 | 7 | 8 | 181696 | 214783 |
+
+## Not compared
+
+Cases only one run holds: the review, plan.write and code.implement cases, not run here.
+
+## Failures
+
+- candidate: case `archive-version-later` (repetition 1) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- candidate: case `archive-version-later` (repetition 2) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- candidate: case `archive-version-later` (repetition 3) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- candidate: case `sync-version-later` (repetition 1) stopped: case `sync-version-later`: `compagnon sync` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- candidate: case `sync-version-later` (repetition 2) stopped: case `sync-version-later`: `compagnon sync` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- candidate: case `sync-version-later` (repetition 3) stopped: case `sync-version-later`: `compagnon sync` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+- change.archive: pass rate 0.80 is under the baseline's minimum 0.83
+- change.archive: case `archive-unchecked-tasks` passes in 0.00 of its runs, under its baseline share 0.60
+- configure.enrich: case `configure-go-no-tests` passes in 0.00 of its runs, under its baseline share 0.60
+- configure.enrich: case `configure-python-preserves` passes in 0.00 of its runs, under its baseline share 0.20
+- configure.enrich: case `configure-ts-jest` passes in 0.00 of its runs, under its baseline share 0.20
+- (not deciding, `--quality-only`) the consumption cannot be compared: case `archive-version-later` has no cost in the candidate; case `sync-version-later` has no cost in the candidate
+fail: candidate: case `archive-version-later` (repetition 1) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: candidate: case `archive-version-later` (repetition 2) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: candidate: case `archive-version-later` (repetition 3) stopped: case `archive-version-later`: `compagnon archive` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: candidate: case `sync-version-later` (repetition 1) stopped: case `sync-version-later`: `compagnon sync` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: candidate: case `sync-version-later` (repetition 2) stopped: case `sync-version-later`: `compagnon sync` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: candidate: case `sync-version-later` (repetition 3) stopped: case `sync-version-later`: `compagnon sync` exits with 1 and the code `compagnon_version_unsatisfied` on the fixture, where the case expects it done; the case no longer describes what compagnon does
+fail: change.archive: pass rate 0.80 is under the baseline's minimum 0.83
+fail: change.archive: case `archive-unchecked-tasks` passes in 0.00 of its runs, under its baseline share 0.60
+fail: configure.enrich: case `configure-go-no-tests` passes in 0.00 of its runs, under its baseline share 0.60
+fail: configure.enrich: case `configure-python-preserves` passes in 0.00 of its runs, under its baseline share 0.20
+fail: configure.enrich: case `configure-ts-jest` passes in 0.00 of its runs, under its baseline share 0.20
+```
+
 
 ## 4.2 — Two replies in French
 
