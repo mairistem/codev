@@ -82,7 +82,7 @@ Le tableau donne toutes les valeurs que les graphiques dessinent. **Cas** : ens
 
 ## L'implémentation d'un plan
 
-4 cas d'implémentation posent le plan d'une modification archivée sur le dépôt tel qu'il était avant lui, et demandent à `/compagnon-apply` de l'implémenter, relecture comprise. Après chaque exécution, l'évaluation formate, analyse, teste et construit elle-même le code, puis lance un script caché qui pilote le `compagnon` construit comme le ferait un utilisateur, écrit d'après les scénarios de la modification et éprouvé sur la vraie modification. Une exécution **réussit** quand toutes les tâches sont cochées, que les vérifications du projet passent, que chaque assertion du script tient, que le compte rendu de relecture est valide et que rien hors de la modification n'est touché : un plan sans tâches doit être refusé. Chaque chiffre est la médiane sur les répétitions, avec son écart : le refus est compté à part.
+4 cas d'implémentation posent le plan d'une modification archivée sur le dépôt tel qu'il était avant elle, et demandent à `/compagnon-apply` de l'implémenter, relecture comprise. Après chaque exécution, l'évaluation formate, analyse, teste et construit elle-même le code, puis lance un script caché qui pilote le `compagnon` construit comme le ferait un utilisateur, écrit d'après les scénarios de la modification et éprouvé sur la vraie modification. Une exécution **réussit** quand toutes les tâches sont cochées, que les vérifications du projet passent, que chaque assertion du script tient, que le compte rendu de relecture est valide et que rien hors de la modification n'est touché : un plan sans tâches doit être refusé. Chaque chiffre est la médiane sur les répétitions, avec son écart : le refus est compté à part.
 
 | Mesure | Médiane (écart) |
 |---|---:|
@@ -94,7 +94,7 @@ Le tableau donne toutes les valeurs que les graphiques dessinent. **Cas** : ens
 
 ## La synchronisation d'une modification
 
-4 cas (`change.sync`) posent une modification de l'archive de ce dépôt sur le dépôt tel qu'il était avant lui, et lancent `/compagnon-sync` dessus. Chaque exécution est vérifiée sans modèle : les fichiers sous `_compagnon/` sont ceux que `compagnon sync` laisse lui-même sur une copie — ou tels qu'ils étaient, quand la compétence doit s'arrêter —, aucun fichier hors de l'étape n'est modifié, et la réponse dit ce que le cas attend. Quand la compétence demande s'il faut mettre compagnon à jour, l'exécution répond **Plus tard**. Une exécution **réussit** quand toutes ses vérifications réussissent. Chaque chiffre est la médiane sur les répétitions, avec son écart.
+4 cas (`change.sync`) posent une modification de l'archive de ce dépôt sur le dépôt tel qu'il était avant elle, et lancent `/compagnon-sync` dessus. Chaque exécution est vérifiée sans modèle : les fichiers sous `_compagnon/` sont ceux que `compagnon sync` laisse lui-même sur une copie — ou tels qu'ils étaient, quand la compétence doit s'arrêter —, aucun fichier hors de l'étape n'est modifié, et la réponse dit ce que le cas attend. Quand la compétence demande s'il faut mettre compagnon à jour, l'exécution répond **Plus tard**. Une exécution **réussit** quand toutes ses vérifications réussissent. Chaque chiffre est la médiane sur les répétitions, avec son écart.
 
 | Mesure | Médiane (écart) |
 |---|---:|
@@ -104,7 +104,7 @@ Le tableau donne toutes les valeurs que les graphiques dessinent. **Cas** : ens
 
 ## L'archivage d'une modification
 
-6 cas (`change.archive`) posent une modification de l'archive de ce dépôt sur le dépôt tel qu'il était avant lui, et lancent `/compagnon-archive` dessus. Chaque exécution est vérifiée sans modèle : les fichiers sous `_compagnon/` sont ceux que `compagnon archive` laisse lui-même sur une copie — ou tels qu'ils étaient, quand la compétence doit s'arrêter —, aucun fichier hors de l'étape n'est modifié, et la réponse dit ce que le cas attend. Quand la compétence demande s'il faut mettre compagnon à jour, l'exécution répond **Plus tard**. Une exécution **réussit** quand toutes ses vérifications réussissent. Chaque chiffre est la médiane sur les répétitions, avec son écart.
+6 cas (`change.archive`) posent une modification de l'archive de ce dépôt sur le dépôt tel qu'il était avant elle, et lancent `/compagnon-archive` dessus. Chaque exécution est vérifiée sans modèle : les fichiers sous `_compagnon/` sont ceux que `compagnon archive` laisse lui-même sur une copie — ou tels qu'ils étaient, quand la compétence doit s'arrêter —, aucun fichier hors de l'étape n'est modifié, et la réponse dit ce que le cas attend. Quand la compétence demande s'il faut mettre compagnon à jour, l'exécution répond **Plus tard**. Une exécution **réussit** quand toutes ses vérifications réussissent. Chaque chiffre est la médiane sur les répétitions, avec son écart.
 
 | Mesure | Médiane (écart) |
 |---|---:|
