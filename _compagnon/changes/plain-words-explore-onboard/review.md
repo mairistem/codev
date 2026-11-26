@@ -222,7 +222,7 @@ history:
 
 ```yaml
 severity: low
-confidence: medium
+confidence: low
 location: "crates/compagnon-agents/src/workflows.rs:1825"
 evidence: |
   fn onboard_closes_several_changes_on_a_question() {
