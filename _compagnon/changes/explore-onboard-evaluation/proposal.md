@@ -21,19 +21,20 @@ measure today, so a change to their text could not be judged.
     propose; information is missing; it is not worth pursuing, the code
     already does it);
   - `project.onboard` — `/compagnon-onboard` on a project; the cases
-    cover the rows of its recommendation table (no `_compagnon/`; thin
-    configuration; configured with no active change; an active change
-    whose plan is incomplete; an active change ready to implement).
+    cover the six rows of its recommendation table (no `_compagnon/`;
+    thin configuration; configured with no active change; an active
+    change whose plan is incomplete; an active change ready to implement;
+    several active changes).
 - Each run is scored without a model: no file modified, created or
   removed (both skills are read-only), no change created; the agent's
-  messages hold the case's `contains` texts and none of its `absent`
-  texts — for `onboard`, the expected next action; for `explore`, the
-  outcome and, when it crystallizes, the way to propose it, never an
-  implementation.
+  final message holds the case's `contains` texts — for `onboard`, the
+  expected next action; for `explore`, the mark of its outcome — and none
+  of its `absent` texts, the marks of the other outcomes or states.
 - The report, `compare` and the reliability chapter give the two steps'
   measures, as for the configure step.
-- A baseline of the new cases is recorded with the user's agreement on
-  its cost (estimated 15 to 25 USD for five repetitions), and committed.
+- A baseline of the nine new cases is recorded with the user's agreement
+  on its cost (about 3 USD for a trial run, then 15 to 25 USD for five
+  repetitions), and committed.
 - Out of scope: converting the two skills' text and descriptions to the
   plain-words rule — a following change, measured against this baseline.
 

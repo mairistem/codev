@@ -16,9 +16,12 @@ carry its measures. The step is wired through `Step::ConfigureEnrich` in
 `allowed-tools` have no `Write` nor `Edit`) and ends by saying one of
 three outcomes. `onboard` (`assets/workflows/onboard.md`) runs only
 `compagnon` read commands and recommends the next action from a table of
-five states (`_compagnon/` missing; thin configuration, no change;
+six states (`_compagnon/` missing; thin configuration, no change;
 configured, no change; one change, planning incomplete; one change,
-planning complete). Today, `onboard` names `compagnon init`,
+planning complete; several active changes, listed for the user to
+choose). Neither includes the update-check fragment
+(`VERSION_CHECK_WORKFLOWS` in `crates/compagnon-agents/src/workflows.rs`
+lists propose, apply, update, sync and archive only). Today, `onboard` names `compagnon init`,
 `/compagnon-configure`, `/compagnon-propose` and `/compagnon-apply`;
 `explore` names `/compagnon-propose`. The baseline's configure runs cost
 about 0.28 USD each (median of 25).
@@ -42,24 +45,38 @@ about 0.28 USD each (median of 25).
 ### Decision: One read-only family, two steps
 
 Both steps share the case format, the setup, the observation and the
-scoring: one module `evals/src/read_only.rs` holds them, the step deciding
-only the prompt and the case's required fields. Two steps rather than
+scoring. As for configure, the format lives in `case.rs` (the steps, the
+fields and their loading errors), the setup, the prompt and the
+observation in `runner.rs` and `observed.rs`, the selection in `case.rs`
+and `main.rs`; `evals/src/read_only.rs` holds the scoring and the
+measures, which `score.rs`, `report.rs`, `compare.rs` and
+`reliability.rs` carry. Two steps rather than
 one, so that `--step` selects each, `compare` gives each its verdict, and
 the following change measures the skill it converts.
 
 **Alternatives considered**: folding them into `configure.enrich`'s
 module — rejected, configure writes a file and is scored on its shape.
 
-### Decision: The reply is checked by texts the case names, not by an outcome parser
+### Decision: The final message is checked, for its own outcome and against the others
 
 `contains` and `absent` are the only checks on the reply, beside the
-files. An explore case names what its outcome must show — for
-`crystallizes`, the way to propose (`/compagnon-propose`, which stays the
-shortcut after the conversion, so the case holds both now and after); for
+files, and they read the agent's final message only: the narration
+between tool calls names files, commands and the doctor's fix lines,
+which would let a wrong conclusion pass. Each case holds both lists: what
+its outcome must show — for `crystallizes`, the way to propose
+(`/compagnon-propose`, which stays the shortcut after the conversion); for
 `not-worth`, the file that already does it; for `missing`, the thing
-missing. `absent` holds what must never be said: an offer to implement
-for explore, a fix run for onboard. The outcome is kept in `case.yaml`
-for the report and the coverage, not parsed from the reply.
+missing; for an onboard state, its recommendation — and, in `absent`, the
+marks of the other outcomes or states, so that a reply concluding on the
+wrong one fails. The outcome and the state are kept in `case.yaml` for
+the report and the coverage, not parsed from the reply.
+
+### Decision: The evaluation mode lets the skill end as it would
+
+A headless run has no user to answer. The prompt says so and asks the
+agent to end, where the skill would ask, as the skill says — not to
+assume, which would push `explore` away from its `missing` outcome. It
+says nothing of updates: neither skill checks the version.
 
 **Alternatives considered**: recognizing the three outcomes from fixed
 phrases — rejected, the skill does not fix their wording and the
@@ -74,8 +91,9 @@ project, so a skill rewriting itself is caught too.
 
 ### Decision: The baseline is recorded once, with the user's agreement
 
-Nine cases, five repetitions, at about 0.3 to 0.5 USD a run: 15 to 25
-USD. The task asks the user before running, as decision 0008 and the
+Nine cases (three explore, six onboard), five repetitions, at about 0.3
+to 0.5 USD a run: 15 to 25 USD, after a trial run of each case once,
+about 3 USD. The task asks the user before running, as decision 0008 and the
 previous changes did, and the baseline is committed with the cases.
 
 ## Risks / Trade-offs
@@ -83,5 +101,7 @@ previous changes did, and the baseline is committed with the cases.
 - [A case's `contains` too narrow, failing a good reply] → each case is
   run once without recording (`run --repeat 1`) and its texts adjusted
   before the paid baseline.
-- [Explore asks a question instead of concluding] → the prompt says to
-  ask none and to state the assumption, as the configure prompt does.
+- [Explore asks a question instead of concluding] → the prompt says the
+  user cannot answer and to end as the skill says; the trial run shows
+  it, and a final message that asks counts as no conclusion: its
+  `contains` fails.
