@@ -161,7 +161,7 @@ pub const CATALOG: &[Workflow] = &[
         description: "Implement the tasks of an already planned compagnon change: read tasks.md, \
                       work through each unchecked box in order, checking them off along the \
                       way. Modifies project code. Does not modify other changes, does not \
-                      archive and does not sync — those steps stay explicit on the user's side. Use for requests like \"the plan is good, implement it\", \"carry out the tasks of add-dark-mode\", « implémente-le », « réalise les tâches du change ».",
+                      archive and does not sync — those steps stay explicit on the user's side. Use for requests like \"the plan is good, implement it\", \"carry out the tasks of add-dark-mode\", « le plan me va, réalise la modification », « réalise les tâches de add-dark-mode ».",
         // General `Bash` in addition to `Bash(compagnon:*)`: tasks cite
         // verification commands (cargo, git, npm, python…) that must be
         // runnable. The `Bash(compagnon:*)` prefix stays first to document the
@@ -176,7 +176,7 @@ pub const CATALOG: &[Workflow] = &[
         description: "Merge the deltas of an already planned compagnon change into the main \
                       specs, without moving the change. Use when a new capability must appear \
                       in the specs before another change consumes it, or to review the merge \
-                      before archiving. Does not archive. Use for requests like \"merge the specs of this change without archiving\", \"sync the specs now\", « fusionne les specs sans archiver », « synchronise les specs ».",
+                      before archiving. Does not archive. Use for requests like \"merge the specs of this change without archiving\", \"sync the specs now\", « reporte les spécifications sans archiver », « synchronise les spécifications ».",
         // `Read` in addition to `Bash(compagnon:*)` so the skill can re-read
         // `tasks.md` if the user asks a context question — without ever
         // writing. No general `Bash`: the only effective action goes through
@@ -188,7 +188,7 @@ pub const CATALOG: &[Workflow] = &[
         id: "archive",
         description: "Close a compagnon change: merge its deltas into the main specs and move the \
                       folder to the dated archive. Refuses to act if validation reports \
-                      errors, and then points to `compagnon validate` for the details. Use for requests like \"the change is done, archive it\", \"close the change\", « archive le change », « le change est terminé, archive-le ».",
+                      errors, and then points to `compagnon validate` for the details. Use for requests like \"the change is done, archive it\", \"close the change\", « archive la modification », « la modification est terminée, archive-la ».",
         allowed_tools: "Bash(compagnon:*), Read",
         body: include_str!("../../../assets/workflows/archive.md"),
     },
@@ -1580,11 +1580,42 @@ mod plain_words {
         if !(description.contains('«') && description.contains('»')) {
             problems.push(format!("{id}: no French request in « … »"));
         }
+        for word in french_anglicisms(description) {
+            problems.push(format!("{id}: « {word} » in a French request"));
+        }
         let length = description.chars().count();
         if length > 1024 {
             problems.push(format!("{id}: {length} characters, over 1024"));
         }
         problems
+    }
+
+    /// The anglicisms of the French requests (« … ») of a description, by
+    /// the lexicon of the French documentation: skill, spec and workflow
+    /// anywhere, "change" as a noun, after a determiner — the verb
+    /// *changer* stays French.
+    fn french_anglicisms(description: &str) -> Vec<String> {
+        const ENGLISH: &[&str] = &["skill", "skills", "spec", "specs", "workflow", "workflows"];
+        const DETERMINERS: &[&str] = &[
+            "le", "la", "les", "un", "une", "du", "des", "ce", "cette", "ces",
+        ];
+        let mut found = Vec::new();
+        for request in description.split('«').skip(1) {
+            let request = request.split('»').next().unwrap_or_default().to_lowercase();
+            let words: Vec<&str> = request
+                .split(|c: char| !c.is_alphanumeric())
+                .filter(|w| !w.is_empty())
+                .collect();
+            for (i, word) in words.iter().enumerate() {
+                let noun = (*word == "change" || *word == "changes")
+                    && i > 0
+                    && DETERMINERS.contains(&words[i - 1]);
+                if (ENGLISH.contains(word) || noun) && !found.iter().any(|f| f == word) {
+                    found.push((*word).to_string());
+                }
+            }
+        }
+        found
     }
 
     /// Whether a paragraph of `body` holding every one of `markers` gives a
@@ -1642,6 +1673,18 @@ mod plain_words {
             description_problems("archive", &long),
             ["archive: 1109 characters, over 1024"]
         );
+    }
+
+    #[test]
+    fn a_french_request_holding_an_anglicism_is_caught() {
+        let description =
+            r#"Archive a change. Use for requests like "archive it", « archive le change »."#;
+        assert_eq!(
+            description_problems("archive", description),
+            ["archive: « change » in a French request"]
+        );
+        let verb = r#"Plan. Use for requests like "plan it", « dis-moi ce qui change »."#;
+        assert!(description_problems("propose", verb).is_empty());
     }
 
     #[test]

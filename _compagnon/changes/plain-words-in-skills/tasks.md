@@ -65,7 +65,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   and the existing frontmatter tests of `crates/compagnon-agents/src/claude.rs`
   (`the_description_is_quoted_because_it_contains_yaml_punctuation`).
 
-- [ ] 2.4 Make the French requests follow the lexicon of the French
+- [x] 2.4 Make the French requests follow the lexicon of the French
   documentation (change `plain-language-docs`): extend
   `description_problems` to report a « … » request holding change(s),
   skill(s), spec(s) or workflow as a noun, with the unit test
