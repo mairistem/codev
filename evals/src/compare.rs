@@ -752,7 +752,8 @@ fn update_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
     out
 }
 
-/// The sync, archive and configure steps both runs hold; `plan.update`
+/// The check-scored steps both runs hold — sync, archive, configure,
+/// explore and onboard, those of `SuiteScore::checked_steps`; `plan.update`
 /// is judged by [`update_quality`].
 fn checked_pairs<'a>(
     baseline: &'a SuiteScore,
@@ -771,7 +772,8 @@ fn shares(score: &SuiteScore, step: Step) -> BTreeMap<String, (u32, u32)> {
     checked::case_pass_shares(&score.cases, |c| c.checks_at(step))
 }
 
-/// The quality failures of the sync, archive and configure steps: the
+/// The quality failures of the check-scored steps (sync, archive,
+/// configure, explore, onboard): the
 /// step's share of runs passing and its runs straying, as the update step
 /// is judged, then each case's share of runs passing against its share in
 /// the baseline — both scored with the cases as they now stand.

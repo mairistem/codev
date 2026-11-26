@@ -4473,10 +4473,12 @@ mod tests {
             crate::case::Situation::Onboard(_) => Step::ProjectOnboard,
         };
         case.change = String::new();
+        // The marks play no part in the prompt and selection tests that use
+        // these helpers; they only have to be valid.
         case.read_only = Some(crate::case::ReadOnlyCase {
             situation,
-            contains: vec!["/compagnon-propose".into()],
-            absent: vec!["is missing".into()],
+            contains: vec!["a mark".into()],
+            absent: vec!["another mark".into()],
         });
         case
     }

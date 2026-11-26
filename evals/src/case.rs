@@ -3433,7 +3433,7 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn a_missing_state() {
+    fn read_only_gaps_names_each_outcome_and_state_without_a_case() {
         let onboard = |state: OnboardState| {
             let mut c = read_only_case(ONBOARD_YAML).unwrap();
             c.read_only.as_mut().unwrap().situation = Situation::Onboard(state);

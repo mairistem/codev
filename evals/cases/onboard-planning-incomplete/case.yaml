@@ -3,8 +3,10 @@
 step: project.onboard
 kind: seeded
 stacks: [typescript]
-summary: "A configured TypeScript API with one change, `add-due-dates`, planned up to its proposal: onboard recommends continuing it with `/compagnon-propose`, not `/compagnon-apply`."
+summary: "A configured TypeScript API with one change, `add-due-dates`, planned up to its proposal: onboard recommends continuing it with `/compagnon-propose`."
 expected:
   state: planning-incomplete
   contains: ["/compagnon-propose add-due-dates"]
+  # `/compagnon-apply` is not absent: a good reply says it comes once the
+  # plan is finished (see the change's evals.md).
   absent: ["/compagnon-configure", "compagnon init"]
