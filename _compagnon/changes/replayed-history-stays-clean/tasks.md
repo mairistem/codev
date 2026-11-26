@@ -20,7 +20,8 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 - [ ] 1.2 Format the Rust files the rename changed, as the design says;
   extend the same test with a `Cargo.toml` (edition 2024) and a `.rs`
   file formatted under the former name whose line the new name pushes
-  past the width, and an unformatted `.rs` file not naming it; verified by
+  past the width, and an unformatted `.rs` file not naming it, declared
+  from the first by `mod untouched;`; verified by
   `rustfmt --check --edition 2024` passing on the first and the second
   byte for byte as committed (scenarios "A line the rename lengthens is
   formatted again" and "A file the rename does not touch stays as

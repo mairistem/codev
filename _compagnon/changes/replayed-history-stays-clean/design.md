@@ -62,11 +62,18 @@ each decision — rejected: it needs the binary under test, which a
 ### Decision: Only the Rust files the rename changed are formatted, with rustfmt
 
 After the rename, when the tree has a `Cargo.toml` at its root, each `.rs`
-file whose text the rename changed is formatted with `rustfmt --edition
-<edition>`, the edition read from the root `Cargo.toml`
-(`[workspace.package]` or `[package]`, `2021` when absent). The other files
-are as the commit left them; rustfmt finds the project's `rustfmt.toml` by
-itself. A missing `rustfmt`, or one that fails, is an error of the
+file whose text the rename changed, and that a crate formats — under a
+crate's `src/`, `tests/`, `benches/` or `examples/`, or its `build.rs`, as
+`cargo fmt --all` sees them — is formatted by passing its text to
+`rustfmt --edition <edition> --emit stdout` on standard input, run from
+the file's directory so that rustfmt finds the project's `rustfmt.toml`,
+and writing the output back. Through standard input rustfmt does not
+follow `mod x;` declarations, so a module file the rename did not change
+is left as committed (given a path, rustfmt would format it too). The
+edition is the crate's: the `edition` of the nearest `Cargo.toml` above
+the file, the root's `[workspace.package]` one when it says
+`edition.workspace = true`, `2021` when absent. Other `.rs` files — test
+data, templates — are left as renamed, as `cargo fmt --all` leaves them. A missing `rustfmt`, or one that fails, is an error of the
 fixture's preparation, named: a run on a tree that is not formatted would
 measure the rename again.
 
@@ -81,5 +88,9 @@ whole tree would also correct code the commit left unformatted.
   with] → the `format` check uses the same rustfmt, so a fixture and its
   check agree; `calibrate` keeps reporting a merged commit the installed
   rustfmt rejects for another reason.
+- [Editions or targets the plan reads differently from cargo] → the
+  rule follows what `cargo fmt --all` formats; the cases at hand have
+  every crate on the workspace edition and every changed file in a
+  target, and a case that differs would show in `calibrate`.
 - [A seal file the parser rejects] → left as it is, the rename goes on;
   `validate` reports it, as the commit would.

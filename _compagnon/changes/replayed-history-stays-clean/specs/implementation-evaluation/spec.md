@@ -8,8 +8,9 @@ product's rename through it — for a case's fixture and for each tree
 again the seal of every accepted decision whose seal matched its body
 before the rename, and leave unchanged a seal that did not match; and,
 when the tree is a Rust workspace (a `Cargo.toml` at its root), it SHALL
-format with rustfmt each `.rs` file the rename changed, in the edition of
-the root `Cargo.toml`, leaving every other file as committed, before the
+format with rustfmt each `.rs` file the rename changed that a crate
+formats, in that crate's edition, without following its module
+declarations, leaving every other file as committed, before the
 fixture's base commit. A seal file it cannot parse SHALL be left as it
 is. A missing or failing rustfmt SHALL be an error of the preparation,
 naming the file. A tree laid out under the current names SHALL be left as
@@ -41,7 +42,8 @@ it is.
 #### Scenario: A file the rename does not touch stays as committed
 
 - **GIVEN** a commit before the rename holding a `.rs` file not formatted
-  and not naming the former name
+  and not naming the former name, declared as a module (`mod untouched;`)
+  by a file the rename changes
 - **WHEN** the runner prepares a fixture from it
 - **THEN** that file is byte for byte as committed
 
