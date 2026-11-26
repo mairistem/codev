@@ -58,7 +58,7 @@ The paths now exist; these pages are what they lead to.
 ## Domains
 
 - [ ] security
-- [ ] personal-data — the match is "téléphone" in the example scenario of the French home page (`docs/site/fr.html`), already on the branch, not personal data
+- [ ] personal-data — the match is the English word "phone" in the example scenario of both home pages (`docs/site/index.html` and `fr.html`, line 702), already on the branch; not personal data
 - [x] user-interface
 - [ ] performance
 - [ ] operations

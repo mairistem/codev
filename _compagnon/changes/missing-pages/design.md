@@ -7,10 +7,11 @@ The documentation now opens on one question and four path pages
 `crates/compagnon-cli/src/docs_checks.rs` with the everyday pages'
 vocabulary and anglicism checks. Six test readers (change `profile-paths`)
 named what blocked them past their path; this change writes those pages.
-Facts the pages rest on, from the code: `compagnon init` writes a
-Compagnon section in the pull request template that names the change's
-folder (`crates/compagnon-engine/src/integration.rs`,
-`pr_template_body`); a change's findings and points to discuss are in its
+Facts the pages rest on, from the code: on GitHub only, `compagnon init`
+adds a Compagnon section to the pull request template, with a line the
+developer fills in with the change's folder
+(`crates/compagnon-engine/src/integration.rs`, `plan_pr_template`,
+`pr_template_body`); on GitLab it writes no merge request template; a change's findings and points to discuss are in its
 `review.md`; `compagnon doctor` reports "no main spec" on a project
 without specs and suggests planning a change to document existing
 behavior (`crates/compagnon-core/src/doctor.rs`); `compagnon_version` in
@@ -81,9 +82,11 @@ in English, about Compagnon itself, far from a reader's product.
 
 A reviewer without Claude Code reads and answers the plan where the team
 already works: the pull request (GitHub) or merge request (GitLab). The
-page says where the plan's folder is named (the Compagnon section of the
-description), where the points to discuss are (`review.md` in that
-folder), how to comment on a line, how to ask for changes and how to
+page says where to find the plan: among the request's changed files, in
+the folder `_compagnon/changes/<name>/` — on every site — and, on GitHub,
+also in the Compagnon section of the description when the developer has
+filled it in; where the points to discuss are (`review.md` in that
+folder); how to comment on a line, how to ask for changes and how to
 approve, with each button's label on both sites; and that the developer
 then asks Claude to take the comments into account. Labels are quoted as
 the reader sees them: GitHub's in English, GitLab's in English and in
@@ -110,9 +113,10 @@ answer their readers is checked by the same test readers, by hand.
 
 - [GitHub or GitLab renames a button] → the page describes the action
   first ("approve"), the label second.
-- [The example plan drifts from what Compagnon writes] → it follows the
-  `spec-driven` template's headings, which `compagnon validate` parses;
-  a task validates the French and English example plans by writing them as
-  a change in a scratch project.
+- [The example plan drifts from what Compagnon writes] → a test runs the
+  example's spec block, in both editions, through Compagnon's own delta
+  parser (`compagnon_core::parser::parse_delta`) and fails on any
+  issue, so a change to the template or the parser that the example no
+  longer follows breaks the build.
 - [Six more pages to keep in two languages] → each is short and checked
   by the everyday pages' checks.

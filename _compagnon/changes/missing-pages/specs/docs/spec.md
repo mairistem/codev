@@ -57,6 +57,8 @@ French.
   headings rendered as a page heading
 - **AND** the French plan uses the French keywords (`### Exigence :`,
   `#### Scénario :`)
+- **AND** each edition's spec block parses with Compagnon's delta parser
+  without issue
 
 #### Scenario: A part of the example without its note is caught
 
@@ -68,7 +70,8 @@ French.
 ### Requirement: Pages for people who do not code ask for no command
 
 `guides/approve-a-plan.md` SHALL explain, without Claude Code or a
-terminal, where a plan arrives, where its points to discuss are, and how
+terminal, where a plan arrives — among the request's changed files, in
+`_compagnon/changes/<name>/`, on GitHub and GitLab alike — where its points to discuss are, and how
 to comment, ask for changes and approve on GitHub and on GitLab; it MUST
 hold no fenced shell block. `guides/start-from-nothing.md` SHALL say what
 to get first — Claude Code and a folder for the project — and its fenced
@@ -80,8 +83,8 @@ run `compagnon init`.
 - **GIVEN** both editions of `guides/approve-a-plan.md` and
   `guides/start-from-nothing.md`
 - **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** the approving page holds no fenced shell block and names
-  GitHub and GitLab
+- **THEN** the approving page holds no fenced shell block, names GitHub
+  and GitLab, and names `_compagnon/changes/` as where the plan is
 - **AND** in French, each quoted button label stands between parentheses
   after its action, never as inline code
 - **AND** the starting page names Claude Code before its first shell
@@ -114,7 +117,9 @@ or `text` block is allowed.
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** each names the proposal, the specs, the design and the tasks
 - **AND** each explains the added, modified, removed and renamed sections
-  (`ADDED`, `MODIFIED`, `REMOVED`, `RENAMED`)
+  under the keywords its edition's plans show: `ADDED`, `MODIFIED`,
+  `REMOVED`, `RENAMED` in English; `AJOUTÉES`, `MODIFIÉES`, `SUPPRIMÉES`,
+  `RENOMMÉES` in French
 - **AND** each holds no fenced shell block
 
 #### Scenario: A shell block in the guide is caught
