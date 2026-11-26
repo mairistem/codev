@@ -56,6 +56,32 @@ This is the part that matters most to you. Check that:
 
 Every scenario becomes a [test](../glossary.md#test): if it is written here, it will be checked.
 
+### Reading a modified rule
+
+A plan does not rewrite all of the project's rules: it lists only the ones
+that change, sorted under four kinds of section. These are the titles you
+will see:
+
+- **`ADDED Requirements`**: new rules, which did not exist before.
+- **`MODIFIED Requirements`**: rules that exist already and change.
+- **`REMOVED Requirements`**: rules that disappear, each with its
+  **Reason** and its **Migration** (what to do instead).
+- **`RENAMED Requirements`**: rules whose title changes, with a FROM line
+  (the old title) and a TO line (the new one); their text stays the same.
+
+A modified rule shows its new text **in full**, scenarios included, under
+the same title as the current rule. That new text replaces the current one
+entirely: anything missing from it will be gone. To see what changes,
+compare it with the current rule, under the same title in the project's
+specs, in the folder `_compagnon/specs/`. Or simply ask:
+
+> In the dark mode plan, show me each modified rule before and after.
+
+Check that the difference is exactly what you asked for, and that nothing
+you still want was dropped on the way. The
+[annotated example plan](example-plan.md) shows a modified rule and an
+added one, with what to check in each.
+
 ## The design: how
 
 `design.md` explains the technical choices. You do not need to judge them,
