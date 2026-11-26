@@ -114,5 +114,5 @@ answer their readers is checked by the same test readers, by hand.
   `spec-driven` template's headings, which `compagnon validate` parses;
   a task validates the French and English example plans by writing them as
   a change in a scratch project.
-- [Seven more pages to keep in two languages] → each is short and checked
+- [Six more pages to keep in two languages] → each is short and checked
   by the everyday pages' checks.

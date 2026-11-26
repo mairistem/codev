@@ -10,17 +10,32 @@ part; `guides/existing-project.md` (adopting Compagnon on an existing
 project) and `guides/team-rollout.md` (deploying for a team) in the Going
 further part; `contributing.md` in the Contributing part. The path pages
 SHALL lead to them: the build path takes starting from nothing as a
-step; the review path's "Next" names the example plan and approving; the
-developer path's "Next" names adopting on an existing project; the team
-path takes deploying for a team as a step; `origins.md` ends with a link
-to `contributing.md`.
+step and its "Next" names the example plan; the review path's "Next"
+names the example plan and approving; the developer path's "Next" names
+adopting on an existing project; the team path takes deploying for a team
+as a step, Roles moving to its "Next"; `origins.md` ends with a link to
+`contributing.md`.
 
 #### Scenario: Both editions list the new pages where their readers look
 
 - **GIVEN** both editions' `SUMMARY.md` and path pages
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** each lists the six pages in their parts
-- **AND** each path page links the new pages the requirement gives it
+- **AND** the build path takes `guides/start-from-nothing.md` as a step
+  and names `guides/example-plan.md` under "Next"
+- **AND** the review path names `guides/example-plan.md` and
+  `guides/approve-a-plan.md` under "Next"
+- **AND** the developer path names `guides/existing-project.md` under
+  "Next"
+- **AND** the team path takes `guides/team-rollout.md` as a step and names
+  `roles.md` under "Next"
+- **AND** each edition's `origins.md` links `contributing.md`
+
+#### Scenario: A path page that does not link its new page is caught
+
+- **GIVEN** a review path page whose "Next" lacks `guides/approve-a-plan.md`
+- **WHEN** the check runs on it
+- **THEN** it fails naming the page and the missing link
 
 ### Requirement: The example plan is complete and annotated
 
@@ -43,6 +58,13 @@ French.
 - **AND** the French plan uses the French keywords (`### Exigence :`,
   `#### Scénario :`)
 
+#### Scenario: A part of the example without its note is caught
+
+- **GIVEN** an example plan whose design part has no "What to check here"
+  heading after it
+- **WHEN** the check runs on it
+- **THEN** it fails naming the design part
+
 ### Requirement: Pages for people who do not code ask for no command
 
 `guides/approve-a-plan.md` SHALL explain, without Claude Code or a
@@ -62,8 +84,16 @@ run `compagnon init`.
   GitHub and GitLab
 - **AND** in French, each quoted button label stands between parentheses
   after its action, never as inline code
-- **AND** the starting page runs nothing but installing and
-  `compagnon init` outside "Under the hood" blocks
+- **AND** the starting page names Claude Code before its first shell
+  block, and runs nothing but installing and `compagnon init` outside
+  "Under the hood" blocks
+
+#### Scenario: A command in a page for non-developers is caught
+
+- **GIVEN** an approving page holding a fenced `bash` block, and a
+  starting page running `compagnon validate`
+- **WHEN** the check runs on them
+- **THEN** each fails, naming the block or the command
 
 ## MODIFIED Requirements
 

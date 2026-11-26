@@ -33,9 +33,10 @@ The paths now exist; these pages are what they lead to.
 - "Reviewing a plan" explains how to read a modified rule: the added,
   modified, removed and renamed sections, before and after.
 - The path pages lead to the new pages: the build path starts from
-  nothing; the review path's "Next" names the example and approving; the
-  developer path's names adopting on an existing project; the team path
-  takes "Deploying for a team" as a step; Origins ends on Contributing.
+  nothing and names the example under "Next"; the review path's "Next"
+  names the example and approving; the developer path's names adopting
+  on an existing project; the team path takes "Deploying for a team" as a
+  step, Roles moving to its "Next"; Origins ends on Contributing.
 
 ## Capabilities
 

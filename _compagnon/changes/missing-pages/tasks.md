@@ -17,7 +17,11 @@ both editions, the French one following the documentation's lexicon, in
   `every_part_of_the_example_is_annotated`,
   `the_two_pages_keep_to_what_a_non_developer_can_do`, and extend
   `review_a_plan_covers_the_plan_without_a_terminal` to the four delta
-  sections; update `EVERYDAY` for the three new everyday pages; verified
+  sections; add the unit tests on synthetic pages
+  `a_path_page_that_does_not_link_its_new_page_is_caught`,
+  `a_part_of_the_example_without_its_note_is_caught`,
+  `a_command_in_a_page_for_non_developers_is_caught`; update `EVERYDAY`
+  for the three new everyday pages; verified
   by these tests failing until group 2 (the red state is shown in the pull
   request).
 
