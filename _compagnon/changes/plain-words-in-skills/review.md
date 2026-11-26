@@ -88,3 +88,89 @@ history:
 ### accessibility
 
 No finding.
+
+## code.review
+
+Mode: isolated.
+
+### accessibility
+
+No finding.
+
+### newcomer
+
+#### R-newcomer-1 The fallback names the skill the comment says is missing
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/render.rs:170-177"
+evidence: |
+  // Without propose, name a skill that is installed.
+recommendation: 'The branch ran only without propose, yet its fallback printed `/compagnon-propose` (`first.unwrap_or("compagnon-propose")`), unreachable behind the outer non-empty guard. Take the first skill with `if let Some(first)` and flatten `else { if … }` into `else if`.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-cli/src/render.rs (else if let Some(first) = outcome.skills.first())"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 `SIX` gives a count, not what the list means
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-agents/src/workflows.rs:1557"
+evidence: |
+  const PLAIN_WORDS_SKILLS: [&str; 6] =
+recommendation: 'The constant was named `SIX`, which says how many skills it holds, not what they share. Renamed `PLAIN_WORDS_SKILLS`. The test names keep `the_six_skills_…`: tasks.md and the pull request cite them by name.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-agents/src/workflows.rs (SIX renamed PLAIN_WORDS_SKILLS)"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 A sentence sits in a list of commands
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-agents/src/workflows.rs:1836-1838"
+evidence: |
+  for text in commands {
+recommendation: 'The loop variable was `command`, while the list also holds the fixed reply "No changes made". Renamed `text`, and the failure message with it.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-agents/src/workflows.rs (loop variable renamed text)"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 The update guardrail skips the request the rule asks for
+
+```yaml
+severity: low
+confidence: low
+location: "assets/workflows/update.md:153-154"
+evidence: |
+  suggest finishing the plan: say “finish the plan of <name>”
+recommendation: 'The "No creation" guardrail gave the shortcut with no quoted request, unlike step 3 of the same body. It now says “finish the plan of <name>” before the shortcut, on the line that holds the word shortcut and the command, as the check requires.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "assets/workflows/update.md (No creation guardrail)"
+  - status: fixed
+    by: newcomer
+```
