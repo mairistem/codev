@@ -115,7 +115,7 @@ La relecture isolée coûte plus cher, car chaque relecteur relit tout. Son
 bénéfice n'est pas encore mesuré. Commencez donc petit : utilisez-la pour
 les modifications où un regard neuf compte le plus. Activez-la pour tout le
 projet une fois la différence constatée. Voir
-[Revue en ligne ou isolée](roles.md#revue-en-ligne-ou-isolée).
+[Relecture en ligne ou isolée](roles.md#relecture-en-ligne-ou-isolée).
 
 <details>
 <summary>Sous le capot : activer la relecture isolée</summary>

@@ -116,11 +116,11 @@ Chaque skill déclare les outils qu'elle peut utiliser dans le champ
 
 | Skill | `allowed-tools` |
 |---|---|
-| `compagnon-propose` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep`, plus l'outil MCP Jira s'il est configuré, plus `Agent` en mode de revue isolé |
+| `compagnon-propose` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep`, plus l'outil MCP Jira s'il est configuré, plus `Agent` en mode de relecture isolé |
 | `compagnon-explore` | `Bash(compagnon:*), Read, Glob, Grep` |
 | `compagnon-onboard` | `Bash(compagnon:*), Read, Glob` |
 | `compagnon-configure` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep` |
-| `compagnon-apply` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` en mode de revue isolé ou quand le `developer` a un modèle |
+| `compagnon-apply` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` en mode de relecture isolé ou quand le `developer` a un modèle |
 | `compagnon-update` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep` |
 | `compagnon-sync` | `Bash(compagnon:*), Read` |
 | `compagnon-archive` | `Bash(compagnon:*), Read` |
@@ -134,13 +134,13 @@ passent par la CLI.
 `Agent` est l'outil de sous-agent de Claude Code. `compagnon-propose` et
 `compagnon-apply` le demandent lorsque `_compagnon/config.yaml` définit
 `review: { mode: isolated }`
-([Revue en ligne ou isolée](roles.md#revue-en-ligne-ou-isolée)) : chaque
+([Relecture en ligne ou isolée](roles.md#relecture-en-ligne-ou-isolée)) : chaque
 rôle relecteur travaille alors comme sous-agent. `compagnon-apply` le demande
 aussi quand le `developer` a un modèle : il lui confie alors les tâches
 dans un sous-agent ([Le modèle du développeur](roles.md#le-modèle-du-développeur)).
 Aucune autre skill ne le demande jamais. Après avoir changé de mode, lancez `compagnon update` ;
 `compagnon doctor` signale `skills_review_mode` tant que vous ne l'avez pas
-fait. Les deux skills décrivent la revue isolée dans les deux modes, car
+fait. Les deux skills décrivent la relecture isolée dans les deux modes, car
 le `change.yaml` d'un change peut remplacer le mode du projet : sans
 l'outil pré-autorisé, Claude Code demande avant de lancer un sous-agent,
 et s'il ne peut pas en lancer, les rôles relisent en ligne.
@@ -334,10 +334,10 @@ votre configuration désactive le rôle est sautée, et le résumé le signale
    [domaines que suggère le diff du change](roles.md#les-déclencheurs-et-les-domaines-suggérés)
    et coche chacun ou le garde non coché avec une raison ; le contradicteur
    consigne un constat pour chacun resté `unticked`. Chaque constat est écrit
-   dans le [compte rendu de revue](guides/review-record.md) du change, avec
+   dans le [compte rendu de relecture](guides/review-record.md) du change, avec
    sa gravité et sa preuve citée ; l'auteur le corrige ou le conteste, le
    relecteur vérifie chaque réponse une fois, et la relecture n'élargit
-   jamais le périmètre. En [mode isolé](roles.md#revue-en-ligne-ou-isolée),
+   jamais le périmètre. En [mode isolé](roles.md#relecture-en-ligne-ou-isolée),
    le contrôleur de traçabilité et chaque relecteur travaillent comme des
    sous-agents distincts qui ne voient jamais la conversation, et la skill
    fusionne leurs constats avant de les consigner.
@@ -409,7 +409,7 @@ Cette compétence réalise une modification planifiée. Elle procède ainsi :
    sécurité ou de données personnelles est toujours signalé.
 5. Enfin, elle lance une fois la suite de tests complète.
 
-Chaque constat va dans le [compte rendu de revue](guides/review-record.md),
+Chaque constat va dans le [compte rendu de relecture](guides/review-record.md),
 et suit la même boucle de réponse que ceux du plan. En mode isolé, chaque
 relecteur travaille d'abord seul comme [sous-agent](glossary.md#sous-agent)
 (une copie distincte de Claude qui ne voit pas votre conversation), et la
@@ -462,7 +462,7 @@ Posture : [mainteneur des spécifications vivantes](roles.md#mainteneur-des-spec
 Cette compétence clôt une modification terminée : elle lance
 `compagnon archive`. Si la vérification trouve des erreurs, elle s'arrête
 et vous renvoie vers `compagnon validate`, au lieu de chercher à les
-contourner. Si le compte rendu de revue bloque l'archivage
+contourner. Si le compte rendu de relecture bloque l'archivage
 (`review_blocked`), elle vous renvoie vers `compagnon review`, et ne
 consigne jamais une décision à votre place.
 
@@ -515,7 +515,7 @@ détecte la modification et laisse le fichier en place :
 `compagnon update --force` l'écrase avec la version générée. Les skills issues
 d'une autre version de Compagnon sont toujours régénérées, tout comme les skills
 de cette version que Compagnon a rendues lui-même — une compilation antérieure, ou
-l'autre mode de revue —, puisqu'elles correspondent encore à leur empreinte.
+l'autre mode de relecture —, puisqu'elles correspondent encore à leur empreinte.
 Une skill de cette version générée avant les empreintes est préservée comme
 une modification : lancez une fois `compagnon update --force` pour lui donner son
 empreinte — vérifiez d'abord `git diff`, car il écrase aussi vos vraies

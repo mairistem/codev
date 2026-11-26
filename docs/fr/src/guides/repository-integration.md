@@ -1,8 +1,9 @@
 # Intégration au dépôt et compagnon doctor
 
-Les specs et les skills ne suffisent pas : Claude Code doit savoir que le
-dépôt fonctionne avec Compagnon, la CI doit repérer une spec invalide, et les
-relecteurs doivent voir quel change une pull request met en œuvre.
+Les spécifications et les compétences ne suffisent pas : Claude Code doit
+savoir que le dépôt fonctionne avec Compagnon, la CI doit repérer une
+spécification invalide, et les relecteurs doivent voir quelle modification une
+demande de fusion met en œuvre.
 `compagnon init` met tout cela en place, `compagnon update` le tient à jour, et
 `compagnon doctor` vous dit ce qui manque encore.
 
@@ -12,7 +13,7 @@ relecteurs doivent voir quel change une pull request met en œuvre.
 
 Claude Code lit `CLAUDE.md` au début de chaque session. `compagnon init` le crée,
 ou ajoute une section au vôtre, pour que Claude ne modifie pas un comportement
-sans change Compagnon :
+sans modification Compagnon :
 
 ```markdown
 <!-- compagnon:begin — managed by compagnon; `compagnon update` rewrites this block, edit outside it -->
@@ -32,9 +33,9 @@ Installed skills: `/compagnon-propose`, `/compagnon-explore`, `/compagnon-onboar
 
 La section est en anglais quelle que soit la `language:` du projet : elle
 s'adresse à l'agent. Lorsque `/compagnon-apply` n'est pas installée, elle demande
-de mettre en œuvre en suivant le `tasks.md` du change.
+de mettre en œuvre en suivant le `tasks.md` de la modification.
 
-### Workflow de CI
+### Tâche d'intégration continue
 
 Sur un dépôt GitHub — doté d'un dossier `.github/`, ou d'un remote git sur
 `github.com` —, `compagnon init` crée `.github/workflows/compagnon.yml` :
@@ -66,13 +67,13 @@ L'installateur est épinglé sur la version de Compagnon qui a écrit le fichier
 la CI valide avec les mêmes règles que votre machine. Compagnon n'écrit pas ce
 fichier lorsque :
 
-- un autre workflow de `.github/workflows/` exécute déjà `compagnon validate` —
+- un autre fichier de déroulé de `.github/workflows/` exécute déjà `compagnon validate` —
   toute ligne qui nomme `compagnon` puis `validate` compte, comme
   `cargo run --bin compagnon -- validate` ;
 - `.github/workflows/compagnon.yml` existe et n'a pas été écrit par Compagnon (sa
   première ligne n'est pas `# compagnon:managed`).
 
-Compagnon ne modifie jamais aucun autre fichier de workflow. Sur un dépôt GitLab
+Compagnon ne modifie jamais aucun autre fichier de déroulé. Sur un dépôt GitLab
 — un fichier `.gitlab-ci.yml`, ou un remote sur GitLab —, il ne touche pas à
 `.gitlab-ci.yml` et affiche à la place un job à coller :
 
@@ -95,9 +96,10 @@ Compagnon ne modifie jamais aucun autre fichier de workflow. Sur un dépôt GitL
 Ailleurs, l'étape est écartée avec une indication : ajoutez
 `compagnon validate --strict` à votre pipeline.
 
-### Modèle de pull request
+### Modèle de demande de fusion
 
-Sur GitHub, `compagnon init` ajoute une section à votre modèle de pull request —
+Sur GitHub, `compagnon init` ajoute une section à votre modèle de demande de
+fusion (pull request template) —
 le premier `pull_request_template.md` trouvé dans `.github/`, à la racine du
 projet ou dans `docs/`, quelle que soit la casse — ou crée
 `.github/PULL_REQUEST_TEMPLATE.md` :
@@ -113,7 +115,7 @@ projet ou dans `docs/`, quelle que soit la casse — ou crée
 
 ## Sections gérées
 
-Le texte de Compagnon dans `CLAUDE.md` et dans le modèle de pull request se trouve
+Le texte de Compagnon dans `CLAUDE.md` et dans le modèle de demande de fusion se trouve
 entre deux commentaires HTML, invisibles une fois le markdown affiché :
 
 ```markdown
@@ -131,13 +133,13 @@ entre deux commentaires HTML, invisibles une fois le markdown affiché :
 - Lorsque les marqueurs sont déséquilibrés ou répétés, le fichier est laissé
   tel quel et l'avertissement `managed_section_malformed` le nomme.
 
-Le fichier de workflow appartient entièrement à Compagnon. `compagnon update` le
+Le fichier de déroulé appartient entièrement à Compagnon. `compagnon update` le
 réécrit, ce qui aligne sa version épinglée après une mise à jour, tant que sa
 première ligne est `# compagnon:managed`. Supprimez cette ligne pour reprendre la
 main sur le fichier : Compagnon n'y touche plus.
 
 `compagnon update` ne rafraîchit que ce qui existe. Il ne crée jamais `CLAUDE.md`,
-le workflow ou le modèle, et n'ajoute jamais de section à un fichier qui n'en
+le fichier de déroulé ou le modèle, et n'ajoute jamais de section à un fichier qui n'en
 a pas.
 
 ## Refuser l'intégration
@@ -146,7 +148,7 @@ a pas.
 |---|---|
 | `--no-claude-md` | la section dans `CLAUDE.md` |
 | `--no-ci` | `.github/workflows/compagnon.yml` |
-| `--no-pr-template` | la section dans le modèle de pull request |
+| `--no-pr-template` | la section dans le modèle de demande de fusion |
 | `--no-integration` | les trois |
 
 Ces options valent pour une exécution de `compagnon init`. Un `compagnon init`
@@ -155,9 +157,9 @@ ultérieur sans elles écrit les fichiers ; `compagnon update`, jamais.
 ## compagnon doctor
 
 `compagnon doctor` vérifie l'ensemble de l'installation et donne, pour chaque
-manque, la commande ou la skill qui le comble. La commande est en lecture
+manque, la commande ou la compétence qui le comble. La commande est en lecture
 seule et fonctionne hors ligne ; pour la vérification `changelog`, elle
-demande au dépôt git local quels changes ont été archivés depuis le dernier
+demande au dépôt git local quelles modifications ont été archivées depuis le dernier
 tag :
 
 ```bash

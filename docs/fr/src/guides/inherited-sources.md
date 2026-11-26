@@ -23,7 +23,7 @@ fichiers Markdown et YAML : rien d'exécutable n'est hérité.
 Lorsque l'agent reçoit le contexte et les règles, chaque bloc indique sa
 provenance, du plus général (les sources, dans l'ordre de déclaration) au plus
 spécifique (votre projet). Lorsque deux blocs se contredisent, le dernier
-l'emporte, et les skills ont pour consigne de signaler la contradiction plutôt
+l'emporte, et les compétences ont pour consigne de signaler la contradiction plutôt
 que de la trancher en silence.
 
 L'héritage n'est pas transitif : si une source déclare elle-même
@@ -99,7 +99,7 @@ partagées ; pour tous les autres, préférez une source git épinglée.
 
 ## Sources git
 
-Une source `git:` est un dépôt distant, épinglé sur un commit :
+Une source `git:` est un dépôt distant, épinglé sur un enregistrement :
 
 ```yaml
 inherits:
@@ -131,8 +131,8 @@ Changes:
 compagnon.lock updated.
 ```
 
-Cette commande résout chaque `ref` en commit avec `git ls-remote`, récupère ce
-commit dans un cache local et l'enregistre dans `_compagnon/compagnon.lock` :
+Cette commande résout chaque `ref` en enregistrement avec `git ls-remote`,
+récupère cet enregistrement dans un cache local et l'enregistre dans `_compagnon/compagnon.lock` :
 
 ```toml
 version = 1
@@ -144,16 +144,16 @@ commit = "12958274cbed0eb66985f57d3272c6d3134b672d"
 resolved_at = "2026-09-30"
 ```
 
-**Commitez `compagnon.lock`.** Toutes les personnes qui travaillent sur le projet
-lisent alors exactement le même commit, et un changement d'épinglage apparaît
-en revue comme n'importe quel autre diff.
+**Enregistrez `compagnon.lock`.** Toutes les personnes qui travaillent sur le projet
+lisent alors exactement le même enregistrement (commit), et un changement d'épinglage apparaît
+en relecture comme n'importe quel autre diff.
 
 `compagnon sources update` et `compagnon init --inherit` sont les seules commandes qui
 accèdent au réseau, et seule `compagnon sources update` déplace un épinglage.
-Toutes les autres lisent le commit verrouillé depuis le cache, hors ligne. Relancez
-`compagnon sources update` pour déplacer les épinglages vers le commit actuel de
+Toutes les autres lisent l'enregistrement verrouillé depuis le cache, hors ligne. Relancez
+`compagnon sources update` pour déplacer les épinglages vers l'enregistrement actuel de
 chaque `ref` ; la commande indique pour chaque source si elle est ajoutée
-(`+`), déplacée (`~`, avec l'ancien et le nouveau commit) ou inchangée (`=`).
+(`+`), déplacée (`~`, avec l'ancien et le nouvel enregistrement) ou inchangée (`=`).
 
 Le cache se trouve dans `$XDG_CACHE_HOME/compagnon/`, ou dans `~/.cache/compagnon/`
 lorsque `XDG_CACHE_HOME` n'est pas défini. Les sources git nécessitent `git`
@@ -224,7 +224,8 @@ rend l'écart visible, mais elle n'est plus en vigueur pour votre projet. Voir
 
 ## Ce qui n'est pas hérité
 
-- **Les specs.** Chaque projet possède ses propres specs de comportement.
+- **Les spécifications.** Chaque projet possède ses propres spécifications de
+  comportement.
 - **`schema`, `language`, `workflows` et `mcp`.** Ces clés relèvent du projet
   et des personnes qui y travaillent.
 - **Les sources de la source**, comme expliqué plus haut.
