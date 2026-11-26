@@ -21,7 +21,8 @@ curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh 
 iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```
 
-`COMPAGNON_VERSION=0.6.1` before `sh` installs a given version; a manual
+`COMPAGNON_VERSION=0.6.1` before `sh` installs a given version (on
+Windows, first type `$env:COMPAGNON_VERSION = '0.6.1'`); a manual
 download and `cargo install` are the other two ways. See
 [Installation](../installation.md).
 
@@ -36,6 +37,8 @@ Set the versions the team accepts in `_compagnon/config.yaml`:
 ```yaml
 compagnon_version: ">=0.6, <0.8"
 ```
+
+To require one exact version, write `"=0.6.1"`.
 
 Quote it: YAML reads `>` specially. With a version outside that range:
 
@@ -72,7 +75,7 @@ Run `compagnon init` once, on one machine, and commit what it wrote:
 After upgrading Compagnon, `compagnon update` refreshes the skills, the
 managed sections and the workflow's pinned version: commit the result too.
 See [Should I save `_compagnon/` and `.claude/skills/` in the project's
-history?](../faq.md) in the FAQ.
+history?](../faq.md#should-i-save-_compagnon-and-claudeskills-in-the-projects-history-commit-them) in the FAQ.
 
 ## The check that blocks a pull request
 

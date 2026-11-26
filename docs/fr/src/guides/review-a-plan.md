@@ -48,7 +48,7 @@ Scénario : Aucun thème encore choisi
 Les fichiers du plan peuvent montrer quelques mots-clés en anglais, quelle
 que soit leur langue : SHALL ou MUST veut dire « doit » ; GIVEN / WHEN /
 THEN veulent dire « étant donné », « quand », « alors ». Dans la
-proposition, une section « ## Domains » liste les
+proposition, une section « ## Domaines » (ou « ## Domains ») liste les
 [domaines](../glossary.md#domaine) sensibles que la modification touche,
 comme la sécurité ou les données personnelles.
 
@@ -83,8 +83,10 @@ Une règle modifiée montre son nouveau texte **en entier**, scénarios
 compris, sous le même titre que la règle actuelle. Ce nouveau texte
 remplace entièrement l'actuel : ce qui n'y figure plus disparaîtra. Pour
 voir ce qui change, comparez-le à la règle actuelle, sous le même titre
-dans les spécifications du projet, dans le dossier `_compagnon/specs/`.
-Ou demandez simplement :
+dans les spécifications du projet, dans le dossier `_compagnon/specs/` :
+sur GitHub ou GitLab, ouvrez ce dossier depuis la page du dépôt, puis le
+fichier `spec.md` du dossier qui porte le même nom que celui du plan. Ou
+demandez au développeur, ou à Claude :
 
 > Dans le plan du mode sombre, montre-moi chaque règle modifiée avant et
 > après.

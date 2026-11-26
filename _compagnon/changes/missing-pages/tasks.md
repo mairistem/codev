@@ -58,7 +58,7 @@ both editions, the French one following the documentation's lexicon, in
 
 ## 3. Check
 
-- [ ] 3.1 Have the six test readers of `profile-paths` — Claire, Sophie,
+- [x] 3.1 Have the six test readers of `profile-paths` — Claire, Sophie,
   Nadia, Karim, Julie, Tom — follow their path again from the French home
   page: it passes when each reaches the page that answers the blocker they
   named before; recorded in the pull request. Manual because whether a

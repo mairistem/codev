@@ -23,7 +23,7 @@ installer, et une courte description du projet — puis ajoute :
 | Le dossier de Compagnon : spécifications, décisions, modifications, archive, schémas, et la configuration | `_compagnon/`, `_compagnon/config.yaml` |
 | Les compétences Claude Code | `.claude/skills/compagnon-<nom>/SKILL.md` |
 | Une section qui demande à Claude de planifier avant de changer un comportement | `CLAUDE.md`, créé s'il manque |
-| Sur GitHub, une tâche d'[intégration continue](../glossary.md#intégration-continue) qui lance `compagnon validate --strict` à chaque envoi et à chaque [demande de fusion](../glossary.md#demande-de-fusion) | `.github/workflows/compagnon.yml` |
+| Sur GitHub, une tâche d'[intégration continue](../glossary.md#intégration-continue) qui lance `compagnon validate --strict` à chaque envoi de modifications vers le dépôt partagé et à chaque [demande de fusion](../glossary.md#demande-de-fusion) | `.github/workflows/compagnon.yml` |
 | Sur GitHub, une section Compagnon dans le modèle de demande de fusion | votre modèle existant, ou `.github/PULL_REQUEST_TEMPLATE.md` |
 
 Votre propre texte n'est jamais remplacé. Les sections de Compagnon dans
@@ -98,7 +98,7 @@ n'écrit rien avant votre confirmation. Voir
 
 ## Consigner les décisions déjà prises
 
-Votre projet repose déjà sur des choix : une base de données, un cadriciel,
+Votre projet repose déjà sur des choix : une base de données, un cadre de développement (framework),
 la façon dont les modules dépendent les uns des autres. Consignez ceux que
 Claude doit respecter sous forme de [décisions](../concepts.md#décision) :
 

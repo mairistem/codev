@@ -22,7 +22,8 @@ curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh 
 iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```
 
-`COMPAGNON_VERSION=0.6.1` placé avant `sh` installe une version précise ;
+`COMPAGNON_VERSION=0.6.1` placé avant `sh` installe une version précise
+(sous Windows, tapez d'abord `$env:COMPAGNON_VERSION = '0.6.1'`) ;
 le téléchargement manuel et `cargo install` sont les deux autres voies.
 Voir [Installation](../installation.md).
 
@@ -37,6 +38,8 @@ Indiquez les versions que l'équipe accepte dans `_compagnon/config.yaml` :
 ```yaml
 compagnon_version: ">=0.6, <0.8"
 ```
+
+Pour exiger une seule version précise, écrivez `"=0.6.1"`.
 
 Mettez la valeur entre guillemets : YAML lit `>` de façon particulière.
 Avec une version hors de cet intervalle :
@@ -80,7 +83,7 @@ Après une mise à jour de Compagnon, `compagnon update` rafraîchit les
 compétences, les sections gérées et la version fixée dans l'intégration
 continue : enregistrez aussi le résultat. Voir
 [Faut-il enregistrer `_compagnon/` et `.claude/skills/` dans
-git ?](../faq.md) dans la FAQ.
+git ?](../faq.md#faut-il-enregistrer-_compagnon-et-claudeskills-dans-git-) dans la FAQ.
 
 ## La vérification qui bloque une demande de fusion
 

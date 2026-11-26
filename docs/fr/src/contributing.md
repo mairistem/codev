@@ -68,15 +68,15 @@ chaque session : « Do not modify behavior without a compagnon change. »
 Les corrections triviales — coquilles, formulation de la documentation —
 en sont dispensées.
 
-1. Pour toute contribution d'envergure, ouvrez d'abord une issue afin d'en
-   discuter.
-2. Dans votre clone, lancez `/compagnon-propose <your idea>` dans Claude
+1. Pour toute contribution d'envergure, ouvrez d'abord un ticket sur GitHub
+   (onglet « Issues ») afin d'en discuter.
+2. Dans votre clone, lancez `/compagnon-propose <votre idée>` dans Claude
    Code, ou créez la modification à la main avec
-   `compagnon new change <name>` et rédigez son plan.
+   `compagnon new change <nom>` et rédigez son plan.
 3. Réalisez-la, avec `/compagnon-apply` ou à la main, en cochant les
    tâches de `tasks.md`.
 4. Une fois le travail terminé, archivez-la avec
-   `compagnon archive --change <name>`, pour que `_compagnon/specs/`
+   `compagnon archive --change <nom>`, pour que `_compagnon/specs/`
    décrive le nouveau comportement.
 5. Ouvrez une demande de fusion qui contient la modification archivée et
    le code.
@@ -126,7 +126,7 @@ docs: explain inherited git sources
 ```
 
 Les types courants sont `feat`, `fix`, `docs`, `refactor`, `test` et
-`chore` ; la portée désigne la crate ou le domaine concerné (`core`,
+`chore` ; la portée désigne le module (la crate) ou le domaine concerné (`core`,
 `engine`, `agents`, `cli`, `skills`, `docs`). Gardez une ligne de sujet
 courte, à l'impératif. Si un agent a coécrit un enregistrement, ajoutez une
 ligne `Co-Authored-By:`.
@@ -141,4 +141,4 @@ que la partie française demande un suivi.
 couvre le reste : écrire des cas d'évaluation, les conventions de la
 documentation, la publication d'une version, le signalement des failles de
 sécurité et le code de conduite. [Architecture](architecture.md) décrit les
-crates et leurs dépendances.
+modules du code (les crates) et leurs dépendances.

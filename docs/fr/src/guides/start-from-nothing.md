@@ -27,7 +27,8 @@ Ces deux commandes sont les seules que vous tapez. Si quelqu'un de votre
 où l'on tape des commandes), il peut faire cette partie pour vous.
 
 **1. Installer Compagnon.** Ouvrez un terminal : sur macOS, l'application
-Terminal ; sur Windows, PowerShell. Copiez la ligne qui correspond à votre
+Terminal (appuyez sur Cmd + Espace, tapez « Terminal », puis Entrée) ; sur
+Windows, PowerShell (touche Windows, tapez « PowerShell », puis Entrée). Copiez la ligne qui correspond à votre
 ordinateur, collez-la, puis appuyez sur Entrée.
 
 Sur macOS ou Linux :
@@ -48,8 +49,8 @@ nouveau. Si cela échoue encore, [Installation](../installation.md)
 explique pourquoi, pour la personne qui vous aide.
 
 **2. Préparer votre dossier.** Ouvrez un terminal dans le dossier de votre
-projet : sur macOS, faites glisser le dossier sur l'icône de Terminal dans
-le Dock ; sur Windows, faites un clic droit dans le dossier, dans
+projet : sur macOS, dans le Finder, faites un clic droit sur le dossier, puis
+Services et « Nouveau terminal au dossier » ; sur Windows, faites un clic droit dans le dossier, dans
 l'Explorateur de fichiers, puis « Ouvrir dans le Terminal ». Tapez
 ensuite :
 
@@ -59,8 +60,9 @@ compagnon init
 
 Il peut vous demander quelles [compétences](../glossary.md#compétence)
 donner à Claude, et quelques mots sur votre projet : le choix proposé
-convient ; pour les mots, tapez une phrase sur votre idée (une réponse
-vide ouvre plutôt un éditeur de texte). Il ajoute un dossier
+convient ; pour les mots, tapez toujours une phrase sur votre idée : une
+réponse vide ouvre un éditeur de texte peu commode (si cela arrive,
+appelez la personne qui vous aide). Il ajoute un dossier
 `_compagnon/`, où vos plans seront rangés. Vous pouvez fermer le terminal.
 
 ## Votre première demande
@@ -102,7 +104,9 @@ Quand le plan dit ce que vous voulez :
 > Le plan me va, réalise la modification.
 
 Claude construit ce que dit le plan, étape par étape, et vous demande
-quand quelque chose n'est pas clair.
+quand quelque chose n'est pas clair. Pour voir le résultat, demandez-le :
+
+> Comment je peux essayer le formulaire sur mon ordinateur ?
 
 ## Mettre en ligne
 

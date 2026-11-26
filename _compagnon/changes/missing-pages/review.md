@@ -142,3 +142,87 @@ history:
   - status: fixed
     by: accessibility
 ```
+
+## code.review
+
+Mode: isolated.
+
+### accessibility
+
+#### R-accessibility-3 Commenting on a line was described for the mouse only
+
+```yaml
+severity: low
+confidence: high
+location: "docs/en/src/guides/approve-a-plan.md:43-44"
+evidence: |
+  2. **Comment on a line.** Move the mouse over the line, then click the
+recommendation: 'Give a keyboard and screen-reader path for commenting on a line (Tab to the line, the comment button announced, or the conversation tab naming the file and line), on GitHub and GitLab, in both editions (WCAG 1.3.3).'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: "docs/en/src/guides/approve-a-plan.md, docs/fr/src/guides/approve-a-plan.md: keyboard path added to both commenting steps"
+  - status: fixed
+    by: accessibility
+```
+
+### newcomer
+
+#### R-newcomer-1 missing_path_links documented its parameters wrongly and had its own idea of a step
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:306"
+evidence: |
+  pub fn missing_path_links(
+recommendation: 'Document the three parameters, rename next to next_heading and after to next_section, share one is_step_line helper with path_page_problems, and name the lists at the call site.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: is_step_line, next_heading, next_section, comment on the table of path pages"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 example_problems hid why a part failed
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:342"
+evidence: |
+  pub fn example_problems(md: &str, parts: &[&str], note: &str) -> Vec<String> {
+recommendation: 'Take a slice, report a part out of order, a missing quoted plan and a missing note as three messages, and simplify the search for the next part.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: example_problems reports each defect on its own; unit test updated"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 The pages were named by the change that added them
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:1729"
+evidence: |
+  const PROFILE_GUIDES: [(&str, usize); 6] = [
+recommendation: 'Name the constant by the pages role and the SUMMARY.md parts by name.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: NEW_PAGES renamed PROFILE_GUIDES, part constants EVERYDAY_PART, GOING_FURTHER_PART, CONTRIBUTING_PART; the two test names stay as tasks.md and the spec cite them"
+  - status: fixed
+    by: newcomer
+```

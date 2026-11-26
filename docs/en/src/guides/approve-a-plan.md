@@ -43,7 +43,10 @@ open, and which parts of the plan to read most closely.
 2. **Comment on a line.** Move the mouse over the line, then click the
    blue "+" that appears beside it. Write your comment, then click
    "Start a review" to gather several comments and send them together, or
-   "Add single comment" to send this one now.
+   "Add single comment" to send this one now. Without a mouse, move to the
+   line with the Tab key: the same comment button appears, and a screen
+   reader announces it as a button to add a comment. You can also write
+   your comments in the "Conversation" tab, naming the file and the line.
 3. **Send your answer.** Click "Review changes" (at the top right of the
    changed files; GitHub's newer page may call it "Submit review"). Write
    a short summary, then choose one:
@@ -61,7 +64,9 @@ English, then in French.
 1. **Open the changed files.** In the merge request, click the "Changes"
    tab ("Modifications"). Find the files under `_compagnon/changes/<name>/`.
 2. **Comment on a line.** Move the mouse over the line number, then click
-   the speech bubble that appears. Write your comment, then click
+   the speech bubble that appears (without a mouse, move to the line
+   with the Tab key: a screen reader announces the same comment button;
+   or write in the "Overview" tab, naming the file and the line). Write your comment, then click
    "Start a review" ("Commencer une revue") to gather several comments, or
    "Add comment now" ("Ajouter un commentaire maintenant") to send this
    one at once.

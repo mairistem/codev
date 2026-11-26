@@ -24,7 +24,8 @@ These two commands are the only ones you type. If someone in your team is
 used to a [terminal](../glossary.md#terminal) (the window where you type
 commands), they can do this part for you.
 
-**1. Install Compagnon.** Open a terminal: on macOS, the Terminal app; on
+**1. Install Compagnon.** Open a terminal: on macOS, the Terminal app (press Cmd + Space, type
+"Terminal", then Enter); on
 Windows, PowerShell. Copy the line for your computer, paste it, then press
 Enter.
 
@@ -46,7 +47,8 @@ found", close the terminal and open a new one. If it still fails,
 you.
 
 **2. Prepare your folder.** Open a terminal in your project folder: on
-macOS, drag the folder onto the Terminal icon in the Dock; on Windows,
+macOS, right-click the folder in the Finder, then Services and "New
+Terminal at Folder"; on Windows,
 right-click inside the folder in File Explorer, then "Open in Terminal". Then type:
 
 ```bash
@@ -55,8 +57,8 @@ compagnon init
 
 It may ask which [skills](../glossary.md#skill) to give Claude, and for a
 few words about your project: the proposed choice is fine; for the
-words, type one sentence about your idea (an empty answer opens a text
-editor instead). It adds a `_compagnon/` folder, where your plans will be
+words, always type one sentence about your idea: an empty answer opens
+an awkward text editor (if that happens, call the person helping you). It adds a `_compagnon/` folder, where your plans will be
 kept. You can close the terminal now.
 
 ## Your first request
@@ -96,7 +98,9 @@ When the plan says what you want:
 > The plan is good, implement it.
 
 Claude builds what the plan says, step by step, and asks you when
-something is unclear.
+something is unclear. To see the result, ask:
+
+> How can I try the form on my computer?
 
 ## Putting it online
 

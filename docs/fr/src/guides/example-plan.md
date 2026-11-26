@@ -78,7 +78,7 @@ clair ou sombre : l'application l'ignore.
 
 ## Les spécifications
 
-Les spécifications, ici `specs/appearance/spec.md`, disent ce qui sera vrai
+Les spécifications, ici `specs/appearance/spec.md` (le dossier « appearance », c'est-à-dire l'apparence), disent ce qui sera vrai
 ensuite : une règle change, une règle s'ajoute.
 
 ```markdown

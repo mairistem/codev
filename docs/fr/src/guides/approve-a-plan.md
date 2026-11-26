@@ -49,7 +49,12 @@ GitHub affiche ses boutons en anglais.
    sur le « + » bleu qui apparaît à côté. Écrivez votre commentaire, puis
    commencez une relecture pour regrouper plusieurs commentaires et les
    envoyer ensemble (bouton « Start a review »), ou envoyez ce seul
-   commentaire tout de suite (bouton « Add single comment »).
+   commentaire tout de suite (bouton « Add single comment »). Sans souris,
+   allez jusqu'à la ligne avec la touche Tab : le même bouton de
+   commentaire apparaît, et un lecteur d'écran l'annonce comme un bouton
+   pour commenter. Vous pouvez aussi écrire vos commentaires dans l'onglet
+   de la discussion (onglet « Conversation »), en nommant le fichier et la
+   ligne.
 3. **Envoyer votre réponse.** Ouvrez la fenêtre de réponse (bouton
    « Review changes », en haut à droite des fichiers modifiés ; la
    nouvelle page de GitHub peut l'appeler « Submit review »). Écrivez un
@@ -71,7 +76,10 @@ ici en anglais, puis en français.
    « Modifications »). Cherchez les fichiers sous
    `_compagnon/changes/<nom>/`.
 2. **Commenter une ligne.** Passez la souris sur le numéro de la ligne,
-   puis cliquez sur la bulle qui apparaît. Écrivez votre commentaire,
+   puis cliquez sur la bulle qui apparaît (sans souris, allez jusqu'à la
+   ligne avec la touche Tab : un lecteur d'écran annonce le même bouton
+   de commentaire ; ou écrivez dans l'onglet de vue d'ensemble, onglet
+   « Overview » ou « Vue d'ensemble », en nommant le fichier et la ligne). Écrivez votre commentaire,
    puis commencez une relecture pour regrouper plusieurs commentaires
    (bouton « Start a review » ou « Commencer une revue »), ou envoyez ce
    seul commentaire tout de suite (bouton « Add comment now » ou

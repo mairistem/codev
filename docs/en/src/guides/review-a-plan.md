@@ -73,7 +73,9 @@ A modified rule shows its new text **in full**, scenarios included, under
 the same title as the current rule. That new text replaces the current one
 entirely: anything missing from it will be gone. To see what changes,
 compare it with the current rule, under the same title in the project's
-specs, in the folder `_compagnon/specs/`. Or simply ask:
+specs, in the folder `_compagnon/specs/`: on GitHub or GitLab, open that
+folder from the repository's page, then the `spec.md` file of the folder
+named like the plan's. Or ask the developer, or Claude:
 
 > In the dark mode plan, show me each modified rule before and after.
 

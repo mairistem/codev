@@ -253,10 +253,7 @@ pub fn path_page_problems(
     let steps: Vec<(usize, &str)> = lines
         .iter()
         .enumerate()
-        .filter(|(_, l)| {
-            let digits = l.chars().take_while(char::is_ascii_digit).count();
-            digits > 0 && l[digits..].starts_with(". ")
-        })
+        .filter(|(_, l)| is_step_line(l))
         .map(|(i, l)| (i, *l))
         .collect();
     if steps.is_empty() || steps.len() > 3 {
@@ -296,18 +293,28 @@ pub fn path_page_problems(
     problems
 }
 
-/// The links a path page lacks: `steps`, chapters it must take as numbered
-/// steps, and `next`, chapters its `next` section must name.
+/// Whether a line of a path page is one of its numbered steps: digits, then
+/// `. `.
+fn is_step_line(line: &str) -> bool {
+    let digits = line.chars().take_while(char::is_ascii_digit).count();
+    digits > 0 && line[digits..].starts_with(". ")
+}
+
+/// The links a path page lacks. `next_heading` is the title of its "Next"
+/// section; `steps` are the chapters its numbered steps must open, and
+/// `next_links` the chapters that section must link.
 pub fn missing_path_links(
     md: &str,
-    next: &str,
+    next_heading: &str,
     steps: &[&str],
     next_links: &[&str],
 ) -> Vec<String> {
-    let (body, after) = md.split_once(&format!("## {next}")).unwrap_or((md, ""));
+    let (body, next_section) = md
+        .split_once(&format!("## {next_heading}"))
+        .unwrap_or((md, ""));
     let step_lines: String = body
         .lines()
-        .filter(|l| l.chars().next().is_some_and(|c| c.is_ascii_digit()))
+        .filter(|l| is_step_line(l))
         .collect::<Vec<_>>()
         .join("\n");
     let opens = |text: &str, chapter: &str| {
@@ -323,16 +330,16 @@ pub fn missing_path_links(
     missing.extend(
         next_links
             .iter()
-            .filter(|c| !opens(after, c))
-            .map(|c| format!("no {c} under \"{next}\"")),
+            .filter(|c| !opens(next_section, c))
+            .map(|c| format!("no {c} under \"{next_heading}\"")),
     );
     missing
 }
 
 /// What is wrong with an annotated example: one of `parts` (`## ` headings)
-/// missing, or a part without a quoted `markdown` block followed by its
-/// `### note` heading.
-pub fn example_problems(md: &str, parts: &[&str; 4], note: &str) -> Vec<String> {
+/// missing or out of order, or a part without a quoted `markdown` block, or
+/// without its `### note` heading after that block.
+pub fn example_problems(md: &str, parts: &[&str], note: &str) -> Vec<String> {
     // The quoted plan holds `## ` headings of its own: a part runs from its
     // heading to the next part's, not to the next `## `.
     let starts: Vec<Option<usize>> = parts
@@ -346,16 +353,17 @@ pub fn example_problems(md: &str, parts: &[&str; 4], note: &str) -> Vec<String> 
             let Some(start) = starts[i] else {
                 return Some(format!("no part \"{part}\""));
             };
-            let end = starts[i + 1..]
-                .iter()
-                .flatten()
-                .next()
-                .copied()
-                .unwrap_or(md.len());
-            let body = &md[start..end.max(start)];
-            let fence = body.find("```markdown");
-            let annotated = fence.is_some_and(|f| body[f..].contains(&format!("### {note}")));
-            (!annotated).then(|| format!("\"{part}\" lacks its quoted plan or its note"))
+            // The part ends where the next part present begins.
+            let end = starts[i + 1..].iter().find_map(|s| *s).unwrap_or(md.len());
+            if end < start {
+                return Some(format!("\"{part}\" comes after the part that follows it"));
+            }
+            let body = &md[start..end];
+            let Some(fence) = body.find("```markdown") else {
+                return Some(format!("\"{part}\" quotes no plan"));
+            };
+            (!body[fence..].contains(&format!("### {note}")))
+                .then(|| format!("\"{part}\" has no \"{note}\" after its quoted plan"))
         })
         .collect()
 }
@@ -1060,7 +1068,7 @@ mod tests {
         );
         assert_eq!(
             example_problems(&bare, &parts, "What to check here"),
-            ["\"The design\" lacks its quoted plan or its note"]
+            ["\"The design\" has no \"What to check here\" after its quoted plan"]
         );
     }
 
@@ -1711,21 +1719,27 @@ mod chapter_tests {
         assert!(found.is_empty(), "{found:#?}");
     }
 
-    /// The six pages the profiles asked for, each with the part that lists it.
-    const NEW_PAGES: [(&str, usize); 6] = [
-        ("guides/example-plan.md", 1),
-        ("guides/approve-a-plan.md", 1),
-        ("guides/start-from-nothing.md", 1),
-        ("guides/existing-project.md", 2),
-        ("guides/team-rollout.md", 2),
-        ("contributing.md", 4),
+    /// The parts of `SUMMARY.md`, by their order (`# ` headings).
+    const EVERYDAY_PART: usize = 1;
+    const GOING_FURTHER_PART: usize = 2;
+    const CONTRIBUTING_PART: usize = 4;
+
+    /// The guides the path pages send their readers to, each with the part
+    /// of `SUMMARY.md` that lists it.
+    const PROFILE_GUIDES: [(&str, usize); 6] = [
+        ("guides/example-plan.md", EVERYDAY_PART),
+        ("guides/approve-a-plan.md", EVERYDAY_PART),
+        ("guides/start-from-nothing.md", EVERYDAY_PART),
+        ("guides/existing-project.md", GOING_FURTHER_PART),
+        ("guides/team-rollout.md", GOING_FURTHER_PART),
+        ("contributing.md", CONTRIBUTING_PART),
     ];
 
     #[test]
     fn both_editions_list_the_new_pages_where_their_readers_look() {
         for lang in LANGS {
             let parts = parts(summary(lang));
-            for (page, part) in NEW_PAGES {
+            for (page, part) in PROFILE_GUIDES {
                 assert!(
                     parts[part].1.iter().any(|p| p == page),
                     "{}: {page} not in part {}",
@@ -1734,6 +1748,7 @@ mod chapter_tests {
                 );
             }
             let next = next_heading(lang);
+            // (path page, chapters its steps open, chapters its "Next" links)
             for (path, steps, next_links) in [
                 (
                     "paths/review.md",
