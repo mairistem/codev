@@ -100,7 +100,7 @@ Voir [Les compétences Claude Code](../skills.md).
 ## context
 
 Texte libre transmis à l'agent avec les instructions de **chaque** artefact :
-votre stack, vos conventions, vos contraintes — tout ce qui ne peut pas se
+votre pile technique, vos conventions, vos contraintes — tout ce qui ne peut pas se
 déduire du code. C'est une contrainte imposée à l'agent, jamais un contenu à
 recopier dans les fichiers. `/compagnon-configure` peut le rédiger pour vous.
 
@@ -159,7 +159,7 @@ soit un dossier local, soit un dépôt git :
 |---|---|---|
 | `path` | local | Dossier contenant un projet Compagnon ; chemin absolu ou commençant par `~` |
 | `git` | git | URL du dépôt, telle que `git` la comprend |
-| `ref` | git | Branche ou tag à suivre — obligatoire |
+| `ref` | git | Branche ou étiquette (tag) à suivre — obligatoire |
 | `subpath` | git | Dossier du dépôt qui contient le projet Compagnon |
 
 Une entrée déclare exactement une clé parmi `path` et `git` ; `ref` et
@@ -239,7 +239,7 @@ continuent de fonctionner, pour que `compagnon status`, `compagnon doctor` et le
 compétences puissent encore vous dire quoi installer. Deux conséquences à
 anticiper :
 
-- un job de CI épinglé avec `COMPAGNON_VERSION=` (comme l'écrit `compagnon init`)
+- une tâche d'intégration continue épinglée avec `COMPAGNON_VERSION=` (comme l'écrit `compagnon init`)
   se met à échouer dès que `compagnon_version` dépasse cette version : relevez
   l'épinglage dans le même enregistrement ;
 - une exigence avec une borne supérieure (`^0.6`) refuse aussi un Compagnon plus
@@ -310,7 +310,7 @@ la version qui a introduit `model` ne connaît pas la clé : Compagnon 0.6.1 et
 les versions antérieures la refusent, comme toute clé inconnue dans un
 rôle, et chaque commande échoue avec `invalid`. Relevez
 [`compagnon_version`](#compagnon_version) à cette version avant de l'indiquer,
-pour que chaque Compagnon qui lit le dépôt, CI comprise, la comprenne. Une
+pour que chaque Compagnon qui lit le dépôt, intégration continue comprise, la comprenne. Une
 source partagée par [`inherits`](#inherits) ne devrait pas l'indiquer tant
 que chaque projet qui en hérite n'utilise pas cette version : à partir
 d'elle, le `roles:` d'une source est ignoré sans être lu, mais un Compagnon
@@ -328,9 +328,9 @@ des clés `paths`, `manifests` ou `patterns` :
 | Clé | Signification |
 |---|---|
 | `domain` | `security`, `personal-data`, `user-interface`, `performance`, `operations` ou `migration` |
-| `paths` | Globs sur les fichiers modifiés, relatifs à la racine du projet, sans tenir compte de la casse ; `*` reste dans un dossier, `**` traverse les dossiers |
+| `paths` | Motifs de chemin (glob) sur les fichiers modifiés, relatifs à la racine du projet, sans tenir compte de la casse ; `*` reste dans un dossier, `**` traverse les dossiers |
 | `manifests` | Noms de fichiers de manifestes de dépendances, reconnus à toute profondeur |
-| `patterns` | Expressions régulières sur les lignes que le diff ajoute |
+| `patterns` | Expressions régulières sur les lignes qu'ajoutent les différences (diff) |
 
 ```yaml
 triggers:
@@ -341,7 +341,7 @@ triggers:
     paths: [api/public.yaml]
 ```
 
-Mettez entre guillemets un glob qui commence par `*` : en YAML, `*` ouvre
+Mettez entre guillemets un motif de chemin qui commence par `*` : en YAML, `*` ouvre
 un alias. Leurs correspondances ont la source `project`, et ils sont
 évalués quels que soient vos réglages `roles:`. Les expressions s'exécutent
 en temps linéaire, quelle que soit leur forme, et leur taille compilée est
@@ -349,7 +349,7 @@ plafonnée.
 
 `compagnon validate` signale, à la ligne de `triggers:`, une erreur
 `invalid_trigger` pour un groupe sans `domain` connu, sans aucun
-déclencheur, ou avec un glob ou une expression qui ne compile pas — le
+déclencheur, ou avec un motif de chemin ou une expression qui ne compile pas — le
 groupe est alors ignoré par toutes les commandes, qui le signalent dans
 leur `status` —, et un avertissement `invalid_trigger` pour une clé
 qu'il ne connaît pas, ignorée tandis que le reste du groupe s'applique.
@@ -375,7 +375,7 @@ review:
 
 Une modification peut la remplacer dans son `change.yaml`, avec la même clé :
 `review: { mode: inline }` pour corriger une coquille dans un projet
-isolé, ou `isolated` pour une modification sensible dans un projet en ligne.
+en mode isolé, ou `isolated` pour une modification sensible dans un projet en mode en ligne.
 `compagnon roles --json` donne le mode en vigueur et son origine
 (`review.mode`, `review.origin`). Toute autre valeur fait échouer chaque
 commande avec `invalid_review_mode`, qui nomme `inline` et `isolated` ;
@@ -400,8 +400,8 @@ Compagnon 0.6 et les versions antérieures ne connaissent pas cette clé :
 elles émettent l'avertissement `unknown_config_key` — qui fait échouer
 leur `compagnon validate --strict` — et refusent un `change.yaml` qui la
 définit. Lorsque vous la définissez, relevez `compagnon_version` jusqu'à la
-version qui l'a introduite, pour que chaque Compagnon qui lit le dépôt, CI
-comprise, la comprenne.
+version qui l'a introduite, pour que chaque Compagnon qui lit le dépôt,
+intégration continue comprise, la comprenne.
 
 ## Clés inconnues
 
@@ -428,7 +428,7 @@ définit et renvoie à `compagnon self-update` ; l'erreur fait de même quand
 - dans la sortie de `compagnon status`, `compagnon new change`, `compagnon init` et
   `compagnon update`, et dans le tableau `status` de leur sortie `--json` ;
 - dans `compagnon validate`, comme constat `warning` d'un élément `config`, à la
-  ligne de la clé : `compagnon validate --strict` — le cas de la CI — échoue
+  ligne de la clé : `compagnon validate --strict` — le cas de l'intégration continue — échoue
   donc, tandis que `compagnon validate` seul réussit ;
 - dans `compagnon doctor`, comme vérification `config.keys`.
 
@@ -442,7 +442,7 @@ avec son propre code, pour que vous sachiez quel fichier ouvrir :
 |---|---|---|
 | le `change.yaml` d'une modification, au premier niveau ou sous `review:` | avertissement `change_unknown_key` (`review.<clé>` sous `review`), clé ignorée | les commandes qui lisent la modification (`status`, `instructions`, `roles`, `review`), et `compagnon validate` sur l'élément de la modification |
 | un `schema.yaml` de projet, à tout niveau, `role:` d'un artefact compris | avertissement `schema_unknown_key`, clé ignorée | les commandes qui utilisent le schéma, et `compagnon validate` sur l'élément `config`, localisé dans le fichier du schéma |
-| le frontmatter d'un ADR | avertissement `decision_unknown_field`, champ ignoré et conservé par `compagnon decision accept` | `compagnon validate` sur l'élément `decisions`, à la ligne du champ ; ceux d'une décision héritée ne sont pas signalés |
+| l'en-tête (frontmatter) d'une décision d'architecture (ADR) | avertissement `decision_unknown_field`, champ ignoré et conservé par `compagnon decision accept` | `compagnon validate` sur l'élément `decisions`, à la ligne du champ ; ceux d'une décision héritée ne sont pas signalés |
 
 Une *valeur* que Compagnon ne connaît pas — un `review.mode`, une activation de
 rôle, un `status` d'ADR — reste une erreur : on ne peut pas l'ignorer sans
@@ -455,7 +455,7 @@ Cette tolérance commence avec la version de Compagnon qui l'a introduite :
 **Compagnon 0.5 et les versions antérieures rejettent toute clé inconnue**, à tout
 niveau, et **Compagnon 0.6.1 et les versions antérieures rejettent une clé
 inconnue dans un rôle, dans `change.yaml`, dans un schéma de projet et dans
-le frontmatter d'un ADR**. Lorsque vous ajoutez une clé que seules les versions récentes
+l'en-tête d'un ADR**. Lorsque vous ajoutez une clé que seules les versions récentes
 connaissent, relevez aussi `compagnon_version` : les membres de l'équipe restés
 sur un Compagnon plus ancien apprendront par `compagnon doctor` et les compétences quelle
 version installer.

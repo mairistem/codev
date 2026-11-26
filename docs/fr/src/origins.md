@@ -12,11 +12,11 @@ Compagnon inverse la démarche : pour chaque modification significative, vous c
 
 Ce que Compagnon vous apporte :
 
-- **Un cycle explicite.** Chaque modification passe par quatre étapes : propose,
-  apply, sync et archive. Chaque étape a son artefact et sa compétence Claude
+- **Un cycle explicite.** Chaque modification passe par quatre étapes : proposer,
+  réaliser, synchroniser et archiver. Chaque étape a son artefact et sa compétence Claude
   Code dédiée. Voir [Le déroulé](workflow.md).
 - **Des deltas de spécifications, fusionnés avec précision.** Une
-  modification ne réécrit jamais une spécification en entier. Il déclare des exigences `ADDED`, `MODIFIED`,
+  modification ne réécrit jamais une spécification en entier. Elle déclare des exigences `ADDED`, `MODIFIED`,
   `REMOVED` ou `RENAMED`, que Compagnon fusionne dans les spécifications
   principales à l'archivage de la modification, sans toucher au reste du fichier. C'est ce qui rend
   Compagnon utilisable sur du code existant, et pas seulement sur des projets
@@ -44,7 +44,7 @@ Rust et fait ses propres choix par-dessus.
 
 **Ce que Compagnon doit à OpenSpec :**
 
-- Le cycle propose → apply → archive, et l'idée que la *modification* (change) est
+- Le cycle proposer → réaliser → archiver, et l'idée que la *modification* (change) est
   l'unité de travail.
 - Les deltas de spécifications et leurs quatre opérations lisibles — `ADDED`,
   `MODIFIED`, `REMOVED`, `RENAMED`.
@@ -70,7 +70,8 @@ Rust et fait ses propres choix par-dessus.
 **Ce qui est propre à Compagnon :**
 
 - Des décisions d'architecture scellées, avec remplacement, écarts locaux par
-  rapport aux décisions héritées, et promotion d'une décision de conception en ADR.
+  rapport aux décisions héritées, et promotion d'une décision de conception en décision
+  d'architecture.
 - Des sources héritées en lecture seule, épinglées par enregistrement git dans
   `_compagnon/compagnon.lock`.
 - Une intégration MCP côté compétences : `/compagnon-propose` détecte un identifiant de
@@ -103,7 +104,7 @@ réel que vous pouvez parcourir :
 
 ## Contribuer
 
-1. Lisez l'[Architecture](architecture.md) : les crates, le cœur pur, les
+1. Lisez l'[Architecture](architecture.md) : les modules (crates), le cœur pur, les
    conventions d'erreurs et de tests.
 2. Lisez [Contribuer à Compagnon](contributing.md) : compiler, lancer les
    tests, et proposer une modification Compagnon avant d'ouvrir une demande

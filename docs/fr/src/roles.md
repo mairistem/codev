@@ -66,7 +66,7 @@ ajoutez `--knowledge` pour lire aussi les connaissances d'un rôle. Voir
 | `plan.investigate` | `/compagnon-propose` | Le code, les tests, la configuration et la documentation sont étudiés avant la rédaction de chaque artefact |
 | `plan.write` | `/compagnon-propose` | Chaque artefact est rédigé, puis vérifié à l'aide de son rôle, que `compagnon instructions` renvoie dans `role` |
 | `plan.trace` | `/compagnon-propose` | Les artefacts sont confrontés entre eux ; les manques sont corrigés dans les artefacts |
-| `plan.challenge` | `/compagnon-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines de la modification ; chaque constat va dans le [compte rendu de relecture](#gravité-confiance-et-compte-rendu-de-relecture), l'auteur le corrige ou le conteste et le relecteur vérifie la réponse ; au plus cinq **points à challenger**, tous rôles confondus et chacun marqué de son rôle, puis ce qu'il vous revient de décider terminent le résumé |
+| `plan.challenge` | `/compagnon-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines de la modification ; chaque constat va dans le [compte rendu de relecture](#gravité-confiance-et-compte-rendu-de-relecture), l'auteur le corrige ou le conteste et le relecteur vérifie la réponse ; au plus cinq **points à discuter**, tous rôles confondus et chacun marqué de son rôle, puis ce qu'il vous revient de décider terminent le résumé |
 | `code.implement` | `/compagnon-apply` | Chaque tâche est implémentée, vérifiée, puis cochée |
 | `code.review` | `/compagnon-apply` | Une fois toutes les tâches cochées, le code de la modification est relu par le nouvel arrivant et par les experts actifs ; chaque constat va dans le compte rendu de relecture ; ce qui ne fait pas de doute est simplifié, et au plus cinq **notes de relecture**, chacune marquée de son rôle, puis ce qu'il vous revient de décider terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
 
@@ -104,7 +104,7 @@ section `## Domains` — les six ci-dessus, à cocher, ou la seule ligne
 - [ ] migration
 ```
 
-Le product owner vérifie que chaque domaine touché par la modification est coché.
+Le responsable produit vérifie que chaque domaine touché par la modification est coché.
 `compagnon validate` signale un domaine inconnu (`unknown_domain`) ou une
 section mal formée (`domains_invalid`) comme une erreur, et une section
 absente sur une modification active (`domains_missing`) comme un avertissement —
@@ -121,18 +121,18 @@ pouvez toujours forcer un expert, pour le projet ou pour une modification — vo
 **Connaissances.** Les connaissances d'un expert se répartissent en cinq
 sections, toujours dans cet ordre :
 
-- **Scope** — ce qu'il examine, ce qu'il laisse de côté, et ce qu'il ne
+- **Périmètre** (`Scope`) — ce qu'il examine, ce qu'il laisse de côté, et ce qu'il ne
   signale pas — par exemple, l'expert exploitation ne réclame pas
   d'interrupteur quand redéployer la version précédente annule la modification,
   et l'expert performance ne signale pas un gain d'un facteur constant ;
-- **Signals** — des motifs concrets à repérer, chacun avec un exemple
+- **Signaux** (`Signals`) — des motifs concrets à repérer, chacun avec un exemple
   d'une ligne ;
-- **By stack** — les pièges en Rust, TypeScript/JavaScript, Python, Go et
+- **Par pile technique** (`By stack`) — les pièges en Rust, TypeScript/JavaScript, Python, Go et
   Java ; Compagnon sert la partie qui concerne les langages de votre projet
-  (voir [Filtre par stack](#les-déclencheurs-et-les-domaines-suggérés)) ;
-- **References** — les référentiels qui font autorité, comme l'OWASP
+  (voir [Filtre par pile technique](#les-déclencheurs-et-les-domaines-suggérés)) ;
+- **Références** (`References`) — les référentiels qui font autorité, comme l'OWASP
   Top 10, les WCAG 2.2, le RGAA 4 ou le RGPD ;
-- **Reporting** — comment signaler un constat, avec sa gravité, et ce
+- **Signalement** (`Reporting`) — comment signaler un constat, avec sa gravité, et ce
   qu'il doit nommer : la panne que subit l'exploitant, l'attaque, la
   donnée et qui la reçoit, le fichier ou le consommateur existant qui
   casse.
@@ -155,42 +155,42 @@ expert inactif ne coûte rien à l'agent. Lisez-les avec
 Cocher les domaines est un jugement porté pendant la planification, avant
 que le code existe. Pour qu'un domaine que la modification finit par toucher ne
 soit pas oublié en silence, chaque expert porte des **déclencheurs** — des
-indices qu'une modification touche son domaine — et Compagnon les confronte au diff de la
-modification.
+indices qu'une modification touche son domaine — et Compagnon les confronte aux
+différences (diff) de la modification.
 
 **Trois sortes de déclencheurs**, en groupes qui nomment chacun le domaine
 qu'ils suggèrent :
 
-- `paths` — des globs sur les fichiers modifiés, relatifs à la racine du
+- `paths` — des motifs de chemin (glob) sur les fichiers modifiés, relatifs à la racine du
   projet, sans tenir compte de la casse : `**/auth/**`, `**/*.tsx`. `*`
   reste dans un dossier, `**` traverse les dossiers ;
 - `manifests` — des noms de manifestes de dépendances, à toute
   profondeur : `Cargo.toml`, `package.json`, `go.mod` ;
-- `patterns` — des expressions régulières sur les lignes que le diff
-  **ajoute** : `(?i)\b(ALTER|DROP)\s+(TABLE|COLUMN)\b`.
+- `patterns` — des expressions régulières sur les lignes que les
+  différences **ajoutent** : `(?i)\b(ALTER|DROP)\s+(TABLE|COLUMN)\b`.
 
 | Expert | Ses déclencheurs, en résumé |
 |---|---|
 | `security` | dossiers `auth`, `security`, `crypto`, fichiers `.env`, clés ; chaque manifeste de dépendances ; noms d'identifiants secrets, `eval`, `innerHTML`, `pickle`, `shell=True`, `unsafe {` |
 | `privacy` | modèles `user`, `customer`, `profile`, `account` ; e-mail, téléphone, date de naissance, adresse postale, code postal, numéro de sécurité sociale, IBAN, adresse IP, géolocalisation |
 | `accessibility` | balisage, feuilles de style, composants, gabarits serveur ; `aria-*`, `role=`, `alt=`, éléments de formulaire et de média |
-| `performance` | `*.sql`, dossiers de requêtes et de dépôts, benchmarks ; requêtes SQL, `Promise.all`, `tokio::spawn`, caches, pagination |
-| `ops` | Dockerfiles, fichiers compose, déroulés d'intégration continue, Kubernetes, Helm, Terraform, dossiers de déploiement, configuration des logs ; variables d'environnement, délais, nouvelles tentatives, sondes de santé, métriques |
+| `performance` | `*.sql`, dossiers de requêtes et de dépôts, bancs d'essai ; requêtes SQL, `Promise.all`, `tokio::spawn`, caches, pagination |
+| `ops` | Dockerfiles, fichiers compose, déroulés d'intégration continue, Kubernetes, Helm, Terraform, dossiers de déploiement, configuration des journaux ; variables d'environnement, délais, nouvelles tentatives, sondes de santé, métriques |
 | `migration` | migrations, schémas, `*.proto`, `*.graphql`, OpenAPI, `*.d.ts` ; `ALTER`/`DROP`/`RENAME`, dépréciations, renommages `serde` |
 
 Les motifs intégrés privilégient la précision : `access_token` plutôt que
-`token` (un analyseur lexical a des tokens), `street_address` plutôt
-qu'`address` (une socket en a une). Ce qu'ils manquent pour votre projet,
+`token` (un analyseur lexical a des jetons), `street_address` plutôt
+qu'`address` (une connexion réseau — socket — en a une). Ce qu'ils manquent pour votre projet,
 ajoutez-le avec [`triggers:`](reference/configuration.md#triggers) dans
 `_compagnon/config.yaml`.
 
-**Le diff.** Compagnon demande à git, localement, ce que la branche a changé
+**Les différences.** Compagnon demande à git, localement, ce que la branche a changé
 depuis qu'elle a quitté la branche par défaut — `origin/HEAD`, sinon
 `main`, sinon `master` —, enregistré ou non, plus les fichiers non suivis,
 dans le seul dossier du projet. Il ne contacte jamais de dépôt distant.
 Hors de git, sans enregistrement ou sans branche par défaut — ou dans un clone
-superficiel de CI sans la base commune ; utilisez-y `fetch-depth: 0` —, il
-n'y a pas de diff : Compagnon le dit et ne suggère rien, et aucune commande
+superficiel d'intégration continue sans la base commune ; utilisez-y `fetch-depth: 0` —, il
+n'y a pas de différences : Compagnon le dit et ne suggère rien, et aucune commande
 n'échoue pour autant.
 
 Certains fichiers échappent à tout déclencheur : le dossier de
@@ -202,10 +202,10 @@ fichiers de verrouillage comme `Cargo.lock` ou `package-lock.json`
 très gros fichiers ne sont confrontés que par leur chemin (`binary`,
 `prose`, `large`). L'analyse s'arrête à 2000 fichiers, 5000 lignes
 ajoutées par fichier, 1 Mio par fichier non suivi et 2 Mio de lignes
-ajoutées au total, et ignore les lignes de plus de 2000 caractères ; le
-diff indique alors qu'il a été tronqué.
+ajoutées au total, et ignore les lignes de plus de 2000 caractères ; les
+différences sont alors marquées comme tronquées.
 
-**Les suggestions.** `compagnon roles --change <nom>` présente le diff et
+**Les suggestions.** `compagnon roles --change <nom>` présente les différences et
 chaque domaine suggéré avec son état :
 
 - `ticked` — la proposition le coche ;
@@ -222,19 +222,19 @@ chaque domaine suggéré avec son état :
 `compagnon validate` signale chaque suggestion `unticked` par l'avertissement
 `domain_suggested`, à la ligne du domaine, en nommant le déclencheur et le
 fichier concernés ; `compagnon validate --strict` échoue alors. `compagnon
-archive` et `Compagnon doctor` ne lisent pas le diff. Le diff est celui de
-l'arbre de travail : deux modifications actives sur une même branche le
+archive` et `compagnon doctor` ne lisent pas les différences. Ce sont celles de
+l'arbre de travail : deux modifications actives sur une même branche les
 partagent. Un rôle réglé sur `never` n'apporte aucune suggestion.
 
 `/compagnon-propose` lit les suggestions avant d'écrire `## Domains`, et le
-sceptique (`skeptic`) consigne un constat pour chacune restée `unticked`. Avant que le
-code existe, le diff est en général vide : c'est la relecture qui tranche.
-`/compagnon-apply` liste chaque suggestion encore `unticked` sous **To
-decide** — cochez-la, et son expert relit le code, ou justifiez-la.
+contradicteur (`skeptic`) consigne un constat pour chacune restée `unticked`. Avant que le
+code existe, les différences sont en général vides : c'est la relecture qui tranche.
+`/compagnon-apply` liste chaque suggestion encore `unticked` sous **À
+décider** — cochez-la, et son expert relit le code, ou justifiez-la.
 
-**Filtre par stack.** Compagnon détecte les langages de votre projet à partir
+**Filtre par pile technique.** Compagnon détecte les langages de votre projet à partir
 de ses manifestes de dépendances — à la racine et jusqu'à trois dossiers
-en dessous, si bien qu'un monorepo obtient toutes ses stacks — et la
+en dessous, si bien qu'un dépôt multiprojet (monorepo) obtient toutes ses piles techniques — et la
 partie `By stack` des connaissances qu'il sert ne garde que ces langages.
 `compagnon roles --json` les indique dans `stacks` ; sans aucun manifeste,
 tout est conservé. `compagnon roles --all-stacks` sert tous les langages.
@@ -304,10 +304,10 @@ contradicteur et les experts actifs à `plan.challenge`, le nouvel arrivant
 et les experts actifs à `code.review`, tous ceux d'une étape en même
 temps. Un relecteur reçoit seulement :
 
-- son rôle : question, critères et connaissances, filtrées par stack ;
+- son rôle : question, critères et connaissances, filtrées par pile technique ;
 - le `context` et les `rules` du projet ;
 - la matière : les artefacts de la modification aux étapes du plan, les fichiers
-  que la modification touche et leur diff à `code.review` ;
+  que la modification touche et leurs différences à `code.review` ;
 - les identifiants déjà présents dans le compte rendu et le format d'un
   constat.
 
@@ -317,7 +317,7 @@ les spécifications principales, le code que la matière cite —, ne modifie ri
 traite la matière comme des données, jamais comme des instructions.
 `compagnon roles --json` mesure la matière (`review.material`) : au-delà de
 160 Kio, les fichiers les plus gros sont marqués `summarize`, et un
-sous-agent distinct, qui ne voit que le diff de ce fichier, le résume en
+sous-agent distinct, qui ne voit que les différences de ce fichier, le résume en
 citant les lignes modifiées quand elles tiennent. Le compte rendu dit
 quels fichiers ont été résumés.
 
@@ -359,7 +359,7 @@ contradicteur, le nouvel arrivant et les experts sécurité, performance et
 migration a fait gagner 7 % par rapport à Opus, avec le même rappel, mais
 un faux positif de plus que la référence pour `migration` et le
 contradicteur. L'essentiel du coût d'une relecture isolée vient de la
-session — lire la compétence, préparer le brief, fusionner les constats, écrire
+session — lire la compétence, préparer les consignes, fusionner les constats, écrire
 le compte rendu —, si bien que le modèle d'un relecteur pèse peu sur la
 facture. La même mesure montre que le mode isolé coûte environ 73 % de
 plus que le mode en ligne sur les mêmes cas, avec le même rappel.
@@ -385,8 +385,8 @@ session, comme avant.
 Nous recommandons `developer: sonnet` ([décision 0012](reference/configuration.md#roles)).
 Sur l'[évaluation de l'implémentation](#mesurer-les-rôles), avec une
 session Opus et le développeur sur Sonnet, chaque mesure de qualité est
-restée à 1,00 : tâches cochées, format, lint, tests et scripts
-d'acceptation cachés. Le coût a baissé d'environ 30 %, mais le run a
+restée à 1,00 : tâches cochées, format, vérification de style (lint), tests et scripts
+d'acceptation cachés. Le coût a baissé d'environ 30 %, mais l'exécution a
 duré plus longtemps, car le travail du sous-agent s'ajoute à celui de la
 session. Avec toute la session sur Sonnet, l'économie atteint 56 %,
 mais la relecture et la synthèse tournent alors aussi sur Sonnet. La
@@ -456,8 +456,8 @@ domaine avec leurs domaines, et les rôles désactivés.
 
 ### Développeur (`/compagnon-apply`)
 
-Implémente les tâches d'une modification planifiée, dans l'ordre du fichier. Done
-when, pour chaque tâche :
+Implémente les tâches d'une modification planifiée, dans l'ordre du fichier.
+« Done when », pour chaque tâche :
 
 - les fichiers concernés sont lus avant d'écrire ;
 - le code, les tests, la configuration et la documentation que la tâche
@@ -466,7 +466,7 @@ when, pour chaque tâche :
   selon les conventions de son langage et les `rules` du projet ;
 - la vérification citée par la tâche est lancée et réussit — la commande de
   test vient de `context`, des `rules`, du manifeste ou de la configuration
-  de CI, et la compétence vous la demande si elle n'en trouve aucune ;
+  d'intégration continue, et la compétence vous la demande si elle n'en trouve aucune ;
 - alors seulement, la case est cochée.
 
 Elle s'arrête sur une ambiguïté importante ou un blocage technique sans
@@ -508,7 +508,7 @@ ne se configurent pas.
 | Compétence | Posture | Sa question | Ce qu'elle écrit |
 |---|---|---|---|
 | `/compagnon-explore` | [Partenaire de réflexion](#partenaire-de-réflexion-compagnon-explore) | Cela vaut-il la peine d'être construit, et comment ? | Rien |
-| `/compagnon-sync`, `/compagnon-archive` | [Mainteneur des spécifications vivantes](#mainteneur-des-spécifications-vivantes-compagnon-sync-compagnon-archive) | Les spécifications principales décrivent-elles ce qui a été planifié et livré ? | Uniquement via la CLI |
+| `/compagnon-sync`, `/compagnon-archive` | [Mainteneur des spécifications vivantes](#mainteneur-des-spécifications-vivantes-compagnon-sync-compagnon-archive) | Les spécifications principales décrivent-elles ce qui a été planifié et livré ? | Uniquement via la ligne de commande |
 | `/compagnon-update` | [Éditeur](#éditeur-compagnon-update) | L'artefact révisé reste-t-il cohérent avec les autres ? | `_compagnon/changes/<name>/` uniquement |
 | `/compagnon-onboard` | [Guide](#guide-compagnon-onboard) | Où en est ce projet, et que faire ensuite ? | Rien |
 | `/compagnon-configure` | [Analyste de configuration](#analyste-de-configuration-compagnon-configure) | Que doit savoir un agent sur ce projet avant d'écrire ? | `_compagnon/config.yaml`, après confirmation |
@@ -516,7 +516,7 @@ ne se configurent pas.
 ### Partenaire de réflexion (`/compagnon-explore`)
 
 Explore une idée, un problème ou un besoin, sans engager quoi que ce soit.
-Done when :
+« Done when » :
 
 - ce que le dépôt sait déjà passe en premier — spécifications, modifications en cours,
   décisions en vigueur, code concerné — de sorte qu'on ne vous demande
@@ -539,7 +539,7 @@ si on le lui demande.
 
 Veille à ce que `_compagnon/specs/` décrive le système. `/compagnon-sync` fusionne
 les deltas d'une modification sans la déplacer ; `/compagnon-archive` les fusionne et
-déplace la modification dans `_compagnon/changes/archive/<date>-<name>/`. Done when :
+déplace la modification dans `_compagnon/changes/archive/<date>-<name>/`. « Done when » :
 
 - la planification est complète — sinon rien n'est lancé ;
 - la fusion passe par `compagnon sync` ou `compagnon archive`, jamais par un fichier
@@ -550,12 +550,12 @@ déplace la modification dans `_compagnon/changes/archive/<date>-<name>/`. Done 
 Sur une erreur de validation, les deux refusent : elles répondent que la
 modification comporte des erreurs et renvoient vers `compagnon validate <name>`, sans
 réessayer ni corriger la modification elles-mêmes. Toute autre erreur est relayée
-telle que la CLI l'a écrite.
+telle que la ligne de commande l'a écrite.
 
 ### Éditeur (`/compagnon-update`)
 
 Révise un artefact de planification qui existe déjà dans une modification active.
-Done when :
+« Done when » :
 
 - l'artefact et les autres qu'il peut affecter sont lus sur le disque avant
   d'écrire ;
@@ -573,7 +573,7 @@ ou de modifier le code.
 
 ### Guide (`/compagnon-onboard`)
 
-Présente Compagnon à qui le découvre. Done when elle a affiché trois blocs : ce
+Présente Compagnon à qui le découvre. Elle a terminé (« Done when ») quand elle a affiché trois blocs : ce
 qu'est Compagnon, l'état du projet (nombre de spécifications, de décisions et de modifications,
 et jusqu'à cinq éléments d'installation manquants signalés par
 `compagnon doctor`, avec leur correction), et exactement une action recommandée,
@@ -583,17 +583,17 @@ seule : elle ne lance aucune correction, pas même `compagnon init`.
 ### Analyste de configuration (`/compagnon-configure`)
 
 Propose le `context:` et les `rules:` par artefact de `_compagnon/config.yaml` à
-partir du projet lui-même. Done when :
+partir du projet lui-même. « Done when » :
 
 - la lecture reste dans son budget — README et CONTRIBUTING en entier, au
   plus 5 fichiers de documentation, 8 fichiers source et 3 fichiers de
   test ;
 - `context:` compte 2 à 5 lignes factuelles qui complètent la pile
-  détectée ;
+  technique détectée ;
 - `rules:` compte 1 à 2 règles pour `specs`, `design` et `tasks`, chacune
   formulée positivement, vérifiable en relecture et fondée sur ce que fait
   le projet, plus des règles de test tirées des tests existants du projet ;
-- le diff est affiché et votre accord est demandé avant toute écriture.
+- les différences sont affichées et votre accord est demandé avant toute écriture.
 
 Elle n'écrit qu'après votre oui, ne modifie que `context:` et `rules:`,
 préserve tous les autres champs et commentaires, et refuse d'agir si
@@ -601,8 +601,8 @@ préserve tous les autres champs et commentaires, et refuse d'agir si
 
 ## Mesurer les rôles
 
-Le dépôt de Compagnon mesure ses rôles de relecture intégrés — le sceptique, le
-traceur, le nouvel arrivant et les six experts — avec une suite
+Le dépôt de Compagnon mesure ses rôles de relecture intégrés — le contradicteur, le
+contrôleur de traçabilité, le nouvel arrivant et les six experts — avec une suite
 d'évaluation, `evals/`. Chaque cas est un petit projet avec une modification
 planifiée : soit **ensemencé** de défauts que le rôle devrait trouver,
 chacun avec sa gravité et son emplacement attendus, soit **témoin propre**,
@@ -627,7 +627,7 @@ relecture qu'il a écrit :
   retrouvée par `compagnon review` aux lignes indiquées ;
 - **accord de gravité** — la gravité trouvée est celle attendue.
 
-Le traceur, qui corrige le plan au lieu d'enregistrer des constats, est
+Le contrôleur de traçabilité, qui corrige le plan au lieu d'enregistrer des constats, est
 noté sur le plan qu'il laisse : la tâche manquante ajoutée, un plan
 complet laissé intact.
 
@@ -649,7 +649,7 @@ la date qu'elle indique, chaque score étant la médiane des cinq. Un modèle
 ne répond pas deux fois de la même façon : une modification d'un fichier
 de rôle se juge donc avec `compagnon-evals compare --quality-only` face à la
 ligne de base, avec le même modèle ; la médiane de chaque rôle doit rester
-dans l'écart couvert par les exécutions de la ligne de base. La suite ne tourne jamais dans la CI habituelle et ne
+dans l'écart couvert par les exécutions de la ligne de base. La suite ne tourne jamais dans l'intégration continue habituelle et ne
 fait pas partie du binaire `compagnon`.
 
 [Fiabilité des rôles](reliability.md) présente ces scores, rôle par rôle,
@@ -662,20 +662,20 @@ L'agent s'arrête et vous passe la main à ces moments :
 
 - **Questions de clarification.** `/compagnon-propose` vous interroge avant de
   créer une modification lorsqu'une ambiguïté changerait sensiblement le résultat,
-  et de nouveau lorsqu'un artefact demande une décision ou qu'une Open
-  Question change ce qu'il faut construire. `/compagnon-explore` pose les
+  et de nouveau lorsqu'un artefact demande une décision ou qu'une question
+  ouverte (`Open Question`) change ce qu'il faut construire. `/compagnon-explore` pose les
   questions auxquelles le code ne peut pas répondre. `/compagnon-apply` s'arrête
   sur une ambiguïté ou un blocage et vous laisse décider.
 - **Valider le plan.** `/compagnon-propose` s'arrête une fois les artefacts
-  rédigés. Commencez votre relecture par les points à challenger, ce qui
-  reste à décider et les Open Questions de la conception ; quand le plan vous convient, demandez
+  rédigés. Commencez votre relecture par les points à discuter, ce qui
+  reste à décider et les questions ouvertes (`Open Questions`) de la conception ; quand le plan vous convient, demandez
   `/compagnon-apply`. Pour modifier d'abord un artefact, utilisez
   `/compagnon-update`.
 - **Accepter les décisions.** Une conception suit les décisions en vigueur ou
   propose explicitement d'en remplacer une. Une décision ne prend effet que
   lorsque vous lancez [`compagnon decision accept`](concepts.md#décision).
 - **Confirmer la configuration.** `/compagnon-configure` n'écrit qu'après votre
-  oui à son diff.
+  oui aux différences qu'elle affiche.
 - **Appliquer une répercussion.** `/compagnon-update` signale ce que la révision
   affecte par ailleurs ; vous acceptez, refusez ou reportez chaque suite.
 - **Mettre à jour Compagnon.** Lorsqu'un Compagnon plus récent est disponible ou que

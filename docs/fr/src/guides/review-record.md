@@ -1,6 +1,6 @@
 # Compte rendu de relecture
 
-Quand le contradicteur et les experts challengent un plan, ou que le nouvel
+Quand le contradicteur et les experts mettent un plan à l'épreuve, ou que le nouvel
 arrivant et les experts relisent le code, ce qu'ils trouvent ne reste pas
 dans la conversation. Tout va dans le compte rendu de relecture de la modification,
 `_compagnon/changes/<name>/review.md` : chaque constat avec sa gravité, la
@@ -106,10 +106,10 @@ liste d'identifiants de rôles distincts commençant par le rôle du constat
 
 ## La boucle de réponse
 
-Un constat commence `open`. Ensuite :
+Un constat commence à l'état `open`. Ensuite :
 
 1. **L'auteur répond.** Le rôle qui possède l'artefact cité à
-   `plan.challenge` — product owner, analyste QA, architecte, tech lead —
+   `plan.challenge` — responsable produit, analyste qualité, architecte, référent technique —
    ou le développeur à `code.review` le corrige (`fixed`, avec `ref` : 
    l'enregistrement ou le changement de fichier) ou le conteste (`disputed`, avec
    `note` : l'argument).
@@ -178,7 +178,7 @@ chacun (`author`, `reviewer` ou `human`), les défauts du compte rendu, et
 si la relecture permet d'archiver la modification. Les compétences lisent
 cette sortie telle qu'elle s'affiche pour reprendre une relecture interrompue et vérifier le
 compte rendu ; `--json` produit le document
-[`ReviewV1`](../reference/json-output.md#review), pour les scripts. La commande sort avec 1 seulement quand le
+[`ReviewV1`](../reference/json-output.md#review), pour les scripts. La commande se termine avec le code 1 seulement quand le
 compte rendu contient une erreur.
 
 ## Archiver
@@ -224,9 +224,9 @@ quand même.
   dit qui doit répondre ensuite.
 - **Une modification de documentation seule, ou encore sans code**, a tout de
   même ses sections de relecture — `No finding.` est une réponse valide.
-- **Les fichiers générés, vendorisés ou binaires** peuvent être cités ; les
+- **Les fichiers générés, embarqués depuis un tiers (vendored) ou binaires** peuvent être cités ; les
   fichiers binaires et très volumineux ne sont pas comparés.
 - **Windows** : `\` dans un emplacement se lit `/`, et les fins de ligne
   `\r\n` sont ignorées dans le compte rendu comme dans les fichiers cités.
-- **Monorepos** : les chemins sont relatifs à la racine du projet Compagnon ;
+- **Dépôts multiprojets (monorepos)** : les chemins sont relatifs à la racine du projet Compagnon ;
   un fichier hors de cette racine ne peut pas être cité.
