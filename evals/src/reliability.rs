@@ -1057,11 +1057,11 @@ fn planning_section(out: &mut String, p: &PlanningFigures, lang: Lang) {
                 p.cases
             ),
             Lang::Fr => format!(
-                "{} cas de planification rejouent une demande sur le dépôt tel qu'il était avant un \
-                 change archivé, et notent le plan qu'écrit `/compagnon-propose` face à ce que ce change \
-                 a vraiment fait{c}le **rappel principal** est la part des exigences visées par la \
-                 demande que le plan modifie, le **rappel collatéral** la part de celles que le vrai \
-                 change a modifiées au passage{NBSP}; un **doublon probable** est une exigence ajoutée \
+                "{} cas de planification rejouent une demande sur le dépôt tel qu'il était avant une \
+                 modification archivée, et notent le plan qu'écrit `/compagnon-propose` face à ce que \
+                 cette modification a vraiment fait{c}le **rappel principal** est la part des \
+                 exigences visées par la demande que le plan modifie, le **rappel collatéral** la \
+                 part de celles que la vraie modification a touchées au passage{NBSP}; un **doublon probable** est une exigence ajoutée \
                  là où il fallait en modifier une. Chaque chiffre est la médiane sur les \
                  répétitions, avec son écart.",
                 p.cases,

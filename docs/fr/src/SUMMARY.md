@@ -32,7 +32,7 @@
 - [Adopter Compagnon sur un projet existant](guides/existing-project.md)
 - [Déployer Compagnon pour une équipe](guides/team-rollout.md)
 - [Notes de version et CHANGELOG](guides/release-notes.md)
-- [Compte rendu de revue](guides/review-record.md)
+- [Compte rendu de relecture](guides/review-record.md)
 - [Jira et autres serveurs MCP](guides/mcp.md)
 - [Langue des artefacts](guides/artifact-language.md)
 - [Schémas personnalisés](guides/custom-schemas.md)

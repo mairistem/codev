@@ -74,8 +74,8 @@ review:
 
 Le schéma de déroulé utilisé par les nouvelles modifications. Valeur par défaut :
 `spec-driven`, le schéma embarqué dans Compagnon. Le nom d'un schéma défini sous
-`_compagnon/schemas/` est également accepté. Un change enregistre son schéma dans
-son propre `change.yaml` : modifier cette clé n'affecte donc pas les changes
+`_compagnon/schemas/` est également accepté. Une modification enregistre son schéma dans
+son propre `change.yaml` : modifier cette clé n'affecte donc pas les modifications
 en cours. Voir [Schémas personnalisés](../guides/custom-schemas.md).
 
 ## language
@@ -241,7 +241,7 @@ anticiper :
 
 - un job de CI épinglé avec `COMPAGNON_VERSION=` (comme l'écrit `compagnon init`)
   se met à échouer dès que `compagnon_version` dépasse cette version : relevez
-  l'épinglage dans le même commit ;
+  l'épinglage dans le même enregistrement ;
 - une exigence avec une borne supérieure (`^0.6`) refuse aussi un Compagnon plus
   récent : élargissez `compagnon_version` avant de passer au-delà, ou installez
   la version que nomme `compagnon doctor`.
@@ -366,7 +366,7 @@ héritée.
 
 | Clé | Signification |
 |---|---|
-| `mode` | `inline` (par défaut) : la skill relit dans sa propre conversation, un rôle après l'autre. `isolated` : chaque rôle relecteur travaille seul, comme sous-agent de Claude Code qui ne voit jamais la conversation, puis la compétence fusionne leurs constats |
+| `mode` | `inline` (par défaut) : la compétence relit dans sa propre conversation, un rôle après l'autre. `isolated` : chaque rôle relecteur travaille seul, comme sous-agent de Claude Code qui ne voit jamais la conversation, puis la compétence fusionne leurs constats |
 
 ```yaml
 review:

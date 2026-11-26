@@ -60,7 +60,7 @@ Le tableau donne toutes les valeurs que les graphiques dessinent. **Cas** : ens
 
 ## La planification
 
-27 cas de planification rejouent une demande sur le dépôt tel qu'il était avant un change archivé, et notent le plan qu'écrit `/compagnon-propose` face à ce que ce change a vraiment fait : le **rappel principal** est la part des exigences visées par la demande que le plan modifie, le **rappel collatéral** la part de celles que le vrai change a modifiées au passage ; un **doublon probable** est une exigence ajoutée là où il fallait en modifier une. Chaque chiffre est la médiane sur les répétitions, avec son écart.
+27 cas de planification rejouent une demande sur le dépôt tel qu'il était avant une modification archivée, et notent le plan qu'écrit `/compagnon-propose` face à ce que cette modification a vraiment fait : le **rappel principal** est la part des exigences visées par la demande que le plan modifie, le **rappel collatéral** la part de celles que la vraie modification a touchées au passage ; un **doublon probable** est une exigence ajoutée là où il fallait en modifier une. Chaque chiffre est la médiane sur les répétitions, avec son écart.
 
 | Mesure | Médiane (écart) |
 |---|---:|

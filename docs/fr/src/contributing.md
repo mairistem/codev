@@ -116,8 +116,8 @@ CONTRIBUTING.fr.md donne chaque étape, chaque option et chaque type de cas.
 ## Messages d'enregistrement
 
 Les messages d'[enregistrement](glossary.md#enregistrement) (commit)
-suivent la convention
-[Conventional Commits](https://www.conventionalcommits.org/), en anglais :
+suivent la convention des enregistrements conventionnels
+([Conventional Commits](https://www.conventionalcommits.org/)), en anglais :
 
 ```text
 feat(cli): add --lang to compagnon docs

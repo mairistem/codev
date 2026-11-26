@@ -7,14 +7,14 @@ français (`### Exigence :`, `## Exigences AJOUTÉES`, `DOIT`…), présentés d
 [Langue des artefacts](../guides/artifact-language.md).
 
 Tout ce qui figure dans des blocs de code délimités et dans des commentaires
-HTML est ignoré par les analyseurs : les templates peuvent donc contenir des
+HTML est ignoré par les analyseurs : les modèles peuvent donc contenir des
 consignes dans des commentaires `<!-- … -->`.
 
-## Spec principale
+## Spécification principale
 
 Chemin : `_compagnon/specs/<capability>/spec.md`, où `<capability>` est formé
 d'un ou plusieurs segments en kebab-case (`ui/theme`). Seul un fichier nommé
-exactement `spec.md` est une spec principale : les autres fichiers de
+exactement `spec.md` est une spécification principale : les autres fichiers de
 `_compagnon/specs/`, comme un `README.md`, sont ignorés par `compagnon list --specs`
 et `compagnon validate`.
 
@@ -41,24 +41,24 @@ L'application SHALL s'afficher avec le jeu de couleurs du système d'exploitatio
 - `## Purpose` est obligatoire.
 - Les exigences sont des titres `### Requirement: <name>` placés dans
   `## Requirements`. Le nom identifie l'exigence dans les deltas : veillez à
-  ce qu'il soit unique au sein de la spec.
+  ce qu'il soit unique au sein de la spécification.
 - La description d'une exigence contient un mot-clé normatif en majuscules :
   `SHALL` ou `MUST`, ou `DOIT` ou `DOIVENT`.
 - Chaque exigence comporte au moins un `#### Scenario: <name>`, avec
   exactement quatre caractères `#`. Les étapes d'un scénario sont des lignes à
   puces utilisant `**GIVEN**`, `**WHEN**`, `**THEN**` et `**AND**`.
 - Les autres sections `##` sont autorisées et préservées lors des fusions.
-- Les titres de delta (`## ADDED Requirements`…) sont interdits dans une spec
+- Les titres de delta (`## ADDED Requirements`…) sont interdits dans une spécification
   principale.
 
-Lorsque l'archivage crée la spec principale d'une nouvelle capacité, il la
+Lorsque l'archivage crée la spécification principale d'une nouvelle capacité, il la
 titre d'après le dernier segment du chemin de la capacité
 (`# Theme Specification`) et recopie la section `## Purpose` du delta.
 
-## Delta de spec
+## Delta de spécification
 
 Chemin : `_compagnon/changes/<name>/specs/<capability>/spec.md`, avec le même
-chemin de capacité que la spec principale qu'il modifie.
+chemin de capacité que la spécification principale qu'il modifie.
 
 ```markdown
 ## ADDED Requirements
@@ -101,7 +101,7 @@ L'application SHALL restaurer le dernier thème choisi par l'utilisateur, sur ch
 
 Dans `RENAMED`, écrivez après `FROM:` et `TO:` soit le nom seul de
 l'exigence, comme ci-dessus, soit le titre complet entre accents graves, comme
-le fait le template : `` - FROM: `### Requirement: <old name>` ``.
+le fait le modèle : `` - FROM: `### Requirement: <old name>` ``.
 
 Règles vérifiées par la validation :
 
@@ -111,26 +111,26 @@ Règles vérifiées par la validation :
 - Dans une section de delta, chaque titre `###` est un `### Requirement:`
   (`delta_unexpected_heading`) ; une section sans aucune entrée fait l'objet
   d'un avertissement (`delta_section_empty`).
-- La source d'un `RENAMED` doit exister dans la spec principale
+- La source d'un `RENAMED` doit exister dans la spécification principale
   (`rename_source_missing`, sauf si le renommage a déjà été appliqué par une
   synchronisation antérieure) ; la cible d'un `RENAMED` ne peut pas figurer
   aussi dans `ADDED` (`rename_target_collision`) ; et `MODIFIED` emploie le nouveau nom d'une
   exigence renommée, et non l'ancien (`modified_uses_old_name`).
-- Les noms cités dans `MODIFIED` et `REMOVED` doivent exister dans la spec
+- Les noms cités dans `MODIFIED` et `REMOVED` doivent exister dans la spécification
   principale ; cette vérification a lieu lors de la fusion du delta
   (`modified_target_missing`).
 - **Nouvelle capacité :** commencez le delta par `## Purpose`. Pour une
-  capacité existante, omettez cette section : le Purpose de la spec principale
+  capacité existante, omettez cette section : le Purpose de la spécification principale
   est conservé.
-- Un delta `REMOVED` qui laisserait une spec sans aucune exigence est refusé
-  (`would_leave_spec_without_requirement`), sauf si le change déclare
-  `retire_capabilities: true` ; la spec principale est alors supprimée.
+- Un delta `REMOVED` qui laisserait une spécification sans aucune exigence est refusé
+  (`would_leave_spec_without_requirement`), sauf si la modification déclare
+  `retire_capabilities: true` ; la spécification principale est alors supprimée.
 
 ## proposal.md
 
-Le schéma `spec-driven` fournit ses templates en anglais et en français, et
+Le schéma `spec-driven` fournit ses modèles en anglais et en français, et
 sert celui de la langue des mots-clés du projet
-([Langue des artefacts](../guides/artifact-language.md)). Le template
+([Langue des artefacts](../guides/artifact-language.md)). Le modèle
 anglais :
 
 ```markdown
@@ -174,7 +174,7 @@ Ce que les utilisateurs liront dans le changelog, construit par
   `--output <PATH>` pour écrire un fichier.
 ```
 
-soit, pour un change que les utilisateurs ne remarqueront pas, la seule
+soit, pour une modification que les utilisateurs ne remarqueront pas, la seule
 ligne :
 
 ```markdown
@@ -190,13 +190,13 @@ catégories de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Un
 son texte par `**BREAKING**`. Le texte suit la langue des artefacts du
 projet. `compagnon validate` signale une section absente par un avertissement, et
 une catégorie inconnue, un élément sans texte ou une section vide par une
-erreur, sur les changes actifs uniquement.
+erreur, sur les modifications actives uniquement.
 
 ### Domains
 
-Les domaines que touche le change, qui activent leurs
+Les domaines que touche la modification, qui activent leurs
 [experts](../roles.md#experts-et-domaines). Le modèle liste les six
-domaines non cochés ; cochez ceux que touche le change :
+domaines non cochés ; cochez ceux que touche la modification :
 
 ```markdown
 ## Domains
@@ -215,14 +215,14 @@ ou, lorsqu'il n'en touche aucun, écrivez la seule ligne `None`.
 laisse non coché, et le texte qui suit le nom du domaine est un commentaire
 libre. Les domaines sont `security`, `personal-data`, `user-interface`,
 `performance`, `operations` et `migration`. `compagnon validate` signale, sur
-les changes actifs uniquement, un domaine inconnu (`unknown_domain`) et une
+les modifications actives uniquement, un domaine inconnu (`unknown_domain`) et une
 ligne qui n'est ni un élément ni `None`, ou `None` à côté d'un domaine coché
 (`domains_invalid`), par une erreur, et une section absente
 (`domains_missing`) par un avertissement.
 
 Ce commentaire est aussi la façon de répondre à un
 [domaine suggéré](../roles.md#les-déclencheurs-et-les-domaines-suggérés)
-que le change ne touche pas : un domaine non coché suivi d'une raison est
+que la modification ne touche pas : un domaine non coché suivi d'une raison est
 `justified` — `- [ ] security — only renames a variable`. Les tirets,
 deux-points et espaces de tête ne font pas partie de la raison ; `None` ne
 justifie rien. `compagnon validate` signale chaque domaine suggéré ni coché ni
@@ -273,7 +273,7 @@ tâche indique comment la vérifier.
 ## change.yaml
 
 Chemin : `_compagnon/changes/<name>/change.yaml`. Écrit par `compagnon new change`.
-`<name>` n'est jamais `archive`, le dossier des changes archivés.
+`<name>` n'est jamais `archive`, le dossier des modifications archivées.
 
 ```yaml
 schema: spec-driven
@@ -283,27 +283,27 @@ goal: Let users switch the UI to a dark theme
 
 | Clé | Type | Signification |
 |---|---|---|
-| `schema` | chaîne, obligatoire | Schéma du change : `spec-driven`, ou le nom du dossier d'un schéma du projet sous `_compagnon/schemas/` |
+| `schema` | chaîne, obligatoire | Schéma de la modification : `spec-driven`, ou le nom du dossier d'un schéma du projet sous `_compagnon/schemas/` |
 | `created` | date | Date de création, `YYYY-MM-DD` |
 | `goal` | chaîne | L'objectif fourni avec `--goal` |
-| `skip_specs` | booléen | Le change n'a volontairement aucun delta de spec : les artefacts qui écrivent sous `specs/` sont ignorés, et la validation accepte l'absence de deltas |
-| `retire_capabilities` | booléen | Autorise la synchronisation et l'archivage à supprimer une spec principale dont le change retire la dernière exigence |
-| `roles` | table | Activations de rôles pour ce change seulement, par-dessus le [`roles:`](configuration.md#roles) du projet : `newcomer: always`. Activations uniquement — les critères relèvent du projet |
-| `review` | table | `mode: inline` ou `mode: isolated` pour ce change seulement, par-dessus le [`review:`](configuration.md#review) du projet. Une autre valeur échoue avec `invalid_review_mode` |
+| `skip_specs` | booléen | La modification n'a volontairement aucun delta de spécification : les artefacts qui écrivent sous `specs/` sont ignorés, et la validation accepte l'absence de deltas |
+| `retire_capabilities` | booléen | Autorise la synchronisation et l'archivage à supprimer une spécification principale dont la modification retire la dernière exigence |
+| `roles` | table | Activations de rôles pour cette modification seulement, par-dessus le [`roles:`](configuration.md#roles) du projet : `newcomer: always`. Activations uniquement — les critères relèvent du projet |
+| `review` | table | `mode: inline` ou `mode: isolated` pour cette modification seulement, par-dessus le [`review:`](configuration.md#review) du projet. Une autre valeur échoue avec `invalid_review_mode` |
 
 Une clé que Compagnon ne connaît pas — au premier niveau, ou sous `review`
 (`review.<clé>`) — est ignorée avec un avertissement `change_unknown_key` qui
 la nomme, cite le `compagnon_version` du projet et renvoie à
-`compagnon self-update` ; `compagnon validate --strict` échoue dessus, à sa ligne. Le
-change a peut-être été écrit avec une version plus récente de Compagnon, ou la
+`compagnon self-update` ; `compagnon validate --strict` échoue dessus, à sa ligne. La
+modification a peut-être été écrite avec une version plus récente de Compagnon, ou la
 clé est mal orthographiée. Une valeur que Compagnon ne connaît pas — un
 `review.mode`, une activation de rôle — reste une erreur. Compagnon 0.6.1 et les
 versions antérieures rejettent toute clé inconnue de ce fichier : un Compagnon
 antérieur à `review` refuse donc un `change.yaml` qui la définit. Relevez le
 [`compagnon_version`](configuration.md#compagnon_version) du projet jusqu'à la
-version qui l'a introduite avant de l'utiliser. Un dossier de change dépourvu de
+version qui l'a introduite avant de l'utiliser. Un dossier de modification dépourvu de
 `change.yaml` utilise le schéma du projet. Une entrée invalide de `roles` est
-signalée par `compagnon validate` comme une erreur du change (`unknown_role`,
+signalée par `compagnon validate` comme une erreur de la modification (`unknown_role`,
 `invalid_role_activation`, `role_not_disableable`).
 
 Les artefacts d'un `schema.yaml` peuvent déclarer leur [rôle](../roles.md)
@@ -316,11 +316,11 @@ ligne.
 ## review.md
 
 Chemin : `_compagnon/changes/<name>/review.md`. Le
-[compte rendu de revue](../guides/review-record.md) du change, écrit par
+[compte rendu de relecture](../guides/review-record.md) de la modification, écrit par
 `/compagnon-propose` (`plan.challenge`) et `/compagnon-apply` (`code.review`), ou à
 la main. Ce n'est pas un artefact de planification : `compagnon status`
 l'ignore, `compagnon sync` le laisse en place, `compagnon archive` le déplace avec
-le change.
+la modification.
 
 ````markdown
 # Review record: add-sessions
@@ -373,32 +373,32 @@ restent en anglais : Compagnon les lit.
 | `#### <id> <title>` | Un constat : `R-<role-id>-<n>`, unique dans le compte rendu, jamais réutilisé, suivi d'un unique bloc `yaml` |
 | `Mode: <mode>.` | Facultatif, sous une étape : `inline` ou `isolated`, la manière dont l'étape a été relue. Une fois par étape |
 | `Summarized: <texte>.` | Facultatif, sous une étape, en nombre quelconque : un fichier de la matière que les relecteurs ont reçu sous forme de résumé |
-| `Fallback: <raison>.` | Facultatif, sous un rôle, une fois : pourquoi le rôle a relu en ligne lors d'une revue isolée |
+| `Fallback: <raison>.` | Facultatif, sous un rôle, une fois : pourquoi le rôle a relu en ligne lors d'une relecture isolée |
 
 | Champ | Type | Signification |
 |---|---|---|
 | `severity` | `high`, `medium` ou `low` | Voir [l'échelle](../roles.md#gravité-confiance-et-compte-rendu-de-revue) |
 | `confidence` | `high` ou `low` | Un constat `low` n'est pas présenté à la personne |
-| `location` | chaîne | `<path>:<line>` ou `<path>:<start>-<end>` depuis la racine du projet, ou `<file>#<heading>` depuis le dossier du change. Relatif, sans `..`, sans lecteur ; `\` se lit `/`. Mettez-le entre guillemets s'il contient `: ` |
+| `location` | chaîne | `<path>:<line>` ou `<path>:<start>-<end>` depuis la racine du projet, ou `<file>#<heading>` depuis le dossier de la modification. Relatif, sans `..`, sans lecteur ; `\` se lit `/`. Mettez-le entre guillemets s'il contient `: ` |
 | `evidence` | chaîne | Le texte cité, mot pour mot : des lignes entières ou un fragment de chacune |
 | `recommendation` | chaîne | Ce qu'il faut faire |
 | `history` | liste | Les réponses, de la plus ancienne à la plus récente ; la dernière donne le statut |
-| `raised_by` | liste, facultative | Chaque rôle qui a relevé le constat, son propre rôle en premier, chacun une fois : un constat fusionné à partir de plusieurs relecteurs lors d'une [revue isolée](../guides/review-record.md#les-revues-isolées) |
+| `raised_by` | liste, facultative | Chaque rôle qui a relevé le constat, son propre rôle en premier, chacun une fois : un constat fusionné à partir de plusieurs relecteurs lors d'une [relecture isolée](../guides/review-record.md#les-revues-isolées) |
 
 | Clé de `history[]` | Signification |
 |---|---|
 | `status` | `open`, `fixed`, `disputed`, `accepted-risk`, `deferred` ou `rejected` |
 | `by` | Un identifiant de rôle, `human` ou `human:<name>` |
-| `ref` | Le commit ou la modification de fichier — exigé par `fixed` après `open` ou `disputed` |
+| `ref` | L'enregistrement ou la modification de fichier — exigé par `fixed` après `open` ou `disputed` |
 | `note` | L'argument (`disputed`), la justification (`accepted-risk`, `by` une personne), ou pourquoi une correction ne tient pas (`open` après `fixed`) |
-| `to` | Où va un constat `deferred` : un change ou un ticket. Un constat `high` est reporté par une personne |
+| `to` | Où va un constat `deferred` : une modification ou un ticket. Un constat `high` est reporté par une personne |
 
 Un champ que ce Compagnon ne connaît pas est un avertissement,
 `review_unknown_field`, et il est ignoré : un Compagnon ultérieur peut ajouter
 des champs facultatifs sans changer de format. Un nouveau statut, une
 nouvelle étape ou un nouveau champ obligatoire relève au contraire le
 marqueur de format, qu'un Compagnon plus ancien refuse de vérifier. Les transitions et les contrôles
-sont dans [Compte rendu de revue](../guides/review-record.md#ce-que-compagnon-vérifie).
+sont dans [Compte rendu de relecture](../guides/review-record.md#ce-que-compagnon-vérifie).
 
 ## corrections.md
 
@@ -408,7 +408,7 @@ l'auteur a données à l'agent sur la manière de faire du projet, notées par
 [les corrections de l'auteur](../skills.md#les-corrections-de-lauteur).
 Comme `review.md`, ce n'est pas un artefact de planification : `compagnon
 status` et `compagnon changelog` l'ignorent, `Compagnon sync` le laisse en place,
-`compagnon archive` le déplace avec le change, et les relecteurs ne le
+`compagnon archive` le déplace avec la modification, et les relecteurs ne le
 reçoivent pas.
 
 ````markdown
@@ -433,7 +433,7 @@ d'un bloc `yaml` :
 
 | Champ | Signification |
 |---|---|
-| `step` | `propose`, `apply` ou `update` : la skill pendant laquelle l'auteur a corrigé l'agent |
+| `step` | `propose`, `apply` ou `update` : la compétence pendant laquelle l'auteur a corrigé l'agent |
 | `where` | Le fichier ou l'artefact concerné |
 | `did` | Ce que l'agent avait fait, en une ligne |
 | `asked` | Ce que l'auteur a demandé à la place, en une ligne |
@@ -441,14 +441,14 @@ d'un bloc `yaml` :
 Un champ que ce Compagnon ne connaît pas est un avertissement,
 `corrections_unknown_field`, et il est ignoré. Un `did` ou un `asked` de
 plus de 300 caractères est un avertissement, `corrections_too_long` : une
-entrée énonce une consigne, jamais la conversation. Seuls les changes
-actifs sont vérifiés.
+entrée énonce une consigne, jamais la conversation. Seules les modifications
+actives sont vérifiées.
 
 Une entrée ne nomme personne et ne cite ni donnée personnelle ni secret.
 Elle est conservée aussi longtemps que l'archive. Pour en retirer une qui
-serait passée, modifiez-la ou supprimez-la dans son change, archivé ou
-non — Compagnon ne revérifie jamais un change archivé —, et réécrivez
-l'historique si le commit a déjà été poussé.
+serait passée, modifiez-la ou supprimez-la dans sa modification, archivée ou
+non — Compagnon ne revérifie jamais une modification archivée —, et réécrivez
+l'historique si l'enregistrement a déjà été poussé.
 
 ## Décision (ADR)
 
@@ -486,7 +486,7 @@ supersedes: ["0001"]
 
 Le frontmatter est délimité par des lignes `---` placées tout au début du
 fichier. Le contenu est découpé en sections `##` ; les quatre sections du
-template relèvent de la convention, et non de l'obligation. Seules les
+modèle relèvent de la convention, et non de l'obligation. Seules les
 décisions `accepted` qui ne sont ni remplacées ni l'objet d'un écart sont en
 vigueur, et `supersedes` comme `deviates_from` ne prennent effet que sur une
 décision `accepted` : un remplacement ou un écart `proposed` ne change rien
@@ -521,7 +521,7 @@ seals:
 
 Chaque entrée enregistre l'empreinte SHA-256 du contenu d'une décision — tout
 ce qui suit le `---` fermant du frontmatter, octet pour octet — et la date de
-son scellement. Commitez ce fichier avec vos décisions.
+son scellement. Enregistrez ce fichier avec vos décisions.
 
 `version` est le format du fichier : un Compagnon qui lui ajoute un champ ou une
 valeur relève la version. Chaque commande qui lit le fichier —
@@ -546,9 +546,9 @@ commit = "12958274cbed0eb66985f57d3272c6d3134b672d"
 resolved_at = "2026-09-30"
 ```
 
-Une entrée `[[source]]` par source `git:`, avec la `ref` qu'elle suit, le
-commit sur lequel elle est épinglée et, le cas échéant, son `subpath`.
-Commitez ce fichier.
+Une entrée `[[source]]` par source `git:`, avec la `ref` qu'elle suit,
+l'enregistrement sur lequel elle est épinglée et, le cas échéant, son `subpath`.
+Enregistrez ce fichier.
 
 ## SKILL.md
 
@@ -570,17 +570,17 @@ metadata:
 <workflow instructions>
 ```
 
-`metadata.checksum` est l'empreinte SHA-256 de toute la skill, hors de cette
+`metadata.checksum` est l'empreinte SHA-256 de toute la compétence, hors de cette
 ligne. Avec `metadata.version`, c'est ce qui permet à `compagnon update` de
 distinguer les rendus de Compagnon de vos modifications. `compagnon update` réécrit
-une skill marquée d'une autre version ; parmi les skills marquées de sa propre
+une compétence marquée d'une autre version ; parmi les compétences marquées de sa propre
 version, il réécrit celle dont le contenu correspond encore à son `checksum` —
 un rendu de Compagnon, d'une compilation antérieure ou pour l'autre [mode de
-revue](configuration.md#review) — et préserve celle qui n'y correspond plus,
-modifiée à la main, sauf si vous passez `--force`. Une skill sans checksum,
+relecture](configuration.md#review) — et préserve celle qui n'y correspond plus,
+modifiée à la main, sauf si vous passez `--force`. Une compétence sans checksum,
 rendue avant leur existence, est préservée quand elle porte la marque de cette
-version et diffère du rendu par plus que le mode de revue : lancez une fois
-`compagnon update --force` pour la doter d'un checksum — il écrase aussi une skill
+version et diffère du rendu par plus que le mode de relecture : lancez une fois
+`compagnon update --force` pour la doter d'un checksum — il écrase aussi une compétence
 que vous avez réellement modifiée : vérifiez d'abord `git diff`, puis
 réappliquez vos modifications ; une modification faite ensuite est préservée,
 puisqu'elle ne correspond plus au checksum.
@@ -592,21 +592,21 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 
 | Code | Gravité | Signification |
 |---|---|---|
-| `spec_purpose_missing` | erreur | Une spec principale n'a pas de `## Purpose` |
-| `spec_no_requirement` | erreur | Une spec principale ne contient aucune exigence |
+| `spec_purpose_missing` | erreur | Une spécification principale n'a pas de `## Purpose` |
+| `spec_no_requirement` | erreur | Une spécification principale ne contient aucune exigence |
 | `requirement_outside_section` | erreur | Un `### Requirement:` en dehors de `## Requirements` |
-| `delta_header_in_main_spec` | erreur | Un titre de delta dans une spec principale |
+| `delta_header_in_main_spec` | erreur | Un titre de delta dans une spécification principale |
 | `requirement_no_shall` | erreur | Une exigence sans `SHALL`, `MUST`, `DOIT` ni `DOIVENT` |
 | `requirement_no_scenario` | erreur | Une exigence sans scénario |
 | `scenario_wrong_heading_level` | erreur | Un scénario écrit avec trois `#` au lieu de quatre |
 | `duplicate_requirement` | erreur | La même exigence deux fois dans une même section de delta |
 | `delta_unexpected_heading` | erreur | Un titre `###` d'une section de delta qui n'est pas un `### Requirement:`, par exemple un mot-clé traduit |
 | `cross_section_conflict` | erreur | La même exigence dans deux sections parmi `ADDED`, `MODIFIED`, `REMOVED` |
-| `rename_source_missing` | erreur | La source d'un `RENAMED` ne désigne aucune exigence de la spec principale |
+| `rename_source_missing` | erreur | La source d'un `RENAMED` ne désigne aucune exigence de la spécification principale |
 | `rename_target_collision` | erreur | Une cible de `RENAMED` figure aussi dans `ADDED` |
 | `modified_uses_old_name` | erreur | `MODIFIED` emploie l'ancien nom d'une exigence renommée |
-| `zero_delta_without_marker` | erreur | Un change n'a aucun delta et ne déclare pas `skip_specs: true` |
-| `skip_specs_conflict` | erreur | Un change déclare `skip_specs: true` mais comporte des deltas |
+| `zero_delta_without_marker` | erreur | Une modification n'a aucun delta et ne déclare pas `skip_specs: true` |
+| `skip_specs_conflict` | erreur | Une modification déclare `skip_specs: true` mais comporte des deltas |
 | `decision_missing_frontmatter` | erreur | Un fichier de `_compagnon/decisions/` n'a pas de frontmatter |
 | `decision_missing_field` | erreur | Il manque à une décision un champ obligatoire, ou elle en comporte un inconnu |
 | `decision_unknown_status` | erreur | Une décision a un statut inconnu |
@@ -614,13 +614,13 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `decision_seal_mismatch` | erreur | Le contenu d'une décision scellée a été modifié |
 | `decision_conflicting_deviations` | erreur | Deux décisions locales acceptées s'écartent de la même décision héritée |
 | `release_note_invalid` | erreur | La section `## Release note` de la proposal a une catégorie inconnue, un élément sans texte, ou est vide |
-| `release_note_missing` | avertissement | La proposal d'un change actif n'a pas de section `## Release note` |
+| `release_note_missing` | avertissement | La proposal d'une modification active n'a pas de section `## Release note` |
 | `unknown_domain` | erreur | La section `## Domains` de la proposal nomme un domaine hors des six |
 | `domains_invalid` | erreur | La section `## Domains` de la proposal a une ligne qui n'est ni un élément ni `None`, ou `None` à côté d'un domaine coché |
-| `domains_missing` | avertissement | La proposal d'un change actif n'a pas de section `## Domains` |
-| `domain_suggested` | avertissement | Le diff du change suggère un domaine que la proposal ne coche pas et ne garde pas non coché avec une raison |
+| `domains_missing` | avertissement | La proposal d'une modification active n'a pas de section `## Domains` |
+| `domain_suggested` | avertissement | Le diff de la modification suggère un domaine que la proposal ne coche pas et ne garde pas non coché avec une raison |
 | `invalid_trigger` | erreur | Un groupe de `triggers:` dans `_compagnon/config.yaml` n'a pas de domaine connu, pas de déclencheur, ou un glob ou une expression qui ne compile pas (un avertissement pour une clé que Compagnon ne connaît pas) |
-| `review_invalid` | erreur | La structure du compte rendu de revue, un champ, un identifiant ou un emplacement de constat, un statut ou une transition est incorrect |
+| `review_invalid` | erreur | La structure du compte rendu de relecture, un champ, un identifiant ou un emplacement de constat, un statut ou une transition est incorrect |
 | `review_decision_incomplete` | erreur | Une entrée d'historique n'a pas son `ref`, sa `note` ou son `to`, ou un risque est accepté, ou un constat haut reporté, par quelqu'un d'autre qu'une personne |
 | `review_location_missing` | erreur | Un constat cite un fichier, une ligne ou un titre qui n'existe pas |
 | `review_evidence_not_found` | erreur | La preuve d'un constat ne figure nulle part dans le fichier ou la section cités |

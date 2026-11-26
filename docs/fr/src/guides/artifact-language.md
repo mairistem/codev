@@ -1,8 +1,8 @@
 # Langue des artefacts
 
-Compagnon lui-même s'exprime en anglais : ses commandes, ses messages et ses skills
+Compagnon lui-même s'exprime en anglais : ses commandes, ses messages et ses compétences
 sont en anglais. Les artefacts de planification que votre équipe lit et
-approuve — proposals, specs, designs, tâches — peuvent en revanche être
+approuve — propositions, spécifications, conceptions, tâches — peuvent en revanche être
 rédigés dans n'importe quelle langue, et entièrement en français : la prose
 comme la structure.
 
@@ -52,22 +52,22 @@ pas au fichier. Pour changer de langue par la suite, modifiez la clé.
 
 ## Ce qui est traduit, et ce qui ne l'est pas
 
-Les skills rédigent chaque phrase dans la langue configurée, quelle que soit la
+Les compétences rédigent chaque phrase dans la langue configurée, quelle que soit la
 langue dans laquelle vous échangez avec Claude : les fichiers constituent la
 mémoire de l'équipe, et la langue est le choix de l'équipe.
 
-Les skills écrivent la **structure** des fichiers — titres des templates,
-structure des specs et des deltas, lignes des scénarios et mots-clés
+Les compétences écrivent la **structure** des fichiers — titres des modèles,
+structure des spécifications et des deltas, lignes des scénarios et mots-clés
 normatifs — dans la **langue des mots-clés** du projet : la langue de
 `language:` quand Compagnon en fournit les mots-clés, reconnue sur sa première
 partie (`fr`, `fr-CA` → français), et l'anglais sinon (`pt-BR` → mots-clés
 anglais, prose portugaise). Compagnon fournit l'anglais et le français.
-`compagnon instructions` sert le template dans cette langue et donne le texte de
-chaque mot-clé (`keywordLanguage`, `keywords`) : les skills ne traduisent
+`compagnon instructions` sert le modèle dans cette langue et donne le texte de
+chaque mot-clé (`keywordLanguage`, `keywords`) : les compétences ne traduisent
 jamais un mot-clé elles-mêmes.
 
 Avec `language: fr`, une nouvelle proposition commence par `# Proposition :`,
-`## Pourquoi`, `## Changements`, et un delta de spec utilise `## Exigences
+`## Pourquoi`, `## Changements`, et un delta de spécification utilise `## Exigences
 AJOUTÉES`, `### Exigence :`, `#### Scénario :`, `**QUAND**` / `**ALORS**` et
 `DOIT`. Pour garder des mots-clés anglais avec une prose française, gardez
 `language: en` : il n'y a pas de réglage séparé pour la langue des mots-clés.
@@ -119,12 +119,13 @@ Comment Compagnon les lit et les écrit :
   langues : `doit` en minuscules est de la prose ordinaire, et l'exigence
   échoue à la validation.
 - Un document peut mélanger les deux langues.
-- Quand `compagnon sync` ou `compagnon archive` modifie une spec, il en écrit les
-  mots-clés dans la langue de cette spec ; une nouvelle spec prend la langue
+- Quand `compagnon sync` ou `compagnon archive` modifie une spécification, il en écrit
+  les mots-clés dans la langue de cette spécification ; une nouvelle
+  spécification prend la langue
   du delta qui la crée.
 - Le changelog affiche les catégories de la note de version en anglais,
   quelle que soit la langue dans laquelle elles ont été écrites.
-- Les noms de domaines (`security`, `migration`…), le registre de revue et
+- Les noms de domaines (`security`, `migration`…), le compte rendu de relecture et
   `corrections.md` restent en anglais. Compagnon ne lit pas les lignes des
   scénarios (`**WHEN**` / `**THEN**`, `**QUAND**` / `**ALORS**`).
 
@@ -135,15 +136,15 @@ prose française ; ses prochains artefacts sont écrits en français. Deux
 mélanges en découlent, tous deux valides, puisque Compagnon lit les deux langues
 dans un même document :
 
-- Un change planifié avant la mise à jour reste tel quel : `/compagnon-update`
+- Une modification planifiée avant la mise à jour reste tel quel : `/compagnon-update`
   garde la langue des mots-clés de l'artefact qu'il révise, et seul un
   nouvel artefact prend celle du projet.
-- Une spec principale garde sa propre langue. Une fusion écrit ses titres
-  dans la langue de cette spec, mais copie le corps d'une exigence tel qu'il
+- Une spécification principale garde sa propre langue. Une fusion écrit ses
+  titres dans la langue de cette spécification, mais copie le corps d'une exigence tel qu'il
   est écrit : un `DOIT` ou un `**QUAND**` français peut ainsi se retrouver
   sous un `### Requirement:` anglais. Pour l'éviter, gardez `language: en`,
-  ou réécrivez une fois en français les mots-clés d'une spec principale —
-  Compagnon ne réécrit jamais une spec de lui-même.
+  ou réécrivez une fois en français les mots-clés d'une spécification
+  principale — Compagnon ne réécrit jamais une spécification de lui-même.
 
 > **Attention**
 > Une version de Compagnon antérieure à ce catalogue refuse les mots-clés
@@ -152,19 +153,19 @@ dans un même document :
 > les annonce : chaque contributeur utilisera ainsi un Compagnon qui les lit. Un
 > titre dans une langue que Compagnon ne connaît pas, comme `### Requisito:`, est
 > signalé dans une section de delta (`delta_unexpected_heading`), et la
-> synchronisation comme l'archivage refusent le change.
+> synchronisation comme l'archivage refusent la modification.
 
-## Quelles skills l'utilisent
+## Quelles compétences l'utilisent
 
 `compagnon instructions --json` expose la langue dans son champ `language`, la
 langue des mots-clés dans `keywordLanguage`, et le texte de chaque mot-clé
 dans `keywords` ; sa sortie lisible donne les deux sur sa ligne `Language:`.
 `/compagnon-propose` et `/compagnon-update` rédigent les artefacts dans cette langue,
 prose et mots-clés, et `/compagnon-configure` y rédige également le `context:` et les
-`rules:` qu'il propose. Un schéma de projet peut contenir ses templates par langue, sous
+`rules:` qu'il propose. Un schéma de projet peut contenir ses modèles par langue, sous
 `templates/<langue>/` ; sans eux, `templates/<fichier>` sert toutes les
-langues, et les mots-clés suivent la langue dans laquelle ce template est
+langues, et les mots-clés suivent la langue dans laquelle ce modèle est
 écrit — un schéma écrit en anglais garde des mots-clés anglais
-([Schémas personnalisés](custom-schemas.md)). Le template d'ADR utilisé par les commandes
+([Schémas personnalisés](custom-schemas.md)). Le modèle d'ADR utilisé par les commandes
 `compagnon decision` a des titres de sections en anglais ; rédigez-en le contenu
 dans la langue de votre équipe.

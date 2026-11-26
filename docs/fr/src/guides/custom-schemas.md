@@ -1,9 +1,9 @@
 # Schémas personnalisés
 
-Un schéma définit le workflow de planification d'un change : les artefacts
-qu'il comporte, leurs dépendances mutuelles, ainsi que l'instruction et le
-template que suit l'agent pour chacun. Compagnon embarque un schéma,
-`spec-driven` — proposal, specs, design, tasks —, qui convient à la plupart des
+Un schéma définit le déroulé de planification d'une modification : les
+artefacts qu'elle comporte, leurs dépendances mutuelles, ainsi que
+l'instruction et le modèle que suit l'agent pour chacun. Compagnon embarque un schéma,
+`spec-driven` — proposition, spécifications, conception, tâches —, qui convient à la plupart des
 projets. Lorsque ce n'est pas le cas, vous pouvez définir le vôtre, sous forme
 de simples fichiers de données : ni code, ni recompilation.
 
@@ -72,11 +72,11 @@ apply:
 | `name` | oui | Nom du schéma, en kebab-case — le nom du dossier du schéma, celui qu'utilise Compagnon |
 | `version` | non | Version du format de schéma, `1` par défaut |
 | `description` | non | Description en une ligne |
-| `artifacts` | oui | Les artefacts d'un change, au moins un |
+| `artifacts` | oui | Les artefacts d'une modification, au moins un |
 | `artifacts[].id` | oui | Identifiant de l'artefact, en kebab-case, unique |
-| `artifacts[].generates` | oui | Chemin de sortie relatif au dossier du change ; peut être un motif glob comme `specs/**/*.md` |
+| `artifacts[].generates` | oui | Chemin de sortie relatif au dossier de la modification ; peut être un motif glob comme `specs/**/*.md` |
 | `artifacts[].description` | non | Courte description, présentée à l'agent |
-| `artifacts[].template` | non | Nom du fichier de template, recherché dans le dossier `templates/<langue>/` du schéma pour la langue des mots-clés du projet, puis dans `templates/` |
+| `artifacts[].template` | non | Nom du fichier de modèle, recherché dans le dossier `templates/<langue>/` du schéma pour la langue des mots-clés du projet, puis dans `templates/` |
 | `artifacts[].instruction` | non | Consignes pour l'agent qui rédige cet artefact |
 | `artifacts[].requires` | non | Identifiants des artefacts qui doivent exister au préalable |
 | `artifacts[].role` | non | Le rôle qui a la charge de l'artefact — voir [Déclarer les rôles des artefacts](#déclarer-les-rôles-des-artefacts) |
@@ -90,7 +90,7 @@ avertissement `schema_unknown_key` qui nomme la clé et sa ligne, dans chaque
 commande qui utilise le schéma, et `compagnon validate --strict` échoue dessus.
 Le schéma a peut-être été écrit pour une version plus récente de Compagnon
 (lancez `compagnon self-update`), ou la clé est une faute de frappe qui
-produirait sinon un workflow se comportant autrement que ce que vous avez
+produirait sinon un déroulé se comportant autrement que ce que vous avez
 écrit : corrigez-la. Compagnon 0.6.1 et les versions antérieures rejettent le
 schéma à la place. Compagnon rejette un schéma dont les dépendances font référence à
 un artefact inexistant ou forment un cycle, en nommant les artefacts
@@ -135,7 +135,7 @@ quelle.
 
 ## Utiliser un schéma
 
-Choisissez un schéma pour un change donné :
+Choisissez un schéma pour une modification donnée :
 
 ```bash
 compagnon new change quick-fix --schema lite
@@ -147,11 +147,11 @@ ou faites-en le schéma par défaut du projet dans `_compagnon/config.yaml` :
 schema: lite
 ```
 
-Le schéma est enregistré dans le `change.yaml` de chaque change, sous le nom
-de son dossier : modifier le schéma par défaut n'affecte donc pas les changes
-déjà en cours.
+Le schéma est enregistré dans le `change.yaml` de chaque modification, sous le
+nom de son dossier : modifier le schéma par défaut n'affecte donc pas les
+modifications déjà en cours.
 
-Les skills fonctionnent avec n'importe quel schéma : `/compagnon-propose` rédige
+Les compétences fonctionnent avec n'importe quel schéma : `/compagnon-propose` rédige
 les artefacts prêts, dans l'ordre des dépendances, au moyen de
 `compagnon instructions`. Les `rules:` par artefact de la configuration sont
 indexées par identifiant d'artefact : des règles écrites pour `brief`
@@ -162,12 +162,12 @@ s'appliquent donc à l'artefact `brief` du schéma `lite`.
 Quelques comportements reposent sur des conventions plutôt que sur la
 configuration. Gardez-les à l'esprit lorsque vous concevez un schéma :
 
-- **Les deltas de specs sont des fichiers situés sous `specs/`.** La
+- **Les deltas de spécifications sont des fichiers situés sous `specs/`.** La
   validation, la synchronisation et l'archivage lisent les deltas dans le
-  dossier `specs/` du change. Un artefact qui écrit ailleurs n'est pas
-  fusionné dans les specs principales.
+  dossier `specs/` de la modification. Un artefact qui écrit ailleurs n'est
+  pas fusionné dans les spécifications principales.
 - **`skip_specs: true`** ignore tout artefact dont le `generates` commence par
   `specs/`, quel que soit son identifiant.
 - **Les décisions sont injectées dans l'artefact dont l'identifiant est
-  `design`.** Nommez votre artefact de design `design` si vous voulez que
+  `design`.** Nommez votre artefact de conception `design` si vous voulez que
   l'agent reçoive les décisions en vigueur au moment de le rédiger.

@@ -4,21 +4,21 @@ Pourquoi Compagnon existe, ce qu'il doit aux outils qui l'ont précédé, et où
 
 ## Pourquoi Compagnon
 
-Dans un dépôt sans specs, l'intention n'existe que dans la tête des gens. Le
+Dans un dépôt sans spécifications, l'intention n'existe que dans la tête des gens. Le
 code s'écrit d'un côté, se relit de l'autre, et six mois plus tard quelqu'un
-fouille l'historique des commits pour retrouver pourquoi un comportement existe.
-Compagnon inverse la démarche : pour chaque change significatif, vous commencez par
+fouille l'historique des enregistrements pour retrouver pourquoi un comportement existe.
+Compagnon inverse la démarche : pour chaque modification significative, vous commencez par
 écrire ce que vous voulez, vous le relisez, puis vous l'implémentez.
 
 Ce que Compagnon vous apporte :
 
-- **Un cycle explicite.** Chaque change passe par quatre étapes : propose,
-  apply, sync et archive. Chaque étape a son artefact et sa skill Claude Code
-  dédiée. Voir [Le workflow](workflow.md).
-- **Des deltas de specs, fusionnés avec précision.** Un change ne réécrit
-  jamais une spec en entier. Il déclare des exigences `ADDED`, `MODIFIED`,
-  `REMOVED` ou `RENAMED`, que Compagnon fusionne dans les specs principales à
-  l'archivage du change, sans toucher au reste du fichier. C'est ce qui rend
+- **Un cycle explicite.** Chaque modification passe par quatre étapes : propose,
+  apply, sync et archive. Chaque étape a son artefact et sa compétence Claude
+  Code dédiée. Voir [Le déroulé](workflow.md).
+- **Des deltas de spécifications, fusionnés avec précision.** Une
+  modification ne réécrit jamais une spécification en entier. Il déclare des exigences `ADDED`, `MODIFIED`,
+  `REMOVED` ou `RENAMED`, que Compagnon fusionne dans les spécifications
+  principales à l'archivage de la modification, sans toucher au reste du fichier. C'est ce qui rend
   Compagnon utilisable sur du code existant, et pas seulement sur des projets
   neufs.
 - **Des décisions d'architecture immuables.** Les décisions acceptées (ADR)
@@ -27,7 +27,7 @@ Ce que Compagnon vous apporte :
   remplace par une nouvelle.
 - **Des conventions partagées entre dépôts.** Un projet peut hériter du
   contexte, des règles et des décisions d'un autre dépôt, en lecture seule,
-  épinglés sur un commit git. Voir [Sources héritées](guides/inherited-sources.md).
+  épinglés sur un enregistrement git (commit). Voir [Sources héritées](guides/inherited-sources.md).
 - **La langue de votre équipe.** Les artefacts sont rédigés dans la langue
   définie dans la configuration, tandis que leur structure reste lisible par la
   machine. Voir [Langue des artefacts](guides/artifact-language.md).
@@ -39,18 +39,18 @@ Ce que Compagnon vous apporte :
 
 Compagnon s'inspire d'[OpenSpec](https://github.com/Fission-AI/OpenSpec) (MIT),
 l'outil TypeScript qui a popularisé un cycle de développement piloté par les
-specs pour les agents de code. Compagnon en reprend l'ossature, la reconstruit en
+spécifications pour les agents de code. Compagnon en reprend l'ossature, la reconstruit en
 Rust et fait ses propres choix par-dessus.
 
 **Ce que Compagnon doit à OpenSpec :**
 
-- Le cycle propose → apply → archive, et l'idée que le *change* est l'unité de
-  travail.
-- Les deltas de specs et leurs quatre opérations lisibles — `ADDED`,
+- Le cycle propose → apply → archive, et l'idée que la *modification* (change) est
+  l'unité de travail.
+- Les deltas de spécifications et leurs quatre opérations lisibles — `ADDED`,
   `MODIFIED`, `REMOVED`, `RENAMED`.
 - La notion de *capacité*, qui regroupe un comportement observable plutôt que
   des fichiers ou des modules.
-- Des workflows et des templates traités comme des données, et non comme du
+- Des déroulés et des modèles traités comme des données, et non comme du
   code.
 
 **Ce que Compagnon fait autrement :**
@@ -70,13 +70,13 @@ Rust et fait ses propres choix par-dessus.
 **Ce qui est propre à Compagnon :**
 
 - Des décisions d'architecture scellées, avec remplacement, écarts locaux par
-  rapport aux décisions héritées, et promotion d'une décision de design en ADR.
-- Des sources héritées en lecture seule, épinglées par commit git dans
+  rapport aux décisions héritées, et promotion d'une décision de conception en ADR.
+- Des sources héritées en lecture seule, épinglées par enregistrement git dans
   `_compagnon/compagnon.lock`.
-- Une intégration MCP côté skills : `/compagnon-propose` détecte un identifiant de
+- Une intégration MCP côté compétences : `/compagnon-propose` détecte un identifiant de
   ticket comme `PROJ-123` et récupère le ticket via le serveur MCP Jira
   configuré pour le projet.
-- Un contrat JSON versionné sur chaque commande, pour que les skills puissent
+- Un contrat JSON versionné sur chaque commande, pour que les compétences puissent
   s'appuyer sur un format de sortie stable.
 - Une documentation embarquée dans le binaire (`compagnon docs`), consultable hors
   ligne.
@@ -93,11 +93,11 @@ Compagnon est développé avec Compagnon : chaque évolution de son dépôt est
 relue et archivée avec l'outil lui-même. Son dossier `_compagnon/` est un exemple
 réel que vous pouvez parcourir :
 
-- [les specs vivantes](https://github.com/mairistem/compagnon/tree/main/_compagnon/specs), qui décrivent ce que fait Compagnon
+- [les spécifications vivantes](https://github.com/mairistem/compagnon/tree/main/_compagnon/specs), qui décrivent ce que fait Compagnon
   aujourd'hui ;
-- [les changes archivés](https://github.com/mairistem/compagnon/tree/main/_compagnon/changes/archive), chacun avec son proposal,
-  ses deltas de spec, son design et ses tâches ;
-- [un compte rendu de revue](https://github.com/mairistem/compagnon/blob/main/_compagnon/changes/archive/2026-10-13-review-record/review.md), avec les remarques, leurs preuves, les
+- [les modifications archivées](https://github.com/mairistem/compagnon/tree/main/_compagnon/changes/archive), chacune avec sa proposition,
+  ses deltas de spécification, sa conception et ses tâches ;
+- [un compte rendu de relecture](https://github.com/mairistem/compagnon/blob/main/_compagnon/changes/archive/2026-10-13-review-record/review.md), avec les remarques, leurs preuves, les
   réponses de l'auteur et la façon dont chacune a été tranchée ;
 - [les décisions d'architecture](https://github.com/mairistem/compagnon/tree/main/_compagnon/decisions), scellées.
 
