@@ -251,7 +251,6 @@ the longer skill texts; turns fall by 11 %.
 | onboard-planning-incomplete | 0.1595 | 0.1513 | 10 | 4 |
 | onboard-several-changes | 0.1652 | 0.1798 | 12 | 12 |
 | onboard-thin-config | 0.1532 | 0.1628 | 10 | 9 |
-|
 fail: cost 1.4265 USD is not lower than the baseline's floor, 1.2906 USD (each case at its cheapest run; the baseline's median is 1.3680 USD)
 ```
 
