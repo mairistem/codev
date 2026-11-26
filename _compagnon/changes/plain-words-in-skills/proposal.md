@@ -61,7 +61,7 @@ still contradict it.
 - [ ] security
 - [ ] personal-data — the match is the English word "phone" in the example scenario of both home pages (`docs/site/index.html` and `fr.html`), from another change on the branch; not personal data
 - [x] user-interface
-- [ ] performance
+- [ ] performance — the match is « cache » (the model's prompt cache) in French text of `evals/src/reliability.rs` reworded by french-technical-pages, another change on the branch; not a performance change
 - [ ] operations
 - [ ] migration
 
