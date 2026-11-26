@@ -75,3 +75,4 @@ want Claude to build something for them have no profile at all.
 ## Release note
 
 - Changed: The documentation asks one question — what will you do with Compagnon? — and gives each of four profiles a short path of at most three pages, including a new one for people who do not code but want Claude to build something for them. The site's home page now exists in French.
+- Removed: The "Discovering AI agents" profile; links to the former profile sections of Choose your path (`#i-am-discovering-ai-agents`…) now open the page at its top.

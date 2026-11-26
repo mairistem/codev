@@ -55,7 +55,7 @@ chapter.
 | Path | Steps | Next, if you need it |
 |---|---|---|
 | Review and approve | introduction, Reviewing a plan, Glossary | FAQ |
-| Build without coding | introduction, Your first change, Reviewing a plan | How to ask (skills), Glossary |
+| Build without coding | introduction, Your first change, Reviewing a plan | Glossary, FAQ |
 | Develop | Your first change, Claude Code skills, The workflow | Concepts, FAQ |
 | Team | Installation, Repository integration and compagnon doctor, Roles | Configuration, MCP servers, Inherited sources |
 
@@ -63,7 +63,8 @@ The quickstart leaves "Start here" for the head of "Everyday use": its
 first step installs a tool, a dead end for a reader who only approves
 plans; the build path still reaches it, its commands limited to installing
 and `compagnon init` as the quickstart's own requirement already
-guarantees.
+guarantees, and its "Next" names no developer chapter (the skills chapter
+asks to run `compagnon update`).
 
 **Alternatives considered**: keeping "Discovering AI agents" — a level, not
 an activity, which every reader could claim; a profile for decision makers
@@ -109,6 +110,11 @@ between four entry points, which is how the old lists diverged.
   does not see "step 2 of 3" there] → the path page stays short enough to
   come back to, and each step's link names the page exactly; per-path
   banners on shared chapters would need one variant per path.
+- [The old Choose your path anchors (`#i-am-discovering-ai-agents`…),
+  linked from the READMEs and the home page, stop existing] → those links
+  are rewritten by this change; a bookmark to an old anchor still opens
+  Choose your path, at its top. Documentation anchors are not a public
+  interface, so this is not a breaking change.
 - [Moving the quickstart out of Start here breaks a link that targets its
   position] → links target file paths, which do not move; the manual
   order test is updated.

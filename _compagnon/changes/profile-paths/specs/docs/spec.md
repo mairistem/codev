@@ -14,7 +14,7 @@ only link opens its path page:
 - "I set Compagnon up for my team" (`paths/team.md`).
 
 Below them, one sentence MUST point those who want to change Compagnon
-itself to the Contributing part. The same four labels, in the same words,
+itself to `origins.md`, the first chapter of the Contributing part. The same four labels, in the same words,
 SHALL be used by the introduction, the READMEs and the home pages of the
 site.
 
@@ -24,7 +24,14 @@ site.
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** each holds the four profile labels of its language, in order,
   each linking its path page and nothing else
-- **AND** a link to the Contributing part follows them
+- **AND** a link to `origins.md` follows them
+
+#### Scenario: The introduction uses the four labels
+
+- **GIVEN** both editions of `introduction.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each holds the four profile labels of its language, each
+  linking its path page
 
 #### Scenario: A profile with two links or the wrong page is caught
 
@@ -43,8 +50,9 @@ steps, each holding exactly one link to a chapter of the same edition whose
 text is that chapter's title, then a "Next, if you need it" ("Ensuite, si
 besoin") section, and end with a link back to Choose your path. The path
 for people who do not code but want Claude to build something MUST NOT
-send them to a page whose visible text asks them to type a command other
-than installing Compagnon or `compagnon init`.
+take, as a step, a chapter whose fenced shell blocks outside "Under the
+hood" blocks run anything but installing Compagnon or `compagnon init`;
+its "Next" section names no developer chapter.
 
 #### Scenario: Every path page has at most three steps, titled as their pages
 
@@ -53,7 +61,30 @@ than installing Compagnon or `compagnon init`.
 - **THEN** each is titled with its profile's label, in `SUMMARY.md` too
 - **AND** each has one to three numbered steps, each with one link whose
   text equals the title of the chapter it opens
-- **AND** each links back to Choose your path
+- **AND** a sentence comes between the title and the first step
+- **AND** each holds a "Next, if you need it" / « Ensuite, si besoin »
+  section and links back to Choose your path
+
+#### Scenario: The build path asks no command beyond installing
+
+- **GIVEN** the build path page of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** no chapter it takes as a step holds, outside "Under the hood"
+  blocks, a shell block running anything but installing or
+  `compagnon init`
+
+#### Scenario: Every link of the paths resolves
+
+- **GIVEN** Choose your path and the four path pages of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** every link to a chapter resolves to a chapter of the table of
+  contents, and every anchor it names to a heading of that chapter
+
+#### Scenario: A path page with four steps is caught
+
+- **GIVEN** a path page with four numbered steps
+- **WHEN** the check runs on it
+- **THEN** it fails naming the page
 
 #### Scenario: A step labelled differently from its page is caught
 
@@ -70,7 +101,8 @@ other's `lang` and `hreflang`; the English page's links to the French
 edition lead to `fr.html`. Each MUST show, before
 any installation command or technical section, the question of Choose your
 path and its four profiles in its language, each linking the path page of
-its edition, and the link for contributors. The pages need no script.
+its edition, and the link for contributors; these links are plain
+`<a href>` elements, which work without script.
 
 #### Scenario: Both home pages lead with the four profiles
 
@@ -79,24 +111,86 @@ its edition, and the link for contributors. The pages need no script.
 - **THEN** each holds the four labels of its language, each linking
   `en/paths/…` or `fr/paths/…`
 - **AND** the first label comes before the first installation command
+- **AND** each links `origins.html` of its edition for contributors
 - **AND** `fr.html` declares `lang="fr"`, and each page links the other
   with the other's `lang` and `hreflang`
+
+#### Scenario: A home page that asks after installing is caught
+
+- **GIVEN** a home page whose first profile label comes after its
+  `curl … | sh` command
+- **WHEN** the check runs on it
+- **THEN** it fails naming the page
 
 ### Requirement: Developer pages do not gloss everyday developer words
 
 The workflow, skills, concepts and FAQ chapters, read mostly by
 developers, SHALL NOT explain in parentheses what a terminal or a test is
-("the window where you type commands", "a small program that checks…");
-the glossary link on first use stays.
+("the window where you type commands", "a small program that checks…";
+in French « la fenêtre où l'on tape des commandes », « un petit programme
+qui vérifie »); the glossary link on first use stays.
+
+#### Scenario: The developer chapters hold no gloss
+
+- **GIVEN** the workflow, skills, concepts and FAQ chapters of both
+  editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** none holds one of the glosses of the requirement
 
 #### Scenario: A gloss for developers is caught
 
-- **GIVEN** the workflow chapter saying "a terminal (the window where you
-  type commands)"
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** it fails naming the chapter
+- **GIVEN** a chapter saying "a terminal (the window where you type
+  commands)"
+- **WHEN** the check runs on it
+- **THEN** it fails naming the gloss
 
 ## MODIFIED Requirements
+
+### Requirement: Compagnon's mark identifies the product in every documentation surface
+
+The repository SHALL hold the Compagnon mark as SVG files under
+`docs/assets/`: a color version for light backgrounds and a version for
+dark backgrounds, drawn only in the Mairistem palette (`#ff5331`,
+`#ffab03`, `#004c66`, `#00c39b`, plus black or white). The mark MUST be
+shown:
+
+- at the top of `README.md` and `README.fr.md`, with the variant matching
+  the reader's color scheme;
+- in the header of the mdBook documentation, in both languages, next to
+  the Mairistem logo;
+- in the header of the landing pages `docs/site/index.html` and
+  `docs/site/fr.html`, next to the Mairistem logo;
+- as the favicon of the documentation and of the landing pages;
+- in the self-contained HTML file written by `compagnon docs`, inline, with
+  no external asset.
+
+A mark that stands alone carries a text alternative naming Compagnon: `alt`
+on an image, `role="img"` with `aria-label` on inline SVG — a `<title>`
+inside the SVG file is not enough. A mark placed next to the visible word
+"Compagnon", or inside a link that has its own accessible name, is
+decorative (`aria-hidden="true"`). The brand links name Compagnon
+("Compagnon, by Mairistem — home"; "Accueil du site Compagnon" in French).
+
+#### Scenario: The offline manual shows the mark without fetching anything
+
+- **WHEN** the user runs `compagnon docs --write manual.html`
+- **THEN** `manual.html` holds the Compagnon mark as inline SVG with a text
+  alternative naming Compagnon
+- **AND** it references no external image
+
+#### Scenario: Both READMEs show the mark
+
+- **GIVEN** the repository's `README.md` and `README.fr.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** it fails unless both reference the light and dark variants of
+  the mark under `docs/assets/`, with a non-empty `alt` naming Compagnon
+
+#### Scenario: A mark outside the palette is rejected
+
+- **GIVEN** a mark file under `docs/assets/` using a fill outside the
+  Mairistem palette, black and white
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** it fails naming the file and the color
 
 ### Requirement: The documentation opens with a short Start here path
 
@@ -226,7 +320,14 @@ most 600 words in English and 750 in French, code blocks excluded.
 - **THEN** it fails if either exceeds its cap
 - **AND** it fails unless each "Getting started" section shows both
   one-liners, `compagnon init` and `/compagnon-propose`
-- **AND** it fails unless each links the four path pages of its language
+- **AND** it fails unless each holds the four profile labels of its
+  language, each linking its path page
+
+#### Scenario: A README missing a path page is caught
+
+- **GIVEN** a README that links three of the four path pages
+- **WHEN** the check runs on it
+- **THEN** it fails naming the missing page
 
 ## REMOVED Requirements
 
