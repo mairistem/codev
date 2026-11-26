@@ -27,9 +27,9 @@ starts from a tree its own checks reject.
   whose seal matched its body before the rename, so a seal broken by the
   rename alone holds again; a seal that did not match before stays broken.
 - After renaming a replayed tree that is a Rust workspace, the runner
-  formats it (`cargo fmt --all`), before the fixture's base commit and
-  before `calibrate` checks the merged commit, so that `format` measures
-  only what the skill changed.
+  formats with rustfmt the Rust files the rename changed, and only them,
+  before the fixture's base commit and before `calibrate` checks the
+  merged commit, so that `format` measures only what the skill changed.
 - `calibrate` on the implementation cases passes `format` again on the
   merged commits; the baseline is not re-recorded by this change.
 
@@ -49,6 +49,8 @@ starts from a tree its own checks reject.
   (`extract`, used by `calibrate`), their tests in `evals/tests/fixture.rs`.
 - `compagnon_core::decisions::seal` is used as it is (`body_hash`); no
   change to the CLI or the skills, so decision 0008 asks for no paid run.
+- No documentation changes: the chapters describe the checks, which stay
+  the same.
 - The next paid evaluation of `code.implement` measures the skill, not
   the rename; the baseline recorded before stays as it is until then.
 
