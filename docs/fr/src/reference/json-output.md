@@ -475,7 +475,7 @@ portent leur code dans `status` — voir les [codes](cli.md#compagnon-self-updat
 | `resolvedOutputPath` | Où écrire ; peut être un motif glob comme `…/specs/**/*.md` |
 | `instruction`, `template` | Issus du schéma ; `null` lorsque le schéma n'en définit pas |
 | `language` | La langue des artefacts, `en` par défaut |
-| `keywordLanguage` | La langue dans laquelle les mots-clés structurels sont écrits : celle des mots-clés du template servi, sinon `language` quand Compagnon en fournit les mots-clés, `en` sinon |
+| `keywordLanguage` | La langue dans laquelle les mots-clés structurels sont écrits : celle des mots-clés du modèle servi, sinon `language` quand Compagnon en fournit les mots-clés, `en` sinon |
 | `keywords` | Le texte à écrire pour chaque mot-clé du catalogue dans `keywordLanguage`, par clé (`requirement`, `delta.added`…) ; une liste pour `normative` et `none` |
 | `related` | Les exigences existantes que la modification touche probablement, classées par rapport au `Why` et au `What Changes` de la proposition, au plus 10, chacune avec `capability`, `requirement` et `excerpt` — pour les artefacts qui requièrent directement la proposition (`specs`, `design`), une fois celle-ci écrite ; un tableau vide sinon |
 | `context`, `rules` | Blocs ordonnés de la source la plus générale jusqu'au projet, chacun avec son `origin` (`project`, `path:<path>` ou `git:<url>`) |
