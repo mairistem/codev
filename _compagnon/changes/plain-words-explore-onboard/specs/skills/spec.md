@@ -74,7 +74,11 @@ of options — so that Claude Code's suggested next prompt, drawn from the
 conversation, is likely to be that request. A refusal or a summary that
 leaves several choices to the user names them before that last line, each
 with its request and shortcut; when the next step is that choice, the last
-line asks which one, in plain words, without a shortcut.
+line asks which one, in plain words, without a shortcut. When the next step
+is a command the user types in a terminal and the skill may not run —
+`compagnon init` for `onboard` — the last line gives that command, after
+plain words saying what it does. A closing request holds no placeholder:
+the user can send it as it is.
 
 #### Scenario: The shared rule asks for one closing request
 

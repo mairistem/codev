@@ -1852,6 +1852,42 @@ mod plain_words {
     }
 
     #[test]
+    fn onboard_requests_hold_no_placeholder() {
+        // A quoted request is sent as it is: no `<…>` left for the user to
+        // fill. `<that-name>` is not one: the skill writes the change's name
+        // in its place.
+        let body = body("onboard");
+        let holes: Vec<&str> = body
+            .split('“')
+            .skip(1)
+            .filter_map(|rest| rest.split('”').next())
+            .filter(|request| request.replace("<that-name>", "").contains('<'))
+            .collect();
+        assert!(holes.is_empty(), "{holes:?}");
+    }
+
+    #[test]
+    fn onboard_without_compagnon_explains_init_before_it() {
+        let body = body("onboard");
+        let (_, after) = body
+            .split_once("On a project without Compagnon")
+            .expect("onboard shows a reply without Compagnon");
+        let example: Vec<&str> = after
+            .lines()
+            .skip_while(|l| !l.trim_start().starts_with('>'))
+            .take_while(|l| l.trim_start().starts_with('>'))
+            .collect();
+        let text = example.join(" ");
+        assert!(text.contains("not set up"), "{text}");
+        assert!(
+            example
+                .last()
+                .is_some_and(|l| l.contains("`compagnon init`")),
+            "{example:?}"
+        );
+    }
+
+    #[test]
     fn onboard_no_longer_asks_to_quote_the_command_to_type() {
         let body = super::tests::flat(&body("onboard"));
         assert!(!body.contains("quote the exact command to type"));

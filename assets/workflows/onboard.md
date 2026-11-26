@@ -97,9 +97,9 @@ Ordered resolution, from the most constraining to the most general.
 
 | State | Recommendation |
 |---|---|
-| `_compagnon/` missing | `compagnon init`, for the user to type in a terminal |
-| No active change AND thin config (no entry under `rules:`) | **Configure first** — Claude will enrich the config from the project: say “configure Compagnon for this project” (shortcut: `/compagnon-configure`), on the last line; name before it the first change that comes next, say “plan <an idea>” (shortcut: `/compagnon-propose <an-idea>`) |
-| No active change, non-thin config | **Read `README.md`** to get a feel for the project, then say “plan <an idea>” (shortcut: `/compagnon-propose <an-idea>`), on the last line; name before it the alternative, say “let's explore <a topic>” (shortcut: `/compagnon-explore <topic>`) |
+| `_compagnon/` missing | Say in plain words that Compagnon is not set up in this project yet and that one command sets it up, then give it, on the last line, as a command to type in a terminal, in the project folder: `compagnon init` — you never run it yourself |
+| No active change AND thin config (no entry under `rules:`) | **Configure first** — Claude will enrich the config from the project: say “configure Compagnon for this project” (shortcut: `/compagnon-configure`), on the last line; name before it the first change that comes next, say “plan a change” (shortcut: `/compagnon-propose`) |
+| No active change, non-thin config | **Read `README.md`** to get a feel for the project, then say “I want to plan a change” (shortcut: `/compagnon-propose`), on the last line — Claude then asks for the idea; name before it the alternative, say “let's explore an idea” (shortcut: `/compagnon-explore`) |
 | A single active change, planning incomplete | Say “finish the plan of <that-name>” (shortcut: `/compagnon-propose <that-name>`) |
 | A single active change, planning complete | Say “implement <that-name>” (shortcut: `/compagnon-apply <that-name>`) |
 | Several active changes | List them, each with its request and shortcut as in the two rows above; the last line asks which one to continue, in plain words, without a shortcut |
@@ -135,15 +135,21 @@ config is thin:
 
 > **What's next**: your config is sparse. Claude can read the project
 > (README, docs, a sample of the code) and enrich `_compagnon/config.yaml`.
-> Once that is done, you will plan your first change — say “plan <an idea>” (shortcut: `/compagnon-propose <an-idea>`).
+> Once that is done, you will plan your first change — say “plan a change” (shortcut: `/compagnon-propose`).
 > For now, say “configure Compagnon for this project” (shortcut: `/compagnon-configure`).
 
 On a project whose config is already well filled in:
 
 > **What's next**: start by reading `README.md` to get a feel for the
 > project. If you have a question but no idea for an action yet, say
-> “let's explore <a topic>” (shortcut: `/compagnon-explore <topic>`).
-> When an idea comes up, say “plan <an idea>” (shortcut: `/compagnon-propose <an-idea>`).
+> “let's explore an idea” (shortcut: `/compagnon-explore`).
+> When an idea comes up, say “I want to plan a change” (shortcut: `/compagnon-propose`).
+
+On a project without Compagnon:
+
+> **What's next**: Compagnon is not set up in this project yet. One
+> command sets it up; type it in a terminal, in the project folder:
+> `compagnon init`
 
 With an active change whose plan is not finished:
 
@@ -168,7 +174,10 @@ The **three blocks** in order: description, state, what's next. Separated
 by a blank line. No introduction ("Here is…"), no conclusion ("I hope
 that…"). The reader wants the map of the terrain, not a guided tour.
 The last line is the one recommended request with its shortcut — or,
-with several active changes, the question of which one.
+with several active changes, the question of which one; or, without
+`_compagnon/`, the `compagnon init` command for the user to type, after
+plain words saying what it does: you never run it, so it is not a request
+to you.
 
 {{fragment:next-steps}}
 
@@ -181,7 +190,7 @@ with several active changes, the question of which one.
 - **Never run `compagnon init`** — if the repository is not initialized,
   display the command and let the user type it.
 - **No excess detail** — numbers, not exhaustive lists. A user who
-  wants the details can say “let's explore <a topic>” (shortcut: `/compagnon-explore`),
+  wants the details can say “let's explore an idea” (shortcut: `/compagnon-explore`),
   or run the commands `compagnon decision list` / `compagnon list --specs`.
 - **Never suggest a missing skill** — only recommend a step, and its
   shortcut, if its workflow exists in the installed catalog. In

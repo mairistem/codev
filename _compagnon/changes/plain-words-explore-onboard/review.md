@@ -181,6 +181,11 @@ recommendation: 'Say first in plain words what is missing and what the command d
 history:
   - status: open
     by: accessibility
+  - status: fixed
+    by: developer
+    ref: "assets/workflows/onboard.md: table row, example reply and Output say what init does before it; specs closing rule; test onboard_without_compagnon_explains_init_before_it"
+  - status: fixed
+    by: accessibility
 ```
 
 #### R-accessibility-5 The closing request holds a placeholder the user cannot send as it is
@@ -194,6 +199,11 @@ evidence: |
 recommendation: 'End on a request the user can send unchanged (Claude then asks for the idea), or explain the gap in plain words outside the quotes; one spelling of the placeholder.'
 history:
   - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: "assets/workflows/onboard.md: requests without placeholders (Claude then asks for the idea); specs; test onboard_requests_hold_no_placeholder"
+  - status: fixed
     by: accessibility
 ```
 
