@@ -228,7 +228,7 @@ pub fn open_default(lang: Lang, version: &str) -> io::Result<PathBuf> {
 /// The text of every ATX heading of a chapter, outside code fences, with
 /// inline code and emphasis markers removed — the text the HTML renderer
 /// sees.
-fn heading_texts(source: &str) -> Vec<String> {
+pub(crate) fn heading_texts(source: &str) -> Vec<String> {
     let mut in_fence = false;
     let mut out = Vec::new();
     for line in source.lines() {

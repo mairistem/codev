@@ -256,7 +256,11 @@ fn both_readmes_show_the_light_and_dark_mark() {
 /// silent noise for a screen reader.
 #[test]
 fn inline_marks_are_named_or_decorative() {
-    for file in ["docs/theme/index.hbs", "docs/site/index.html"] {
+    for file in [
+        "docs/theme/index.hbs",
+        "docs/site/index.html",
+        "docs/site/fr.html",
+    ] {
         let text = read(file);
         let uses: Vec<&str> = text
             .match_indices("<use href=\"#cp-mark\">")
@@ -288,6 +292,11 @@ fn inline_marks_are_named_or_decorative() {
     assert!(
         site.contains("aria-label=\"Compagnon, by Mairistem — home\""),
         "the site's brand link names Compagnon"
+    );
+    let french = read("docs/site/fr.html");
+    assert!(
+        french.contains("aria-label=\"Accueil du site Compagnon, par Mairistem\""),
+        "the French home page's brand link names Compagnon"
     );
 }
 
@@ -330,15 +339,17 @@ fn migration_guides_name_compagnon_migrate_dry_run() {
 
 #[test]
 fn site_and_introductions_name_compagnon() {
-    let site = read("docs/site/index.html");
-    assert!(
-        site.contains("<title>Compagnon — "),
-        "the site's title names Compagnon"
-    );
-    assert!(
-        site.contains("<meta name=\"description\" content=\"Compagnon "),
-        "the site's description names Compagnon"
-    );
+    for file in ["docs/site/index.html", "docs/site/fr.html"] {
+        let site = read(file);
+        assert!(
+            site.contains("<title>Compagnon — "),
+            "{file}: the title names Compagnon"
+        );
+        assert!(
+            site.contains("<meta name=\"description\" content=\"Compagnon "),
+            "{file}: the description names Compagnon"
+        );
+    }
     for (lang, needle) in [("en", "compagnonnage"), ("fr", "compagnonnage")] {
         let intro = read(&format!("docs/{lang}/src/introduction.md"));
         assert!(
@@ -402,9 +413,136 @@ fn both_readmes_stay_short_keep_the_one_liners_and_link_the_profiles() {
                 "{file}: `{heading}` lacks `{needle}`"
             );
         }
-        assert!(
-            text.contains("choose-your-path.html"),
-            "{file} does not link Choose your path"
-        );
+        let lang = if file.ends_with(".fr.md") { "fr" } else { "en" };
+        let problems = profile_problems(&text, &labels(lang), &path_pages(lang, ".html"));
+        assert!(problems.is_empty(), "{file}: {problems:?}");
     }
+}
+
+/// The four profile labels of Choose your path, per edition — the same
+/// words on every entry point (`docs_checks::profile_labels`, which this
+/// integration test cannot reach).
+fn labels(lang: &str) -> [&'static str; 4] {
+    if lang == "fr" {
+        [
+            "Je relis et je valide des plans — je ne code pas",
+            "Je ne code pas, mais je veux que Claude construise quelque chose pour moi",
+            "Je suis développeur et je fais coder Claude",
+            "J'installe Compagnon pour mon équipe",
+        ]
+    } else {
+        [
+            "I review and approve plans — I do not code",
+            "I do not code, but I want Claude to build something for me",
+            "I am a developer and I have Claude write code",
+            "I set Compagnon up for my team",
+        ]
+    }
+}
+
+/// The path pages of an edition, as a link to them ends.
+fn path_pages(lang: &str, extension: &str) -> [String; 4] {
+    ["review", "build", "develop", "team"].map(|p| format!("{lang}/paths/{p}{extension}"))
+}
+
+/// Where the link labelled `label` points, in Markdown (`[label](…)`) or
+/// HTML (`href="…">label</a>`), and where the label stands.
+fn link_for(text: &str, label: &str) -> Option<(usize, String)> {
+    if let Some(i) = text.find(&format!("[{label}](")) {
+        let rest = &text[i + label.len() + 3..];
+        return Some((i, rest[..rest.find(')')?].to_string()));
+    }
+    let i = text.find(&format!(">{label}</a>"))?;
+    let start = text[..i].rfind("href=\"")? + 6;
+    let end = start + text[start..].find('"')?;
+    Some((i, text[start..end].to_string()))
+}
+
+/// What is wrong with the profile links of a page: each label, in order,
+/// linking a target that ends with its path page.
+fn profile_problems(text: &str, labels: &[&str; 4], pages: &[String; 4]) -> Vec<String> {
+    let mut problems = Vec::new();
+    let mut last = 0;
+    for (label, page) in labels.iter().zip(pages) {
+        match link_for(text, label) {
+            None => problems.push(format!("no link \"{label}\"")),
+            Some((at, target)) => {
+                if !target.ends_with(page.as_str()) {
+                    problems.push(format!("\"{label}\" links {target}, not {page}"));
+                }
+                if at < last {
+                    problems.push(format!("\"{label}\" out of order"));
+                }
+                last = at;
+            }
+        }
+    }
+    problems
+}
+
+/// What is wrong with a home page: its profiles, the first one after the
+/// install command, or no link to its edition's Origins for contributors.
+fn home_page_problems(html: &str, lang: &str) -> Vec<String> {
+    let labels = labels(lang);
+    let mut problems = profile_problems(html, &labels, &path_pages(lang, ".html"));
+    if let (Some((first, _)), Some(install)) = (link_for(html, labels[0]), html.find("curl -sSL"))
+        && first > install
+    {
+        problems.push("the profiles come after the install command".into());
+    }
+    if !html.contains(&format!("href=\"{lang}/origins.html\"")) {
+        problems.push(format!("no link to {lang}/origins.html"));
+    }
+    problems
+}
+
+#[test]
+fn a_readme_missing_a_path_page_is_caught() {
+    let labels = labels("en");
+    let pages = path_pages("en", ".html");
+    let mut text = String::new();
+    for (label, page) in labels.iter().zip(&pages).take(3) {
+        text.push_str(&format!("- [{label}](https://x/{page})\n"));
+    }
+    assert_eq!(
+        profile_problems(&text, &labels, &pages),
+        ["no link \"I set Compagnon up for my team\""]
+    );
+}
+
+#[test]
+fn a_home_page_that_asks_after_installing_is_caught() {
+    let labels = labels("en");
+    let mut html = String::from("<pre>curl -sSL https://x/install.sh | sh</pre>\n");
+    for (label, page) in labels.iter().zip(path_pages("en", ".html")) {
+        html.push_str(&format!("<a href=\"{page}\">{label}</a>\n"));
+    }
+    html.push_str("<a href=\"en/origins.html\">Origins</a>\n");
+    assert_eq!(
+        home_page_problems(&html, "en"),
+        ["the profiles come after the install command"]
+    );
+}
+
+#[test]
+fn both_home_pages_lead_with_the_four_profiles() {
+    for (file, lang) in [("docs/site/index.html", "en"), ("docs/site/fr.html", "fr")] {
+        let html = read(file);
+        let problems = home_page_problems(&html, lang);
+        assert!(problems.is_empty(), "{file}: {problems:?}");
+    }
+    let english = read("docs/site/index.html");
+    let french = read("docs/site/fr.html");
+    assert!(
+        french.contains("<html lang=\"fr\""),
+        "fr.html is not declared French"
+    );
+    assert!(
+        english.contains("href=\"fr.html\" hreflang=\"fr\" lang=\"fr\""),
+        "index.html does not link fr.html in French"
+    );
+    assert!(
+        french.contains("href=\"./\" hreflang=\"en\" lang=\"en\""),
+        "fr.html does not link the English home page in English"
+    );
 }
