@@ -10,4 +10,4 @@ request: Send patients a text message reminder the day before their appointment.
 expected:
   outcome: missing
   contains: ["provider"]
-  absent: ["/compagnon-propose", "not worth pursuing"]
+  absent: ["I can create the change", "not worth pursuing", "wasn't worth pursuing"]

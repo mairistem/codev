@@ -47,7 +47,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 
 ## 3. The baseline (decision 0008)
 
-- [ ] 3.1 Ask the user's agreement on the estimated cost of the whole
+- [x] 3.1 Ask the user's agreement on the estimated cost of the whole
   group — about 3 USD for this trial run, 15 to 25 USD for the baseline —
   then run each new case once (`run --step idea.explore --step
   project.onboard --repeat 1`); adjust the `contains` and `absent` texts

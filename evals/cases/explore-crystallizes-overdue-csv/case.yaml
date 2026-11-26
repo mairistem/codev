@@ -9,4 +9,4 @@ request: Let the librarians download the list of overdue loans as a CSV file, to
 expected:
   outcome: crystallizes
   contains: ["/compagnon-propose"]
-  absent: ["information is missing", "not worth pursuing"]
+  absent: ["information is missing", "not worth pursuing", "wasn't worth pursuing"]
