@@ -59,7 +59,7 @@ still contradict it.
 ## Domains
 
 - [ ] security
-- [ ] personal-data
+- [ ] personal-data — the match is the English word "phone" in the example scenario of both home pages (`docs/site/index.html` and `fr.html`), from another change on the branch; not personal data
 - [x] user-interface
 - [ ] performance
 - [ ] operations

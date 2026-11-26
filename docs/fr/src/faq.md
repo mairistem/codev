@@ -39,7 +39,7 @@ Compagnon, et garde la réponse sur votre ordinateur.
 
 La requête est un unique appel HTTPS anonyme à l'API publique de GitHub :
 `https://api.github.com/repos/mairistem/compagnon/releases/latest`. Elle lit
-le numéro de la dernière release et le garde en cache dans
+le numéro de la dernière version publiée et le garde en cache dans
 `~/.cache/compagnon/update-check.json`, pendant 24 heures. Elle est sautée
 dès que la variable d'environnement `CI` est définie.
 
@@ -115,7 +115,7 @@ La relecture isolée coûte plus cher, car chaque relecteur relit tout. Son
 bénéfice n'est pas encore mesuré. Commencez donc petit : utilisez-la pour
 les modifications où un regard neuf compte le plus. Activez-la pour tout le
 projet une fois la différence constatée. Voir
-[Revue en ligne ou isolée](roles.md#revue-en-ligne-ou-isolée).
+[Relecture en ligne ou isolée](roles.md#relecture-en-ligne-ou-isolée).
 
 <details>
 <summary>Sous le capot : activer la relecture isolée</summary>

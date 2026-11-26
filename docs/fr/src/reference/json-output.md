@@ -1,7 +1,7 @@
 # Sortie JSON
 
 Toute commande qui agit sur un projet accepte `--json`. La sortie constitue un
-contrat public et versionné — la version 1 — sur lequel s'appuient les skills,
+contrat public et versionné — la version 1 — sur lequel s'appuient les compétences,
 et que vous pouvez utiliser dans vos scripts et votre CI.
 
 ## Garanties
@@ -54,22 +54,22 @@ Codes d'erreur courants :
 | Code | Signification |
 |---|---|
 | `no_compagnon_root` | Aucun `_compagnon/` dans le répertoire courant ni dans ses parents |
-| `no_active_change` | Le projet n'a aucun change actif |
-| `ambiguous_change` | Plusieurs changes actifs et aucun `--change` |
-| `unknown_change` | Le change désigné n'existe pas |
-| `invalid_change_id` | Un nom de change qui n'est pas en kebab-case, ou le nom réservé `archive` ; le message nomme la règle enfreinte |
+| `no_active_change` | Le projet n'a aucune modification active |
+| `ambiguous_change` | Plusieurs modifications actives et aucun `--change` |
+| `unknown_change` | La modification désignée n'existe pas |
+| `invalid_change_id` | Un nom de modification qui n'est pas en kebab-case, ou le nom réservé `archive` ; le message nomme la règle enfreinte |
 | `change_exists` | `new change` avec un nom déjà pris |
 | `schema_not_found` | Nom de schéma inconnu |
 | `schema_invalid`, `schema_unreadable` | Un fichier de schéma que Compagnon refuse : un défaut de structure, ou un YAML invalide ou un champ obligatoire manquant. Une clé inconnue n'est pas refusée : c'est un avertissement `schema_unknown_key` |
-| `unknown_artifact` | `instructions` avec un artefact que le schéma du change n'a pas |
+| `unknown_artifact` | `instructions` avec un artefact que le schéma de la modification n'a pas |
 | `no_artifact_ready` | `instructions` sans artefact, alors qu'aucun n'est prêt |
-| `template_not_found` | Un schéma fait référence à un template manquant |
-| `validation_failed` | `sync` ou `archive` a refusé un change dont la validation signale des erreurs |
-| `review_blocked` | `archive` a refusé un change dont le compte rendu de revue manque pour une étape relue, contient un constat de gravité haute encore ouvert ou contesté, ou vient d'un Compagnon plus récent ; le message nomme chaque raison |
-| `invalid_review_mode` | `review.mode`, dans `_compagnon/config.yaml` ou le `change.yaml` d'un change, n'est ni `inline` ni `isolated` ; le message nomme le fichier et les valeurs admises |
+| `template_not_found` | Un schéma fait référence à un modèle manquant |
+| `validation_failed` | `sync` ou `archive` a refusé une modification dont la validation signale des erreurs |
+| `review_blocked` | `archive` a refusé une modification dont le compte rendu de relecture manque pour une étape relue, contient un constat de gravité haute encore ouvert ou contesté, ou vient d'un Compagnon plus récent ; le message nomme chaque raison |
+| `invalid_review_mode` | `review.mode`, dans `_compagnon/config.yaml` ou le `change.yaml` d'une modification, n'est ni `inline` ni `isolated` ; le message nomme le fichier et les valeurs admises |
 | `compagnon_version_unsatisfied` | `validate`, `sync` ou `archive` a refusé de s'exécuter : le Compagnon en cours ne satisfait pas le `compagnon_version` du projet ; le message nomme l'exigence, la version en cours et la correction |
 | `seal_version_unsupported` | `_compagnon/decisions/seal.yaml` a une `version` que ce Compagnon ne lit pas : il a été écrit par un Compagnon plus récent ; le message renvoie à `compagnon self-update` |
-| `invalid` | Un fichier invalide, ou un delta qui ne peut pas être fusionné dans sa spec principale |
+| `invalid` | Un fichier invalide, ou un delta qui ne peut pas être fusionné dans sa spécification principale |
 | `unreadable` | Un fichier n'a pas pu être lu |
 | `write_failed` | Un fichier n'a pas pu être écrit |
 
@@ -115,7 +115,7 @@ exemple `inherit_unresolved`, `git_source_unlocked`, `unknown_workflow` ou
 }
 ```
 
-`preserved` liste les skills laissées en place parce qu'elles ont été
+`preserved` liste les compétences laissées en place parce qu'elles ont été
 modifiées à la main. `integration` compte une entrée par étape d'intégration
 au dépôt : `step` vaut `claude_md`, `ci` ou `pr_template` ; `action` vaut
 `created`, `appended`, `refreshed`, `unchanged` ou `skipped` ; `path` est
@@ -167,7 +167,7 @@ le fichier reste intact). Une valeur `--inherit` invalide échoue avec
 
 Chaque vérification a un `id` stable, son `group`, un `status` (`ok`,
 `missing` ou `warning`), un `code` stable (`ok` lorsque la vérification
-réussit), un `message` et un `fix` — la commande ou la skill à lancer — ou
+réussit), un `message` et un `fix` — la commande ou la compétence à lancer — ou
 `null` lorsque le statut est `ok`. Les vérifications suivent l'ordre du
 tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 `summary.missing` détermine le code de sortie de `--strict`.
@@ -216,12 +216,12 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 ```
 
 - `since` — la référence après laquelle commence l'intervalle, explicite ou
-  le tag par défaut ; `null` lorsque tous les changes archivés en font
+  le tag par défaut ; `null` lorsque toutes les modifications archivées en font
   partie. `until` — `null` pour l'arbre de travail.
 - `release` — `{ "version", "date" }` avec `--release`, sinon `null`.
 - `entries` — dans l'ordre d'affichage. `text` est l'élément tel qu'écrit,
   marqueur `**BREAKING**` compris. `source` vaut `release_note`, ou
-  `what_changes` pour un change archivé sans note de version.
+  `what_changes` pour une modification archivée sans note de version.
 - `markdown` — les éléments mis en forme au format Keep a Changelog.
 - `written` — avec `--write`, `{ "path", "action" }`, `action` valant
   `created`, `updated` ou `unchanged` ; sinon `null`.
@@ -363,11 +363,11 @@ son code dans `status`.
 ```
 
 Le `status` d'un artefact vaut `done`, `ready`, `blocked` ou `skipped`.
-`planningHome` est la racine du projet ; les skills s'en servent plutôt que de
+`planningHome` est la racine du projet ; les compétences s'en servent plutôt que de
 supposer le répertoire courant.
 
-`update` est présent lorsque la dernière release de Compagnon est connue :
-`current` est la version en cours, `latest` la dernière release, `url` sa
+`update` est présent lorsque la dernière version publiée de Compagnon est connue :
+`current` est la version en cours, `latest` la dernière version publiée, `url` sa
 page, `available` indique si `latest` est plus récente, et `snoozed` si
 `compagnon self-update --snooze` l'a mise en sourdine. Il est absent lorsque la
 vérification est désactivée (`CI`, `COMPAGNON_NO_UPDATE_CHECK=1`) ou n'a encore
@@ -475,9 +475,9 @@ portent leur code dans `status` — voir les [codes](cli.md#compagnon-self-updat
 | `resolvedOutputPath` | Où écrire ; peut être un motif glob comme `…/specs/**/*.md` |
 | `instruction`, `template` | Issus du schéma ; `null` lorsque le schéma n'en définit pas |
 | `language` | La langue des artefacts, `en` par défaut |
-| `keywordLanguage` | La langue dans laquelle les mots-clés structurels sont écrits : celle des mots-clés du template servi, sinon `language` quand Compagnon en fournit les mots-clés, `en` sinon |
+| `keywordLanguage` | La langue dans laquelle les mots-clés structurels sont écrits : celle des mots-clés du modèle servi, sinon `language` quand Compagnon en fournit les mots-clés, `en` sinon |
 | `keywords` | Le texte à écrire pour chaque mot-clé du catalogue dans `keywordLanguage`, par clé (`requirement`, `delta.added`…) ; une liste pour `normative` et `none` |
-| `related` | Les exigences existantes que le change touche probablement, classées par rapport au `Why` et au `What Changes` de la proposition, au plus 10, chacune avec `capability`, `requirement` et `excerpt` — pour les artefacts qui requièrent directement la proposition (`specs`, `design`), une fois celle-ci écrite ; un tableau vide sinon |
+| `related` | Les exigences existantes que la modification touche probablement, classées par rapport au `Why` et au `What Changes` de la proposition, au plus 10, chacune avec `capability`, `requirement` et `excerpt` — pour les artefacts qui requièrent directement la proposition (`specs`, `design`), une fois celle-ci écrite ; un tableau vide sinon |
 | `context`, `rules` | Blocs ordonnés de la source la plus générale jusqu'au projet, chacun avec son `origin` (`project`, `path:<path>` ou `git:<url>`) |
 | `dependencies` | Les artefacts dont celui-ci dépend, avec leur chemin et leur état d'achèvement |
 | `unlocks` | Les artefacts qui deviennent rédigeables dès que celui-ci existe |
@@ -521,8 +521,8 @@ lorsque `_compagnon/config.yaml` ou un schéma de projet a un constat, comme une
 clé que ce Compagnon ne connaît pas (voir
 [Clés inconnues](configuration.md#clés-inconnues)). Une clé d'un schéma de
 projet est un constat `schema_unknown_key` de l'élément `config`, dont le
-`path` est le fichier du schéma ; une clé du `change.yaml` d'un change est un
-constat `change_unknown_key` de l'élément du change ; un champ du frontmatter
+`path` est le fichier du schéma ; une clé du `change.yaml` d'une modification est un
+constat `change_unknown_key` de l'élément de la modification ; un champ du frontmatter
 d'un ADR est un constat `decision_unknown_field` de l'élément `decisions`.
 Tous trois sont des avertissements. Les constats sont rapportés dans
 `items`, et non dans `status` : `status` ne signale qu'un échec de la commande
@@ -544,7 +544,7 @@ elle-même. Voir [Codes de validation](file-formats.md#codes-de-validation).
 ```
 
 `compagnon sync --json` renvoie le même document, sans `movedTo`. `deleted` liste
-les specs principales supprimées par un change qui retire une capacité.
+les spécifications principales supprimées par une modification qui retire une capacité.
 
 ### review
 
@@ -615,14 +615,14 @@ les specs principales supprimées par un change qui retire une capacité.
 | Champ | Signification |
 |---|---|
 | `exists` | `false` sans `review.md` ; `format` et `findings` sont alors `null` ou vides |
-| `steps[].activeRoles` | Les rôles actifs à l'étape pour le change, tels que `compagnon roles --at <step> --change <name>` les renvoie |
+| `steps[].activeRoles` | Les rôles actifs à l'étape pour la modification, tels que `compagnon roles --at <step> --change <name>` les renvoie |
 | `steps[].roles[].state` | `findings`, `no-finding`, `disabled`, `empty` (une section sans rien d'exploitable), ou `missing` (un rôle actif sans section, dans une étape consignée) |
-| `steps[].roles[].fallback` | La ligne `Fallback:` du rôle — pourquoi il a relu en ligne lors d'une revue isolée — ou `null` |
+| `steps[].roles[].fallback` | La ligne `Fallback:` du rôle — pourquoi il a relu en ligne lors d'une relecture isolée — ou `null` |
 | `steps[].roles[].credited` | Les identifiants des constats d'autres rôles de l'étape dont le `raised_by` nomme ce rôle |
 | `steps[].mode` | La ligne `Mode:` de l'étape, `inline` ou `isolated`, ou `null` lorsqu'elle n'est pas écrite |
 | `steps[].summarized` | Les lignes `Summarized:` de l'étape, dans l'ordre du fichier |
 | `findings[].raisedBy` | Chaque rôle qui a relevé le constat, le sien en premier : son `raised_by`, ou son rôle seul |
-| `findings[].reported` | `true` quand la confiance est `high` : les skills ne présentent que ceux-là |
+| `findings[].reported` | `true` quand la confiance est `high` : les compétences ne présentent que ceux-là |
 | `findings[].status` | Le statut de la dernière entrée d'historique |
 | `findings[].awaiting` | Qui agit ensuite : `author` (ouvert), `reviewer` (une correction à vérifier, une contestation à laquelle répondre), `human` (une contestation que le relecteur a maintenue), ou `null` |
 | `issues` | Les défauts du compte rendu, sous la forme des constats de `validate`, avec les codes `review_*` |
@@ -739,33 +739,33 @@ champs que le fichier omet ou rend invalides valent `null`.
 
 | Champ | Signification |
 |---|---|
-| `changeName` | Le change donné avec `--change` ; `null` sans lui |
+| `changeName` | La modification donnée avec `--change` ; `null` sans lui |
 | `schemaName` | Le schéma d'où viennent les rôles d'artefact |
 | `at` | L'étape donnée avec `--at` ; `null` liste tous les rôles, actifs ou non |
 | `stacks` | Les langages détectés à partir des manifestes de dépendances du projet (`detected` : `Rust`, `TypeScript`, `JavaScript`, `Python`, `Go`, `Java`) et le filtre (`filter`) appliqué à la partie `By stack` des connaissances : `detected`, `none-detected` (tout est conservé) ou `all-stacks` (`--all-stacks`) |
-| `diff` | Avec `--change`, le diff du change : `available`, `reason` lorsqu'il n'y en a pas, la branche par défaut `base`, les fichiers modifiés (`files`), les fichiers lus par les motifs (`scanned`), les fichiers écartés par catégorie (`skipped` : `planning`, `vendored`, `lockfile`, `generated`, `binary`, `prose`, `large`), et `truncated` lorsqu'un plafond a été atteint ; `null` sans `--change` |
+| `diff` | Avec `--change`, le diff de la modification : `available`, `reason` lorsqu'il n'y en a pas, la branche par défaut `base`, les fichiers modifiés (`files`), les fichiers lus par les motifs (`scanned`), les fichiers écartés par catégorie (`skipped` : `planning`, `vendored`, `lockfile`, `generated`, `binary`, `prose`, `large`), et `truncated` lorsqu'un plafond a été atteint ; `null` sans `--change` |
 | `suggestions` | Avec `--change`, les domaines que suggère le diff, dans l'ordre de la liste des domaines : `state` vaut `ticked`, `justified` (avec sa `justification`) ou `unticked` ; `matchCount` compte les correspondances et `matches` liste les cinq premières, chacune avec sa `source` (le rôle, ou `project`), son `kind` (`paths`, `manifests`, `patterns`), le `trigger` tel qu'écrit, le `path`, et la `line` pour un motif ; vide sans `--change` |
 | `roles[].name` | Le nom affiché dans la `language` configurée, en anglais lorsque le rôle n'en a pas dans cette langue |
 | `roles[].kind` | `step`, ou `artifact` avec l'identifiant de l'artefact dans `artifact` |
 | `roles[].at` | L'étape donnée avec `--at`, sinon la première étape du rôle ; `plan.write` pour tous les rôles d'artefact |
-| `roles[].steps` | Toutes les étapes que sert le rôle, dans l'ordre du workflow : un expert sert `plan.challenge` et `code.review` |
+| `roles[].steps` | Toutes les étapes que sert le rôle, dans l'ordre du déroulé : un expert sert `plan.challenge` et `code.review` |
 | `roles[].domains` | Les domaines qui activent un expert, comme `["personal-data"]` ; vide pour les autres rôles |
 | `roles[].when`, `roles[].whenOrigin` | `always`, `never` ou `on_domain`, fixé par `default`, `project` ou `change` |
-| `roles[].activatedBy` | Pourquoi le rôle est actif : `always`, `project`, `change`, ou `domain:<nom>` pour un expert dont la proposal coche le domaine ; `null` lorsqu'il est inactif |
-| `roles[].model`, `roles[].modelOrigin` | Le modèle sur lequel tourne le sous-agent du rôle dans le mode de revue `isolated` — `opus`, `sonnet` ou `haiku`, ou `null` pour le modèle de la session —, fixé par `default` (celui du rôle) ou `project` (`model:` sous [`roles`](configuration.md#roles), `inherit` donnant `null`). Le mode en ligne l'ignore |
+| `roles[].activatedBy` | Pourquoi le rôle est actif : `always`, `project`, `change`, ou `domain:<nom>` pour un expert dont la proposition coche le domaine ; `null` lorsqu'il est inactif |
+| `roles[].model`, `roles[].modelOrigin` | Le modèle sur lequel tourne le sous-agent du rôle dans le mode de relecture `isolated` — `opus`, `sonnet` ou `haiku`, ou `null` pour le modèle de la session —, fixé par `default` (celui du rôle) ou `project` (`model:` sous [`roles`](configuration.md#roles), `inherit` donnant `null`). Le mode en ligne l'ignore |
 | `roles[].disableable` | `false` pour les rôles d'artefact, l'`analyst` et le `developer` |
 | `roles[].knowledge` | Les connaissances du rôle, en markdown dans les sections Scope, Signals, By stack, References et Reporting, pour un rôle actif qui en a, sa partie `By stack` filtrée comme l'indique `stacks.filter` ; `null` sinon |
 | `roles[].doneWhen` | Les critères du rôle, puis ceux du projet, chacun avec son `origin` : `built-in`, `schema:<name>` ou `project` |
-| `disabled` | Avec `--at`, les rôles de l'étape que la configuration a désactivés — leur activation, une fois appliqués les réglages du projet puis ceux du change, vaut `never` —, chacun avec `id`, `name` et `whenOrigin` (`project` ou `change`, le fichier dont le réglage l'emporte). Les skills écrivent pour eux `Disabled by configuration.` dans le compte rendu de revue, sans second appel. Vide sans `--at` ; un expert dont le domaine n'est pas coché est inactif, pas désactivé |
-| `review.mode`, `review.origin` | Le [mode de revue](configuration.md#review) en vigueur, `inline` ou `isolated`, fixé par `default`, `project` ou `change` |
-| `review.material` | Avec `--change` à `plan.trace`, `plan.challenge` ou `code.review`, ce que lisent les relecteurs : les fichiers de planification du change sauf `change.yaml` et `review.md` aux étapes du plan, les fichiers du diff à `code.review` — aucun fichier de planification, vendorisé, généré, de verrouillage ou binaire, aucun lien symbolique ; un fichier supprimé compte 0 octet. Chaque fichier a ses `bytes` et son `treatment` : `full`, ou `summarize` dès que les fichiers pris du plus petit au plus gros ne tiennent plus dans `limitBytes` (160 Kio). `null` sinon, et à `code.review` sans diff. Un fichier écarté parce que sa taille ne peut pas être lue ou que son nom contient un caractère de contrôle est nommé par un avertissement `review_material_incomplete` dans `status` |
+| `disabled` | Avec `--at`, les rôles de l'étape que la configuration a désactivés — leur activation, une fois appliqués les réglages du projet puis ceux de la modification, vaut `never` —, chacun avec `id`, `name` et `whenOrigin` (`project` ou `change`, le fichier dont le réglage l'emporte). Les compétences écrivent pour eux `Disabled by configuration.` dans le compte rendu de relecture, sans second appel. Vide sans `--at` ; un expert dont le domaine n'est pas coché est inactif, pas désactivé |
+| `review.mode`, `review.origin` | Le [mode de relecture](configuration.md#review) en vigueur, `inline` ou `isolated`, fixé par `default`, `project` ou `change` |
+| `review.material` | Avec `--change` à `plan.trace`, `plan.challenge` ou `code.review`, ce que lisent les relecteurs : les fichiers de planification de la modification sauf `change.yaml` et `review.md` aux étapes du plan, les fichiers du diff à `code.review` — aucun fichier de planification, vendorisé, généré, de verrouillage ou binaire, aucun lien symbolique ; un fichier supprimé compte 0 octet. Chaque fichier a ses `bytes` et son `treatment` : `full`, ou `summarize` dès que les fichiers pris du plus petit au plus gros ne tiennent plus dans `limitBytes` (160 Kio). `null` sinon, et à `code.review` sans diff. Un fichier écarté parce que sa taille ne peut pas être lue ou que son nom contient un caractère de contrôle est nommé par un avertissement `review_material_incomplete` dans `status` |
 
 Avec `--at`, `roles` ne contient que les rôles actifs, éventuellement
-aucun : l'étape est alors sautée. Sans `--change`, aucune proposal n'est
+aucun : l'étape est alors sautée. Sans `--change`, aucune proposition n'est
 lue : les experts sont donc inactifs. Un échec — `unknown_step`, `unknown_role`,
 `invalid_role_activation`, `role_not_disableable` — conserve cette forme,
 avec `roles`, `disabled` et `suggestions` vides, `stacks`, `diff` et `review` à `null`,
-et `language` renseigné comme pour `instructions` ; un mode de revue
+et `language` renseigné comme pour `instructions` ; un mode de relecture
 invalide échoue avec `invalid_review_mode`. Un déclencheur du projet
 inutilisable est écarté, avec un avertissement `invalid_trigger` dans
 `status`.

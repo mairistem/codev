@@ -1,24 +1,24 @@
 # Rôles
 
-Une skill Compagnon est un seul agent, mais il n'aborde pas chaque étape dans le
+Une compétence Compagnon est un seul agent, mais il n'aborde pas chaque étape dans le
 même état d'esprit. Chaque étape reçoit un rôle : une question dont il a la
 charge, et des critères « Done when » que l'agent vérifie avant de passer à
 la suite. Vous et votre équipe validez à des moments définis — l'agent ne
 décide jamais à votre place.
 
 Les rôles sont des critères, pas un jeu de rôle. L'agent ne se fait pas
-passer pour un product owner : il vérifie la proposal à l'aide de la liste
-du product owner. Un rôle dont les critères sont remplis est terminé, quel
+passer pour un responsable produit (product owner) : il vérifie la proposition à l'aide de la liste
+du responsable produit. Un rôle dont les critères sont remplis est terminé, quel
 que soit le ton de la prose. Certains rôles portent aussi des
 **connaissances** — les signaux concrets, les pièges par langage et les
 références dont ils ont besoin pour bien vérifier leurs critères — voir
 [Experts et domaines](#experts-et-domaines).
 
-Les rôles sont des données, pas de la prose enfouie dans les skills. Compagnon
-les sert : à chaque étape, les skills demandent `compagnon roles --at <step>` et
+Les rôles sont des données, pas de la prose enfouie dans les compétences. Compagnon
+les sert : à chaque étape, les compétences demandent `compagnon roles --at <step>` et
 appliquent ce qui leur revient, et `compagnon instructions` transmet à l'agent
 le rôle de chaque artefact. Votre projet peut désactiver un rôle, ajouter
-ses propres critères et changer l'activation pour un seul change — voir
+ses propres critères et changer l'activation pour une seule modification — voir
 [Configurer les rôles](#configurer-les-rôles).
 
 ## Rôles intégrés
@@ -27,18 +27,18 @@ ses propres critères et changer l'activation pour un seul change — voir
 |---|---|---|---|---|
 | `analyst` | Analyste | étape | `plan.understand` | Que faut-il construire ? |
 | `investigator` | Enquêteur | étape | `plan.investigate` | Que fait déjà le projet ? |
-| `product` | Product owner | artefact (`proposal`) | `plan.write` | Pourquoi ce change, et qu'est-ce qui change ? |
+| `product` | Product owner | artefact (`proposal`) | `plan.write` | Pourquoi cette modification, et qu'est-ce qui change ? |
 | `qa` | Analyste QA | artefact (`specs`) | `plan.write` | Quel comportement observable doit tenir ? |
 | `architect` | Architecte | artefact (`design`) | `plan.write` | Comment le construire ? |
 | `lead` | Tech lead | artefact (`tasks`) | `plan.write` | Dans quel ordre, et comment vérifier chaque étape ? |
 | `tracer` | Contrôleur de traçabilité | étape | `plan.trace` | Les artefacts concordent-ils entre eux ? |
 | `skeptic` | Contradicteur | étape | `plan.challenge` | Le plan résisterait-il à un relecteur qui ne l'a pas écrit ? |
-| `security` | Sécurité | expert (domaine `security`) | `plan.challenge`, `code.review` | Un attaquant peut-il détourner ce que le change ajoute ? |
-| `privacy` | Données personnelles | expert (domaine `personal-data`) | `plan.challenge`, `code.review` | Le change ne collecte-t-il, ne conserve-t-il et ne partage-t-il des données personnelles que dans la mesure nécessaire ? |
-| `accessibility` | Accessibilité | expert (domaine `user-interface`) | `plan.challenge`, `code.review` | Tout le monde peut-il utiliser ce que le change ajoute, au clavier ou avec une technologie d'assistance ? |
-| `performance` | Performance | expert (domaine `performance`) | `plan.challenge`, `code.review` | Le change reste-t-il rapide quand les données et la charge augmentent ? |
-| `ops` | Exploitation | expert (domaine `operations`) | `plan.challenge`, `code.review` | L'équipe peut-elle exploiter, observer et annuler ce que le change ajoute ? |
-| `migration` | Migration | expert (domaine `migration`) | `plan.challenge`, `code.review` | Les données, la configuration et les consommateurs existants peuvent-ils passer à ce change sans risque ? |
+| `security` | Sécurité | expert (domaine `security`) | `plan.challenge`, `code.review` | Un attaquant peut-il détourner ce que la modification ajoute ? |
+| `privacy` | Données personnelles | expert (domaine `personal-data`) | `plan.challenge`, `code.review` | La modification ne collecte-t-elle, ne conserve-t-elle et ne partage-t-elle des données personnelles que dans la mesure nécessaire ? |
+| `accessibility` | Accessibilité | expert (domaine `user-interface`) | `plan.challenge`, `code.review` | Tout le monde peut-il utiliser ce que la modification ajoute, au clavier ou avec une technologie d'assistance ? |
+| `performance` | Performance | expert (domaine `performance`) | `plan.challenge`, `code.review` | La modification reste-t-elle rapide quand les données et la charge augmentent ? |
+| `ops` | Exploitation | expert (domaine `operations`) | `plan.challenge`, `code.review` | L'équipe peut-elle exploiter, observer et annuler ce que la modification ajoute ? |
+| `migration` | Migration | expert (domaine `migration`) | `plan.challenge`, `code.review` | Les données, la configuration et les consommateurs existants peuvent-ils passer à cette modification sans risque ? |
 | `developer` | Développeur | étape | `code.implement` | Chaque tâche fonctionne-t-elle, vérification à l'appui ? |
 | `newcomer` | Nouvel arrivant | étape | `code.review` | Un développeur qui n'a pas vu le plan peut-il suivre ce code ? |
 
@@ -60,24 +60,24 @@ ajoutez `--knowledge` pour lire aussi les connaissances d'un rôle. Voir
 
 ## Étapes
 
-| Étape | Skill | Ce qui s'y passe |
+| Étape | Compétence | Ce qui s'y passe |
 |---|---|---|
-| `plan.understand` | `/compagnon-propose` | La demande est comprise avant que le change soit créé ; un ticket comme `PROJ-123` est lu via le MCP Jira lorsqu'il est configuré |
+| `plan.understand` | `/compagnon-propose` | La demande est comprise avant que la modification soit créée ; un ticket comme `PROJ-123` est lu via le MCP Jira lorsqu'il est configuré |
 | `plan.investigate` | `/compagnon-propose` | Le code, les tests, la configuration et la documentation sont étudiés avant la rédaction de chaque artefact |
 | `plan.write` | `/compagnon-propose` | Chaque artefact est rédigé, puis vérifié à l'aide de son rôle, que `compagnon instructions` renvoie dans `role` |
 | `plan.trace` | `/compagnon-propose` | Les artefacts sont confrontés entre eux ; les manques sont corrigés dans les artefacts |
-| `plan.challenge` | `/compagnon-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines du change ; chaque constat va dans le [compte rendu de revue](#gravité-confiance-et-compte-rendu-de-revue), l'auteur le corrige ou le conteste et le relecteur vérifie la réponse ; au plus cinq **points à challenger**, tous rôles confondus et chacun marqué de son rôle, puis ce qu'il vous revient de décider terminent le résumé |
+| `plan.challenge` | `/compagnon-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines de la modification ; chaque constat va dans le [compte rendu de relecture](#gravité-confiance-et-compte-rendu-de-relecture), l'auteur le corrige ou le conteste et le relecteur vérifie la réponse ; au plus cinq **points à challenger**, tous rôles confondus et chacun marqué de son rôle, puis ce qu'il vous revient de décider terminent le résumé |
 | `code.implement` | `/compagnon-apply` | Chaque tâche est implémentée, vérifiée, puis cochée |
-| `code.review` | `/compagnon-apply` | Une fois toutes les tâches cochées, le code du change est relu par le nouvel arrivant et par les experts actifs ; chaque constat va dans le compte rendu de revue ; ce qui ne fait pas de doute est simplifié, et au plus cinq **notes de relecture**, chacune marquée de son rôle, puis ce qu'il vous revient de décider terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
+| `code.review` | `/compagnon-apply` | Une fois toutes les tâches cochées, le code de la modification est relu par le nouvel arrivant et par les experts actifs ; chaque constat va dans le compte rendu de relecture ; ce qui ne fait pas de doute est simplifié, et au plus cinq **notes de relecture**, chacune marquée de son rôle, puis ce qu'il vous revient de décider terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
 
 La procédure de chaque étape — ce qu'il faut écrire, les plafonds, les
-garde-fous — reste dans la skill. Les critères et les connaissances
+garde-fous — reste dans la compétence. Les critères et les connaissances
 viennent du rôle.
 
 ## Experts et domaines
 
-Six experts rejoignent les étapes de relecture lorsqu'un change touche leur
-domaine. Chacun est actif à `plan.challenge` — le design traite-t-il le
+Six experts rejoignent les étapes de relecture lorsqu'une modification touche leur
+domaine. Chacun est actif à `plan.challenge` — la conception traite-t-elle le
 domaine ? — et à `code.review` — l'implémentation le respecte-t-elle ?
 
 | Domaine | Expert | Ce qu'il examine |
@@ -89,7 +89,7 @@ domaine ? — et à `code.review` — l'implémentation le respecte-t-elle ?
 | `operations` | `ops` | Journaux structurés sans secret, santé et métriques, délais d'expiration et nouvelles tentatives, chemin de retour arrière, erreurs exploitables |
 | `migration` | `migration` | Changements incompatibles annoncés, chemins de migration, ordre de déploiement, migrations de schéma réversibles, dépréciation |
 
-**Domaines.** La proposal liste les domaines que touche le change dans sa
+**Domaines.** La proposition liste les domaines que touche la modification dans sa
 section `## Domains` — les six ci-dessus, à cocher, ou la seule ligne
 `None` :
 
@@ -104,18 +104,18 @@ section `## Domains` — les six ci-dessus, à cocher, ou la seule ligne
 - [ ] migration
 ```
 
-Le product owner vérifie que chaque domaine touché par le change est coché.
+Le product owner vérifie que chaque domaine touché par la modification est coché.
 `compagnon validate` signale un domaine inconnu (`unknown_domain`) ou une
 section mal formée (`domains_invalid`) comme une erreur, et une section
-absente sur un change actif (`domains_missing`) comme un avertissement —
+absente sur une modification active (`domains_missing`) comme un avertissement —
 voir [Formats de fichiers](reference/file-formats.md#proposalmd).
 
 **Activation `on_domain`.** Un expert n'est actif à ses étapes que lorsque
-la proposal du change coche son domaine. Sans change — `compagnon roles` sans
-`--change` — ou tant que la proposal n'a pas de section `## Domains`, il
+la proposition de la modification coche son domaine. Sans modification — `compagnon roles` sans
+`--change` — ou tant que la proposition n'a pas de section `## Domains`, il
 est inactif. `compagnon roles --json` indique pourquoi chaque rôle actif l'est
 dans `activatedBy` : `always`, `project`, `change` ou `domain:<nom>`. Vous
-pouvez toujours forcer un expert, pour le projet ou pour un change — voir
+pouvez toujours forcer un expert, pour le projet ou pour une modification — voir
 [Configurer les rôles](#configurer-les-rôles).
 
 **Connaissances.** Les connaissances d'un expert se répartissent en cinq
@@ -123,7 +123,7 @@ sections, toujours dans cet ordre :
 
 - **Scope** — ce qu'il examine, ce qu'il laisse de côté, et ce qu'il ne
   signale pas — par exemple, l'expert exploitation ne réclame pas
-  d'interrupteur quand redéployer la version précédente annule le change,
+  d'interrupteur quand redéployer la version précédente annule la modification,
   et l'expert performance ne signale pas un gain d'un facteur constant ;
 - **Signals** — des motifs concrets à repérer, chacun avec un exemple
   d'une ligne ;
@@ -139,12 +139,12 @@ sections, toujours dans cet ordre :
 
 Le `newcomer` porte des signaux de complexité par langage, et regroupe en
 un seul constat ce qui rend une fonction difficile à suivre ; il juge la
-lisibilité, non la justesse, et les tests que le change contient, non
+lisibilité, non la justesse, et les tests que la modification contient, non
 ceux qui lui manquent. Le `skeptic` porte des signaux de planification
 fragile : il conteste la logique et les preuves du plan — besoin,
-périmètre, specs, décisions, hypothèses, tâches, et étapes sans retour
+périmètre, spécifications, décisions, hypothèses, tâches, et étapes sans retour
 possible — et laisse chaque domaine à son expert, en vérifiant seulement
-que la section `## Domains` de la proposal coche chaque domaine que le
+que la section `## Domains` de la proposition coche chaque domaine que le
 plan touche, pour que son expert le relise. Les autres rôles d'étape n'en
 portent pas. Les connaissances ne sont servies qu'aux rôles actifs : un
 expert inactif ne coûte rien à l'agent. Lisez-les avec
@@ -153,10 +153,10 @@ expert inactif ne coûte rien à l'agent. Lisez-les avec
 ## Les déclencheurs et les domaines suggérés
 
 Cocher les domaines est un jugement porté pendant la planification, avant
-que le code existe. Pour qu'un domaine que le change finit par toucher ne
+que le code existe. Pour qu'un domaine que la modification finit par toucher ne
 soit pas oublié en silence, chaque expert porte des **déclencheurs** — des
-indices qu'un change touche son domaine — et Compagnon les confronte au diff du
-change.
+indices qu'une modification touche son domaine — et Compagnon les confronte au diff de la
+modification.
 
 **Trois sortes de déclencheurs**, en groupes qui nomment chacun le domaine
 qu'ils suggèrent :
@@ -175,7 +175,7 @@ qu'ils suggèrent :
 | `privacy` | modèles `user`, `customer`, `profile`, `account` ; e-mail, téléphone, date de naissance, adresse postale, code postal, numéro de sécurité sociale, IBAN, adresse IP, géolocalisation |
 | `accessibility` | balisage, feuilles de style, composants, gabarits serveur ; `aria-*`, `role=`, `alt=`, éléments de formulaire et de média |
 | `performance` | `*.sql`, dossiers de requêtes et de dépôts, benchmarks ; requêtes SQL, `Promise.all`, `tokio::spawn`, caches, pagination |
-| `ops` | Dockerfiles, fichiers compose, workflows de CI, Kubernetes, Helm, Terraform, dossiers de déploiement, configuration des logs ; variables d'environnement, délais, nouvelles tentatives, sondes de santé, métriques |
+| `ops` | Dockerfiles, fichiers compose, déroulés d'intégration continue, Kubernetes, Helm, Terraform, dossiers de déploiement, configuration des logs ; variables d'environnement, délais, nouvelles tentatives, sondes de santé, métriques |
 | `migration` | migrations, schémas, `*.proto`, `*.graphql`, OpenAPI, `*.d.ts` ; `ALTER`/`DROP`/`RENAME`, dépréciations, renommages `serde` |
 
 Les motifs intégrés privilégient la précision : `access_token` plutôt que
@@ -186,15 +186,15 @@ ajoutez-le avec [`triggers:`](reference/configuration.md#triggers) dans
 
 **Le diff.** Compagnon demande à git, localement, ce que la branche a changé
 depuis qu'elle a quitté la branche par défaut — `origin/HEAD`, sinon
-`main`, sinon `master` —, commité ou non, plus les fichiers non suivis,
+`main`, sinon `master` —, enregistré ou non, plus les fichiers non suivis,
 dans le seul dossier du projet. Il ne contacte jamais de dépôt distant.
-Hors de git, sans commit ou sans branche par défaut — ou dans un clone
+Hors de git, sans enregistrement ou sans branche par défaut — ou dans un clone
 superficiel de CI sans la base commune ; utilisez-y `fetch-depth: 0` —, il
 n'y a pas de diff : Compagnon le dit et ne suggère rien, et aucune commande
 n'échoue pour autant.
 
 Certains fichiers échappent à tout déclencheur : le dossier de
-planification `_compagnon/` et les skills Compagnon (`planning`), les dépendances
+planification `_compagnon/` et les compétences Compagnon (`planning`), les dépendances
 embarquées — `node_modules`, `vendor`, `third_party` (`vendored`) —, les
 fichiers de verrouillage comme `Cargo.lock` ou `package-lock.json`
 (`lockfile`), et les fichiers générés comme `*.min.js` ou `*.pb.go`
@@ -208,9 +208,9 @@ diff indique alors qu'il a été tronqué.
 **Les suggestions.** `compagnon roles --change <nom>` présente le diff et
 chaque domaine suggéré avec son état :
 
-- `ticked` — la proposal le coche ;
-- `justified` — la proposal le laisse décoché avec une raison sur sa ligne ;
-- `unticked` — ni l'un ni l'autre : la proposal doit y répondre.
+- `ticked` — la proposition le coche ;
+- `justified` — la proposition le laisse décoché avec une raison sur sa ligne ;
+- `unticked` — ni l'un ni l'autre : la proposition doit y répondre.
 
 ```markdown
 ## Domains
@@ -223,12 +223,12 @@ chaque domaine suggéré avec son état :
 `domain_suggested`, à la ligne du domaine, en nommant le déclencheur et le
 fichier concernés ; `compagnon validate --strict` échoue alors. `compagnon
 archive` et `Compagnon doctor` ne lisent pas le diff. Le diff est celui de
-l'arbre de travail : deux changes actifs sur une même branche le
+l'arbre de travail : deux modifications actives sur une même branche le
 partagent. Un rôle réglé sur `never` n'apporte aucune suggestion.
 
 `/compagnon-propose` lit les suggestions avant d'écrire `## Domains`, et le
-skeptic consigne un constat pour chacune restée `unticked`. Avant que le
-code existe, le diff est en général vide : c'est la revue qui tranche.
+sceptique (`skeptic`) consigne un constat pour chacune restée `unticked`. Avant que le
+code existe, le diff est en général vide : c'est la relecture qui tranche.
 `/compagnon-apply` liste chaque suggestion encore `unticked` sous **To
 decide** — cochez-la, et son expert relit le code, ou justifiez-la.
 
@@ -239,20 +239,20 @@ partie `By stack` des connaissances qu'il sert ne garde que ces langages.
 `compagnon roles --json` les indique dans `stacks` ; sans aucun manifeste,
 tout est conservé. `compagnon roles --all-stacks` sert tous les langages.
 
-## Gravité, confiance et compte rendu de revue
+## Gravité, confiance et compte rendu de relecture
 
 Ce que trouvent les rôles de relecture — le contradicteur et les experts à
 `plan.challenge`, le nouvel arrivant et les experts à `code.review` — est
-écrit dans le **compte rendu de revue** du change,
+écrit dans le **compte rendu de relecture** de la modification,
 `_compagnon/changes/<name>/review.md`, avant d'être corrigé ou signalé. Chaque
 constat cite sa preuve mot pour mot, à un emplacement que Compagnon peut
 vérifier, et porte une gravité et une confiance sur une échelle commune :
 
 | Gravité | Signification |
 |---|---|
-| `high` | Le change casserait une exigence, perdrait ou exposerait des données, ou ouvrirait une vulnérabilité, et ne doit pas être archivé tant qu'il n'est pas corrigé ou qu'une personne n'en accepte pas le risque. |
-| `medium` | Un défaut ou un risque réel, à l'impact limité ou contournable, à corriger dans ce change ou à reporter en connaissance de cause. |
-| `low` | Une amélioration — lisibilité, cohérence, coût mineur — qui ne décide pas de la justesse du change. |
+| `high` | La modification casserait une exigence, perdrait ou exposerait des données, ou ouvrirait une vulnérabilité, et ne doit pas être archivée tant qu'elle n'est pas corrigée ou qu'une personne n'en accepte pas le risque. |
+| `medium` | Un défaut ou un risque réel, à l'impact limité ou contournable, à corriger dans cette modification ou à reporter en connaissance de cause. |
+| `low` | Une amélioration — lisibilité, cohérence, coût mineur — qui ne décide pas de la justesse de la modification. |
 
 | Confiance | Signification |
 |---|---|
@@ -269,7 +269,7 @@ qu'il vise et décrit le scénario qui échoue ; une inquiétude qui dépend
 de ce que le relecteur n'a pas pu voir — la charge, un appelant, une
 configuration — et une préférence sans défaillance sont notées avec une
 confiance `low`. Un rôle ne signale pas une question qui relève d'un
-autre rôle, du code ou des données que le change ne touche pas, ce que le
+autre rôle, du code ou des données que la modification ne touche pas, ce que le
 plan exclut explicitement, un test manquant que ses critères ne demandent
 pas, ni une affaire de goût. Chaque défaut est signalé une fois, ses
 conséquences dans sa recommandation ; deux défauts qui demandent deux
@@ -282,22 +282,22 @@ fois, en validant la correction, en acceptant la contestation (`rejected`)
 ou en la maintenant ; ce qui reste contesté vous revient, avec les deux
 arguments, sous **À décider**. Vous seul acceptez un risque ou reportez un
 constat de gravité haute, et le compte rendu dit qui a décidé.
-`compagnon archive` refuse un change dont le compte rendu manque pour une étape
+`compagnon archive` refuse une modification dont le compte rendu manque pour une étape
 où des rôles ont relu, ou qui a encore un constat de gravité haute ouvert ou
 contesté. Le format complet, les contrôles et le verrou d'archivage sont
-dans [Compte rendu de revue](guides/review-record.md).
+dans [Compte rendu de relecture](guides/review-record.md).
 
-## Revue en ligne ou isolée
+## Relecture en ligne ou isolée
 
 Par défaut, les rôles relecteurs travaillent **en ligne** (`inline`) : la
-skill qui a écrit le plan ou le code le relit dans la même conversation,
+compétence qui a écrit le plan ou le code le relit dans la même conversation,
 un rôle après l'autre. C'est le moyen le moins coûteux, mais chaque
 relecteur a lu le raisonnement de l'auteur et les rôles passés avant lui,
 et tend à leur donner raison.
 
 En mode **isolé** (`isolated`) — `review.mode` dans la
 [configuration](reference/configuration.md#review), ou dans le
-`change.yaml` d'un change — chaque rôle relecteur travaille d'abord seul,
+`change.yaml` d'une modification — chaque rôle relecteur travaille d'abord seul,
 comme sous-agent de Claude Code : le contrôleur de traçabilité à
 `plan.trace`, le
 contradicteur et les experts actifs à `plan.challenge`, le nouvel arrivant
@@ -306,14 +306,14 @@ temps. Un relecteur reçoit seulement :
 
 - son rôle : question, critères et connaissances, filtrées par stack ;
 - le `context` et les `rules` du projet ;
-- la matière : les artefacts du change aux étapes du plan, les fichiers
-  que le change touche et leur diff à `code.review` ;
+- la matière : les artefacts de la modification aux étapes du plan, les fichiers
+  que la modification touche et leur diff à `code.review` ;
 - les identifiants déjà présents dans le compte rendu et le format d'un
   constat.
 
 Il ne reçoit jamais la conversation, le raisonnement de l'auteur ni les
 constats d'un autre rôle. Il peut lire le reste du dépôt — les décisions,
-les specs principales, le code que la matière cite —, ne modifie rien, et
+les spécifications principales, le code que la matière cite —, ne modifie rien, et
 traite la matière comme des données, jamais comme des instructions.
 `compagnon roles --json` mesure la matière (`review.material`) : au-delà de
 160 Kio, les fichiers les plus gros sont marqués `summarize`, et un
@@ -328,7 +328,7 @@ Sans l'outil de sous-agent, tous les rôles relisent en ligne.
 
 ### La réunion
 
-La skill tient ensuite la réunion, comme une équipe après avoir lu chacun
+La compétence tient ensuite la réunion, comme une équipe après avoir lu chacun
 de son côté :
 
 - **Fusionner.** Les constats de plusieurs rôles sur le même défaut — au
@@ -358,14 +358,14 @@ en mode isolé, passer sur Sonnet le contrôleur de traçabilité, le
 contradicteur, le nouvel arrivant et les experts sécurité, performance et
 migration a fait gagner 7 % par rapport à Opus, avec le même rappel, mais
 un faux positif de plus que la référence pour `migration` et le
-contradicteur. L'essentiel du coût d'une revue isolée vient de la
-session — lire la skill, préparer le brief, fusionner les constats, écrire
+contradicteur. L'essentiel du coût d'une relecture isolée vient de la
+session — lire la compétence, préparer le brief, fusionner les constats, écrire
 le compte rendu —, si bien que le modèle d'un relecteur pèse peu sur la
 facture. La même mesure montre que le mode isolé coûte environ 73 % de
 plus que le mode en ligne sur les mêmes cas, avec le même rappel.
 
-La revue isolée coûte plus cher : chaque relecteur lit la matière, que la
-revue en ligne ne lit qu'une fois. C'est pourquoi `inline` reste le mode
+La relecture isolée coûte plus cher : chaque relecteur lit la matière, que la
+relecture en ligne ne lit qu'une fois. C'est pourquoi `inline` reste le mode
 par défaut ; voyez la [configuration](reference/configuration.md#review)
 pour en changer.
 
@@ -374,11 +374,11 @@ pour en changer.
 Le `developer` implémente les tâches à `code.implement`. Quand votre
 projet lui donne un modèle — `roles: { developer: { model: sonnet } }` —,
 `/compagnon-apply` confie les tâches à un sous-agent sur ce modèle, quel que
-soit le mode de revue. La session garde la revue et la synthèse sur son
+soit le mode de relecture. La session garde la relecture et la synthèse sur son
 propre modèle. Si le sous-agent s'arrête sur une ambiguïté ou un
 blocage, la session vous pose la question, puis lance un nouveau
 sous-agent sur le même modèle avec votre réponse. Si le sous-agent ne
-peut pas tourner, la skill réessaie une fois, puis implémente dans la
+peut pas tourner, la compétence réessaie une fois, puis implémente dans la
 session et le signale. Sans modèle, `/compagnon-apply` implémente dans la
 session, comme avant.
 
@@ -389,7 +389,7 @@ restée à 1,00 : tâches cochées, format, lint, tests et scripts
 d'acceptation cachés. Le coût a baissé d'environ 30 %, mais le run a
 duré plus longtemps, car le travail du sous-agent s'ajoute à celui de la
 session. Avec toute la session sur Sonnet, l'économie atteint 56 %,
-mais la revue et la synthèse tournent alors aussi sur Sonnet. La
+mais la relecture et la synthèse tournent alors aussi sur Sonnet. La
 planification reste sur le modèle le plus fort.
 
 ## Configurer les rôles
@@ -408,10 +408,10 @@ roles:
 ```
 
 - **Activation.** `always`, `never` ou `on_domain`. Une étape dont tous les
-  rôles sont inactifs est sautée, et le résumé de la skill indique qu'elle
+  rôles sont inactifs est sautée, et le résumé de la compétence indique qu'elle
   est désactivée par la configuration. `on_domain` est la valeur par défaut
   des experts ; elle est refusée sur un rôle lié à aucun domaine. Indiquez
-  `security: always` pour que l'expert sécurité relise chaque change, ou
+  `security: always` pour que l'expert sécurité relise chaque modification, ou
   `accessibility: never` dans un projet sans interface utilisateur.
 - **Critères supplémentaires.** Les entrées de `done_when` s'ajoutent après
   les critères propres du rôle, sans jamais les remplacer. Elles portent
@@ -425,8 +425,8 @@ roles:
   [Le modèle du développeur](#le-modèle-du-développeur). Relevez d'abord
   [`compagnon_version`](reference/configuration.md#compagnon_version) : un Compagnon
   plus ancien refuse la clé.
-- **Par change.** Le `change.yaml` d'un change peut changer l'activation
-  pour ce change seulement :
+- **Par modification.** Le `change.yaml` d'une modification peut changer l'activation
+  pour cette modification seulement :
 
   ```yaml
   roles:
@@ -452,11 +452,11 @@ n'est pas le `developer` ne s'applique jamais : `compagnon validate` le signale
 `role_model_unused`. `compagnon doctor` liste les rôles actifs, les rôles actifs selon le
 domaine avec leurs domaines, et les rôles désactivés.
 
-## Implémenter un change (`/compagnon-apply`)
+## Implémenter une modification (`/compagnon-apply`)
 
 ### Développeur (`/compagnon-apply`)
 
-Implémente les tâches d'un change planifié, dans l'ordre du fichier. Done
+Implémente les tâches d'une modification planifiée, dans l'ordre du fichier. Done
 when, pour chaque tâche :
 
 - les fichiers concernés sont lus avant d'écrire ;
@@ -466,7 +466,7 @@ when, pour chaque tâche :
   selon les conventions de son langage et les `rules` du projet ;
 - la vérification citée par la tâche est lancée et réussit — la commande de
   test vient de `context`, des `rules`, du manifeste ou de la configuration
-  de CI, et la skill vous la demande si elle n'en trouve aucune ;
+  de CI, et la compétence vous la demande si elle n'en trouve aucune ;
 - alors seulement, la case est cochée.
 
 Elle s'arrête sur une ambiguïté importante ou un blocage technique sans
@@ -474,17 +474,17 @@ cocher la tâche, et décrit les options. Une fois toutes les cases cochées,
 et après la [relecture](#nouvel-arrivant-et-experts-compagnon-apply),
 elle lance une fois la suite de tests complète du projet ; un échec est
 signalé à la place du résumé. Elle ne contourne jamais un test en échec, ne
-touche jamais un autre change, ne synchronise jamais et n'archive jamais.
+touche jamais une autre modification, ne synchronise jamais et n'archive jamais.
 
 ### Nouvel arrivant et experts (`/compagnon-apply`)
 
 Une fois toutes les tâches cochées, et avant la suite de tests complète,
-relit uniquement le code que le change a ajouté ou modifié : le nouvel
+relit uniquement le code que la modification a ajouté ou modifié : le nouvel
 arrivant, comme un développeur qui rejoint le projet sans avoir vu ni le
-plan ni la conversation, et les experts qu'activent les domaines du change,
+plan ni la conversation, et les experts qu'activent les domaines de la modification,
 chacun à l'aide de ses critères et de ses connaissances. Chaque constat va
 d'abord dans le [compte rendu de
-revue](#gravité-confiance-et-compte-rendu-de-revue). Ce qui ne
+relecture](#gravité-confiance-et-compte-rendu-de-relecture). Ce qui ne
 fait pas de doute est simplifié et les tests concernés sont relancés ; le
 reste devient au plus cinq **notes de relecture** dans le résumé final —
 chacune marquée de son rôle et de l'identifiant du constat : quoi, où,
@@ -492,23 +492,23 @@ pourquoi — ou la mention qu'aucune n'a été relevée, suivies de ce qu'il vou
 revient de décider. Un constat de sécurité ou de données personnelles de gravité haute
 est toujours listé, même au-delà de cinq.
 
-La relecture n'élargit jamais le périmètre du change et ne touche jamais au
-code que le change n'a ni ajouté ni modifié. Le nouvel arrivant ne change
-jamais le comportement. Un expert ne le change jamais en silence : une
+La relecture n'élargit jamais le périmètre de la modification et ne touche jamais au
+code que la modification n'a ni ajouté ni modifié. Le nouvel arrivant ne change
+jamais le comportement. Un expert ne le modifie jamais en silence : une
 correction qui change le comportement devient une note de relecture, sauf
-s'il s'agit d'un défaut manifeste dans le périmètre du change, alors
+s'il s'agit d'un défaut manifeste dans le périmètre de la modification, alors
 corrigé avec un test et mentionné dans le résumé.
 
-## Les autres skills
+## Les autres compétences
 
-Les autres skills gardent une posture fixe, écrite dans la skill elle-même.
+Les autres compétences gardent une posture fixe, écrite dans la compétence elle-même.
 Ces postures ne sont pas des rôles : elles ne figurent pas au catalogue et
 ne se configurent pas.
 
-| Skill | Posture | Sa question | Ce qu'elle écrit |
+| Compétence | Posture | Sa question | Ce qu'elle écrit |
 |---|---|---|---|
 | `/compagnon-explore` | [Partenaire de réflexion](#partenaire-de-réflexion-compagnon-explore) | Cela vaut-il la peine d'être construit, et comment ? | Rien |
-| `/compagnon-sync`, `/compagnon-archive` | [Mainteneur des specs vivantes](#mainteneur-des-specs-vivantes-compagnon-sync-compagnon-archive) | Les specs principales décrivent-elles ce qui a été planifié et livré ? | Uniquement via la CLI |
+| `/compagnon-sync`, `/compagnon-archive` | [Mainteneur des spécifications vivantes](#mainteneur-des-spécifications-vivantes-compagnon-sync-compagnon-archive) | Les spécifications principales décrivent-elles ce qui a été planifié et livré ? | Uniquement via la CLI |
 | `/compagnon-update` | [Éditeur](#éditeur-compagnon-update) | L'artefact révisé reste-t-il cohérent avec les autres ? | `_compagnon/changes/<name>/` uniquement |
 | `/compagnon-onboard` | [Guide](#guide-compagnon-onboard) | Où en est ce projet, et que faire ensuite ? | Rien |
 | `/compagnon-configure` | [Analyste de configuration](#analyste-de-configuration-compagnon-configure) | Que doit savoir un agent sur ce projet avant d'écrire ? | `_compagnon/config.yaml`, après confirmation |
@@ -518,7 +518,7 @@ ne se configurent pas.
 Explore une idée, un problème ou un besoin, sans engager quoi que ce soit.
 Done when :
 
-- ce que le dépôt sait déjà passe en premier — specs, changes en cours,
+- ce que le dépôt sait déjà passe en premier — spécifications, modifications en cours,
   décisions en vigueur, code concerné — de sorte qu'on ne vous demande
   jamais ce que le code peut dire ;
 - les questions posées portent sur une dépendance, une contrainte ou un
@@ -532,49 +532,49 @@ Done when :
   `/compagnon-propose`), une information manque (laquelle, et qui peut la
   fournir), ou la piste ne valait pas la peine.
 
-Elle n'écrit aucun fichier, ne crée aucun change et n'implémente pas, même
+Elle n'écrit aucun fichier, ne crée aucune modification et n'implémente pas, même
 si on le lui demande.
 
-### Mainteneur des specs vivantes (`/compagnon-sync`, `/compagnon-archive`)
+### Mainteneur des spécifications vivantes (`/compagnon-sync`, `/compagnon-archive`)
 
 Veille à ce que `_compagnon/specs/` décrive le système. `/compagnon-sync` fusionne
-les deltas d'un change sans le déplacer ; `/compagnon-archive` les fusionne et
-déplace le change dans `_compagnon/changes/archive/<date>-<name>/`. Done when :
+les deltas d'une modification sans la déplacer ; `/compagnon-archive` les fusionne et
+déplace la modification dans `_compagnon/changes/archive/<date>-<name>/`. Done when :
 
 - la planification est complète — sinon rien n'est lancé ;
 - la fusion passe par `compagnon sync` ou `compagnon archive`, jamais par un fichier
-  que la skill écrirait elle-même ;
-- les specs créées, mises à jour et inchangées sont indiquées (et, pour
-  l'archivage, l'endroit où le change a été déplacé).
+  que la compétence écrirait elle-même ;
+- les spécifications créées, mises à jour et inchangées sont indiquées (et, pour
+  l'archivage, l'endroit où la modification a été déplacée).
 
-Sur une erreur de validation, les deux refusent : elles répondent que le
-change comporte des erreurs et renvoient vers `compagnon validate <name>`, sans
-réessayer ni corriger le change elles-mêmes. Toute autre erreur est relayée
+Sur une erreur de validation, les deux refusent : elles répondent que la
+modification comporte des erreurs et renvoient vers `compagnon validate <name>`, sans
+réessayer ni corriger la modification elles-mêmes. Toute autre erreur est relayée
 telle que la CLI l'a écrite.
 
 ### Éditeur (`/compagnon-update`)
 
-Révise un artefact de planification qui existe déjà dans un change actif.
+Révise un artefact de planification qui existe déjà dans une modification active.
 Done when :
 
 - l'artefact et les autres qu'il peut affecter sont lus sur le disque avant
   d'écrire ;
 - la révision respecte le contrat de l'artefact — sections attendues,
   format des scénarios, cases à cocher ;
-- les répercussions sont annoncées : un fichier de spec orphelin ou manquant
-  après une modification de la proposal, une tâche qui cite une exigence
-  supprimée ou un scénario renommé, une décision du design qui ne
+- les répercussions sont annoncées : un fichier de spécification orphelin ou manquant
+  après une modification de la proposition, une tâche qui cite une exigence
+  supprimée ou un scénario renommé, une décision de la conception qui ne
   correspond plus, une tâche qui contredit une exigence — avec une action
   suivante suggérée, appliquée seulement après votre confirmation ;
 - `compagnon validate` a été lancé et son rapport est relayé.
 
-Elle refuse de créer un artefact manquant, de toucher à un change archivé
+Elle refuse de créer un artefact manquant, de toucher à une modification archivée
 ou de modifier le code.
 
 ### Guide (`/compagnon-onboard`)
 
 Présente Compagnon à qui le découvre. Done when elle a affiché trois blocs : ce
-qu'est Compagnon, l'état du projet (nombre de specs, de décisions et de changes,
+qu'est Compagnon, l'état du projet (nombre de spécifications, de décisions et de modifications,
 et jusqu'à cinq éléments d'installation manquants signalés par
 `compagnon doctor`, avec leur correction), et exactement une action recommandée,
 citée sous la forme de la commande à taper. Elle est strictement en lecture
@@ -601,14 +601,14 @@ préserve tous les autres champs et commentaires, et refuse d'agir si
 
 ## Mesurer les rôles
 
-Le dépôt de Compagnon mesure ses rôles de revue intégrés — le sceptique, le
+Le dépôt de Compagnon mesure ses rôles de relecture intégrés — le sceptique, le
 traceur, le nouvel arrivant et les six experts — avec une suite
-d'évaluation, `evals/`. Chaque cas est un petit projet avec un change
-planifié : soit **ensemencé** de défauts que le rôle devrait trouver,
+d'évaluation, `evals/`. Chaque cas est un petit projet avec une modification
+planifiée : soit **ensemencé** de défauts que le rôle devrait trouver,
 chacun avec sa gravité et son emplacement attendus, soit **témoin propre**,
-sans aucun défaut. La suite fait exécuter à Claude Code une étape de skill
+sans aucun défaut. La suite fait exécuter à Claude Code une étape de compétence
 sur chaque cas, avec le rôle évalué seul, puis note le compte rendu de
-revue qu'il a écrit :
+relecture qu'il a écrit :
 
 - **vrais positifs** et **manqués** — les défauts ensemencés trouvés ou
   non. Un constat compte pour un défaut quand son rôle, son emplacement
@@ -661,17 +661,17 @@ mesure.
 L'agent s'arrête et vous passe la main à ces moments :
 
 - **Questions de clarification.** `/compagnon-propose` vous interroge avant de
-  créer un change lorsqu'une ambiguïté changerait sensiblement le résultat,
+  créer une modification lorsqu'une ambiguïté changerait sensiblement le résultat,
   et de nouveau lorsqu'un artefact demande une décision ou qu'une Open
   Question change ce qu'il faut construire. `/compagnon-explore` pose les
   questions auxquelles le code ne peut pas répondre. `/compagnon-apply` s'arrête
   sur une ambiguïté ou un blocage et vous laisse décider.
 - **Valider le plan.** `/compagnon-propose` s'arrête une fois les artefacts
   rédigés. Commencez votre relecture par les points à challenger, ce qui
-  reste à décider et les Open Questions du design ; quand le plan vous convient, demandez
+  reste à décider et les Open Questions de la conception ; quand le plan vous convient, demandez
   `/compagnon-apply`. Pour modifier d'abord un artefact, utilisez
   `/compagnon-update`.
-- **Accepter les décisions.** Un design suit les décisions en vigueur ou
+- **Accepter les décisions.** Une conception suit les décisions en vigueur ou
   propose explicitement d'en remplacer une. Une décision ne prend effet que
   lorsque vous lancez [`compagnon decision accept`](concepts.md#décision).
 - **Confirmer la configuration.** `/compagnon-configure` n'écrit qu'après votre
@@ -679,18 +679,18 @@ L'agent s'arrête et vous passe la main à ces moments :
 - **Appliquer une répercussion.** `/compagnon-update` signale ce que la révision
   affecte par ailleurs ; vous acceptez, refusez ou reportez chaque suite.
 - **Mettre à jour Compagnon.** Lorsqu'un Compagnon plus récent est disponible ou que
-  le projet exige une autre version, la skill demande **Update now** ou
+  le projet exige une autre version, la compétence demande **Update now** ou
   **Later** avant d'agir (voir
   [Annonce des mises à jour](skills.md#annonce-des-mises-à-jour)).
 - **Configurer les rôles.** Les rôles de relecture qui s'exécutent, et les
   critères qu'ils ajoutent, relèvent du choix de votre projet dans
   `roles:` — voir [Configurer les rôles](#configurer-les-rôles).
-- **Trancher la revue.** Une contestation que le relecteur a maintenue, ou
+- **Trancher la relecture.** Une contestation que le relecteur a maintenue, ou
   un constat de gravité haute que personne n'a pu corriger, vous revient
   sous **À décider** : le corriger, en accepter le risque avec une
-  justification, ou le reporter vers un autre change ou un ticket. La skill
+  justification, ou le reporter vers une autre modification ou un ticket. La compétence
   consigne votre décision avec votre nom ; elle n'accepte jamais un risque à
   votre place. `compagnon review` montre ce qui reste.
 - **Archiver.** `/compagnon-apply` n'archive jamais : une fois l'implémentation
-  relue, en commençant par ses notes de relecture, dites « archive le change »
+  relue, en commençant par ses notes de relecture, dites « archive la modification »
   (raccourci : `/compagnon-archive`, ou `compagnon archive` dans un terminal).

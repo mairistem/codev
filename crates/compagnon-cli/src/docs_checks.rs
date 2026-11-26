@@ -43,15 +43,32 @@ fn fence_marker(trimmed: &str) -> Option<&str> {
 fn lines(md: &str) -> Vec<Line<'_>> {
     let mut out = Vec::new();
     let mut fence: Option<&str> = None;
+    // The opening fence: its character and its length. As in CommonMark,
+    // only a bare fence of the same character, at least as long, closes it,
+    // so a ```` ```` ```` block may quote a ```` ``` ```` one.
+    let mut opening: (char, usize) = (' ', 0);
     let mut details = 0usize;
     for text in md.lines() {
         let trimmed = text.trim_start();
         if let Some(lang) = fence_marker(trimmed) {
-            fence = match fence {
-                Some(_) => None,
-                None => Some(lang),
-            };
-            continue;
+            let c = trimmed.chars().next().unwrap_or('`');
+            let len = trimmed.chars().take_while(|&x| x == c).count();
+            match fence {
+                None => {
+                    fence = Some(lang.trim_start_matches(c).trim());
+                    opening = (c, len);
+                    continue;
+                }
+                Some(_)
+                    if c == opening.0
+                        && len >= opening.1
+                        && lang.trim_start_matches(c).trim().is_empty() =>
+                {
+                    fence = None;
+                    continue;
+                }
+                Some(_) => {}
+            }
         }
         if fence.is_none() {
             if trimmed.starts_with("<details") {
@@ -155,6 +172,16 @@ pub fn next_heading(lang: Lang) -> &'static str {
     }
 }
 
+/// The chapter a link opens, anchor and leading `../` removed: a path page
+/// links `../glossary.md#delta`, which opens `glossary.md`.
+fn chapter_of(target: &str) -> &str {
+    target
+        .split('#')
+        .next()
+        .unwrap_or_default()
+        .trim_start_matches("../")
+}
+
 /// The links of a text as `(text, target)`, the text with its inner
 /// whitespace collapsed (a link may wrap across lines).
 fn link_pairs(text: &str) -> Vec<(String, String)> {
@@ -167,8 +194,9 @@ fn link_pairs(text: &str) -> Vec<(String, String)> {
 
 /// What is wrong with the profile links of a text: for each label, in
 /// order, a link whose text is the label and whose target ends with the
-/// matching entry of `targets`. Used on Choose your path, the
-/// introduction and the READMEs, whose targets differ only by prefix.
+/// matching entry of `targets`. Used on Choose your path and the
+/// introduction; the READMEs and the home pages are checked by its mirror
+/// in `tests/repository.rs`, which also reads HTML links.
 pub fn profile_link_problems(text: &str, labels: &[&str; 4], targets: &[String; 4]) -> Vec<String> {
     let pairs = link_pairs(text);
     let mut problems = Vec::new();
@@ -208,11 +236,12 @@ pub fn choose_path_problems(md: &str, labels: &[&str; 4]) -> Vec<String> {
             }
         }
     }
-    let after = labels
+    let from_last_profile = labels
         .last()
         .and_then(|l| md.find(&format!("[{l}]")))
         .map_or("", |i| &md[i..]);
-    if !link_pairs(after)
+    // The first link from there is the last profile's own.
+    if !link_pairs(from_last_profile)
         .iter()
         .skip(1)
         .any(|(_, t)| t.split('#').next() == Some("origins.md"))
@@ -241,10 +270,7 @@ pub fn path_page_problems(
     let steps: Vec<(usize, &str)> = lines
         .iter()
         .enumerate()
-        .filter(|(_, l)| {
-            let digits = l.chars().take_while(char::is_ascii_digit).count();
-            digits > 0 && l[digits..].starts_with(". ")
-        })
+        .filter(|(_, l)| is_step_line(l))
         .map(|(i, l)| (i, *l))
         .collect();
     if steps.is_empty() || steps.len() > 3 {
@@ -265,11 +291,7 @@ pub fn path_page_problems(
             continue;
         }
         let (text, target) = &pairs[0];
-        let path = target
-            .split('#')
-            .next()
-            .unwrap_or_default()
-            .trim_start_matches("../");
+        let path = chapter_of(target);
         match titles.iter().find(|(p, _)| p == path) {
             Some((_, t)) if t == text => {}
             Some((_, t)) => problems.push(format!("step \"{text}\" opens \"{t}\"")),
@@ -286,6 +308,91 @@ pub fn path_page_problems(
         problems.push("no link back to Choose your path".into());
     }
     problems
+}
+
+/// Whether a line of a path page is one of its numbered steps: digits, then
+/// `. `.
+fn is_step_line(line: &str) -> bool {
+    let digits = line.chars().take_while(char::is_ascii_digit).count();
+    digits > 0 && line[digits..].starts_with(". ")
+}
+
+/// The links a path page lacks. `next_heading` is the title of its "Next"
+/// section; `steps` are the chapters its numbered steps must open, and
+/// `next_links` the chapters that section must link.
+pub fn missing_path_links(
+    md: &str,
+    next_heading: &str,
+    steps: &[&str],
+    next_links: &[&str],
+) -> Vec<String> {
+    let (body, next_section) = md
+        .split_once(&format!("## {next_heading}"))
+        .unwrap_or((md, ""));
+    let step_lines: String = body
+        .lines()
+        .filter(|l| is_step_line(l))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let opens = |text: &str, chapter: &str| {
+        link_pairs(text)
+            .iter()
+            .any(|(_, t)| chapter_of(t) == chapter)
+    };
+    let mut missing: Vec<String> = steps
+        .iter()
+        .filter(|c| !opens(&step_lines, c))
+        .map(|c| format!("no step {c}"))
+        .collect();
+    missing.extend(
+        next_links
+            .iter()
+            .filter(|c| !opens(next_section, c))
+            .map(|c| format!("no {c} under \"{next_heading}\"")),
+    );
+    missing
+}
+
+/// What is wrong with an annotated example: one of `parts` (`## ` headings)
+/// missing or out of order, or a part without a quoted `markdown` block, or
+/// without its `### note` heading after that block.
+pub fn example_problems(md: &str, parts: &[&str], note: &str) -> Vec<String> {
+    // The quoted plan holds `## ` headings of its own: a part runs from its
+    // heading to the next part's, not to the next `## `.
+    let starts: Vec<Option<usize>> = parts
+        .iter()
+        .map(|p| md.find(&format!("## {p}\n")))
+        .collect();
+    parts
+        .iter()
+        .enumerate()
+        .filter_map(|(i, part)| {
+            let Some(start) = starts[i] else {
+                return Some(format!("no part \"{part}\""));
+            };
+            // The part ends where the next part present begins.
+            let end = starts[i + 1..].iter().find_map(|s| *s).unwrap_or(md.len());
+            if end < start {
+                return Some(format!("\"{part}\" comes after the part that follows it"));
+            }
+            let body = &md[start..end];
+            let Some(fence) = body.find("```markdown") else {
+                return Some(format!("\"{part}\" quotes no plan"));
+            };
+            (!body[fence..].contains(&format!("### {note}")))
+                .then(|| format!("\"{part}\" has no \"{note}\" after its quoted plan"))
+        })
+        .collect()
+}
+
+/// The text of the first fenced `markdown` block under the `## part`
+/// heading of a chapter.
+pub fn quoted_block<'a>(md: &'a str, part: &str) -> Option<&'a str> {
+    let start = md.find(&format!("## {part}\n"))?;
+    let rest = &md[start..];
+    let open = rest.find("```markdown\n")? + "```markdown\n".len();
+    let close = rest[open..].find("\n```")?;
+    Some(&rest[open..open + close])
 }
 
 /// The explanations of everyday developer words that pages read by
@@ -707,7 +814,7 @@ pub fn vocabulary_problems(md: &str, lang: Lang, anchors: &[String]) -> Vec<Stri
         let links = links(&paragraph);
         // The offsets match `links`: the targets are blanked to the same
         // length, only so that a path such as `workflow.md` is not prose.
-        for (at, word) in words(&without_link_targets(&paragraph)) {
+        for (at, word) in words(&prose_without_links(&paragraph)) {
             for (term, forms) in explained_terms(lang) {
                 if seen.contains(term) || !forms.contains(&word.as_str()) {
                     continue;
@@ -722,14 +829,20 @@ pub fn vocabulary_problems(md: &str, lang: Lang, anchors: &[String]) -> Vec<Stri
     problems
 }
 
-/// `text` with the target of every link, `](…)`, replaced by spaces of
-/// the same length: a path such as `workflow.md` is not prose.
-fn without_link_targets(text: &str) -> String {
+/// `text` with every link blanked to spaces of the same length, so that
+/// offsets are kept: the target always (a path such as `workflow.md` is
+/// not prose), and the visible text of every link except one to the
+/// glossary — a link elsewhere names a page as its title does ("The
+/// workflow"), while a link to the glossary holds the term it explains.
+fn prose_without_links(text: &str) -> String {
     let mut out = text.to_string();
     for (range, target) in links(text) {
         let start = range.end + 2;
         let end = start + target.len();
         out.replace_range(start..end, &" ".repeat(target.len()));
+        if !target.contains("glossary.md") {
+            out.replace_range(range.clone(), &" ".repeat(range.len()));
+        }
     }
     out
 }
@@ -759,6 +872,28 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         "reviews",
         "commit",
         "commits",
+        "design",
+        "template",
+        "templates",
+    ];
+    // Words that announce "change" as a noun, besides the determiners.
+    const QUANTIFIERS: &[&str] = &[
+        "aucun",
+        "seul",
+        "seuls",
+        "deux",
+        "trois",
+        "plusieurs",
+        "nombre",
+        "de",
+        "autres",
+        "tous",
+        "certains",
+        "quelques",
+        "nouveaux",
+        "derniers",
+        "premiers",
+        "différents",
     ];
     let mut found: Vec<String> = Vec::new();
     let add = |w: &str, found: &mut Vec<String>| {
@@ -767,7 +902,11 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         }
     };
     // Headings count: a French heading must be French too.
-    for paragraph in prose_paragraphs(md, Headings::Keep) {
+    for paragraph in prose_paragraphs(&without_svg(md), Headings::Keep) {
+        let heading = paragraph.trim_start().starts_with('#');
+        if heading && is_identifier_heading(&paragraph) {
+            continue;
+        }
         let text = without_parentheses(&paragraph);
         let words: Vec<String> = words(&text).into_iter().map(|(_, w)| w).collect();
         for (i, word) in words.iter().enumerate() {
@@ -780,17 +919,50 @@ pub fn anglicisms(md: &str) -> Vec<String> {
                 }
             }
             if (word == "change" || word == "changes")
-                && i > 0
-                && DETERMINERS.contains(&words[i - 1].as_str())
+                && ((heading && i == 0)
+                    || i > 0
+                        && (DETERMINERS.contains(&words[i - 1].as_str())
+                            || QUANTIFIERS.contains(&words[i - 1].as_str())))
             {
                 add(word, &mut found);
             }
-            if word == "pull" && words.get(i + 1).is_some_and(|n| n.starts_with("request")) {
-                add("pull request", &mut found);
+            for (first, name) in [("pull", "pull request"), ("merge", "merge request")] {
+                if word == first && words.get(i + 1).is_some_and(|n| n.starts_with("request")) {
+                    add(name, &mut found);
+                }
             }
         }
     }
     found
+}
+
+/// Whether a heading names an identifier rather than saying something: a
+/// file name (`## design.md`), a configuration key alone in lower case
+/// (`## review`), or a command (`### compagnon review`).
+fn is_identifier_heading(heading: &str) -> bool {
+    let text = heading.trim().trim_start_matches('#').trim();
+    let file = !text.contains(' ') && text.contains('.');
+    let key = !text.is_empty()
+        && text
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c == '_' || c == '-');
+    file || key || text.starts_with("compagnon ")
+}
+
+/// `md` without its `<svg>` blocks: an image, whose text alternative is
+/// elsewhere on the page.
+fn without_svg(md: &str) -> String {
+    let mut out = String::with_capacity(md.len());
+    let mut rest = md;
+    while let Some(start) = rest.find("<svg") {
+        out.push_str(&rest[..start]);
+        match rest[start..].find("</svg>") {
+            Some(end) => rest = &rest[start + end + "</svg>".len()..],
+            None => return out,
+        }
+    }
+    out.push_str(rest);
+    out
 }
 
 /// `text` without what stands between parentheses.
@@ -941,6 +1113,51 @@ mod tests {
     }
 
     #[test]
+    fn a_path_page_that_does_not_link_its_new_page_is_caught() {
+        let page = "# Review\n\nFor you.\n\n1. [A](../introduction.md)\n\n## Next, if you need it\n\n\
+                    - [Example](../guides/example-plan.md)\n";
+        assert_eq!(
+            missing_path_links(
+                page,
+                "Next, if you need it",
+                &["introduction.md"],
+                &["guides/example-plan.md", "guides/approve-a-plan.md"]
+            ),
+            ["no guides/approve-a-plan.md under \"Next, if you need it\""]
+        );
+    }
+
+    #[test]
+    fn a_part_of_the_example_without_its_note_is_caught() {
+        let parts = ["The proposal", "The specs", "The design", "The tasks"];
+        let mut md = String::from("# Example\n");
+        for part in parts {
+            md.push_str(&format!(
+                "\n## {part}\n\n```markdown\n## Why\n```\n\n### What to check here\n\nCheck.\n"
+            ));
+        }
+        assert!(example_problems(&md, &parts, "What to check here").is_empty());
+        let bare = md.replacen(
+            "## The design\n\n```markdown\n## Why\n```\n\n### What to check here",
+            "## The design\n\n```markdown\n## Why\n```\n\n### Elsewhere",
+            1,
+        );
+        assert_eq!(
+            example_problems(&bare, &parts, "What to check here"),
+            ["\"The design\" has no \"What to check here\" after its quoted plan"]
+        );
+    }
+
+    #[test]
+    fn a_command_in_a_page_for_non_developers_is_caught() {
+        assert_eq!(shell_blocks("```bash\ncompagnon status\n```\n"), ["bash"]);
+        assert_eq!(
+            stray_commands("```bash\ncompagnon validate\n```\n"),
+            ["compagnon validate"]
+        );
+    }
+
+    #[test]
     fn a_gloss_for_developers_is_caught() {
         assert_eq!(
             developer_glosses("a terminal (the window where you\ntype commands)"),
@@ -1018,6 +1235,12 @@ mod tests {
     }
 
     #[test]
+    fn a_chapter_named_in_a_link_is_not_prose() {
+        let md = "Then read [The workflow](workflow.md).\n";
+        assert!(vocabulary_problems(md, Lang::En, &anchors()).is_empty());
+    }
+
+    #[test]
     fn a_link_to_the_top_of_the_glossary_is_caught() {
         let bare = "A [delta](glossary.md) lists the change.\n";
         assert_eq!(vocabulary_problems(bare, Lang::En, &anchors()), ["delta"]);
@@ -1068,6 +1291,32 @@ mod tests {
                   dans `_compagnon/changes/` ; voir [le guide](guides/review-a-plan.md).\n";
         assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
         assert!(anglicisms("Spec Kit vous conviendra mieux.\n").is_empty());
+    }
+
+    #[test]
+    fn an_anglicism_of_a_technical_page_is_caught() {
+        assert_eq!(
+            anglicisms("Lisez le design et le template du schéma.\n"),
+            ["design", "template"]
+        );
+        assert_eq!(anglicisms("Ouvrez une merge request.\n"), ["merge request"]);
+        assert_eq!(
+            anglicisms("## Changes\n\nAucun change n'est actif.\n"),
+            ["changes", "change"]
+        );
+    }
+
+    #[test]
+    fn a_fence_quoted_in_a_longer_fence_stays_code() {
+        let md = "````markdown\n```yaml\nlocation: design.md\n```\n````\n\nLa relecture.\n";
+        assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
+    }
+
+    #[test]
+    fn identifier_headings_are_not_prose() {
+        let md = "## review\n\n## design.md\n\n### compagnon review\n\n\
+                  <svg><title>skill</title></svg>\n\nLa relecture.\n";
+        assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
     }
 }
 
@@ -1293,7 +1542,8 @@ mod chapter_tests {
         }
     }
 
-    /// Each chapter's path and `# ` title.
+    /// Each chapter's path and `# ` title: what a reader hears on arriving
+    /// at the page. The path pages also match the sidebar, checked below.
     fn chapter_titles(lang: Lang) -> Vec<(String, String)> {
         lang.chapters()
             .iter()
@@ -1356,11 +1606,7 @@ mod chapter_tests {
                 .split_once(&format!("## {}", next_heading(lang)))
                 .unwrap_or((page, ""));
             for (_, target) in link_pairs(steps) {
-                let path = target
-                    .split('#')
-                    .next()
-                    .unwrap_or_default()
-                    .trim_start_matches("../");
+                let path = chapter_of(&target);
                 if path.ends_with(".md") && path != "choose-your-path.md" {
                     let stray = stray_commands(chapter(lang, path));
                     assert!(stray.is_empty(), "{} {path}: {stray:?}", lang.tag());
@@ -1432,10 +1678,25 @@ mod chapter_tests {
     #[test]
     fn review_a_plan_covers_the_plan_without_a_terminal() {
         for (lang, words) in [
-            (Lang::En, ["proposal", "specs", "design", "tasks"]),
+            (
+                Lang::En,
+                [
+                    "proposal", "specs", "design", "tasks", "added", "modified", "removed",
+                    "renamed",
+                ],
+            ),
             (
                 Lang::Fr,
-                ["proposition", "spécification", "conception", "tâches"],
+                [
+                    "proposition",
+                    "spécification",
+                    "conception",
+                    "tâches",
+                    "ajoutées",
+                    "modifiées",
+                    "supprimées",
+                    "renommées",
+                ],
             ),
         ] {
             let guide = chapter(lang, "guides/review-a-plan.md");
@@ -1497,7 +1758,7 @@ mod chapter_tests {
     /// The chapters of the "Start here" and "Everyday use" parts, as both
     /// `SUMMARY.md` list them: `the_everyday_list_follows_the_summary`
     /// fails if a chapter is added to those parts and not here.
-    const EVERYDAY: [&str; 14] = [
+    const EVERYDAY: [&str; 17] = [
         "introduction.md",
         "choose-your-path.md",
         "paths/review.md",
@@ -1510,6 +1771,9 @@ mod chapter_tests {
         "workflow.md",
         "skills.md",
         "guides/review-a-plan.md",
+        "guides/example-plan.md",
+        "guides/approve-a-plan.md",
+        "guides/start-from-nothing.md",
         "concepts.md",
         "faq.md",
     ];
@@ -1542,9 +1806,13 @@ mod chapter_tests {
     }
 
     #[test]
-    fn the_french_everyday_pages_hold_no_anglicism() {
+    fn the_french_book_holds_no_anglicism() {
         let mut found = Vec::new();
-        for path in EVERYDAY {
+        let chapters: Vec<String> = parts(summary(Lang::Fr))
+            .into_iter()
+            .flat_map(|(_, chapters)| chapters)
+            .collect();
+        for path in &chapters {
             let words = anglicisms(chapter(Lang::Fr, path));
             if !words.is_empty() {
                 found.push(format!("{path}: {words:?}"));
@@ -1555,5 +1823,162 @@ mod chapter_tests {
             found.push(format!("README.fr.md: {readme:?}"));
         }
         assert!(found.is_empty(), "{found:#?}");
+    }
+
+    /// The parts of `SUMMARY.md`, by their order (`# ` headings).
+    const EVERYDAY_PART: usize = 1;
+    const GOING_FURTHER_PART: usize = 2;
+    const CONTRIBUTING_PART: usize = 4;
+
+    /// The guides the path pages send their readers to, each with the part
+    /// of `SUMMARY.md` that lists it.
+    const PROFILE_GUIDES: [(&str, usize); 6] = [
+        ("guides/example-plan.md", EVERYDAY_PART),
+        ("guides/approve-a-plan.md", EVERYDAY_PART),
+        ("guides/start-from-nothing.md", EVERYDAY_PART),
+        ("guides/existing-project.md", GOING_FURTHER_PART),
+        ("guides/team-rollout.md", GOING_FURTHER_PART),
+        ("contributing.md", CONTRIBUTING_PART),
+    ];
+
+    #[test]
+    fn both_editions_list_the_new_pages_where_their_readers_look() {
+        for lang in LANGS {
+            let parts = parts(summary(lang));
+            for (page, part) in PROFILE_GUIDES {
+                assert!(
+                    parts[part].1.iter().any(|p| p == page),
+                    "{}: {page} not in part {}",
+                    lang.tag(),
+                    parts[part].0
+                );
+            }
+            let next = next_heading(lang);
+            // (path page, chapters its steps open, chapters its "Next" links)
+            for (path, steps, next_links) in [
+                (
+                    "paths/review.md",
+                    &[][..],
+                    &["guides/example-plan.md", "guides/approve-a-plan.md"][..],
+                ),
+                (
+                    "paths/build.md",
+                    &["guides/start-from-nothing.md"][..],
+                    &["guides/example-plan.md"][..],
+                ),
+                (
+                    "paths/develop.md",
+                    &[][..],
+                    &["guides/existing-project.md"][..],
+                ),
+                (
+                    "paths/team.md",
+                    &["guides/team-rollout.md"][..],
+                    &["roles.md"][..],
+                ),
+            ] {
+                let missing = missing_path_links(chapter(lang, path), next, steps, next_links);
+                assert!(missing.is_empty(), "{} {path}: {missing:?}", lang.tag());
+            }
+            assert!(
+                chapter(lang, "origins.md").contains("](contributing.md)"),
+                "{}: origins.md does not link contributing.md",
+                lang.tag()
+            );
+        }
+    }
+
+    /// The parts of the example plan and the heading of their notes.
+    fn example_parts(lang: Lang) -> ([&'static str; 4], &'static str) {
+        match lang {
+            Lang::En => (
+                ["The proposal", "The specs", "The design", "The tasks"],
+                "What to check here",
+            ),
+            Lang::Fr => (
+                [
+                    "La proposition",
+                    "Les spécifications",
+                    "La conception",
+                    "Les tâches",
+                ],
+                "Ce qu'on vérifie ici",
+            ),
+        }
+    }
+
+    #[test]
+    fn every_part_of_the_example_is_annotated() {
+        for lang in LANGS {
+            let (parts, note) = example_parts(lang);
+            let page = chapter(lang, "guides/example-plan.md");
+            let problems = example_problems(page, &parts, note);
+            assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
+        }
+        let french = chapter(Lang::Fr, "guides/example-plan.md");
+        for keyword in ["### Exigence :", "#### Scénario :"] {
+            assert!(
+                french.contains(keyword),
+                "the French example lacks `{keyword}`"
+            );
+        }
+    }
+
+    #[test]
+    fn the_example_plan_parses_as_compagnon_writes_it() {
+        for lang in LANGS {
+            let (parts, _) = example_parts(lang);
+            let spec = quoted_block(chapter(lang, "guides/example-plan.md"), parts[1])
+                .unwrap_or_else(|| panic!("{}: no quoted spec", lang.tag()));
+            let parsed = compagnon_core::parser::parse_delta(spec);
+            assert!(
+                parsed.findings.is_empty(),
+                "{}: {:?}",
+                lang.tag(),
+                parsed.findings
+            );
+            assert!(
+                !parsed.value.sections.is_empty(),
+                "{}: no delta section",
+                lang.tag()
+            );
+        }
+    }
+
+    #[test]
+    fn the_two_pages_keep_to_what_a_non_developer_can_do() {
+        for lang in LANGS {
+            let approve = chapter(lang, "guides/approve-a-plan.md");
+            assert!(
+                shell_blocks(approve).is_empty(),
+                "{}: {:?}",
+                lang.tag(),
+                shell_blocks(approve)
+            );
+            for name in ["GitHub", "GitLab", "_compagnon/changes/"] {
+                assert!(
+                    approve.contains(name),
+                    "{}: the approving page lacks {name}",
+                    lang.tag()
+                );
+            }
+            let start = chapter(lang, "guides/start-from-nothing.md");
+            let stray = stray_commands(start);
+            assert!(stray.is_empty(), "{}: {stray:?}", lang.tag());
+            let first_block = start.find("```").unwrap_or(start.len());
+            assert!(
+                start[..first_block].contains("Claude Code"),
+                "{}: the starting page does not name Claude Code before its first command",
+                lang.tag()
+            );
+        }
+        // French labels between parentheses, never as code.
+        let approve = chapter(Lang::Fr, "guides/approve-a-plan.md");
+        for label in ["Approve", "Request changes"] {
+            assert!(
+                !approve.contains(&format!("`{label}`")),
+                "the French approving page writes « {label} » as code"
+            );
+        }
     }
 }

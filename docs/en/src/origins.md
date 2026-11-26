@@ -94,3 +94,10 @@ real-world example you can browse:
 - [a review record](https://github.com/mairistem/compagnon/blob/main/_compagnon/changes/archive/2026-10-13-review-record/review.md), with findings, evidence, the author's answers and
   how each was settled;
 - [the architecture decisions](https://github.com/mairistem/compagnon/tree/main/_compagnon/decisions), sealed.
+
+## Contributing
+
+1. Read the [Architecture](architecture.md): the crates, the pure core, the
+   conventions for errors and tests.
+2. Read [Contributing to Compagnon](contributing.md): build, run the
+   tests, and propose a Compagnon change before opening a pull request.

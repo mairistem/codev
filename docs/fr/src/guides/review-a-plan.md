@@ -48,7 +48,7 @@ Scénario : Aucun thème encore choisi
 Les fichiers du plan peuvent montrer quelques mots-clés en anglais, quelle
 que soit leur langue : SHALL ou MUST veut dire « doit » ; GIVEN / WHEN /
 THEN veulent dire « étant donné », « quand », « alors ». Dans la
-proposition, une section « ## Domains » liste les
+proposition, une section « ## Domaines » (ou « ## Domains ») liste les
 [domaines](../glossary.md#domaine) sensibles que la modification touche,
 comme la sécurité ou les données personnelles.
 
@@ -61,6 +61,40 @@ C'est la partie qui compte le plus pour vous. Vérifiez que :
 - aucun scénario ne décrit quelque chose que vous ne voulez pas.
 
 Chaque scénario devient un [test](../glossary.md#test) : s'il est écrit ici, il sera vérifié.
+
+### Lire une règle modifiée
+
+Un plan ne réécrit pas toutes les règles du projet : il ne liste que celles
+qui changent, rangées sous quatre sortes de sections. Voici les titres que
+vous verrez :
+
+- **`Exigences AJOUTÉES`** (`ADDED Requirements`) : des règles nouvelles,
+  qui n'existaient pas avant.
+- **`Exigences MODIFIÉES`** (`MODIFIED Requirements`) : des règles qui
+  existent déjà et qui changent.
+- **`Exigences SUPPRIMÉES`** (`REMOVED Requirements`) : des règles qui
+  disparaissent, chacune avec sa **Raison** et sa **Migration** (ce qu'il
+  faut faire à la place).
+- **`Exigences RENOMMÉES`** (`RENAMED Requirements`) : des règles dont le
+  titre change, avec une ligne DE (l'ancien titre) et une ligne VERS (le
+  nouveau) ; leur texte reste le même.
+
+Une règle modifiée montre son nouveau texte **en entier**, scénarios
+compris, sous le même titre que la règle actuelle. Ce nouveau texte
+remplace entièrement l'actuel : ce qui n'y figure plus disparaîtra. Pour
+voir ce qui change, comparez-le à la règle actuelle, sous le même titre
+dans les spécifications du projet, dans le dossier `_compagnon/specs/` :
+sur GitHub ou GitLab, ouvrez ce dossier depuis la page du dépôt, puis le
+fichier `spec.md` du dossier qui porte le même nom que celui du plan. Ou
+demandez au développeur, ou à Claude :
+
+> Dans le plan du mode sombre, montre-moi chaque règle modifiée avant et
+> après.
+
+Vérifiez que la différence est exactement ce que vous avez demandé, et que
+rien de ce que vous voulez garder n'a disparu au passage.
+[Un exemple de plan commenté](example-plan.md) montre une règle modifiée
+et une règle ajoutée, avec ce qu'on vérifie dans chacune.
 
 ## La conception : comment
 

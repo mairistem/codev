@@ -137,24 +137,24 @@ Every call to the model is recorded. The tokens a call writes to the cache — w
 
 | Source | Tokens | Share of the cost |
 |---|---:|---:|
-| skill | 1085907 | 22 % |
-| file | 1060226 | 22 % |
-| prompt | 702154 | 14 % |
-| edit | 428935 | 9 % |
-| search | 403335 | 8 % |
-| shell | 347590 | 7 % |
-| output | 184447 | 4 % |
-| compagnon instructions | 172598 | 4 % |
-| compagnon roles | 111141 | 2 % |
-| compagnon review | 100105 | 2 % |
-| compagnon validate | 81415 | 2 % |
-| compagnon new | 62257 | 1 % |
-| compagnon status | 44523 | 1 % |
-| agent | 36667 | 1 % |
-| compagnon list | 26508 | 0 % |
-| compagnon archive | 3084 | 0 % |
-| compagnon --help | 2347 | 0 % |
-| compagnon sync | 1943 | 0 % |
+| `skill` | 1085907 | 22 % |
+| `file` | 1060226 | 22 % |
+| `prompt` | 702154 | 14 % |
+| `edit` | 428935 | 9 % |
+| `search` | 403335 | 8 % |
+| `shell` | 347590 | 7 % |
+| `output` | 184447 | 4 % |
+| `compagnon instructions` | 172598 | 4 % |
+| `compagnon roles` | 111141 | 2 % |
+| `compagnon review` | 100105 | 2 % |
+| `compagnon validate` | 81415 | 2 % |
+| `compagnon new` | 62257 | 1 % |
+| `compagnon status` | 44523 | 1 % |
+| `agent` | 36667 | 1 % |
+| `compagnon list` | 26508 | 0 % |
+| `compagnon archive` | 3084 | 0 % |
+| `compagnon --help` | 2347 | 0 % |
+| `compagnon sync` | 1943 | 0 % |
 
 ## The thresholds
 

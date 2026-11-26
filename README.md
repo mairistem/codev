@@ -59,13 +59,12 @@ builds exactly that — and the plan stays in your repository.
 
 ## Find your way
 
-The documentation has a path for each profile:
+What will you do with Compagnon? Each answer opens a short path:
 
-- [I am discovering AI agents](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-am-discovering-ai-agents)
-- [I do not code, I read and approve plans](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-do-not-code-i-read-and-approve-plans)
-- [I develop with Compagnon](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-develop-with-compagnon)
-- [I set Compagnon up for my team](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-set-compagnon-up-for-my-team)
-- [I contribute to Compagnon](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-contribute-to-compagnon)
+- [I review and approve plans — I do not code](https://mairistem.github.io/compagnon/en/paths/review.html)
+- [I do not code, but I want Claude to build something for me](https://mairistem.github.io/compagnon/en/paths/build.html)
+- [I am a developer and I have Claude write code](https://mairistem.github.io/compagnon/en/paths/develop.html)
+- [I set Compagnon up for my team](https://mairistem.github.io/compagnon/en/paths/team.html)
 
 ## How it works
 

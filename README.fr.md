@@ -62,13 +62,12 @@ cela — et le plan reste dans votre dépôt.
 
 ## Trouver votre chemin
 
-La documentation propose un parcours par profil :
+Qu'allez-vous faire avec Compagnon ? Chaque réponse ouvre un parcours court :
 
-- [Je découvre les agents IA](https://mairistem.github.io/compagnon/fr/choose-your-path.html#je-découvre-les-agents-ia)
-- [Je ne code pas, je relis et valide des plans](https://mairistem.github.io/compagnon/fr/choose-your-path.html#je-ne-code-pas-je-relis-et-valide-des-plans)
-- [Je développe avec Compagnon](https://mairistem.github.io/compagnon/fr/choose-your-path.html#je-développe-avec-compagnon)
-- [Je configure Compagnon pour mon équipe](https://mairistem.github.io/compagnon/fr/choose-your-path.html#je-configure-compagnon-pour-mon-équipe)
-- [Je contribue à Compagnon](https://mairistem.github.io/compagnon/fr/choose-your-path.html#je-contribue-à-compagnon)
+- [Je relis et je valide des plans — je ne code pas](https://mairistem.github.io/compagnon/fr/paths/review.html)
+- [Je ne code pas, mais je veux que Claude construise quelque chose pour moi](https://mairistem.github.io/compagnon/fr/paths/build.html)
+- [Je suis développeur et je fais coder Claude](https://mairistem.github.io/compagnon/fr/paths/develop.html)
+- [J'installe Compagnon pour mon équipe](https://mairistem.github.io/compagnon/fr/paths/team.html)
 
 ## Fonctionnement
 

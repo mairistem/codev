@@ -94,7 +94,7 @@ Dans Claude Code, `/compagnon-propose` rédige tout le plan d'une traite :
    modèle.
 4. Il vérifie que la proposition, les spécifications et les tâches
    concordent. Puis il relit le plan en relecteur sceptique. Il écrit chaque
-   constat dans le [compte rendu de revue](guides/review-record.md) de
+   constat dans le [compte rendu de relecture](guides/review-record.md) de
    la modification. Il corrige ce qui ne fait pas de doute et liste
    jusqu'à cinq points à discuter avec vous. Voir
    [Proposer](skills.md#propose-compagnon-propose).
@@ -142,7 +142,7 @@ proposition, appelés [domaines](glossary.md#domaine) (sécurité, données
 personnelles…), se joignent à cette relecture. Claude simplifie ce qui
 ne fait pas de doute, sans élargir le périmètre, et liste au plus cinq
 notes de relecture dans son résumé. Chaque constat est conservé dans le
-[compte rendu de revue](guides/review-record.md) de la modification, avec la
+[compte rendu de relecture](guides/review-record.md) de la modification, avec la
 réponse de l'auteur et la vérification du relecteur. Ce que vous seul
 pouvez trancher est listé à la fin. Claude lance ensuite une fois tous les
 tests du projet.
@@ -187,7 +187,7 @@ L'archivage clôt une modification, en quatre temps :
 1. Il valide la modification. Si la validation signale une erreur, il
    **refuse** de continuer et vous renvoie vers `compagnon validate <name>`
    pour le détail.
-2. Il vérifie le [compte rendu de revue](guides/review-record.md). Il
+2. Il vérifie le [compte rendu de relecture](guides/review-record.md). Il
    **refuse** de continuer dans deux cas : une relecture était attendue mais
    n'a pas été consignée, ou un problème sérieux relevé en relecture n'est
    pas encore réglé (`review_blocked`).

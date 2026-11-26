@@ -461,10 +461,10 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             "compagnon's reviewing roles are measured, not assumed. This page shows how they \
              scored the last time the evaluation suite ran, on the run committed in the \
              repository as its baseline. It is generated from that baseline and changes with it.",
-            "Les rôles de revue de compagnon sont mesurés, pas supposés. Cette page montre leurs \
+            "Les rôles de relecture de compagnon sont mesurés, pas supposés. Cette page montre leurs \
              scores lors de la dernière exécution de la suite d'évaluation, celle que le dépôt \
              conserve comme ligne de base. Elle est générée à partir de cette ligne de base et \
-             change avec elle."
+             évolue avec elle."
         )
     );
 
@@ -488,11 +488,11 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                  [Measuring the roles](roles.md#measuring-the-roles) gives the rules."
                 .to_string(),
             Lang::Fr => format!(
-                "La suite est un ensemble de petits projets, chacun avec un change planifié. Un \
+                "La suite est un ensemble de petits projets, chacun avec une modification planifiée. Un \
                  cas **ensemencé** cache des défauts qu'un rôle devrait trouver, chacun avec sa \
                  gravité, son emplacement et sa catégorie de problème{NBSP}; un **témoin propre** \
-                 n'en cache aucun. Claude Code exécute une étape de skill sur chaque cas avec un \
-                 seul rôle, et la suite note le compte rendu de revue que le rôle écrit{c}les \
+                 n'en dissimule aucun. Claude Code exécute une étape de compétence sur chaque cas avec un \
+                 seul rôle, et la suite note le compte rendu de relecture que le rôle écrit{c}les \
                  défauts trouvés et manqués, les constats qui ne correspondent à aucun défaut \
                  (**faux positifs**), si chaque preuve citée se trouve vraiment aux lignes \
                  indiquées, et si la gravité concorde avec celle attendue. \
@@ -964,7 +964,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                  compagnon plans a project it has never seen.",
                 "**La planification rejoue un historique public.** Les cas de planification \
                  rejouent des demandes sur des états passés de compagnon, que le modèle a pu lire\u{a0}: \
-                 leurs chiffres comparent deux versions des skills sur les mêmes cas, ils ne disent \
+                 leurs chiffres comparent deux versions des compétences sur les mêmes cas, ils ne disent \
                  pas comment compagnon planifie un projet qu'il n'a jamais vu.",
             )
             .to_string(),
@@ -1057,11 +1057,11 @@ fn planning_section(out: &mut String, p: &PlanningFigures, lang: Lang) {
                 p.cases
             ),
             Lang::Fr => format!(
-                "{} cas de planification rejouent une demande sur le dépôt tel qu'il était avant un \
-                 change archivé, et notent le plan qu'écrit `/compagnon-propose` face à ce que ce change \
-                 a vraiment fait{c}le **rappel principal** est la part des exigences visées par la \
-                 demande que le plan modifie, le **rappel collatéral** la part de celles que le vrai \
-                 change a modifiées au passage{NBSP}; un **doublon probable** est une exigence ajoutée \
+                "{} cas de planification rejouent une demande sur le dépôt tel qu'il était avant une \
+                 modification archivée, et notent le plan qu'écrit `/compagnon-propose` face à ce que \
+                 cette modification a vraiment fait{c}le **rappel principal** est la part des \
+                 exigences visées par la demande que le plan modifie, le **rappel collatéral** la \
+                 part de celles que la vraie modification a touchées au passage{NBSP}; un **doublon probable** est une exigence ajoutée \
                  là où il fallait en modifier une. Chaque chiffre est la médiane sur les \
                  répétitions, avec son écart.",
                 p.cases,
@@ -1133,14 +1133,14 @@ fn implement_section(out: &mut String, i: &ImplementFigures, lang: Lang) {
                 i.cases
             ),
             Lang::Fr => format!(
-                "{} cas d'implémentation posent le plan d'un change archivé sur le dépôt tel qu'il \
-                 était avant lui, et demandent à `/compagnon-apply` de l'implémenter, revue comprise. \
+                "{} cas d'implémentation posent le plan d'une modification archivée sur le dépôt tel qu'il \
+                 était avant lui, et demandent à `/compagnon-apply` de l'implémenter, relecture comprise. \
                  Après chaque exécution, l'évaluation formate, analyse, teste et construit \
                  elle-même le code, puis lance un script caché qui pilote le `compagnon` construit \
-                 comme le ferait un utilisateur, écrit d'après les scénarios du change et éprouvé \
-                 sur le vrai change. Une exécution **réussit** quand toutes les tâches sont \
+                 comme le ferait un utilisateur, écrit d'après les scénarios de la modification et éprouvé \
+                 sur la vraie modification. Une exécution **réussit** quand toutes les tâches sont \
                  cochées, que les vérifications du projet passent, que chaque assertion du script \
-                 tient, que le compte rendu de revue est valide et que rien hors du change n'est \
+                 tient, que le compte rendu de relecture est valide et que rien hors de la modification n'est \
                  touché{c}un plan sans tâches doit être refusé. Chaque chiffre est la médiane sur \
                  les répétitions, avec son écart{c}le refus est compté à part.",
                 i.cases,
@@ -1213,12 +1213,12 @@ fn update_section(out: &mut String, u: &CheckStepFigures, lang: Lang) {
                 u.cases
             ),
             Lang::Fr => format!(
-                "{} cas de révision posent un change archivé sur le dépôt tel qu'il était avant \
+                "{} cas de révision posent une modification archivée sur le dépôt tel qu'il était avant \
                  lui, et demandent à `/compagnon-update` de réviser l'un de ses artefacts comme le \
                  ferait son auteur. Chaque exécution est vérifiée sans modèle{c}l'artefact demandé \
                  est révisé, les autres fichiers restent tels quels, une conséquence sur un autre \
-                 artefact est signalée plutôt qu'appliquée, le change passe toujours la \
-                 validation, et une demande portant sur un artefact que le change n'a pas est \
+                 artefact est signalée plutôt qu'appliquée, la modification passe toujours la \
+                 validation, et une demande portant sur un artefact que la modification n'a pas est \
                  refusée. Une exécution **réussit** quand toutes ses vérifications réussissent. \
                  Chaque chiffre est la médiane sur les répétitions, avec son écart.",
                 u.cases,
@@ -1245,7 +1245,7 @@ fn update_section(out: &mut String, u: &CheckStepFigures, lang: Lang) {
         (
             lang.pick(
                 "Runs that modify a file outside the change",
-                "Exécutions qui modifient un fichier hors du change",
+                "Exécutions qui modifient un fichier hors de la modification",
             ),
             u.strayed,
             false,
@@ -1260,8 +1260,8 @@ fn update_section(out: &mut String, u: &CheckStepFigures, lang: Lang) {
 /// measures, median and range.
 fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lang) {
     let (title_en, title_fr) = match step {
-        Step::ChangeSync => ("Syncing a change", "La synchronisation d'un change"),
-        Step::ChangeArchive => ("Archiving a change", "L'archivage d'un change"),
+        Step::ChangeSync => ("Syncing a change", "La synchronisation d'une modification"),
+        Step::ChangeArchive => ("Archiving a change", "L'archivage d'une modification"),
         Step::ConfigureEnrich => ("Configuring a project", "La configuration d'un projet"),
         other => unreachable!("{} has no check-scored section", other.as_str()),
     };
@@ -1284,12 +1284,12 @@ fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lan
             step = step.as_str(),
         ),
         (Step::ChangeSync | Step::ChangeArchive, Lang::Fr) => format!(
-            "{n} cas (`{step}`) posent un change de l'archive de ce dépôt sur le dépôt tel qu'il \
+            "{n} cas (`{step}`) posent une modification de l'archive de ce dépôt sur le dépôt tel qu'il \
              était avant lui, et lancent `/compagnon-{skill}` dessus. Chaque exécution est vérifiée \
              sans modèle{c}les fichiers sous `_compagnon/` sont ceux que `compagnon {skill}` laisse \
-             lui-même sur une copie — ou tels qu'ils étaient, quand la skill doit s'arrêter —, \
+             lui-même sur une copie — ou tels qu'ils étaient, quand la compétence doit s'arrêter —, \
              aucun fichier hors de l'étape n'est modifié, et la réponse dit ce que le cas attend. \
-             Quand la skill demande s'il faut mettre compagnon à jour, l'exécution répond **Plus tard**.",
+             Quand la compétence demande s'il faut mettre compagnon à jour, l'exécution répond **Plus tard**.",
             step = step.as_str(),
         ),
         (_, Lang::En) => format!(
@@ -1382,7 +1382,7 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
              request. Per case the median over its runs, summed over the cases.",
             "Chaque appel au modèle est enregistré. Les tokens qu'un appel écrit dans le cache — ce \
              qui est entré dans son contexte depuis l'appel précédent, l'essentiel du coût d'une \
-             exécution — sont répartis entre ce qui les a apportés\u{a0}: la lecture de la skill, \
+             exécution — sont répartis entre ce qui les a apportés\u{a0}: la lecture de la compétence, \
              chaque sous-commande `compagnon`, les fichiers, les recherches, la sortie du modèle \
              lui-même\u{a0}; `prompt` est le prompt propre de Claude Code et la demande. Par cas la \
              médiane sur ses exécutions, sommée sur les cas."
@@ -1400,7 +1400,7 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
     for s in &b.sources {
         let _ = writeln!(
             out,
-            "| {} | {} | {} |",
+            "| `{}` | {} | {} |",
             s.source,
             number(s.tokens),
             percent(lang, s.share)
@@ -2436,12 +2436,12 @@ mod tests {
             (
                 Lang::En,
                 "## What a run consumes",
-                "| skill | 60000 | 60 % |",
+                "| `skill` | 60000 | 60 % |",
             ),
             (
                 Lang::Fr,
                 "## Ce que consomme une exécution",
-                "| skill | 60000 | 60\u{a0}% |",
+                "| `skill` | 60000 | 60\u{a0}% |",
             ),
         ] {
             let text = page(&b, lang);
@@ -2451,8 +2451,8 @@ mod tests {
             };
             assert!(at(heading) < at(row));
             assert!(
-                at("| skill |") < at("| compagnon roles |")
-                    && at("| compagnon roles |") < at("| file |")
+                at("| `skill` |") < at("| `compagnon roles` |")
+                    && at("| `compagnon roles` |") < at("| `file` |")
             );
             assert!(text.contains(&format!("rel-src-title-{}", lang.tag())));
             // The chart draws the sources in the same order, each named on hover.
@@ -2501,8 +2501,8 @@ mod tests {
         }
         let fr = page(&b, Lang::Fr);
         for needle in [
-            "## La synchronisation d'un change",
-            "## L'archivage d'un change",
+            "## La synchronisation d'une modification",
+            "## L'archivage d'une modification",
             "| Exécutions qui réussissent | 0,90 (0,80–1,00) |",
             "**Plus tard**",
             "4 de synchronisation, 6 d'archivage)",

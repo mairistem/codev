@@ -10,7 +10,7 @@ jamais inaperçue. Voir [Clés inconnues](#clés-inconnues).
 `compagnon init` génère le fichier avec les valeurs qu'il a détectées, chacune
 précédée d'un commentaire indiquant sa provenance. Vous pouvez le modifier à la
 main à tout moment. Après avoir modifié `workflows`, `mcp` ou `review`,
-lancez `compagnon update` pour que les skills reflètent la modification.
+lancez `compagnon update` pour que les compétences reflètent la modification.
 
 ## Exemple complet
 
@@ -72,15 +72,15 @@ review:
 
 ## schema
 
-Le schéma de workflow utilisé par les nouveaux changes. Valeur par défaut :
+Le schéma de déroulé utilisé par les nouvelles modifications. Valeur par défaut :
 `spec-driven`, le schéma embarqué dans Compagnon. Le nom d'un schéma défini sous
-`_compagnon/schemas/` est également accepté. Un change enregistre son schéma dans
-son propre `change.yaml` : modifier cette clé n'affecte donc pas les changes
+`_compagnon/schemas/` est également accepté. Une modification enregistre son schéma dans
+son propre `change.yaml` : modifier cette clé n'affecte donc pas les modifications
 en cours. Voir [Schémas personnalisés](../guides/custom-schemas.md).
 
 ## language
 
-La langue dans laquelle les skills rédigent les artefacts, sous la
+La langue dans laquelle les compétences rédigent les artefacts, sous la
 forme d'un code ISO 639 : deux ou trois lettres minuscules, éventuellement
 suivies d'une sous-étiquette (`en`, `fr`, `pt-BR`, `zh-Hant`). Valeur par
 défaut : `en`. Il fixe la prose, et les mots-clés structurels quand Compagnon
@@ -91,11 +91,11 @@ quel que soit ce réglage. Voir
 
 ## workflows
 
-Les workflows à installer comme skills Claude Code, désignés par leur
+Les déroulés à installer comme compétences (skills) Claude Code, désignés par leur
 identifiant : `propose`, `explore`, `onboard`, `configure`, `apply`, `sync`,
 `archive`, `update`. En l'absence de la clé, les huit sont installés. Un
 identifiant inconnu produit l'avertissement `unknown_workflow` et est ignoré.
-Voir [Les skills Claude Code](../skills.md).
+Voir [Les compétences Claude Code](../skills.md).
 
 ## context
 
@@ -185,7 +185,7 @@ inherits:
 
 ## mcp
 
-Les noms des outils MCP que les skills peuvent appeler. Ils sont propres à
+Les noms des outils MCP que les compétences peuvent appeler. Ils sont propres à
 chaque installation de Claude Code et ne sont donc jamais hérités.
 
 | Clé | Signification |
@@ -201,11 +201,11 @@ projet, jamais hérités.
 
 | Clé | Signification |
 |---|---|
-| `exclude` | Noms de dossiers d'archive (`<date>-<nom>`) des changes déjà décrits à la main dans `CHANGELOG.md`. `compagnon changelog` les laisse de côté, sans avertissement |
+| `exclude` | Noms de dossiers d'archive (`<date>-<nom>`) des modifications déjà décrites à la main dans `CHANGELOG.md`. `compagnon changelog` les laisse de côté, sans avertissement |
 
 Utilisez-la pour adopter `compagnon changelog` dans un projet dont le
-`CHANGELOG.md` décrit déjà des changes archivés sans note de version, afin
-qu'ils ne soient pas listés deux fois. Voir
+`CHANGELOG.md` décrit déjà des modifications archivées sans note de version, afin
+qu'elles ne soient pas listées deux fois. Voir
 [Notes de version et CHANGELOG](../guides/release-notes.md).
 
 ## compagnon_version
@@ -216,7 +216,7 @@ Mettez la valeur entre guillemets, car YAML interprète `>` à sa façon. Propre
 au projet, jamais héritée.
 
 Lorsque le Compagnon en cours ne la satisfait pas, `compagnon doctor` signale la
-vérification `compagnon_version` comme manquante et les skills proposent de mettre
+vérification `compagnon_version` comme manquante et les compétences proposent de mettre
 à jour avant d'agir. La correction est `compagnon self-update` quand le Compagnon en
 cours est trop ancien. Quand il est trop récent — au-delà d'une borne
 supérieure comme `<0.7` — un simple `compagnon self-update` refuserait de
@@ -236,12 +236,12 @@ message nomme l'exigence, la version en cours et la même correction que
 resserre une vérification et accepter ce que le Compagnon d'un collègue refuse
 (voir [Clés inconnues](#clés-inconnues)). Toutes les autres commandes
 continuent de fonctionner, pour que `compagnon status`, `compagnon doctor` et les
-skills puissent encore vous dire quoi installer. Deux conséquences à
+compétences puissent encore vous dire quoi installer. Deux conséquences à
 anticiper :
 
 - un job de CI épinglé avec `COMPAGNON_VERSION=` (comme l'écrit `compagnon init`)
   se met à échouer dès que `compagnon_version` dépasse cette version : relevez
-  l'épinglage dans le même commit ;
+  l'épinglage dans le même enregistrement ;
 - une exigence avec une borne supérieure (`^0.6`) refuse aussi un Compagnon plus
   récent : élargissez `compagnon_version` avant de passer au-delà, ou installez
   la version que nomme `compagnon doctor`.
@@ -258,9 +258,9 @@ de rôle ; sa valeur est soit une activation, soit une table :
 
 | Clé | Signification |
 |---|---|
-| `when` | `always`, `never` ou `on_domain` ; la valeur par défaut est `on_domain` pour les experts, `always` pour tous les autres rôles. `on_domain` n'active un rôle que pour un change dont la proposal coche l'un de ses domaines. Une étape dont tous les rôles sont inactifs est sautée, et la skill le signale |
+| `when` | `always`, `never` ou `on_domain` ; la valeur par défaut est `on_domain` pour les experts, `always` pour tous les autres rôles. `on_domain` n'active un rôle que pour une modification dont la proposition coche l'un de ses domaines. Une étape dont tous les rôles sont inactifs est sautée, et la compétence le signale |
 | `done_when` | Critères ajoutés après ceux du rôle, avec l'origine `project` ; les entrées vides sont ignorées |
-| `model` | Le modèle sur lequel tourne le sous-agent du rôle dans le [mode de revue](#review) `isolated` : `opus`, `sonnet` ou `haiku`, ou `inherit` pour le modèle de la session. Aucun rôle n'en fixe par défaut — voir [Les modèles des relecteurs](../roles.md#les-modèles-des-relecteurs). En mode `inline`, chaque rôle tourne sur le modèle de la session |
+| `model` | Le modèle sur lequel tourne le sous-agent du rôle dans le [mode de relecture](#review) `isolated` : `opus`, `sonnet` ou `haiku`, ou `inherit` pour le modèle de la session. Aucun rôle n'en fixe par défaut — voir [Les modèles des relecteurs](../roles.md#les-modèles-des-relecteurs). En mode `inline`, chaque rôle tourne sur le modèle de la session |
 
 ```yaml
 roles:
@@ -284,7 +284,7 @@ et ceux des rôles d'artefact du schéma utilisé (`product`, `qa`,
 `architect`, `lead` avec `spec-driven`). Les rôles d'artefact, l'`analyst`
 et le `developer` ne peuvent pas être désactivés ; leurs critères peuvent
 être complétés. Le `change.yaml`
-d'un change peut changer l'activation pour ce change seulement — voir
+d'une modification peut changer l'activation pour cette modification seulement — voir
 [change.yaml](file-formats.md#changeyaml).
 
 `compagnon validate` signale un identifiant inconnu par `unknown_role`, une
@@ -303,7 +303,7 @@ aucune étape de relecture (`plan.trace`, `plan.challenge`, `code.review`)
 et qui n'est pas le `developer` ne s'applique jamais : c'est un
 avertissement `role_model_unused`. Le modèle du `developer` implémente les
 tâches de `/compagnon-apply` dans un sous-agent, quel que soit le mode de
-revue (décision 0012).
+relecture (décision 0012).
 
 **`model` et les versions plus anciennes de Compagnon.** Un Compagnon antérieur à
 la version qui a introduit `model` ne connaît pas la clé : Compagnon 0.6.1 et
@@ -366,16 +366,16 @@ héritée.
 
 | Clé | Signification |
 |---|---|
-| `mode` | `inline` (par défaut) : la skill relit dans sa propre conversation, un rôle après l'autre. `isolated` : chaque rôle relecteur travaille seul, comme sous-agent de Claude Code qui ne voit jamais la conversation, puis la skill fusionne leurs constats |
+| `mode` | `inline` (par défaut) : la compétence relit dans sa propre conversation, un rôle après l'autre. `isolated` : chaque rôle relecteur travaille seul, comme sous-agent de Claude Code qui ne voit jamais la conversation, puis la compétence fusionne leurs constats |
 
 ```yaml
 review:
   mode: isolated
 ```
 
-Un change peut la remplacer dans son `change.yaml`, avec la même clé :
+Une modification peut la remplacer dans son `change.yaml`, avec la même clé :
 `review: { mode: inline }` pour corriger une coquille dans un projet
-isolé, ou `isolated` pour un change sensible dans un projet en ligne.
+isolé, ou `isolated` pour une modification sensible dans un projet en ligne.
 `compagnon roles --json` donne le mode en vigueur et son origine
 (`review.mode`, `review.origin`). Toute autre valeur fait échouer chaque
 commande avec `invalid_review_mode`, qui nomme `inline` et `isolated` ;
@@ -383,18 +383,18 @@ une clé inconnue sous `review` est un avertissement `unknown_config_key`
 (`review.<clé>`).
 
 **Changer de mode.** Définissez la clé, puis lancez `compagnon update` : en
-mode isolé, les skills `/compagnon-propose` et `/compagnon-apply` demandent
+mode isolé, les compétences `/compagnon-propose` et `/compagnon-apply` demandent
 l'outil `Agent` de Claude Code, en mode en ligne elles ne le demandent
 pas, et `compagnon doctor` signale `skills_review_mode` tant qu'elles n'ont
-pas été régénérées. Une skill que vous avez modifiée à la main est
+pas été régénérées. Une compétence que vous avez modifiée à la main est
 conservée ; `compagnon update --force` la réécrit.
 
-**Pourquoi `inline` par défaut.** La revue isolée multiplie la lecture de
+**Pourquoi `inline` par défaut.** La relecture isolée multiplie la lecture de
 la matière par le nombre de rôles, et son bénéfice n'est pas encore
 mesuré : les évaluations des rôles de Compagnon font travailler un rôle à la
 fois, sans conversation d'écriture, et ne peuvent donc pas comparer les
 deux modes. Voir
-[Revue en ligne ou isolée](../roles.md#revue-en-ligne-ou-isolée).
+[Relecture en ligne ou isolée](../roles.md#relecture-en-ligne-ou-isolée).
 
 Compagnon 0.6 et les versions antérieures ne connaissent pas cette clé :
 elles émettent l'avertissement `unknown_config_key` — qui fait échouer
@@ -414,7 +414,7 @@ inconnues sont traitées selon ce que produirait le fait de les ignorer :
 |---|---|---|
 | premier niveau | avertissement `unknown_config_key`, clé ignorée | chaque clé est une fonctionnalité indépendante : le reste de la configuration s'applique |
 | `mcp` | avertissement `unknown_config_key` (`mcp.<clé>`), clé ignorée | un outil inconnu laisse seulement cette intégration non configurée |
-| `review` | avertissement `unknown_config_key` (`review.<clé>`), clé ignorée | un réglage de revue inconnu laisse la revue telle qu'elle était |
+| `review` | avertissement `unknown_config_key` (`review.<clé>`), clé ignorée | un réglage de relecture inconnu laisse la relecture telle qu'elle était |
 | une entrée de `inherits` | erreur `invalid` | l'ignorer ferait lire une autre source que celle que vous avez décrite |
 | `changelog` | erreur `invalid` | l'ignorer ferait écrire un autre fichier à `compagnon changelog --write` |
 | une entrée de `roles` | avertissement `unknown_config_key` (`roles.<id>.<clé>`), clé ignorée | le reste de la table du rôle s'applique ; une clé dont l'oubli ferait disparaître une relecture s'accompagne d'un `compagnon_version` relevé |
@@ -440,7 +440,7 @@ avec son propre code, pour que vous sachiez quel fichier ouvrir :
 
 | Fichier | Clé inconnue | Signalée par |
 |---|---|---|
-| le `change.yaml` d'un change, au premier niveau ou sous `review:` | avertissement `change_unknown_key` (`review.<clé>` sous `review`), clé ignorée | les commandes qui lisent le change (`status`, `instructions`, `roles`, `review`), et `compagnon validate` sur l'élément du change |
+| le `change.yaml` d'une modification, au premier niveau ou sous `review:` | avertissement `change_unknown_key` (`review.<clé>` sous `review`), clé ignorée | les commandes qui lisent la modification (`status`, `instructions`, `roles`, `review`), et `compagnon validate` sur l'élément de la modification |
 | un `schema.yaml` de projet, à tout niveau, `role:` d'un artefact compris | avertissement `schema_unknown_key`, clé ignorée | les commandes qui utilisent le schéma, et `compagnon validate` sur l'élément `config`, localisé dans le fichier du schéma |
 | le frontmatter d'un ADR | avertissement `decision_unknown_field`, champ ignoré et conservé par `compagnon decision accept` | `compagnon validate` sur l'élément `decisions`, à la ligne du champ ; ceux d'une décision héritée ne sont pas signalés |
 
@@ -457,7 +457,7 @@ niveau, et **Compagnon 0.6.1 et les versions antérieures rejettent une clé
 inconnue dans un rôle, dans `change.yaml`, dans un schéma de projet et dans
 le frontmatter d'un ADR**. Lorsque vous ajoutez une clé que seules les versions récentes
 connaissent, relevez aussi `compagnon_version` : les membres de l'équipe restés
-sur un Compagnon plus ancien apprendront par `compagnon doctor` et les skills quelle
+sur un Compagnon plus ancien apprendront par `compagnon doctor` et les compétences quelle
 version installer.
 
 ## Variables d'environnement

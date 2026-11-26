@@ -1,15 +1,16 @@
 # Notes de version et CHANGELOG
 
-Chaque change archivé dit déjà pourquoi il a été fait et ce qui a changé.
-Compagnon en tire les notes de version : chaque proposal porte une courte section
+Chaque modification archivée dit déjà pourquoi elle a été faite et ce qui a
+changé.
+Compagnon en tire les notes de version : chaque proposition porte une courte section
 `## Release note` destinée aux utilisateurs, et `compagnon changelog` rassemble
-les notes des changes archivés depuis la dernière version. Le choix du numéro
+les notes des modifications archivées depuis la dernière version. Le choix du numéro
 de version, le tag et la publication restent entre vos mains et celles de vos
-outils de release.
+outils de publication.
 
-## Rédiger la note de version avec la proposal
+## Rédiger la note de version avec la proposition
 
-`/compagnon-propose` rédige la section avec le reste de la proposal, après
+`/compagnon-propose` rédige la section avec le reste de la proposition, après
 `## Impact` :
 
 ```markdown
@@ -27,11 +28,11 @@ français (`Ajouté`, `Modifié`…) dans une proposition écrite avec les
 mots-clés français ; le changelog les affiche en anglais. Le texte suit la
 [langue des artefacts](artifact-language.md). Écrivez pour les personnes qui
 utilisent le produit, pas pour celles qui le construisent. Un élément
-incompatible commence par `**BREAKING**`. Un change que personne ne
+incompatible commence par `**BREAKING**`. Une modification que personne ne
 remarquera — un refactoring, un test, un réglage de CI — écrit la seule ligne
 `None`.
 
-`compagnon validate` contrôle la section sur les changes actifs : une section
+`compagnon validate` contrôle la section sur les modifications actives : une section
 absente donne un avertissement (`release_note_missing`), une catégorie
 inconnue, un élément sans texte ou une section vide une erreur
 (`release_note_invalid`). Le format complet figure dans
@@ -55,7 +56,7 @@ compagnon changelog
 - **BREAKING** `compagnon export` écrit sur stdout par défaut ; passez `--output <PATH>` pour écrire un fichier.
 ```
 
-C'est git qui décide de l'intervalle : les changes dont le dossier se trouve
+C'est git qui décide de l'intervalle : les modifications dont le dossier se trouve
 dans `_compagnon/changes/archive/` aujourd'hui et ne s'y trouvait pas au dernier
 tag `v*`. Utilisez `--since <ref>` et `--until <ref>` pour un autre
 intervalle — par exemple les notes d'une version passée :
@@ -66,13 +67,13 @@ compagnon changelog --until v1.4.0 --format markdown
 
 `--until v1.4.0` commence après le tag de version juste en dessous, `v1.3.x`.
 `--format markdown` retire le titre de version, ce qui convient au texte
-d'une release ; `--format json` fournit les éléments aux scripts (voir
+d'une version publiée ; `--format json` fournit les éléments aux scripts (voir
 [Sortie JSON](../reference/json-output.md#changelog)).
 
-Les changes archivés avant l'existence des notes de version n'ont pas de
+Les modifications archivées avant l'existence des notes de version n'ont pas de
 `## Release note` : les puces de leur section What Changes sont listées sous
-`Changed`, et un avertissement `release_note_missing` nomme chacun d'eux pour
-que vous puissiez en relire la formulation. Un change dont les specs
+`Changed`, et un avertissement `release_note_missing` nomme chacune d'elles pour
+que vous puissiez en relire la formulation. Une modification dont les spécifications
 suppriment des exigences sans élément `Removed` ni **BREAKING** reçoit un
 avertissement `release_note_inconsistent`.
 
@@ -125,12 +126,12 @@ compagnon changelog --release 1.4.0 --write
 
 Le bloc généré devient `## [1.4.0] - <aujourd'hui>` (ou `--date YYYY-MM-DD`),
 hors des marqueurs, et une nouvelle section `## [Unreleased]` vide prend sa
-place dans la section gérée. Commitez, puis posez aussitôt le tag `v1.4.0` :
-tant que le tag n'existe pas, `compagnon changelog` compte encore ces changes
-comme non publiés.
+place dans la section gérée. Enregistrez, puis posez aussitôt le tag `v1.4.0` :
+tant que le tag n'existe pas, `compagnon changelog` compte encore ces modifications
+comme non publiées.
 
-Sur GitHub, le workflow de release peut reprendre les mêmes notes pour le
-texte de la release, produites par le Compagnon du commit tagué :
+Sur GitHub, le déroulé de publication peut reprendre les mêmes notes pour le
+texte de la version publiée, produites par le Compagnon de l'enregistrement tagué :
 
 ```bash
 compagnon changelog --until "$GITHUB_REF_NAME" --format markdown > release-notes.md
@@ -138,9 +139,9 @@ compagnon changelog --until "$GITHUB_REF_NAME" --format markdown > release-notes
 
 ## L'adopter dans un projet existant
 
-Si votre `CHANGELOG.md` décrit déjà des changes archivés sans note de
+Si votre `CHANGELOG.md` décrit déjà des modifications archivées sans note de
 version, listez-les sous `changelog.exclude` dans `_compagnon/config.yaml`, pour
-qu'ils ne soient pas listés une seconde fois :
+qu'elles ne soient pas listées une seconde fois :
 
 ```yaml
 changelog:
@@ -148,5 +149,5 @@ changelog:
     - 2026-09-30-legacy-import
 ```
 
-Une fois la version suivante taguée, ils sortent de l'intervalle et la liste
+Une fois la version suivante taguée, elles sortent de l'intervalle et la liste
 peut être vidée. Voir [Configuration](../reference/configuration.md#changelog).
