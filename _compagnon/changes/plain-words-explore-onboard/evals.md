@@ -140,3 +140,12 @@ Other cases, run 1:
 ## Failures
 
 None: every run of every case passes its checks.
+
+## Which skill text was measured
+
+The runs measured the skills as of commit `6ca5b87` (tasks 1.1–2.4). A
+code review pushed meanwhile, `e97ebdc`, changed `assets/workflows/onboard.md`
+again (it explains `compagnon init`, and the closing requests carry no
+placeholders). The onboard cases have not been run on that text: the
+`project.onboard` result above holds for the text before the review. To
+cover it, run again with `--step project.onboard` (about 3.5 USD).
