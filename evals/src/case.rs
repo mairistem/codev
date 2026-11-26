@@ -1772,15 +1772,15 @@ struct ReadOnlyExpectedFile {
     absent: Vec<String>,
 }
 
-/// Loads an explore or onboard case: a `case.yaml` and its `base/`, the
-/// project as it stands.
-/// The one of `all` that the case's `field` names, or the error saying what
-/// is missing (`needs`, as in "an explore case needs an") or unknown, with
-/// the names `all` accepts.
-fn named<T: Copy>(
-    needs: &str,
+/// Parses a required field of a read-only case whose value is one of a
+/// fixed list — an explore case's `outcome`, an onboard case's `state` —
+/// with `parse`; the error names the field missing or the value unknown,
+/// and the values `all` accepts.
+fn parse_required_choice<T: Copy>(
+    kind: &str,
     field: &str,
     value: Option<&str>,
+    parse: fn(&str) -> Option<T>,
     all: &[T],
     as_str: fn(T) -> &'static str,
 ) -> Result<T, String> {
@@ -1791,14 +1791,22 @@ fn named<T: Copy>(
             .join(", ")
     };
     let Some(text) = value else {
-        return Err(format!("{needs} `{field}`: one of {}", names()));
+        let article = if field.starts_with(['a', 'e', 'i', 'o', 'u']) {
+            "an"
+        } else {
+            "a"
+        };
+        return Err(format!(
+            "an {kind} case needs {article} `{field}`: one of {}",
+            names()
+        ));
     };
-    all.iter()
-        .copied()
-        .find(|&t| as_str(t) == text.trim())
+    parse(text.trim())
         .ok_or_else(|| format!("unknown `{field}` `{text}`; expected one of {}", names()))
 }
 
+/// Loads an explore or onboard case: a `case.yaml` and its `base/`, the
+/// project as it stands.
 fn load_read_only(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
     let fail = |message: String| CaseError {
         case: id.to_string(),
@@ -1835,10 +1843,11 @@ fn load_read_only(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result
                 "`state` is for an onboard case; an explore case expects an `outcome`".into(),
             ));
         }
-        let outcome = named(
-            "an explore case needs an",
+        let outcome = parse_required_choice(
+            "explore",
             "outcome",
             expected.outcome.as_deref(),
+            ExploreOutcome::parse,
             &ExploreOutcome::ALL,
             ExploreOutcome::as_str,
         )
@@ -1858,10 +1867,11 @@ fn load_read_only(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result
                 "`outcome` is for an explore case; an onboard case expects a `state`".into(),
             ));
         }
-        let state = named(
-            "an onboard case needs a",
+        let state = parse_required_choice(
+            "onboard",
             "state",
             expected.state.as_deref(),
+            OnboardState::parse,
             &OnboardState::ALL,
             OnboardState::as_str,
         )
