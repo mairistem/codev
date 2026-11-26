@@ -5,9 +5,10 @@ Claude to build it, while you stay in charge of what gets built. Three
 pages, about half an hour, then your first try.
 
 1. [Compagnon in two minutes](../introduction.md)
-2. [Your first change](../quickstart.md): the one command to type is the
-   installation; if someone in your team can do it, let them. After that,
-   you only talk to Claude.
+2. [Your first change](../quickstart.md): you need Claude Code and a
+   folder for your project; two commands to type once, the installation
+   and `compagnon init`. If someone in your team can do them, let them.
+   After that, you only talk to Claude.
 3. [Reviewing a plan](../guides/review-a-plan.md): before Claude builds,
    check that its plan says what you want.
 

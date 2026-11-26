@@ -85,7 +85,7 @@ the documentation (*vouvoiement*, no anglicism).
 
 ## 3. Check
 
-- [ ] 3.1 Have one reader per profile — the four profiles and a
+- [x] 3.1 Have one reader per profile — the four profiles and a
   contributor, in French — start from the French home page and say which
   profile they chose, how fast, and whether their path gave them what they
   came for. It passes when each reader picks the intended profile on the

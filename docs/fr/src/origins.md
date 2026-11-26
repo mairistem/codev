@@ -100,3 +100,11 @@ réel que vous pouvez parcourir :
 - [un compte rendu de revue](https://github.com/mairistem/compagnon/blob/main/_compagnon/changes/archive/2026-10-13-review-record/review.md), avec les remarques, leurs preuves, les
   réponses de l'auteur et la façon dont chacune a été tranchée ;
 - [les décisions d'architecture](https://github.com/mairistem/compagnon/tree/main/_compagnon/decisions), scellées.
+
+## Contribuer
+
+1. Lisez l'[Architecture](architecture.md) : les crates, le cœur pur, les
+   conventions d'erreurs et de tests.
+2. Suivez le [guide de contribution](https://github.com/mairistem/compagnon/blob/main/CONTRIBUTING.fr.md) :
+   compiler, lancer les tests, et proposer une modification Compagnon avant
+   d'ouvrir une demande de fusion.
