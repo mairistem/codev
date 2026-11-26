@@ -26,8 +26,9 @@ to `contributing.md`.
 
 `guides/example-plan.md` SHALL show one complete plan — its proposal, its
 specs with at least one requirement and scenario, its design and its
-tasks — each part followed by a "What to check here" note ("Ce qu'on
-vérifie ici") addressed to a reviewer. The French edition's plan is
+tasks — each part under a page heading of its own, its text in a quoted
+`markdown` block, followed by a "What to check here" heading ("Ce qu'on
+vérifie ici") holding the note addressed to a reviewer. The French edition's plan is
 written as Compagnon writes a plan in French, its structural keywords in
 French.
 
@@ -37,6 +38,8 @@ French.
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** each shows the four parts, each followed by its "What to
   check here" / « Ce qu'on vérifie ici » note
+- **AND** the plan's text is inside fenced `markdown` blocks, none of its
+  headings rendered as a page heading
 - **AND** the French plan uses the French keywords (`### Exigence :`,
   `#### Scénario :`)
 
@@ -57,6 +60,8 @@ run `compagnon init`.
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** the approving page holds no fenced shell block and names
   GitHub and GitLab
+- **AND** in French, each quoted button label stands between parentheses
+  after its action, never as inline code
 - **AND** the starting page runs nothing but installing and
   `compagnon init` outside "Under the hood" blocks
 

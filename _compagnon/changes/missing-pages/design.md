@@ -66,7 +66,13 @@ requirement and a scenario, design, tasks — each part followed by "What to
 check here", addressed to a reviewer. The French edition writes the plan
 in French with French keywords, as Compagnon does for a French project, so
 that it doubles as the "before / after" example "Reviewing a plan" points
-to for a modified rule.
+to for a modified rule. Each part gets a page heading of its own
+("The proposal", "The specs"…); the plan's text is shown in a quoted
+`markdown` block under it, so that its own headings (`## Why`,
+`### Exigence :`) never join the page's outline; the note follows under a
+heading "What to check here" / « Ce qu'on vérifie ici ». A screen reader
+moving by headings hears the example's parts and their notes, never the
+plan's inner headings.
 
 **Alternatives considered**: linking a plan of this repository — written
 in English, about Compagnon itself, far from a reader's product.
@@ -79,7 +85,13 @@ page says where the plan's folder is named (the Compagnon section of the
 description), where the points to discuss are (`review.md` in that
 folder), how to comment on a line, how to ask for changes and how to
 approve, with each button's label on both sites; and that the developer
-then asks Claude to take the comments into account.
+then asks Claude to take the comments into account. Labels are quoted as
+the reader sees them: GitHub's in English, GitLab's in English and in
+French (GitLab follows the user's language). The French edition names the
+action in French first and the label between parentheses — « approuver
+(bouton « Approve ») » — so that the anglicism check, which skips
+parentheses, lets "Review changes" through, and never as code, which a
+reader who does not code would take for a command.
 
 **Alternatives considered**: asking reviewers to install Claude Code —
 what the readers said they could not do.
