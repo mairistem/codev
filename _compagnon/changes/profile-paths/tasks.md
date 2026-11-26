@@ -28,7 +28,9 @@ the documentation (*vouvoiement*, no anglicism).
   `every_path_page_has_at_most_three_steps_titled_as_their_pages`,
   `developer_pages_do_not_gloss_everyday_words`; in
   `crates/compagnon-cli/tests/repository.rs`,
-  `both_home_pages_lead_with_the_four_profiles` and the README test
+  `both_home_pages_lead_with_the_four_profiles` (with `lang="fr"` on
+  `fr.html` and each page's link to the other carrying its `lang` and
+  `hreflang`) and the README test
   linking the four path pages; verified by these tests failing until
   group 2 (the red state is shown in the pull request).
 
@@ -36,7 +38,8 @@ the documentation (*vouvoiement*, no anglicism).
 
 - [ ] 2.1 Write `choose-your-path.md` (the question, the four labels, the
   contributor sentence) and the four `paths/*.md` pages of the design's
-  table, in both editions, and update both `SUMMARY.md`; verified by
+  table, in both editions, each titled with its profile's label, and
+  update both `SUMMARY.md` (entries titled the same); verified by
   `both_editions_ask_the_question_with_the_four_profiles`,
   `every_path_page_has_at_most_three_steps_titled_as_their_pages`,
   `both_editions_open_with_the_start_here_path`,

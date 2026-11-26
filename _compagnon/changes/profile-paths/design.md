@@ -88,7 +88,9 @@ page — doubles its length for every reader.
 
 `docs_checks.rs` replaces the five-profile check with
 `choose_path_problems` (four labels in order, one link each to its path
-page, a link to the Contributing part after them) and adds
+page, a link to the Contributing part after them; each path page and its
+`SUMMARY.md` entry titled with its label, word for word, so that a link,
+a heading and the sidebar always agree) and adds
 `path_page_problems` (one to three numbered steps, one link each, link text
 equal to the target chapter's `# ` title, a link back to Choose your path).
 `START_HERE`, the caps and the everyday-pages list follow the new

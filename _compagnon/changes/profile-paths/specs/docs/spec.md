@@ -35,8 +35,10 @@ site.
 
 ### Requirement: Each profile has a short path page
 
-Each path page SHALL open, under its title, with one sentence saying who it
-is for and how long the path takes, then list at most three numbered
+Each path page SHALL be titled with its profile's label, word for word —
+its `# ` heading and its entry in `SUMMARY.md` — so that every link to it,
+from any entry point, names the page it opens. It SHALL open, under that
+title, with one sentence saying who it is for and how long the path takes, then list at most three numbered
 steps, each holding exactly one link to a chapter of the same edition whose
 text is that chapter's title, then a "Next, if you need it" ("Ensuite, si
 besoin") section, and end with a link back to Choose your path. The path
@@ -48,7 +50,8 @@ than installing Compagnon or `compagnon init`.
 
 - **GIVEN** the four path pages of both editions
 - **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each has one to three numbered steps, each with one link whose
+- **THEN** each is titled with its profile's label, in `SUMMARY.md` too
+- **AND** each has one to three numbered steps, each with one link whose
   text equals the title of the chapter it opens
 - **AND** each links back to Choose your path
 
@@ -62,7 +65,9 @@ than installing Compagnon or `compagnon init`.
 ### Requirement: The home page asks the question first, in both languages
 
 The site SHALL have a home page in English, `docs/site/index.html`, and in
-French, `docs/site/fr.html`, each linking the other. Each MUST show, before
+French, `docs/site/fr.html` (`lang="fr"`), each linking the other with the
+other's `lang` and `hreflang`; the English page's links to the French
+edition lead to `fr.html`. Each MUST show, before
 any installation command or technical section, the question of Choose your
 path and its four profiles in its language, each linking the path page of
 its edition, and the link for contributors. The pages need no script.
@@ -74,6 +79,8 @@ its edition, and the link for contributors. The pages need no script.
 - **THEN** each holds the four labels of its language, each linking
   `en/paths/…` or `fr/paths/…`
 - **AND** the first label comes before the first installation command
+- **AND** `fr.html` declares `lang="fr"`, and each page links the other
+  with the other's `lang` and `hreflang`
 
 ### Requirement: Developer pages do not gloss everyday developer words
 
