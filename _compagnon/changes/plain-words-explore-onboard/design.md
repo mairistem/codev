@@ -52,14 +52,33 @@ Every suggestion in their bodies is rewritten as "say “…” (shortcut:
 `/compagnon-…`)", keeping the argument when the command had one
 (`/compagnon-propose <that-name>`, `/compagnon-apply <that-name>`), so
 that the cases' marks stay in the replies. Onboard's "what's next" block
-closes on its one recommendation, quoted; for several active changes it
-lists them and closes on the request to choose one.
+closes on its one recommendation, quoted; for a thin configuration, the
+later `/compagnon-propose` step is mentioned before that last line, which
+is the request to configure. For several active changes it lists them,
+each with its request and shortcut, and its last line asks which one,
+without a shortcut — the closing rule's case of a choice.
+
+Every other line of the two bodies naming `/compagnon-` is reworded so
+that it is a shortcut or no longer names a command: onboard's opening
+description (the user asks Claude in their own words; the commands are
+shortcuts), the thin-config explanation, the non-case of a user who
+already asked for the tour, and the guardrail against suggesting a skill
+that is not installed. The paragraph "Make the suggestion actionable:
+quote the exact command to type" becomes "give the request to say, then
+the exact command as the shortcut", so that no instruction contradicts
+the fragment.
+
+Each missing check that onboard relays from `compagnon doctor` gets a few
+plain words of its own before the verbatim `fix`
+("your project's rules are not written yet — fix: `/compagnon-configure`").
 
 ### Decision: Doctor's fix lines are exempt as relayed output
 
 `commands_not_given_as_shortcuts` skips a line holding `— fix:`, the form
 in which onboard quotes doctor's output, as it skips the configure
-marker; a unit test shows such a line is not reported.
+marker; a unit test shows such a line is not reported. It is the only
+new exemption: `— fix:` appears in onboard's body on the doctor lines
+alone.
 
 **Alternatives considered**: rewording doctor's `fix` texts in the CLI —
 rejected, out of scope, and the CLI's output is English for scripts.
@@ -76,7 +95,7 @@ are commands, which stay.
 
 `load_read_only` gets one helper `named<T>(field, value, all, as_str)`
 that parses `outcome` or `state` from its list of names, giving the same
-errors; the four loading tests stay as they are.
+errors; the six loading tests stay as they are.
 
 ## Risks / Trade-offs
 

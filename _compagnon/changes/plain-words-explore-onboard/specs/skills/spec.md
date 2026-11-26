@@ -12,8 +12,9 @@ that exists — a skill of the catalog or a `compagnon` command — MUST still b
 named, as the shortcut; a command that names no skill, such as
 `/compagnon-continue`, is dropped. A command that is not a next step for
 the user — a file marker such as `# written by /compagnon-configure`, or a
-command the skill runs itself, or a line of `compagnon doctor`'s output that
-`onboard` relays verbatim — is not concerned.
+command the skill runs itself, or the `fix` of a line of `compagnon doctor`'s
+output that `onboard` relays verbatim, after a few plain words of its own
+saying what is missing — is not concerned.
 
 #### Scenario: Apply suggests archiving in plain words
 
@@ -71,7 +72,9 @@ SHALL close on that step alone, on its last line: one plain request, quoted,
 in the user's language, followed by its shortcut — one request, not a list
 of options — so that Claude Code's suggested next prompt, drawn from the
 conversation, is likely to be that request. A refusal or a summary that
-leaves several choices to the user names them before that last line.
+leaves several choices to the user names them before that last line, each
+with its request and shortcut; when the next step is that choice, the last
+line asks which one, in plain words, without a shortcut.
 
 #### Scenario: The shared rule asks for one closing request
 
@@ -80,6 +83,14 @@ leaves several choices to the user names them before that last line.
 - **WHEN** the test suite of `compagnon-agents` runs
 - **THEN** it asks to end the reply with the next step alone on the last
   line, one quoted request with its shortcut
+
+#### Scenario: Onboard with several active changes
+
+- **GIVEN** a project with two active changes
+- **WHEN** the user asks Claude to show them around Compagnon
+- **THEN** the reply lists both changes, each with a plain request and its
+  shortcut
+- **AND** its last line asks which one to continue, without a shortcut
 
 #### Scenario: Propose closes on the request to build the plan
 

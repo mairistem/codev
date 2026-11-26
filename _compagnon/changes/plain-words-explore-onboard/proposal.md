@@ -19,9 +19,13 @@ add-user-auth`", a table of `/compagnon-…` recommendations.
   say, in the user's language, then the command as a shortcut; each
   command they name today stays, as the shortcut. Onboard's reply closes
   on its one recommended request; with several active changes, it lists
-  them before that last line.
+  them, each with its request and shortcut, and its last line asks which
+  one, without a shortcut.
 - `compagnon doctor`'s fix lines, which onboard relays verbatim, stay as
-  doctor prints them: they are its output, not onboard's suggestion.
+  doctor prints them, each after a few plain words saying what is
+  missing; onboard's opening description says the user moves through the
+  steps by asking Claude in their own words, the commands being
+  shortcuts.
 - Their descriptions name plain requests that start them, in English and
   in French (« fais-moi visiter Compagnon », « explorons une idée »…),
   within 1024 characters.
@@ -59,10 +63,10 @@ add-user-auth`", a table of `/compagnon-…` recommendations.
 
 ## Domains
 
-- [ ] security — the match is the `pyproject.toml` of evaluation fixtures under `evals/cases/onboard-*/base/`, from another change on the branch
+- [ ] security — the matches are the manifests (`pyproject.toml`, `package.json`, `go.mod`) of the `explore-*` and `onboard-*` evaluation fixtures, from `explore-onboard-evaluation` on the branch; not touched here
 - [ ] personal-data — the match is the word "phone" in the home page's example (`docs/site/index.html`), from another change on the branch
 - [x] user-interface
-- [ ] performance — the match is « cache » in French text of `evals/src/reliability.rs`, from another change on the branch
+- [ ] performance — the matches are the SQL of the `explore-*` and `onboard-*` evaluation fixtures and « cache » in French text of `evals/src/reliability.rs`, all from other changes on the branch; not touched here
 - [ ] operations — the matches are words of the `explore-not-worth-gateway-retry` fixture, from another change on the branch
 - [ ] migration — the match is `#[serde(deny_unknown_fields)]` on the evaluation case format (`evals/src/case.rs`), from another change on the branch; the simplification here keeps the format
 
