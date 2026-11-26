@@ -1,0 +1,11 @@
+[project]
+name = "library-loans"
+version = "0.3.0"
+requires-python = ">=3.11"
+dependencies = ["flask>=3.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

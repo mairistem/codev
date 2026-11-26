@@ -1,0 +1,10 @@
+# One active change whose plan stops at the proposal: the recommendation
+# is `/compagnon-propose add-due-dates` to continue it, not to implement it.
+step: project.onboard
+kind: seeded
+stacks: [typescript]
+summary: "A configured TypeScript API with one change, `add-due-dates`, planned up to its proposal: onboard recommends continuing it with `/compagnon-propose`, not `/compagnon-apply`."
+expected:
+  state: planning-incomplete
+  contains: ["/compagnon-propose", "add-due-dates"]
+  absent: ["/compagnon-apply", "/compagnon-configure"]

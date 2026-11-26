@@ -72,6 +72,8 @@ fn checked_noun(step: crate::case::Step) -> &'static str {
         crate::case::Step::ChangeSync => "sync",
         crate::case::Step::ChangeArchive => "archive",
         crate::case::Step::ConfigureEnrich => "configure",
+        crate::case::Step::IdeaExplore => "explore",
+        crate::case::Step::ProjectOnboard => "onboard",
         other => unreachable!("{} has no check-scored section", other.as_str()),
     }
 }
@@ -271,7 +273,7 @@ pub fn markdown(score: &SuiteScore) -> String {
         );
     }
 
-    for (step, c) in score.merge_and_configure_steps() {
+    for (step, c) in score.checked_steps() {
         let spread = |s: Option<Spread>, ratio: bool| match s {
             None => "—".to_string(),
             Some(s) if ratio => ratio_range(Some(s.median), Some(s), repeated),
@@ -965,9 +967,48 @@ mod tests {
     #[test]
     fn a_report_without_configure_cases_has_no_configure_section() {
         let s = scores();
-        assert!(!markdown(&s).contains("configure.enrich"));
+        let md = markdown(&s);
+        for step in ["configure.enrich", "idea.explore", "project.onboard"] {
+            assert!(!md.contains(step), "{step} in {md}");
+        }
         let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
-        assert!(json.get("configureEnrich").is_none());
+        for key in ["configureEnrich", "ideaExplore", "projectOnboard"] {
+            assert!(json.get(key).is_none(), "{key}");
+        }
         assert!(json["cases"][0].get("checks").is_none());
+    }
+
+    #[test]
+    fn the_report_of_an_explore_run() {
+        use crate::read_only::tests::{explore_case, run_ending};
+        let c = explore_case("explore-crystallizes-x");
+        let s = suite(
+            run(),
+            vec![
+                crate::score::read_only_case(
+                    &c,
+                    &run_ending("It crystallizes: ask me for /compagnon-propose."),
+                ),
+                crate::score::read_only_case(
+                    &c,
+                    &run_ending("Ask me for /compagnon-propose, though the SLA is missing."),
+                )
+                .at(2),
+            ],
+            Thresholds::default(),
+        );
+        let md = markdown(&s);
+        assert!(md.contains("## `idea.explore`"), "{md}");
+        assert!(md.contains("every explore run pooled"), "{md}");
+        assert!(md.contains("| 1 | 0.50 (0.00–1.00) |"), "{md}");
+        assert!(
+            md.contains("- Check the final message does not say \"is missing\": **failed**"),
+            "{md}"
+        );
+        assert!(!md.contains("project.onboard"), "{md}");
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert_eq!(json["ideaExplore"]["cases"], 1);
+        assert_eq!(json["ideaExplore"]["passRate"]["median"], 0.5);
+        assert!(json.get("projectOnboard").is_none());
     }
 }

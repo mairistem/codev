@@ -169,8 +169,8 @@ pub struct PlanningFigures {
 }
 
 /// The figures of a check-scored step in `report.json` — `plan.update`,
-/// `change.sync`, `change.archive` or `configure.enrich`: medians and
-/// ranges over the repetitions.
+/// `change.sync`, `change.archive`, `configure.enrich`, `idea.explore` or
+/// `project.onboard`: medians and ranges over the repetitions.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CheckStepFigures {
@@ -224,6 +224,10 @@ pub struct Baseline {
     pub change_archive: Option<CheckStepFigures>,
     /// The configure step, when the baseline holds configure runs.
     pub configure_enrich: Option<CheckStepFigures>,
+    /// The explore step, when the baseline holds explore runs.
+    pub idea_explore: Option<CheckStepFigures>,
+    /// The onboard step, when the baseline holds onboard runs.
+    pub project_onboard: Option<CheckStepFigures>,
     /// The sums of the cases' median consumption.
     pub consumption: Option<Measures>,
     /// Where the tokens go, ranked by cost; empty when no run recorded its
@@ -257,6 +261,10 @@ struct ReportFile {
     change_archive: Option<CheckStepFigures>,
     #[serde(default)]
     configure_enrich: Option<CheckStepFigures>,
+    #[serde(default)]
+    idea_explore: Option<CheckStepFigures>,
+    #[serde(default)]
+    project_onboard: Option<CheckStepFigures>,
     #[serde(default)]
     consumption: Option<Measures>,
     #[serde(default)]
@@ -319,6 +327,8 @@ impl Baseline {
             change_sync: report.change_sync,
             change_archive: report.change_archive,
             configure_enrich: report.configure_enrich,
+            idea_explore: report.idea_explore,
+            project_onboard: report.project_onboard,
             consumption: report.consumption,
             sources: report.sources,
         })
@@ -570,6 +580,8 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         (&b.change_sync, "sync", "de synchronisation"),
         (&b.change_archive, "archive", "d'archivage"),
         (&b.configure_enrich, "configure", "de configuration"),
+        (&b.idea_explore, "explore", "d'exploration"),
+        (&b.project_onboard, "onboard", "de prise en main"),
     ] {
         if let Some(f) = figures {
             planning.push_str(&format!(", {} {}", f.cases, lang.pick(en, fr)));
@@ -796,6 +808,12 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     }
     if let Some(f) = &b.configure_enrich {
         checked_section(&mut out, Step::ConfigureEnrich, f, lang);
+    }
+    if let Some(f) = &b.idea_explore {
+        checked_section(&mut out, Step::IdeaExplore, f, lang);
+    }
+    if let Some(f) = &b.project_onboard {
+        checked_section(&mut out, Step::ProjectOnboard, f, lang);
     }
     if let Some(m) = &b.consumption {
         consumption_section(&mut out, b, m, lang);
@@ -1258,13 +1276,18 @@ fn update_section(out: &mut String, u: &CheckStepFigures, lang: Lang) {
     out.push('\n');
 }
 
-/// A sync, archive or configure step: what its cases do, then its three
-/// measures, median and range.
+/// A sync, archive, configure, explore or onboard step: what its cases
+/// do, then its three measures, median and range.
 fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lang) {
     let (title_en, title_fr) = match step {
         Step::ChangeSync => ("Syncing a change", "La synchronisation d'une modification"),
         Step::ChangeArchive => ("Archiving a change", "L'archivage d'une modification"),
         Step::ConfigureEnrich => ("Configuring a project", "La configuration d'un projet"),
+        Step::IdeaExplore => ("Exploring an idea", "L'exploration d'une idée"),
+        Step::ProjectOnboard => (
+            "Discovering compagnon on a project",
+            "La découverte de compagnon sur un projet",
+        ),
         other => unreachable!("{} has no check-scored section", other.as_str()),
     };
     let skill = if step == Step::ChangeSync {
@@ -1293,6 +1316,43 @@ fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lan
              aucun fichier hors de l'étape n'est modifié, et la réponse dit ce que le cas attend. \
              Quand la compétence demande s'il faut mettre compagnon à jour, l'exécution répond **Plus tard**.",
             step = step.as_str(),
+        ),
+        (Step::IdeaExplore, Lang::En) => format!(
+            "{n} cases (`idea.explore`) run `/compagnon-explore` on a request about a small \
+             project, each expecting one of the three ways the skill ends — the idea \
+             crystallizes into a change to propose, information is missing, or it is not worth \
+             pursuing. Each run is checked without a model{c}no file is modified, created or \
+             removed, no change is created, and the agent's final message holds the mark of the \
+             expected outcome and none of the others'. No user answers: where the skill would \
+             ask, the run ends as the skill says."
+        ),
+        (Step::IdeaExplore, Lang::Fr) => format!(
+            "{n} cas (`idea.explore`) lancent `/compagnon-explore` sur une demande portant sur un \
+             petit projet, chacun attendant l'une des trois issues que nomme la compétence — \
+             l'idée se cristallise en une modification à proposer, une information manque, ou \
+             elle ne vaut pas d'être poursuivie. Chaque exécution est vérifiée sans modèle{c}aucun \
+             fichier n'est modifié, créé ou supprimé, aucune modification n'est créée, et le \
+             dernier message de l'agent porte la marque de l'issue attendue et aucune de celles \
+             des autres. Personne ne répond{c}là où la compétence poserait une question, \
+             l'exécution s'arrête comme la compétence le dit."
+        ),
+        (Step::ProjectOnboard, Lang::En) => format!(
+            "{n} cases (`project.onboard`) run `/compagnon-onboard` on a small project, one per \
+             row of the skill's recommendation table — no `_compagnon/`, a thin configuration, a \
+             configured project, an active change whose plan is incomplete, one ready to \
+             implement, several active changes. Each run is checked without a model{c}no file is \
+             modified, created or removed, no change is created, and the agent's final message \
+             recommends the next action of the project's state and none of the other states'."
+        ),
+        (Step::ProjectOnboard, Lang::Fr) => format!(
+            "{n} cas (`project.onboard`) lancent `/compagnon-onboard` sur un petit projet, un par \
+             ligne du tableau de recommandations de la compétence — pas de `_compagnon/`, une \
+             configuration sommaire, un projet configuré, une modification active dont le plan \
+             est incomplet, une modification prête à être implémentée, plusieurs modifications \
+             actives. Chaque exécution est vérifiée sans modèle{c}aucun fichier n'est modifié, \
+             créé ou supprimé, aucune modification n'est créée, et le dernier message de l'agent \
+             recommande l'action suivante de l'état du projet, et aucune de celles des autres \
+             états."
         ),
         (_, Lang::En) => format!(
             "{n} cases (`configure.enrich`) run `/compagnon-configure` on a small project, the \
@@ -2138,6 +2198,8 @@ mod tests {
             change_sync: None,
             change_archive: None,
             configure_enrich: None,
+            idea_explore: None,
+            project_onboard: None,
             consumption: None,
             sources: vec![],
         }
@@ -2576,5 +2638,49 @@ mod tests {
         }
         let without = page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En);
         assert!(!without.contains("Configuring a project"));
+    }
+
+    #[test]
+    fn the_reliability_chapter_gives_the_explore_and_onboard_measures() {
+        let report = report_json("2026-10-13", 2).replacen(
+            r#""cases":[{"id":"a"}"#,
+            r#""projectOnboard":{"cases":6,"passRate":{"median":0.9,"min":0.8,"max":1.0},"checkRate":null,"strayed":null,"repetitions":[]},"cases":[{"id":"a"}"#,
+            1,
+        );
+        let parsed = Baseline::parse(&report, RUN_JSON).unwrap();
+        assert_eq!(parsed.project_onboard.unwrap().cases, 6);
+        assert_eq!(parsed.idea_explore, None);
+        let mut b = baseline(vec![role("security", 2, 2, 0)]);
+        b.project_onboard = Some(figures(6));
+        let en = page(&b, Lang::En);
+        for needle in [
+            "## Discovering compagnon on a project",
+            "6 cases (`project.onboard`)",
+            "| Runs that pass | 0.90 (0.80–1.00) |",
+            "6 onboard)",
+        ] {
+            assert!(en.contains(needle), "missing {needle} in {en}");
+        }
+        assert!(!en.contains("Exploring an idea"), "{en}");
+        let fr = page(&b, Lang::Fr);
+        for needle in [
+            "## La découverte de compagnon sur un projet",
+            "6 cas (`project.onboard`)",
+            "| Exécutions qui réussissent | 0,90 (0,80–1,00) |",
+            "6 de prise en main)",
+        ] {
+            assert!(fr.contains(needle), "missing {needle} in {fr}");
+        }
+        assert!(!fr.contains("{c}"), "{fr}");
+        b.idea_explore = Some(figures(3));
+        let en = page(&b, Lang::En);
+        let explore = en.find("## Exploring an idea").expect("an explore section");
+        let onboard = en.find("## Discovering compagnon").unwrap();
+        assert!(explore < onboard, "{en}");
+        assert!(en.contains("3 cases (`idea.explore`)"), "{en}");
+        assert!(page(&b, Lang::Fr).contains("## L'exploration d'une idée"));
+        let without = page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En);
+        assert!(!without.contains("Discovering compagnon"));
+        assert!(!without.contains("Exploring an idea"));
     }
 }

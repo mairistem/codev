@@ -57,6 +57,11 @@ pub struct Observed {
     /// other run.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub configure: Option<ConfigureObserved>,
+    /// What an explore or onboard run concluded and created; `None` for
+    /// any other run. The files it touched are in `strayed`: at these
+    /// steps, every file is outside the step.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub read_only: Option<ReadOnlyObserved>,
 }
 
 /// The files under `_compagnon/` a run or a command left different from the
@@ -112,6 +117,19 @@ pub struct ConfigureObserved {
     /// Why `compagnon status --json` did not read the project after the run;
     /// `None` when it did.
     pub status_error: Option<String>,
+}
+
+/// An explore or onboard run, as the runner observed it.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadOnlyObserved {
+    /// The agent's final message, its conclusion; `None` when it wrote
+    /// none. The narration before it is in `Observed::messages`.
+    pub final_message: Option<String>,
+    /// The folders that appeared under `_compagnon/changes/`, archive aside:
+    /// a change the run created, even one without a file git would list.
+    #[serde(default)]
+    pub changes_created: Vec<String>,
 }
 
 /// An implementation run, as the runner checked it after the agent.

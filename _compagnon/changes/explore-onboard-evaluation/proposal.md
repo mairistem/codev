@@ -60,12 +60,12 @@ measure today, so a change to their text could not be judged.
 
 ## Domains
 
-- [ ] security
+- [ ] security — the match is the `pyproject.toml` of the Python fixtures under `evals/cases/onboard-*/base/`, sample projects the skills read; no dependency of Compagnon changes
 - [ ] personal-data — the match is the word "phone" in the home page's example (`docs/site/index.html`), from another change on the branch
 - [ ] user-interface — the matches are the documentation and its stylesheet, changed by other changes on the branch; this change adds evaluation cases only
 - [ ] performance — the match is « cache » in French text of `evals/src/reliability.rs`, from another change on the branch
-- [ ] operations
-- [ ] migration
+- [ ] operations — the matches are words of the `explore-not-worth-gateway-retry` fixture (a sample Go gateway's retry), text the skill reads; nothing Compagnon runs changes
+- [ ] migration — the match is `#[serde(deny_unknown_fields)]` on the evaluation case format (`evals/src/case.rs`), read from `evals/cases/` only, as the other case formats; no persisted user data
 
 ## Release note
 

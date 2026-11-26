@@ -230,6 +230,7 @@ mod tests {
             implement: None,
             merge: None,
             configure: None,
+            read_only: None,
         }
     }
 

@@ -1,0 +1,11 @@
+# A project compagnon was never initialized in: the skills are there, the
+# `_compagnon/` folder is not. The recommendation is `compagnon init`, for
+# the user to type; nothing is created.
+step: project.onboard
+kind: seeded
+stacks: [javascript]
+summary: "A Node CLI without `_compagnon/`: onboard recommends `compagnon init` and none of the later steps."
+expected:
+  state: no-compagnon
+  contains: ["compagnon init"]
+  absent: ["/compagnon-apply", "/compagnon-configure"]

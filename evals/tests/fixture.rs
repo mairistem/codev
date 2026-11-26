@@ -84,6 +84,7 @@ fn the_planning_fixture_holds_the_ref_and_the_skills_of_the_compagnon_under_test
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     };
     let tools = Tools {
         claude: PathBuf::from("claude"),
@@ -162,6 +163,7 @@ fn the_update_fixture_lays_the_change_on_the_ref() {
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     };
     let tools = Tools {
         claude: PathBuf::from("claude"),
@@ -204,6 +206,7 @@ fn bare_case(id: &str, step: Step, change: &str) -> Case {
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     }
 }
 
@@ -362,6 +365,45 @@ fn the_configure_fixture_without_a_configuration_keeps_the_skills() {
         dir.join(".claude/skills/compagnon-configure/SKILL.md")
             .exists()
     );
+}
+
+#[test]
+fn an_onboard_case_without_compagnon() {
+    let root = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("onboard-fixture");
+    let _ = fs::remove_dir_all(&root);
+    let case_dir = root.join("case");
+    write(&case_dir.join("base/README.md"), "# Notes\n");
+    // The compagnon under test: `init` writes a configuration and the skills.
+    let bin = root.join("bin");
+    fs::create_dir_all(&bin).unwrap();
+    let compagnon: PathBuf = bin.join("compagnon");
+    fs::write(
+        &compagnon,
+        "#!/bin/sh\n[ \"$1\" = \"init\" ] || exit 3\n\
+         mkdir -p _compagnon/changes .claude/skills/compagnon-onboard\n\
+         printf 'schema: spec-driven\\n' > _compagnon/config.yaml\n\
+         printf 'skill\\n' > .claude/skills/compagnon-onboard/SKILL.md\n",
+    )
+    .unwrap();
+    fs::set_permissions(&compagnon, fs::Permissions::from_mode(0o755)).unwrap();
+    let tools = Tools {
+        claude: PathBuf::from("claude"),
+        compagnon,
+        git: PathBuf::from("git"),
+    };
+    let dir = root.join("work").join("onboard-x-1");
+    runner::setup_configure(&case_dir, &dir, &tools).unwrap();
+    assert_eq!(
+        fs::read_to_string(dir.join(".claude/skills/compagnon-onboard/SKILL.md")).unwrap(),
+        "skill\n"
+    );
+    assert!(!dir.join("_compagnon").exists());
+    assert_eq!(
+        fs::read_to_string(dir.join("README.md")).unwrap(),
+        "# Notes\n"
+    );
+    assert_eq!(git(&dir, &["status", "--porcelain"]), "");
+    assert!(runner::change_folders(&dir).is_empty());
 }
 
 #[test]

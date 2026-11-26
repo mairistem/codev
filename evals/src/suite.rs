@@ -370,6 +370,8 @@ pub fn score_dir_only(
             score::merge_case(case, observed)
         } else if case.configure.is_some() {
             score::configure_case(case, observed)
+        } else if case.read_only.is_some() {
+            score::read_only_case(case, observed)
         } else {
             score::case(case, observed)
         };

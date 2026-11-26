@@ -306,6 +306,7 @@ triggers:
                 compagnon_root: after.is_some(),
                 status_error: None,
             }),
+            read_only: None,
         }
     }
 

@@ -1,0 +1,10 @@
+# One active change whose plan is complete — proposal, specs, design and
+# tasks: the recommendation is `/compagnon-apply add-ingredient-search`.
+step: project.onboard
+kind: seeded
+stacks: [python]
+summary: "A configured Python app with one change, `add-ingredient-search`, fully planned: onboard recommends `/compagnon-apply` on it."
+expected:
+  state: planning-complete
+  contains: ["/compagnon-apply", "add-ingredient-search"]
+  absent: ["/compagnon-propose", "/compagnon-configure"]

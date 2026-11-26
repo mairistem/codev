@@ -3,7 +3,7 @@
 //! strayed — come first and are unit-tested; the shell parts below them
 //! touch the disk and start processes, and are exercised by real runs.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -155,6 +155,30 @@ pub fn prompt(case: &Case) -> String {
                  « {answer} ». {LATER}"
             )
         }
+        // The prompt names the skill, the request and the evaluation mode,
+        // and nothing of the outcome or the state: the checks measure where
+        // the skill leads the agent. Neither skill checks the version.
+        Step::IdeaExplore => {
+            let request = case
+                .read_only
+                .as_ref()
+                .and_then(|r| r.request())
+                .unwrap_or("");
+            format!(
+                "Run the `compagnon-explore` skill (read .claude/skills/compagnon-explore/SKILL.md and follow it) \
+                 on this topic:\n\
+                 \n\
+                 « {request} »\n\
+                 \n\
+                 {NO_ANSWER}"
+            )
+        }
+        Step::ProjectOnboard => format!(
+            "Run the `compagnon-onboard` skill (read .claude/skills/compagnon-onboard/SKILL.md and follow it) \
+             on this project.\n\
+             \n\
+             {NO_ANSWER}"
+        ),
         Step::PlanTrace => format!(
             "This is a compagnon role evaluation, run without a user. The change `{change}` exists and its planning \
              artifacts are written.\n\
@@ -173,6 +197,13 @@ pub fn prompt(case: &Case) -> String {
 /// The evaluation mode of a sync or archive run: no user to answer.
 const EVALUATION_MODE: &str = "This is a compagnon evaluation run, without a user: ask no question — \
      wherever the skill says to ask, make the most reasonable assumption.";
+
+/// The evaluation mode of an explore or onboard run: no user to answer,
+/// and no assumption in their place — where the skill would ask, it ends
+/// as it says, which is how `explore` reaches its outcome that information
+/// is missing.
+const NO_ANSWER: &str = "This is a compagnon evaluation run, without a user: the user cannot answer. \
+     Ask no question — wherever the skill would ask, end as the skill says.";
 
 /// The author's answer to the skills' update check.
 const LATER: &str = "If the skill asks whether to update compagnon, the author answers **Later**.";
@@ -573,7 +604,7 @@ pub fn claude_args(
 
 /// The steps `--step` accepts: `review` for the three review steps, or a
 /// step's own name.
-pub const STEP_SELECTORS: [&str; 10] = [
+pub const STEP_SELECTORS: [&str; 12] = [
     "review",
     "plan.challenge",
     "code.review",
@@ -584,6 +615,8 @@ pub const STEP_SELECTORS: [&str; 10] = [
     "change.sync",
     "change.archive",
     "configure.enrich",
+    "idea.explore",
+    "project.onboard",
 ];
 
 /// The cases of the steps named, all of them when none is; an unknown name
@@ -668,6 +701,8 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
             Step::ChangeSync => path.starts_with(SPECS_DIR),
             Step::ChangeArchive => path.starts_with(SPECS_DIR) || path.starts_with(CHANGES_DIR),
             Step::ConfigureEnrich => path == crate::case::CONFIG_PATH,
+            // Read-only skills: every file counts, the skills' own included.
+            Step::IdeaExplore | Step::ProjectOnboard => false,
             Step::PlanChallenge | Step::CodeReview => path == review,
         };
         if !allowed {
@@ -1592,9 +1627,9 @@ pub fn setup_plan(
     Ok(())
 }
 
-/// Builds a configure case's project in `dir`: `base/` in a new
-/// repository, the skills of the compagnon under test installed without
-/// changing the case's configuration, committed. A project without
+/// Builds a configure, explore or onboard case's project in `dir`: `base/`
+/// in a new repository, the skills of the compagnon under test installed
+/// without changing the case's configuration, committed. A project without
 /// `_compagnon/config.yaml` gets the skills from `compagnon init`, then loses
 /// `_compagnon/`, so that the skill meets the project a user would have.
 pub fn setup_configure(case_dir: &Path, dir: &Path, tools: &Tools) -> Result<(), String> {
@@ -1929,12 +1964,13 @@ pub fn run_case(
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     };
     if let Err(e) = fs::create_dir_all(log) {
         observed.error = Some(format!("cannot create {}: {e}", log.display()));
         return observed;
     }
-    let built = if case.step == Step::ConfigureEnrich {
+    let built = if case.step == Step::ConfigureEnrich || case.step.is_read_only() {
         setup_configure(case_dir, work_dir, tools)
     } else if case.step.replays_history() {
         setup_plan(case, repo, work_dir, tools, extra_config_for(case, review))
@@ -1976,6 +2012,7 @@ pub fn run_case(
         }
     }
     let configure_before = fs::read_to_string(work_dir.join(crate::case::CONFIG_PATH)).ok();
+    let changes_before = change_folders(work_dir);
     let config_before = fs::read(work_dir.join(".git").join("config")).unwrap_or_default();
     let args = claude_args(&prompt(case), settings, case.step, review);
     let isolated = review.isolated_at(case.step);
@@ -2009,7 +2046,7 @@ pub fn run_case(
             // Only the check-scored steps read the agent's messages; keeping
             // them for the other steps would only make `observed.json`
             // larger.
-            if case.step == Step::PlanUpdate || case.step.is_merge_or_configure() {
+            if case.step == Step::PlanUpdate || case.step.is_check_scored() {
                 observed.messages = output.messages;
             }
         }
@@ -2067,6 +2104,15 @@ pub fn run_case(
             status_error: status_error(tools, work_dir),
         });
     }
+    if case.step.is_read_only() {
+        observed.read_only = Some(crate::observed::ReadOnlyObserved {
+            final_message: observed.messages.last().cloned(),
+            changes_created: change_folders(work_dir)
+                .difference(&changes_before)
+                .cloned()
+                .collect(),
+        });
+    }
     if case.step.records_findings() {
         match compagnon_json(
             tools,
@@ -2091,6 +2137,20 @@ pub fn run_case(
         observed.files.insert(path, content);
     }
     observed
+}
+
+/// The folders of `dir/_compagnon/changes/`, archive aside, by path from
+/// `dir`.
+pub fn change_folders(dir: &Path) -> BTreeSet<String> {
+    fs::read_dir(dir.join(CHANGES_DIR))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|e| e.path().is_dir())
+        .filter_map(|e| e.file_name().into_string().ok())
+        .filter(|name| name != "archive")
+        .map(|name| format!("{CHANGES_DIR}{name}"))
+        .collect()
 }
 
 /// An implementation run, once its fixture is built: the build prepared,
@@ -4405,6 +4465,142 @@ mod tests {
         );
     }
 
+    fn read_only_case(id: &str, situation: crate::case::Situation) -> Case {
+        let mut case = a_case("planner", Kind::Seeded, &[]);
+        case.id = id.into();
+        case.step = match situation {
+            crate::case::Situation::Explore { .. } => Step::IdeaExplore,
+            crate::case::Situation::Onboard(_) => Step::ProjectOnboard,
+        };
+        case.change = String::new();
+        case.read_only = Some(crate::case::ReadOnlyCase {
+            situation,
+            contains: vec!["/compagnon-propose".into()],
+            absent: vec!["is missing".into()],
+        });
+        case
+    }
+
+    fn explore_case(request: &str) -> Case {
+        read_only_case(
+            "explore-x",
+            crate::case::Situation::Explore {
+                request: request.into(),
+                outcome: crate::case::ExploreOutcome::Missing,
+            },
+        )
+    }
+
+    fn onboard_case() -> Case {
+        read_only_case(
+            "onboard-x",
+            crate::case::Situation::Onboard(crate::case::OnboardState::PlanningComplete),
+        )
+    }
+
+    #[test]
+    fn the_prompt_of_an_explore_case() {
+        let text = prompt(&explore_case("rate limiting for the API"));
+        for needle in [
+            "`compagnon-explore`",
+            ".claude/skills/compagnon-explore/SKILL.md",
+            "« rate limiting for the API »",
+            "the user cannot answer",
+            "wherever the skill would ask, end as the skill says",
+        ] {
+            assert!(text.contains(needle), "missing {needle} in {text}");
+        }
+        let onboard = prompt(&onboard_case());
+        for needle in [
+            "`compagnon-onboard`",
+            ".claude/skills/compagnon-onboard/SKILL.md",
+            "the user cannot answer",
+        ] {
+            assert!(onboard.contains(needle), "missing {needle} in {onboard}");
+        }
+        for text in [&text, &onboard] {
+            let lower = text.to_lowercase();
+            for word in [
+                "crystal",
+                "missing",
+                "worth",
+                "outcome",
+                "propose",
+                "configure",
+                "apply",
+                "init",
+                "update",
+                "later",
+                "assum",
+            ] {
+                assert!(
+                    !lower.contains(word),
+                    "the prompt says where to end ({word}): {text}"
+                );
+            }
+        }
+        let defaults = ClaudeSettings::from_env(&|_| None).unwrap();
+        for step in [Step::IdeaExplore, Step::ProjectOnboard] {
+            assert_eq!(defaults.budget_for(step), 3.0);
+            assert_eq!(defaults.timeout_for(step), Duration::from_secs(600));
+        }
+    }
+
+    #[test]
+    fn selecting_the_explore_cases() {
+        let cases = vec![
+            explore_case("x"),
+            onboard_case(),
+            configure_case(true),
+            a_case("security", Kind::Seeded, &[]),
+        ];
+        let ids = |steps: &[&str]| -> Vec<String> {
+            select_steps(
+                &cases,
+                &steps.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
+            )
+            .unwrap()
+            .iter()
+            .map(|c| c.id.clone())
+            .collect()
+        };
+        assert_eq!(ids(&["idea.explore"]), ["explore-x"]);
+        assert_eq!(ids(&["project.onboard"]), ["onboard-x"]);
+        for other in ["review", "configure.enrich", "plan.write"] {
+            assert!(
+                ids(&[other])
+                    .iter()
+                    .all(|id| id != "explore-x" && id != "onboard-x"),
+                "{other}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_run_that_creates_a_file() {
+        let status = "?? notes.md\0";
+        assert_eq!(strayed(status, &explore_case("x")), ["notes.md"]);
+        let skill = " M .claude/skills/compagnon-onboard/SKILL.md\0 D README.md\0";
+        assert_eq!(
+            strayed(skill, &onboard_case()),
+            [".claude/skills/compagnon-onboard/SKILL.md", "README.md"]
+        );
+    }
+
+    #[test]
+    fn a_change_folder_created_by_the_run_is_found() {
+        let dir =
+            std::env::temp_dir().join(format!("compagnon-change-folders-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(dir.join("_compagnon/changes/archive/2026-01-01-old")).unwrap();
+        fs::create_dir_all(dir.join("_compagnon/changes/add-auth")).unwrap();
+        fs::write(dir.join("_compagnon/changes/.gitkeep"), "").unwrap();
+        let found: Vec<String> = change_folders(&dir).into_iter().collect();
+        assert_eq!(found, ["_compagnon/changes/add-auth"]);
+        assert!(change_folders(&dir.join("absent")).is_empty());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
     #[test]
     fn sync_archive_and_configure_cases_ignore_the_review_options() {
         let review = ReviewSettings {
@@ -4415,6 +4611,8 @@ mod tests {
             merge_case("archive-x", Step::ChangeArchive, "add-auth"),
             merge_case("sync-x", Step::ChangeSync, "add-auth"),
             configure_case(true),
+            explore_case("x"),
+            onboard_case(),
         ] {
             assert_eq!(extra_config_for(&case, &review), None, "{}", case.id);
             assert!(!review.isolated_at(case.step), "{}", case.id);

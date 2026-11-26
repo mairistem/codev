@@ -37,6 +37,10 @@ pub enum Step {
     /// `/compagnon-configure` enriching a project's configuration: a
     /// configure case.
     ConfigureEnrich,
+    /// `/compagnon-explore` on a request: a read-only case.
+    IdeaExplore,
+    /// `/compagnon-onboard` on a project: a read-only case.
+    ProjectOnboard,
 }
 
 impl Step {
@@ -51,6 +55,8 @@ impl Step {
             "change.sync" => Some(Step::ChangeSync),
             "change.archive" => Some(Step::ChangeArchive),
             "configure.enrich" => Some(Step::ConfigureEnrich),
+            "idea.explore" => Some(Step::IdeaExplore),
+            "project.onboard" => Some(Step::ProjectOnboard),
             _ => None,
         }
     }
@@ -66,6 +72,8 @@ impl Step {
             Step::ChangeSync => "change.sync",
             Step::ChangeArchive => "change.archive",
             Step::ConfigureEnrich => "configure.enrich",
+            Step::IdeaExplore => "idea.explore",
+            Step::ProjectOnboard => "project.onboard",
         }
     }
 
@@ -89,14 +97,24 @@ impl Step {
         )
     }
 
-    /// The sync, archive and configure steps: scored by named checks, as
-    /// `plan.update` is, but recorded in `CaseScore::checks` rather than in
-    /// a field of their own.
-    pub fn is_merge_or_configure(self) -> bool {
+    /// The sync, archive, configure, explore and onboard steps: scored by
+    /// named checks, as `plan.update` is, but recorded in
+    /// `CaseScore::checks` rather than in a field of their own.
+    pub fn is_check_scored(self) -> bool {
         matches!(
             self,
-            Step::ChangeSync | Step::ChangeArchive | Step::ConfigureEnrich
+            Step::ChangeSync
+                | Step::ChangeArchive
+                | Step::ConfigureEnrich
+                | Step::IdeaExplore
+                | Step::ProjectOnboard
         )
+    }
+
+    /// The steps of the read-only skills, explore and onboard: a project
+    /// in `base/`, and nothing the run may write.
+    pub fn is_read_only(self) -> bool {
+        matches!(self, Step::IdeaExplore | Step::ProjectOnboard)
     }
 
     /// Whether the step writes a review record (the tracer fixes instead).
@@ -365,6 +383,8 @@ pub struct Case {
     pub merge: Option<MergeCase>,
     /// What a configure case lays and expects; `None` for any other case.
     pub configure: Option<ConfigureCase>,
+    /// What an explore or onboard case expects; `None` for any other case.
+    pub read_only: Option<ReadOnlyCase>,
 }
 
 /// A requirement named as `<capability>::<requirement name>`.
@@ -574,6 +594,115 @@ pub struct ConfigureCase {
     pub contains: Vec<String>,
     /// `base/_compagnon/config.yaml`; `None` for a project without one.
     pub config: Option<String>,
+}
+
+/// The three ways `/compagnon-explore` says an exploration ends.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ExploreOutcome {
+    /// It crystallizes into a change to propose.
+    Crystallizes,
+    /// Information is missing.
+    Missing,
+    /// It is not worth pursuing: the code already does it.
+    NotWorth,
+}
+
+impl ExploreOutcome {
+    pub const ALL: [ExploreOutcome; 3] = [
+        ExploreOutcome::Crystallizes,
+        ExploreOutcome::Missing,
+        ExploreOutcome::NotWorth,
+    ];
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            ExploreOutcome::Crystallizes => "crystallizes",
+            ExploreOutcome::Missing => "missing",
+            ExploreOutcome::NotWorth => "not-worth",
+        }
+    }
+
+    pub fn parse(text: &str) -> Option<ExploreOutcome> {
+        Self::ALL.into_iter().find(|o| o.as_str() == text)
+    }
+}
+
+/// The rows of `/compagnon-onboard`'s recommendation table: the state a
+/// project is in.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum OnboardState {
+    /// No `_compagnon/`.
+    NoCompagnon,
+    /// No active change, no entry under `rules:`.
+    ThinConfig,
+    /// No active change, rules written.
+    Configured,
+    /// One active change whose planning is incomplete.
+    PlanningIncomplete,
+    /// One active change ready to implement.
+    PlanningComplete,
+    /// Several active changes.
+    SeveralChanges,
+}
+
+impl OnboardState {
+    pub const ALL: [OnboardState; 6] = [
+        OnboardState::NoCompagnon,
+        OnboardState::ThinConfig,
+        OnboardState::Configured,
+        OnboardState::PlanningIncomplete,
+        OnboardState::PlanningComplete,
+        OnboardState::SeveralChanges,
+    ];
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            OnboardState::NoCompagnon => "no-compagnon",
+            OnboardState::ThinConfig => "thin-config",
+            OnboardState::Configured => "configured",
+            OnboardState::PlanningIncomplete => "planning-incomplete",
+            OnboardState::PlanningComplete => "planning-complete",
+            OnboardState::SeveralChanges => "several-changes",
+        }
+    }
+
+    pub fn parse(text: &str) -> Option<OnboardState> {
+        Self::ALL.into_iter().find(|s| s.as_str() == text)
+    }
+}
+
+/// What an explore or onboard case is about: the request and the outcome
+/// expected, or the project's state.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Situation {
+    Explore {
+        /// The topic said to `/compagnon-explore`.
+        request: String,
+        outcome: ExploreOutcome,
+    },
+    Onboard(OnboardState),
+}
+
+/// An explore or onboard case: a small project, its situation, and what
+/// the agent's final message must and must not hold.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReadOnlyCase {
+    pub situation: Situation,
+    /// Texts the final message must hold: the mark of the expected outcome
+    /// or recommendation.
+    pub contains: Vec<String>,
+    /// Texts it must not hold: the marks of the other outcomes or states.
+    pub absent: Vec<String>,
+}
+
+impl ReadOnlyCase {
+    /// The request of an explore case; `None` for an onboard case.
+    pub fn request(&self) -> Option<&str> {
+        match &self.situation {
+            Situation::Explore { request, .. } => Some(request),
+            Situation::Onboard(_) => None,
+        }
+    }
 }
 
 /// The tasks of a `tasks.md`, in order: each one's id (`2.3`) and whether
@@ -994,6 +1123,7 @@ fn load_plan(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError>
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     })
 }
 
@@ -1138,6 +1268,7 @@ fn load_update(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseErro
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     })
 }
 
@@ -1298,6 +1429,7 @@ fn load_implement(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseE
         }),
         merge: None,
         configure: None,
+        read_only: None,
     })
 }
 
@@ -1455,6 +1587,7 @@ fn load_merge(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result<Cas
             overlay: fixture.overlay.clone(),
         }),
         configure: None,
+        read_only: None,
     })
 }
 
@@ -1609,6 +1742,165 @@ fn load_configure(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseE
             contains,
             config,
         }),
+        read_only: None,
+    })
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ReadOnlyCaseFile {
+    step: String,
+    kind: String,
+    #[serde(default)]
+    stacks: Vec<String>,
+    summary: String,
+    #[serde(default)]
+    request: Option<String>,
+    expected: ReadOnlyExpectedFile,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ReadOnlyExpectedFile {
+    #[serde(default)]
+    outcome: Option<String>,
+    #[serde(default)]
+    state: Option<String>,
+    #[serde(default)]
+    contains: Vec<String>,
+    #[serde(default)]
+    absent: Vec<String>,
+}
+
+/// Loads an explore or onboard case: a `case.yaml` and its `base/`, the
+/// project as it stands.
+fn load_read_only(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
+    let fail = |message: String| CaseError {
+        case: id.to_string(),
+        message,
+    };
+    let file: ReadOnlyCaseFile =
+        serde_norway::from_str(yaml).map_err(|e| fail(format!("case.yaml: {e}")))?;
+    if file.kind != "seeded" {
+        return Err(fail(format!(
+            "unknown kind `{}` for a {} case; expected seeded",
+            file.kind, file.step
+        )));
+    }
+    if !fixture.change.is_empty() || !fixture.overlay.is_empty() {
+        return Err(fail(format!(
+            "a {} case holds only `base/`: the project as it stands",
+            file.step
+        )));
+    }
+    if fixture.base.is_empty() {
+        return Err(fail("`base/` is missing: it holds the project".into()));
+    }
+    check_fixture_files(fixture).map_err(fail)?;
+    let expected = file.expected;
+    let situation = if step == Step::IdeaExplore {
+        let request = file
+            .request
+            .as_deref()
+            .map(str::trim)
+            .filter(|r| !r.is_empty())
+            .ok_or_else(|| fail("an explore case needs a `request`: the topic explored".into()))?;
+        if expected.state.is_some() {
+            return Err(fail(
+                "`state` is for an onboard case; an explore case expects an `outcome`".into(),
+            ));
+        }
+        let names = || {
+            ExploreOutcome::ALL
+                .iter()
+                .map(|o| o.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+        let outcome = match expected.outcome.as_deref() {
+            None => {
+                return Err(fail(format!(
+                    "an explore case needs an `outcome`: one of {}",
+                    names()
+                )));
+            }
+            Some(text) => ExploreOutcome::parse(text.trim()).ok_or_else(|| {
+                fail(format!(
+                    "unknown `outcome` `{text}`; expected one of {}",
+                    names()
+                ))
+            })?,
+        };
+        Situation::Explore {
+            request: request.to_string(),
+            outcome,
+        }
+    } else {
+        if file.request.is_some() {
+            return Err(fail(
+                "an onboard case holds no `request`: the skill takes none".into(),
+            ));
+        }
+        if expected.outcome.is_some() {
+            return Err(fail(
+                "`outcome` is for an explore case; an onboard case expects a `state`".into(),
+            ));
+        }
+        let names = || {
+            OnboardState::ALL
+                .iter()
+                .map(|s| s.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+        let state = match expected.state.as_deref() {
+            None => {
+                return Err(fail(format!(
+                    "an onboard case needs a `state`: one of {}",
+                    names()
+                )));
+            }
+            Some(text) => OnboardState::parse(text.trim()).ok_or_else(|| {
+                fail(format!(
+                    "unknown `state` `{text}`; expected one of {}",
+                    names()
+                ))
+            })?,
+        };
+        Situation::Onboard(state)
+    };
+    let contains = texts("contains", &expected.contains).map_err(fail)?;
+    let absent = texts("absent", &expected.absent).map_err(fail)?;
+    for (field, list, what) in [
+        ("contains", &contains, "a text the final message must hold"),
+        ("absent", &absent, "a mark of another outcome or state"),
+    ] {
+        if list.is_empty() {
+            return Err(fail(format!("`{field}` is empty: it needs {what}")));
+        }
+    }
+    Ok(Case {
+        id: id.to_string(),
+        role: PLANNER.to_string(),
+        step,
+        change: String::new(),
+        stacks: file.stacks,
+        kind: Kind::Seeded,
+        summary: file.summary,
+        expected: Vec::new(),
+        fixed: Vec::new(),
+        unchanged: Vec::new(),
+        planned: Vec::new(),
+        plan: None,
+        update: None,
+        implement: None,
+        merge: None,
+        configure: None,
+        read_only: Some(ReadOnlyCase {
+            situation,
+            contains,
+            absent,
+        }),
     })
 }
 
@@ -1635,6 +1927,10 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
             return load_merge(id, step, yaml, fixture);
         }
         Some("configure.enrich") => return load_configure(id, yaml, fixture),
+        Some(step @ ("idea.explore" | "project.onboard")) => {
+            let step = Step::parse(step).expect("a known step");
+            return load_read_only(id, step, yaml, fixture);
+        }
         _ => {}
     }
     let file: CaseFile =
@@ -1642,7 +1938,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
 
     let step = Step::parse(&file.step).ok_or_else(|| {
         fail(format!(
-            "unknown step `{}`; expected plan.challenge, code.review, plan.trace, plan.write, plan.update, code.implement, change.sync, change.archive or configure.enrich",
+            "unknown step `{}`; expected plan.challenge, code.review, plan.trace, plan.write, plan.update, code.implement, change.sync, change.archive, configure.enrich, idea.explore or project.onboard",
             file.step
         ))
     })?;
@@ -1800,6 +2096,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     })
 }
 
@@ -1893,6 +2190,40 @@ pub const EXPERTS: [&str; 6] = [
 
 /// The stacks the suite's fixtures must include, together.
 pub const STACKS: [&str; 3] = ["rust", "typescript", "python"];
+
+/// The explore outcomes and onboard states the suite holds no case of,
+/// one message per gap; empty when every outcome and every row of
+/// onboard's recommendation table has its case.
+pub fn read_only_gaps(cases: &[Case]) -> Vec<String> {
+    let situations: Vec<&Situation> = cases
+        .iter()
+        .filter_map(|c| c.read_only.as_ref().map(|r| &r.situation))
+        .collect();
+    let mut gaps = Vec::new();
+    for outcome in ExploreOutcome::ALL {
+        if !situations
+            .iter()
+            .any(|s| matches!(s, Situation::Explore { outcome: o, .. } if *o == outcome))
+        {
+            gaps.push(format!(
+                "idea.explore: no case with the outcome `{}`",
+                outcome.as_str()
+            ));
+        }
+    }
+    for state in OnboardState::ALL {
+        if !situations
+            .iter()
+            .any(|s| matches!(s, Situation::Onboard(o) if *o == state))
+        {
+            gaps.push(format!(
+                "project.onboard: no case in the state `{}`",
+                state.as_str()
+            ));
+        }
+    }
+    gaps
+}
 
 /// The roles that need a case in a given stack: (role, stack).
 pub const ROLE_STACKS: [(&str, &str); 2] = [("security", "python"), ("privacy", "python")];
@@ -2256,6 +2587,7 @@ pub(crate) mod tests {
             implement: None,
             merge: None,
             configure: None,
+            read_only: None,
         }
     }
 
@@ -3004,6 +3336,135 @@ pub(crate) mod tests {
         let err = configure_case(yaml, &configure_fixture(true)).unwrap_err();
         assert!(err.to_string().contains("configure-x"), "{err}");
         assert!(err.message.contains("`written`"), "{err}");
+    }
+
+    const EXPLORE_YAML: &str = "step: idea.explore\nkind: seeded\nstacks: [python]\nsummary: A clear idea.\nrequest: rate limiting for the API\nexpected:\n  outcome: crystallizes\n  contains: [\"/compagnon-propose\"]\n  absent: [\"is missing\"]\n";
+
+    const ONBOARD_YAML: &str = "step: project.onboard\nkind: seeded\nstacks: [python]\nsummary: Thin configuration.\nexpected:\n  state: thin-config\n  contains: [\"/compagnon-configure\"]\n  absent: [\"/compagnon-apply\"]\n";
+
+    fn read_only_case(yaml: &str) -> Result<Case, CaseError> {
+        let mut f = Fixture::default();
+        f.base.insert("app.py".into(), b"print('hello')\n".to_vec());
+        load("read-only-x", yaml, &f, &Catalog::default())
+    }
+
+    #[test]
+    fn an_explore_case_that_crystallizes() {
+        let case = read_only_case(EXPLORE_YAML).unwrap();
+        assert_eq!(case.step, Step::IdeaExplore);
+        let r = case.read_only.unwrap();
+        assert_eq!(
+            r.situation,
+            Situation::Explore {
+                request: "rate limiting for the API".into(),
+                outcome: ExploreOutcome::Crystallizes,
+            }
+        );
+        assert_eq!(r.contains, ["/compagnon-propose"]);
+        assert_eq!(r.absent, ["is missing"]);
+        let onboard = read_only_case(ONBOARD_YAML).unwrap();
+        assert_eq!(onboard.step, Step::ProjectOnboard);
+        assert_eq!(
+            onboard.read_only.unwrap().situation,
+            Situation::Onboard(OnboardState::ThinConfig)
+        );
+    }
+
+    #[test]
+    fn an_onboard_case_with_a_request() {
+        let yaml = ONBOARD_YAML.replace("expected:", "request: show me around\nexpected:");
+        let err = read_only_case(&yaml).unwrap_err();
+        assert!(err.to_string().contains("read-only-x"), "{err}");
+        assert!(err.message.contains("`request`"), "{err}");
+        let outcome = ONBOARD_YAML.replace("state: thin-config", "outcome: missing");
+        let err = read_only_case(&outcome).unwrap_err();
+        assert!(err.message.contains("`outcome`"), "{err}");
+    }
+
+    #[test]
+    fn an_explore_case_with_an_unknown_outcome() {
+        let yaml = EXPLORE_YAML.replace("outcome: crystallizes", "outcome: maybe");
+        let err = read_only_case(&yaml).unwrap_err();
+        assert!(err.to_string().contains("read-only-x"), "{err}");
+        assert!(err.message.contains("`outcome`"), "{err}");
+        assert!(err.message.contains("`maybe`"), "{err}");
+        let no_request = EXPLORE_YAML.replace("request: rate limiting for the API\n", "");
+        let err = read_only_case(&no_request).unwrap_err();
+        assert!(err.message.contains("`request`"), "{err}");
+        let with_state = EXPLORE_YAML.replace(
+            "outcome: crystallizes",
+            "outcome: missing\n  state: configured",
+        );
+        let err = read_only_case(&with_state).unwrap_err();
+        assert!(err.message.contains("`state`"), "{err}");
+    }
+
+    #[test]
+    fn an_onboard_case_without_its_state() {
+        let yaml = ONBOARD_YAML.replace("  state: thin-config\n", "");
+        let err = read_only_case(&yaml).unwrap_err();
+        assert!(err.to_string().contains("read-only-x"), "{err}");
+        assert!(err.message.contains("`state`"), "{err}");
+        let unknown = ONBOARD_YAML.replace("thin-config", "half-done");
+        let err = read_only_case(&unknown).unwrap_err();
+        assert!(err.message.contains("`state`"), "{err}");
+    }
+
+    #[test]
+    fn a_read_only_case_needs_both_lists_and_known_keys() {
+        let no_absent = EXPLORE_YAML.replace("  absent: [\"is missing\"]\n", "");
+        let err = read_only_case(&no_absent).unwrap_err();
+        assert!(err.message.contains("`absent`"), "{err}");
+        let empty = ONBOARD_YAML.replace("contains: [\"/compagnon-configure\"]", "contains: []");
+        let err = read_only_case(&empty).unwrap_err();
+        assert!(err.message.contains("`contains`"), "{err}");
+        let unknown = EXPLORE_YAML.replace("summary:", "answer: yes\nsummary:");
+        let err = read_only_case(&unknown).unwrap_err();
+        assert!(err.message.contains("answer"), "{err}");
+        let mut f = Fixture::default();
+        f.base
+            .insert("logo.png".into(), vec![0x89, 0x50, 0xff, 0xfe]);
+        let err = load("read-only-x", EXPLORE_YAML, &f, &Catalog::default()).unwrap_err();
+        assert!(err.message.contains("`base/logo.png`"), "{err}");
+        let mut big = Fixture::default();
+        big.base
+            .insert("big.txt".into(), vec![b'a'; MAX_FIXTURE_FILE_BYTES + 1]);
+        assert!(load("read-only-x", EXPLORE_YAML, &big, &Catalog::default()).is_err());
+    }
+
+    #[test]
+    fn a_missing_state() {
+        let onboard = |state: OnboardState| {
+            let mut c = read_only_case(ONBOARD_YAML).unwrap();
+            c.read_only.as_mut().unwrap().situation = Situation::Onboard(state);
+            c
+        };
+        let explore = |outcome: ExploreOutcome| {
+            let mut c = read_only_case(EXPLORE_YAML).unwrap();
+            c.read_only.as_mut().unwrap().situation = Situation::Explore {
+                request: "x".into(),
+                outcome,
+            };
+            c
+        };
+        let mut cases: Vec<Case> = ExploreOutcome::ALL.into_iter().map(explore).collect();
+        cases.extend(OnboardState::ALL.into_iter().map(onboard));
+        assert_eq!(read_only_gaps(&cases), Vec::<String>::new());
+        cases.retain(|c| {
+            c.read_only.as_ref().unwrap().situation
+                != Situation::Onboard(OnboardState::PlanningComplete)
+        });
+        assert_eq!(
+            read_only_gaps(&cases),
+            ["project.onboard: no case in the state `planning-complete`"]
+        );
+        assert_eq!(
+            read_only_gaps(&cases[1..]),
+            [
+                "idea.explore: no case with the outcome `crystallizes`",
+                "project.onboard: no case in the state `planning-complete`"
+            ]
+        );
     }
 
     #[test]

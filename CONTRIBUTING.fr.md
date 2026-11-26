@@ -104,7 +104,8 @@ planification de `/compagnon-propose`, `plan.update` pour les révisions de
 `/compagnon-update`, `code.implement` pour l'implémentation de
 `/compagnon-apply`, `change.sync`, `change.archive` et `configure.enrich` pour
 `/compagnon-sync`, `/compagnon-archive` et le mode par défaut de
-`/compagnon-configure`. La décision acceptée 0008 en fait la
+`/compagnon-configure`, `idea.explore` et `project.onboard` pour
+`/compagnon-explore` et `/compagnon-onboard`. La décision acceptée 0008 en fait la
 règle pour tout changement du workflow. Enregistrez le candidat avec
 `--repeat 3` au moins, et avec le `--jobs` de la ligne de base (4), pour
 que les deux exécutions profitent du cache de prompt de la même façon.
@@ -118,7 +119,8 @@ environ 1,65 dollar et prend plusieurs minutes, plafonné par défaut à
 d'implémentation écrit, construit et relit un change entier, plafonné par
 défaut à 30 dollars et 5 400 secondes ; un cas de synchronisation,
 d'archivage ou de configuration coûte environ 0,20 à 0,30 dollar, plafonné
-par défaut à 3 dollars et 600 secondes.
+par défaut à 3 dollars et 600 secondes, et un cas d'exploration ou de
+découverte environ 0,30 à 0,50 dollar, sous les mêmes plafonds.
 
 ```bash
 cargo build --bin compagnon
@@ -129,6 +131,7 @@ cargo run -p compagnon-evals -- run --step plan.update --repeat 3 --jobs 4 --out
 cargo run -p compagnon-evals -- run --step code.implement --repeat 3 --jobs 2 --out target/evals/implement
 cargo run -p compagnon-evals -- run --step change.sync --step change.archive --repeat 3 --jobs 4 --out target/evals/archive
 cargo run -p compagnon-evals -- run --step configure.enrich --repeat 3 --jobs 4 --out target/evals/configure
+cargo run -p compagnon-evals -- run --step idea.explore --step project.onboard --repeat 3 --jobs 4 --out target/evals/read-only
 cargo run -p compagnon-evals -- calibrate implement-decision-accept-command   # éprouver un script, sans modèle
 cargo run -p compagnon-evals -- score target/evals/mine    # renoter, sans modèle
 cargo run -p compagnon-evals -- compare evals/baseline target/evals/mine --quality-only
@@ -409,8 +412,38 @@ fichier que `compagnon status --json` lit ; une exécution `unchanged` laisse
 le fichier identique à l'octet près ; une exécution `refused` ne crée
 aucun `_compagnon/`. Rien d'autre ne doit être modifié.
 
-Le rapport donne une section `change.sync`, `change.archive` et
-`configure.enrich` — la part des exécutions qui réussissent, celle des
+### Écrire un cas d'exploration ou de découverte
+
+Un cas d'exploration ou de découverte lance `/compagnon-explore` ou
+`/compagnon-onboard`, deux compétences en lecture seule, sur un petit
+projet. `case.yaml` donne `step: idea.explore` ou `step: project.onboard`,
+`kind: seeded`, `stacks`, `summary` et `expected` ; un cas d'exploration
+donne aussi `request`, le sujet exploré. `expected` contient, pour un cas
+d'exploration, `outcome` — `crystallizes`, `missing` ou `not-worth`, les
+trois issues que nomme la compétence —, pour un cas de découverte,
+`state` — `no-compagnon`, `thin-config`, `configured`,
+`planning-incomplete`, `planning-complete` ou `several-changes`, la ligne
+du tableau de recommandations de la compétence où se trouve le projet —,
+et pour les deux `contains`, au moins un texte que le dernier message de
+l'agent doit contenir (la marque de l'issue ou de la recommandation :
+`/compagnon-propose`, le fichier qui le fait déjà, l'information qui
+manque, `compagnon init`, `/compagnon-configure`, `/compagnon-apply` et le
+nom de la modification…), et `absent`, au moins un texte qu'il ne doit pas
+contenir (les marques des autres issues ou états). `base/` contient le
+projet, son `_compagnon/` compris, modifications comprises, sauf si le cas
+porte sur un projet qui n'en a pas. Le runner installe les compétences
+comme pour un cas de configuration, et la consigne (prompt) nomme la
+compétence — et la demande — et dit que l'utilisateur ne peut pas
+répondre : là où la compétence poserait une question, l'exécution
+s'arrête comme la compétence le dit ; elle ne dit rien de l'issue ni de
+l'état. Une exécution réussit quand elle ne modifie, ne crée et ne
+supprime aucun fichier, ne crée aucune modification sous
+`_compagnon/changes/`, et que son dernier message — pas la narration qui le
+précède — contient chaque texte de `contains` et aucun texte de `absent`,
+sans tenir compte de la casse ni des suites d'espaces.
+
+Le rapport donne une section `change.sync`, `change.archive`,
+`configure.enrich`, `idea.explore` et `project.onboard` — la part des exécutions qui réussissent, celle des
 vérifications qui réussissent et les exécutions qui modifient un fichier
 hors de l'étape — et les vérifications de chaque exécution. `compare`
 échoue quand la part des exécutions qui réussissent d'une étape passe
@@ -445,7 +478,9 @@ ce que les tests vérifient : cinq exécutions de chaque cas, aucune en
 erreur. Les cas d'une nouvelle étape — les cas de révision à l'arrivée de
 `plan.update`, les cas d'implémentation avec `code.implement`, les cas
 de synchronisation, d'archivage et de configuration avec
-`--step change.sync --step change.archive --step configure.enrich` —
+`--step change.sync --step change.archive --step configure.enrich`, les
+cas d'exploration et de découverte avec
+`--step idea.explore --step project.onboard` —
 peuvent être enregistrés seuls, dans la ligne de base
 existante, quand les autres cas et la notation n'ont pas changé : avec le
 Claude Code épinglé et le Compagnon que nomme la ligne de base,
@@ -455,8 +490,8 @@ refuse une autre version de Claude Code), puis lancez
 `cargo run -p compagnon-evals -- score evals/baseline` et
 `cargo run -p compagnon-evals -- docs`. Un cas modifié ou une notation modifiée
 demande toujours d'enregistrer de nouveau toute la ligne de base, sauf
-l'attente modifiée d'un cas de synchronisation, d'archivage ou de
-configuration, renotée comme dit plus haut. La sortie brute de Claude Code de chaque exécution
+l'attente modifiée d'un cas de synchronisation, d'archivage, de
+configuration, d'exploration ou de découverte, renotée comme dit plus haut. La sortie brute de Claude Code de chaque exécution
 (`claude.jsonl`, `claude.stderr`) reste hors du contrôle de version.
 
 ## Commits

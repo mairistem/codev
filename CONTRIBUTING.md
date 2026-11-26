@@ -91,7 +91,8 @@ steps, `plan.write` for the planning of `/compagnon-propose`, `plan.update`
 for the revisions of `/compagnon-update`, `code.implement` for the
 implementation of `/compagnon-apply`, `change.sync`, `change.archive` and
 `configure.enrich` for `/compagnon-sync`, `/compagnon-archive` and the default mode
-of `/compagnon-configure`. Accepted
+of `/compagnon-configure`, `idea.explore` and `project.onboard` for
+`/compagnon-explore` and `/compagnon-onboard`. Accepted
 decision 0008 makes this the rule for every change to the workflow.
 Record the candidate with `--repeat 3` at least, and with the baseline's `--jobs`
 (4), so that both runs share the prompt cache alike.
@@ -104,7 +105,8 @@ minutes, capped at 6 dollars and 1,800 seconds by default, as is an update
 case; an implementation case writes, builds and reviews a whole change,
 capped at 30 dollars and 5,400 seconds by default; a sync, archive or
 configure case costs about 0.20 to 0.30 dollars, capped at 3 dollars and
-600 seconds by default.
+600 seconds by default, and an explore or onboard case about 0.30 to 0.50
+dollars, under the same caps.
 
 ```bash
 cargo build --bin compagnon
@@ -115,6 +117,7 @@ cargo run -p compagnon-evals -- run --step plan.update --repeat 3 --jobs 4 --out
 cargo run -p compagnon-evals -- run --step code.implement --repeat 3 --jobs 2 --out target/evals/implement
 cargo run -p compagnon-evals -- run --step change.sync --step change.archive --repeat 3 --jobs 4 --out target/evals/archive
 cargo run -p compagnon-evals -- run --step configure.enrich --repeat 3 --jobs 4 --out target/evals/configure
+cargo run -p compagnon-evals -- run --step idea.explore --step project.onboard --repeat 3 --jobs 4 --out target/evals/read-only
 cargo run -p compagnon-evals -- calibrate implement-decision-accept-command   # prove a script, no model
 cargo run -p compagnon-evals -- score target/evals/mine    # score again, no model
 cargo run -p compagnon-evals -- compare evals/baseline target/evals/mine --quality-only
@@ -373,8 +376,34 @@ one `tasks` rule, holds the expected texts, and leaves a file
 byte-identical; a `refused` run creates no `_compagnon/`. Nothing else may be
 modified.
 
-The report gives a `change.sync`, `change.archive` and `configure.enrich`
-section — the share of runs passing, of checks passing and the runs
+### Writing an explore or onboard case
+
+An explore or onboard case runs `/compagnon-explore` or `/compagnon-onboard`,
+both read-only, on a small project. `case.yaml` gives `step: idea.explore`
+or `step: project.onboard`, `kind: seeded`, `stacks`, `summary` and
+`expected`; an explore case also gives `request`, the topic explored.
+`expected` holds, for an explore case, `outcome` — `crystallizes`,
+`missing` or `not-worth`, the three ways the skill ends —, for an onboard
+case, `state` — `no-compagnon`, `thin-config`, `configured`,
+`planning-incomplete`, `planning-complete` or `several-changes`, the row of
+the skill's recommendation table the project is in —, and for both
+`contains`, at least one text the agent's final message must hold (the
+mark of the outcome or of the recommendation: `/compagnon-propose`, the
+file that already does it, the missing information, `compagnon init`,
+`/compagnon-configure`, `/compagnon-apply` and the change's name…), and
+`absent`, at least one text it must not hold (the marks of the other
+outcomes or states). `base/` holds the project, its `_compagnon/` included,
+changes and all, unless the case is about a project without one. The
+runner installs the skills as for a configure case, and the prompt names
+the skill — and the request — and says the user cannot answer: where the
+skill would ask, the run ends as the skill says; it says nothing of the
+outcome or the state. A run passes when it modifies, creates and removes
+no file, creates no change under `_compagnon/changes/`, and its final
+message — not the narration before it — holds every `contains` text and no
+`absent` text, ignoring case and runs of whitespace.
+
+The report gives a `change.sync`, `change.archive`, `configure.enrich`,
+`idea.explore` and `project.onboard` section — the share of runs passing, of checks passing and the runs
 modifying a file outside the step — and each run's checks. `compare`
 fails when a step's share of runs passing falls under the baseline's
 minimum, its runs modifying a file outside the step rise above its
@@ -403,7 +432,8 @@ with the Claude Code version `.github/workflows/evals.yml` pins
 the tests check: five runs of every case, none in error. The cases of a
 new step — the update cases when `plan.update` came, the implementation
 cases with `code.implement`, the sync, archive and configure cases with
-`--step change.sync --step change.archive --step configure.enrich` — may
+`--step change.sync --step change.archive --step configure.enrich`, the
+explore and onboard cases with `--step idea.explore --step project.onboard` — may
 be recorded
 alone, into the existing baseline, when the other cases and the scoring are
 unchanged: with the pinned Claude Code and the Compagnon the baseline names,
@@ -412,8 +442,8 @@ resumes it with the new cases' runs only (a resume refuses another Claude
 Code version), then `cargo run -p compagnon-evals -- score evals/baseline`
 and `cargo run -p compagnon-evals -- docs`. A changed case or a changed scoring
 still requires recording the whole baseline again, but for a changed
-expectation of a sync, archive or configure case, scored again as said
-above. Claude Code's
+expectation of a sync, archive, configure, explore or onboard case,
+scored again as said above. Claude Code's
 raw output of each run (`claude.jsonl`, `claude.stderr`) stays out of
 version control.
 
