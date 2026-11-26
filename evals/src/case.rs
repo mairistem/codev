@@ -1774,6 +1774,31 @@ struct ReadOnlyExpectedFile {
 
 /// Loads an explore or onboard case: a `case.yaml` and its `base/`, the
 /// project as it stands.
+/// The one of `all` that the case's `field` names, or the error saying what
+/// is missing (`needs`, as in "an explore case needs an") or unknown, with
+/// the names `all` accepts.
+fn named<T: Copy>(
+    needs: &str,
+    field: &str,
+    value: Option<&str>,
+    all: &[T],
+    as_str: fn(T) -> &'static str,
+) -> Result<T, String> {
+    let names = || {
+        all.iter()
+            .map(|&t| as_str(t))
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    let Some(text) = value else {
+        return Err(format!("{needs} `{field}`: one of {}", names()));
+    };
+    all.iter()
+        .copied()
+        .find(|&t| as_str(t) == text.trim())
+        .ok_or_else(|| format!("unknown `{field}` `{text}`; expected one of {}", names()))
+}
+
 fn load_read_only(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
     let fail = |message: String| CaseError {
         case: id.to_string(),
@@ -1810,27 +1835,14 @@ fn load_read_only(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result
                 "`state` is for an onboard case; an explore case expects an `outcome`".into(),
             ));
         }
-        let names = || {
-            ExploreOutcome::ALL
-                .iter()
-                .map(|o| o.as_str())
-                .collect::<Vec<_>>()
-                .join(", ")
-        };
-        let outcome = match expected.outcome.as_deref() {
-            None => {
-                return Err(fail(format!(
-                    "an explore case needs an `outcome`: one of {}",
-                    names()
-                )));
-            }
-            Some(text) => ExploreOutcome::parse(text.trim()).ok_or_else(|| {
-                fail(format!(
-                    "unknown `outcome` `{text}`; expected one of {}",
-                    names()
-                ))
-            })?,
-        };
+        let outcome = named(
+            "an explore case needs an",
+            "outcome",
+            expected.outcome.as_deref(),
+            &ExploreOutcome::ALL,
+            ExploreOutcome::as_str,
+        )
+        .map_err(fail)?;
         Situation::Explore {
             request: request.to_string(),
             outcome,
@@ -1846,27 +1858,14 @@ fn load_read_only(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result
                 "`outcome` is for an explore case; an onboard case expects a `state`".into(),
             ));
         }
-        let names = || {
-            OnboardState::ALL
-                .iter()
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>()
-                .join(", ")
-        };
-        let state = match expected.state.as_deref() {
-            None => {
-                return Err(fail(format!(
-                    "an onboard case needs a `state`: one of {}",
-                    names()
-                )));
-            }
-            Some(text) => OnboardState::parse(text.trim()).ok_or_else(|| {
-                fail(format!(
-                    "unknown `state` `{text}`; expected one of {}",
-                    names()
-                ))
-            })?,
-        };
+        let state = named(
+            "an onboard case needs a",
+            "state",
+            expected.state.as_deref(),
+            &OnboardState::ALL,
+            OnboardState::as_str,
+        )
+        .map_err(fail)?;
         Situation::Onboard(state)
     };
     let contains = texts("contains", &expected.contains).map_err(fail)?;

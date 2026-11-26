@@ -54,7 +54,7 @@ shown in the pull request).
   (`the_frontmatter_is_complete_and_the_body_intact`,
   `every_skill_frontmatter_is_valid_yaml`,
   `the_description_is_quoted_because_it_contains_yaml_punctuation`).
-- [ ] 2.4 Simplify `load_read_only` in `evals/src/case.rs` with one helper
+- [x] 2.4 Simplify `load_read_only` in `evals/src/case.rs` with one helper
   for `outcome` and `state`; verified by the six loading tests passing
   unchanged (`an_explore_case_that_crystallizes`,
   `an_onboard_case_with_a_request`,
