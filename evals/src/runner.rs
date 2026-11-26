@@ -2616,53 +2616,65 @@ fn formatted_by_cargo(file: &Path) -> bool {
             .any(|p| matches!(*p, "src" | "tests" | "benches" | "examples"))
 }
 
-/// The edition of the crate holding `file`: the `edition` of the nearest
-/// `Cargo.toml` above it, the workspace's when it inherits it, `2021`
-/// when none is set.
-fn edition_of(dir: &Path, file: &Path) -> String {
-    let field = |manifest: &str, workspace: bool| -> Option<String> {
-        let mut in_section = !workspace;
-        for line in manifest.lines() {
-            let t = line.trim();
-            if t.starts_with('[') {
-                in_section = if workspace {
-                    t == "[workspace.package]"
-                } else {
-                    t == "[package]"
-                };
-                continue;
-            }
-            if in_section && let Some(rest) = t.strip_prefix("edition") {
-                let rest = rest.trim_start();
-                if rest.starts_with(".workspace") {
-                    return Some("workspace".into());
-                }
-                if let Some(value) = rest.strip_prefix('=') {
-                    let value = value.trim().trim_matches('"');
-                    if value == "{ workspace = true }" {
-                        return Some("workspace".into());
-                    }
-                    return Some(value.to_string());
-                }
-            }
+/// The edition rustfmt formats with when a manifest sets none, as cargo.
+const DEFAULT_EDITION: &str = "2021";
+
+/// The `edition` a manifest's `[package]` gives.
+enum Edition {
+    /// `edition = "2024"`.
+    Set(String),
+    /// `edition.workspace = true`: the workspace's.
+    FromWorkspace,
+}
+
+/// The value of `edition` in the `section` (`[package]` or
+/// `[workspace.package]`) of a `Cargo.toml`, read line by line.
+fn edition_line(manifest: &str, section: &str) -> Option<Edition> {
+    let mut inside = false;
+    for line in manifest.lines().map(str::trim) {
+        if line.starts_with('[') {
+            inside = line == section;
+            continue;
         }
-        None
-    };
+        let Some(rest) = line.strip_prefix("edition").filter(|_| inside) else {
+            continue;
+        };
+        let rest = rest.trim_start();
+        if rest.starts_with(".workspace") {
+            return Some(Edition::FromWorkspace);
+        }
+        if let Some(value) = rest.strip_prefix('=') {
+            let value = value.trim();
+            if value.starts_with('{') && value.contains("workspace") {
+                return Some(Edition::FromWorkspace);
+            }
+            return Some(Edition::Set(value.trim_matches('"').to_string()));
+        }
+    }
+    None
+}
+
+/// The edition of the crate holding `file`, as cargo gives it: the
+/// `edition` of the nearest `Cargo.toml` above it, the workspace's when it
+/// inherits it, [`DEFAULT_EDITION`] when it sets none.
+fn edition_of(dir: &Path, file: &Path) -> String {
     let root = fs::read_to_string(dir.join("Cargo.toml")).unwrap_or_default();
-    let workspace = || field(&root, true).unwrap_or_else(|| "2021".into());
+    let workspace = || match edition_line(&root, "[workspace.package]") {
+        Some(Edition::Set(edition)) => edition,
+        _ => DEFAULT_EDITION.to_string(),
+    };
     let mut at = file.parent();
     while let Some(parent) = at {
         if let Ok(manifest) = fs::read_to_string(dir.join(parent).join("Cargo.toml")) {
-            return match field(&manifest, false) {
-                Some(e) if e == "workspace" => workspace(),
-                Some(e) => e,
-                None if parent.as_os_str().is_empty() => workspace(),
-                None => "2021".into(),
+            return match edition_line(&manifest, "[package]") {
+                Some(Edition::Set(edition)) => edition,
+                Some(Edition::FromWorkspace) => workspace(),
+                None => DEFAULT_EDITION.to_string(),
             };
         }
         at = parent.parent();
     }
-    workspace()
+    DEFAULT_EDITION.to_string()
 }
 
 /// Formats `file` (relative to `dir`) with rustfmt through standard input,

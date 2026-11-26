@@ -45,3 +45,47 @@ history:
   - status: fixed
     by: skeptic
 ```
+
+## code.review
+
+Mode: isolated.
+
+### newcomer
+
+#### R-newcomer-1 edition_of hid its rules behind a flag and a sentinel string
+
+```yaml
+severity: medium
+confidence: high
+location: "evals/src/runner.rs:2660"
+evidence: |
+  fn edition_of(dir: &Path, file: &Path) -> String {
+recommendation: 'Read the edition with a named function returning an Edition enum (Set or FromWorkspace), a DEFAULT_EDITION constant, and say why each fallback.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/runner.rs: Edition, edition_line, DEFAULT_EDITION; a manifest without edition takes 2021, as cargo"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 The seal and rustfmt checks sit in the pinned-case test
+
+```yaml
+severity: low
+confidence: high
+location: "evals/tests/fixture.rs:368"
+evidence: |
+  fn a_case_pinned_before_the_rename_is_migrated_before_it_runs() {
+recommendation: 'Move the seal and the rustfmt fixtures to tests of their own calling bring_through_rename directly.'
+history:
+  - status: open
+    by: newcomer
+  - status: disputed
+    by: developer
+    note: 'tasks.md 1.1 and 1.2 extend this test on purpose: it drives setup_plan, so it shows the reseal and the format land in the fixture''s base commit, which a direct call of bring_through_rename would not; the edge cases (unparsable seal, current names, no rustfmt) have tests of their own.'
+  - status: rejected
+    by: newcomer
+```
