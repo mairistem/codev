@@ -1826,11 +1826,18 @@ mod plain_words {
         // The closing rule's case of a choice: each change with its request
         // and shortcut, then a last line that asks which one, with nothing
         // to send as it is.
+        // The example is the quoted reply (`>` lines) that follows the
+        // marker, whatever the blank lines around it.
         let body = body("onboard");
-        let example = body
-            .split("\n\n")
-            .find(|p| p.contains("With several active changes"))
+        let (_, after) = body
+            .split_once("With several active changes")
             .expect("onboard shows a reply for several active changes");
+        let example: String = after
+            .lines()
+            .skip_while(|l| !l.trim_start().starts_with('>'))
+            .take_while(|l| l.trim_start().starts_with('>'))
+            .collect::<Vec<_>>()
+            .join("\n");
         assert!(example.matches("shortcut").count() >= 2, "{example}");
         let last = example
             .lines()
@@ -1841,6 +1848,42 @@ mod plain_words {
         assert!(
             !last.contains("shortcut") && !last.contains("/compagnon-"),
             "{last}"
+        );
+    }
+
+    #[test]
+    fn onboard_requests_hold_no_placeholder() {
+        // A quoted request is sent as it is: no `<…>` left for the user to
+        // fill. `<that-name>` is not one: the skill writes the change's name
+        // in its place.
+        let body = body("onboard");
+        let holes: Vec<&str> = body
+            .split('“')
+            .skip(1)
+            .filter_map(|rest| rest.split('”').next())
+            .filter(|request| request.replace("<that-name>", "").contains('<'))
+            .collect();
+        assert!(holes.is_empty(), "{holes:?}");
+    }
+
+    #[test]
+    fn onboard_without_compagnon_explains_init_before_it() {
+        let body = body("onboard");
+        let (_, after) = body
+            .split_once("On a project without Compagnon")
+            .expect("onboard shows a reply without Compagnon");
+        let example: Vec<&str> = after
+            .lines()
+            .skip_while(|l| !l.trim_start().starts_with('>'))
+            .take_while(|l| l.trim_start().starts_with('>'))
+            .collect();
+        let text = example.join(" ");
+        assert!(text.contains("not set up"), "{text}");
+        assert!(
+            example
+                .last()
+                .is_some_and(|l| l.contains("`compagnon init`")),
+            "{example:?}"
         );
     }
 

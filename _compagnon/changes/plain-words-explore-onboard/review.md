@@ -162,3 +162,87 @@ history:
   - status: fixed
     by: accessibility
 ```
+
+## code.review
+
+Mode: isolated.
+
+### accessibility
+
+#### R-accessibility-4 With no _compagnon/, onboard ends on a bare command
+
+```yaml
+severity: medium
+confidence: high
+location: "assets/workflows/onboard.md:100"
+evidence: |
+  | `_compagnon/` missing | `compagnon init`, for the user to type in a terminal |
+recommendation: 'Say first in plain words what is missing and what the command does, state this case as the exception to the closing rule (a command the user types, Claude may not run it), and give an example reply.'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: "assets/workflows/onboard.md: table row, example reply and Output say what init does before it; specs closing rule; test onboard_without_compagnon_explains_init_before_it"
+  - status: fixed
+    by: accessibility
+```
+
+#### R-accessibility-5 The closing request holds a placeholder the user cannot send as it is
+
+```yaml
+severity: medium
+confidence: high
+location: "assets/workflows/onboard.md:146"
+evidence: |
+  > When an idea comes up, say “plan <an idea>” (shortcut: `/compagnon-propose <an-idea>`).
+recommendation: 'End on a request the user can send unchanged (Claude then asks for the idea), or explain the gap in plain words outside the quotes; one spelling of the placeholder.'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: "assets/workflows/onboard.md: requests without placeholders (Claude then asks for the idea); specs; test onboard_requests_hold_no_placeholder"
+  - status: fixed
+    by: accessibility
+```
+
+### newcomer
+
+#### R-newcomer-1 The case-loading helper took the loader's doc comment and hid what it does
+
+```yaml
+severity: medium
+confidence: high
+location: "evals/src/case.rs:1779"
+evidence: |
+  fn parse_required_choice<T: Copy>(
+recommendation: 'Give the loader back its doc comment, name the helper after what it parses, pass the existing parser and the case kind.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/case.rs: parse_required_choice with ExploreOutcome::parse / OnboardState::parse; load_read_only's doc comment back"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 The several-changes test depended on a missing blank line
+
+```yaml
+severity: low
+confidence: low
+location: "crates/compagnon-agents/src/workflows.rs:1825"
+evidence: |
+  fn onboard_closes_several_changes_on_a_question() {
+recommendation: 'Find the quoted reply after the marker whatever the blank lines.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/compagnon-agents/src/workflows.rs: the test reads the > lines after the marker"
+  - status: fixed
+    by: newcomer
+```
