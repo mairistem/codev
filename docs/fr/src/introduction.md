@@ -24,7 +24,7 @@ Vous. À chaque étape, Claude propose et vous décidez :
 3. **Vous le relisez et le validez** — ou demandez des corrections. Rien
    n'est construit avant votre accord.
 4. **Claude le réalise**, tâche par tâche, et vérifie son propre travail.
-5. **Vous relisez le résultat** et classez le changement.
+5. **Vous relisez le résultat** et clôturez la modification.
 
 Rien n'est appliqué sans votre accord, et chaque décision est consignée là
 où toute votre équipe peut la lire.
@@ -49,10 +49,15 @@ sont vos compagnons.
 
 ## Par où commencer
 
-- [Choisissez votre parcours](choose-your-path.md) : les pages à lire selon
-  votre profil, que vous codiez ou non.
-- [Votre première modification](quickstart.md) : essayez en une dizaine de minutes.
-- [Glossaire](glossary.md) : chaque terme, en mots simples.
+Qu'allez-vous faire avec Compagnon ? Chaque réponse ouvre un parcours
+court :
+
+- [Je relis et je valide des plans — je ne code pas](paths/review.md)
+- [Je ne code pas, mais je veux que Claude construise quelque chose pour moi](paths/build.md)
+- [Je suis développeur et je fais coder Claude](paths/develop.md)
+- [J'installe Compagnon pour mon équipe](paths/team.md)
+
+Chaque terme est expliqué, en mots simples, dans le [Glossaire](glossary.md).
 
 Jusqu'à la 0.6, Compagnon s'appelait codev : [Migrer depuis codev](guides/moving-from-codev.md)
 explique comment convertir un projet créé à cette époque. D'où vient

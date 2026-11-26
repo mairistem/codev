@@ -23,7 +23,7 @@ You do. At every step, Claude proposes and you decide:
 3. **You read and approve it** — or ask for corrections. Nothing is built
    before you agree.
 4. **Claude builds it**, task by task, and checks its own work.
-5. **You review the result** and file the change away.
+5. **You review the result** and close the change.
 
 Nothing is applied without your approval, and every decision is written
 down where your whole team can see it.
@@ -45,10 +45,14 @@ are your compagnons.
 
 ## Where to start
 
-- [Choose your path](choose-your-path.md): the pages to read for your
-  profile, whether you code or not.
-- [Your first change](quickstart.md): try it in about ten minutes.
-- [Glossary](glossary.md): every term, in plain words.
+What will you do with Compagnon? Each answer opens a short path:
+
+- [I review and approve plans — I do not code](paths/review.md)
+- [I do not code, but I want Claude to build something for me](paths/build.md)
+- [I am a developer and I have Claude write code](paths/develop.md)
+- [I set Compagnon up for my team](paths/team.md)
+
+Every term is explained, in plain words, in the [Glossary](glossary.md).
 
 Until 0.6, Compagnon was named codev: [Moving from codev](guides/moving-from-codev.md)
 explains how to convert a project set up then. Where Compagnon comes from,

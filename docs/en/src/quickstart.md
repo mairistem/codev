@@ -164,7 +164,7 @@ Moved to: /home/you/acme-app/_compagnon/changes/archive/2026-09-30-add-dark-mode
 
 ## What's next
 
-- [Step by step](workflow.md) details each step.
+- [The workflow](workflow.md) details each step.
 - [Claude Code skills](skills.md#how-to-ask) lists, for every skill, ways
   to ask for it.
 - Say "show me around Compagnon" for a guided tour of your project.

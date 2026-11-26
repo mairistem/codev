@@ -47,7 +47,7 @@ the documentation (*vouvoiement*, no anglicism).
 
 ## 2. The pages
 
-- [ ] 2.1 Write `choose-your-path.md` (the question, the four labels, the
+- [x] 2.1 Write `choose-your-path.md` (the question, the four labels, the
   contributor sentence) and the four `paths/*.md` pages of the design's
   table, in both editions, each titled with its profile's label, and
   update both `SUMMARY.md` (entries titled the same); verified by
@@ -59,18 +59,18 @@ the documentation (*vouvoiement*, no anglicism).
   `the_everyday_list_follows_the_summary`,
   `every_everyday_chapter_explains_its_terms` and
   `the_french_everyday_pages_hold_no_anglicism`.
-- [ ] 2.2 The introduction's "Where to start" uses the four labels, linking
+- [x] 2.2 The introduction's "Where to start" uses the four labels, linking
   the path pages; fix every link whose label differs from the chapter it
   opens ("Step by step" → the workflow chapter's title); verified by
   `the_introduction_links_the_four_paths`,
   `the_start_here_path_stays_under_its_caps`,
   `the_introduction_says_who_decides` and a search for "Step by step" /
   « Étape par étape » returning no link label.
-- [ ] 2.3 Remove the parenthesised explanations of "terminal" and "test"
+- [x] 2.3 Remove the parenthesised explanations of "terminal" and "test"
   from the workflow, skills, concepts and FAQ chapters, both editions;
   verified by `developer_pages_do_not_gloss_everyday_words` and
   `every_everyday_chapter_explains_its_terms`.
-- [ ] 2.4 The home pages: `docs/site/index.html` leads with the question
+- [x] 2.4 The home pages: `docs/site/index.html` leads with the question
   and the four profiles linking `en/paths/…`; new `docs/site/fr.html`, in
   French, the same structure linking `fr/paths/…`; each links the other;
   the READMEs' "Find your way" / « Trouver votre chemin » use the four

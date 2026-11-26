@@ -723,13 +723,19 @@ pub fn vocabulary_problems(md: &str, lang: Lang, anchors: &[String]) -> Vec<Stri
 }
 
 /// `text` with the target of every link, `](…)`, replaced by spaces of
-/// the same length: a path such as `workflow.md` is not prose.
+/// the same length: a path such as `workflow.md` is not prose. So is the
+/// text of a link to another chapter, which names that chapter as the
+/// table of contents does ("The workflow"); a link to the glossary keeps
+/// its text, the term it explains.
 fn without_link_targets(text: &str) -> String {
     let mut out = text.to_string();
     for (range, target) in links(text) {
         let start = range.end + 2;
         let end = start + target.len();
         out.replace_range(start..end, &" ".repeat(target.len()));
+        if !target.contains("glossary.md") {
+            out.replace_range(range.clone(), &" ".repeat(range.len()));
+        }
     }
     out
 }
@@ -1018,6 +1024,12 @@ mod tests {
     }
 
     #[test]
+    fn a_chapter_named_in_a_link_is_not_prose() {
+        let md = "Then read [The workflow](workflow.md).\n";
+        assert!(vocabulary_problems(md, Lang::En, &anchors()).is_empty());
+    }
+
+    #[test]
     fn a_link_to_the_top_of_the_glossary_is_caught() {
         let bare = "A [delta](glossary.md) lists the change.\n";
         assert_eq!(vocabulary_problems(bare, Lang::En, &anchors()), ["delta"]);
@@ -1293,18 +1305,15 @@ mod chapter_tests {
         }
     }
 
-    /// Each chapter's path and `# ` title.
+    /// Each chapter's path and title, as the table of contents shows it in
+    /// the sidebar: the name a reader sees and looks for.
     fn chapter_titles(lang: Lang) -> Vec<(String, String)> {
-        lang.chapters()
-            .iter()
-            .map(|(p, md)| {
-                let title = md
-                    .lines()
-                    .find_map(|l| l.strip_prefix("# "))
-                    .unwrap_or_default()
-                    .trim()
-                    .to_string();
-                (p.to_string(), title)
+        summary(lang)
+            .lines()
+            .filter_map(|l| {
+                let l = l.trim_start().strip_prefix("- [")?;
+                let (title, rest) = l.split_once("](")?;
+                Some((rest.trim_end_matches(')').to_string(), title.to_string()))
             })
             .collect()
     }

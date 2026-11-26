@@ -103,7 +103,7 @@ les parties que contient le plan : voir
 [Schémas personnalisés](guides/custom-schemas.md). Le schéma par défaut
 s'appelle `spec-driven`. Il fixe aussi les étapes que suit une
 modification, le [déroulé](glossary.md#déroulé), décrit dans
-[Étape par étape](workflow.md).
+[Le déroulé](workflow.md).
 
 Une modification est **active** tant que son dossier se trouve dans
 `_compagnon/changes/<name>/`. L'archivage déplace le dossier dans

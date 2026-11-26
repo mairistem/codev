@@ -4,11 +4,15 @@
 
 - [Compagnon in two minutes](introduction.md)
 - [Choose your path](choose-your-path.md)
-- [Your first change](quickstart.md)
+  - [I review and approve plans — I do not code](paths/review.md)
+  - [I do not code, but I want Claude to build something for me](paths/build.md)
+  - [I am a developer and I have Claude write code](paths/develop.md)
+  - [I set Compagnon up for my team](paths/team.md)
 - [Glossary](glossary.md)
 
 # Everyday use
 
+- [Your first change](quickstart.md)
 - [Installation](installation.md)
 - [The workflow](workflow.md)
 - [Claude Code skills](skills.md)

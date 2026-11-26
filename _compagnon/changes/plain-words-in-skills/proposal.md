@@ -59,7 +59,7 @@ still contradict it.
 ## Domains
 
 - [ ] security
-- [ ] personal-data
+- [ ] personal-data — the match is "téléphone" in the example scenario of the French home page (`docs/site/fr.html`), not personal data
 - [x] user-interface
 - [ ] performance
 - [ ] operations
