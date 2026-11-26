@@ -30,7 +30,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 
 ## 2. Check
 
-- [ ] 2.1 Run `cargo run -p compagnon-evals -- calibrate
+- [x] 2.1 Run `cargo run -p compagnon-evals -- calibrate
   implement-decision-accept-command` (no model, no cost); verified by its
   output reporting `format on the merged commit: passes` (scenario
   "calibrate passes the format of a formatted merged commit"), pasted in
