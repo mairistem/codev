@@ -14,7 +14,7 @@ figurent dans [Formats de fichiers](file-formats.md).
 
 Votre [terminal](../glossary.md#terminal) ne sait pas où Compagnon est
 installé : son dossier n'est pas dans votre `PATH`. Voir
-[Vérifier l'installation](../installation.md#vérifier-linstallation).
+« Sous le capot : ce que fait l'installation » dans [Installer Compagnon](../installation.md#1-installer-compagnon).
 
 ### `no compagnon project found`
 

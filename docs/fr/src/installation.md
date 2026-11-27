@@ -1,62 +1,114 @@
 # Installation
 
-Cette page s'adresse à la personne qui installe Compagnon ; si vous relisez
-seulement des plans, vous pouvez la passer.
+Vous taperez deux commandes, une seule fois : l'une installe Compagnon,
+l'autre prépare le dossier de votre projet. Ensuite, vous parlez seulement
+à Claude. Si quelqu'un de votre équipe a l'habitude d'un
+[terminal](glossary.md#terminal) (la fenêtre où l'on tape des commandes),
+il peut faire cette partie pour vous.
 
-Compagnon est un programme unique, prêt à l'emploi. Une ligne l'installe,
-sans aucun outil de développement. Il vous faut aussi
-[Claude Code](glossary.md#claude-code) pour utiliser les
-[compétences](glossary.md#compétence) ; la commande `compagnon` elle-même
-fonctionne sans.
+## Partir de rien
 
-## macOS et Linux
+Deux choses, avant toute commande :
 
-Dans un [terminal](glossary.md#terminal) :
+- **Claude Code.** C'est l'assistant
+  [Claude Code](glossary.md#claude-code) qui écrit le plan et construit
+  ce que vous demandez. Procurez-le sur
+  [claude.com/claude-code](https://claude.com/claude-code), qui explique
+  comment l'installer. Il faut un compte Claude avec un abonnement qui
+  comprend Claude Code ; cette page dit lequel.
+- **Un dossier pour votre projet** sur votre ordinateur, vide pour
+  commencer si vous partez d'une idée. Créez-le comme n'importe quel
+  dossier, par exemple `inscription-evenement` dans vos Documents. Tout ce
+  que Claude construit ira là.
+
+## 1. Installer Compagnon
+
+Ouvrez un terminal : sur macOS, l'application Terminal (appuyez sur
+Cmd + Espace, tapez « Terminal », puis Entrée) ; sur Windows, PowerShell
+(touche Windows, tapez « PowerShell », puis Entrée). Copiez la ligne qui
+correspond à votre ordinateur, collez-la, puis appuyez sur Entrée.
+
+Sur macOS ou Linux :
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 ```
 
-Le script télécharge la dernière version publiée pour votre ordinateur
-depuis [GitHub Releases](https://github.com/mairistem/compagnon/releases),
-vérifie son empreinte SHA-256, et installe le programme dans
-`~/.local/bin/compagnon`. Il refuse d'installer si l'empreinte ne
-correspond pas. Si `~/.local/bin` n'est pas dans votre `PATH`, il affiche
-la ligne à ajouter à `~/.zshrc` ou `~/.bashrc`. Il nécessite `curl`, `tar`,
-ainsi que `sha256sum` ou `shasum`.
-
-## Windows
-
-Dans PowerShell 5.1 ou ultérieur (PowerShell 7 compris) :
+Sur Windows, dans PowerShell :
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```
 
-Le script vérifie le téléchargement de la même façon et copie
-`compagnon.exe` dans `%LOCALAPPDATA%\Programs\compagnon\`. Il ne modifie
-**pas** votre `PATH` : si le dossier en est absent, le script affiche la
-commande pour l'y ajouter. Ouvrez ensuite une nouvelle fenêtre PowerShell.
-Sous Windows, seule l'architecture x86_64 est précompilée ; sur ARM64,
-compilez depuis les sources (plus bas).
+Si l'installation affiche une ligne à ajouter, ou si la commande suivante
+est introuvable (« not found »), fermez le terminal et ouvrez-en un
+nouveau ; « Sous le capot : plateformes, versions et PATH », plus bas,
+explique pourquoi, pour la personne qui vous aide.
 
-## Vérifier l'installation
+<details>
+<summary>Sous le capot : ce que fait l'installation</summary>
+
+Sur macOS et Linux, le script télécharge la dernière version publiée pour
+votre ordinateur depuis
+[GitHub Releases](https://github.com/mairistem/compagnon/releases), vérifie
+son empreinte SHA-256, et installe le programme dans
+`~/.local/bin/compagnon`. Il refuse d'installer si l'empreinte ne
+correspond pas. Si `~/.local/bin` n'est pas dans votre `PATH`, il affiche
+la ligne à ajouter à `~/.zshrc` ou `~/.bashrc`. Il nécessite `curl`, `tar`,
+ainsi que `sha256sum` ou `shasum`.
+
+Sur Windows (PowerShell 5.1 ou ultérieur, PowerShell 7 compris), le script
+vérifie le téléchargement de la même façon et copie `compagnon.exe` dans
+`%LOCALAPPDATA%\Programs\compagnon\`. Il ne modifie **pas** votre
+`PATH` : si le dossier en est absent, le script affiche la commande pour
+l'y ajouter. Ouvrez ensuite une nouvelle fenêtre PowerShell. Sous Windows,
+seule l'architecture x86_64 est précompilée ; sur ARM64, compilez depuis
+les sources (plus bas).
+
+Pour vérifier l'installation, `compagnon --version` affiche la version. Si
+la commande reste introuvable dans un nouveau terminal, le dossier
+d'installation n'est pas dans votre `PATH` : ajoutez-le comme
+l'installateur l'a indiqué. `command -v compagnon` (macOS, Linux) ou
+`Get-Command compagnon` (Windows) indique quel programme votre terminal
+exécute.
+
+</details>
+
+## 2. Préparer le dossier de votre projet
+
+Ouvrez un terminal dans le dossier de votre projet : sur macOS, dans le
+Finder, faites un clic droit sur le dossier, puis Services et « Nouveau
+terminal au dossier » ; sur Windows, faites un clic droit dans le dossier,
+dans l'Explorateur de fichiers, puis « Ouvrir dans le Terminal ». Tapez
+ensuite :
 
 ```bash
-compagnon --version
+compagnon init
 ```
 
-Si la commande est introuvable, ouvrez un nouveau terminal. Si elle l'est
-toujours, le dossier d'installation n'est pas dans votre `PATH` :
-ajoutez-le comme l'installateur l'a indiqué. `command -v compagnon` (macOS,
-Linux) ou `Get-Command compagnon` (Windows) indique quel programme votre
-terminal exécute.
+Il peut vous demander quelles [compétences](glossary.md#compétence)
+donner à Claude : le choix proposé convient. Il demande ensuite quelques
+mots sur votre projet : tapez toujours une phrase à son sujet, car une
+réponse vide ouvre un éditeur de texte peu commode (si cela arrive,
+appelez la personne qui vous aide). Il ajoute un dossier `_compagnon/`, où
+vos plans seront rangés. Vous pouvez fermer le terminal : désormais, vous
+parlez à Claude.
 
-## Et maintenant
+<details>
+<summary>Sous le capot : ouvrir Claude Code depuis le terminal</summary>
 
-Dans le dossier de votre projet, lancez une fois `compagnon init`, puis
-demandez à Claude votre premier plan :
-[Votre première modification](quickstart.md) vous guide pas à pas.
+Dans un terminal ouvert dans le dossier du projet, Claude Code démarre
+avec :
+
+```bash
+claude
+```
+
+Démarrez-le après `compagnon init`, ou redémarrez-le, pour qu'il voie les
+compétences. Ce que `compagnon init` écrit en plus de `_compagnon/` est
+décrit dans [Déployer Compagnon pour une équipe](guides/team-rollout.md).
+
+</details>
 
 ## Mise à jour
 
@@ -242,10 +294,3 @@ résultat.
 
 </details>
 
-## Pour aller plus loin
-
-- [Votre première modification](quickstart.md) : votre premier plan, en
-  dix minutes.
-- [Partir de rien](guides/start-from-nothing.md) : si vous ne codez pas.
-- [Interface en ligne de commande](reference/cli.md) : chaque commande et
-  option.

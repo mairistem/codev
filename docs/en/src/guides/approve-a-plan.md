@@ -1,4 +1,4 @@
-# Approving a plan on GitHub or GitLab
+# Approving a plan on GitHub
 
 This page is for you if your team works on GitHub or GitLab and you are
 asked to approve a plan, without Claude Code and without a

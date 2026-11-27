@@ -14,7 +14,7 @@ The full list of codes `--json` can return is in
 
 Your [terminal](../glossary.md#terminal) does not know where Compagnon is
 installed: its folder is not on your `PATH`. See
-[Check the installation](../installation.md#check-the-installation).
+"Under the hood: what the installer does" in [Install Compagnon](../installation.md#1-install-compagnon).
 
 ### `no compagnon project found`
 

@@ -136,235 +136,6 @@ pub fn parts(summary: &str) -> Vec<(String, Vec<String>)> {
     parts
 }
 
-/// The path pages, one per profile, in the order of Choose your path.
-pub const PATHS: [&str; 4] = [
-    "paths/review.md",
-    "paths/build.md",
-    "paths/develop.md",
-    "paths/team.md",
-];
-
-/// The chapters of the Start here path, in order: the introduction, Choose
-/// your path and its four path pages, the glossary.
-pub const START_HERE: [&str; 7] = [
-    "introduction.md",
-    "choose-your-path.md",
-    PATHS[0],
-    PATHS[1],
-    PATHS[2],
-    PATHS[3],
-    "glossary.md",
-];
-
-/// The four profile labels, per edition, in the order of [`PATHS`]: the
-/// answers to "What will you do with Compagnon?", and the titles of the
-/// path pages, word for word.
-pub fn profile_labels(lang: Lang) -> [&'static str; 4] {
-    match lang {
-        Lang::En => [
-            "I review and approve plans — I do not code",
-            "I do not code, but I want Claude to build something for me",
-            "I am a developer and I have Claude write code",
-            "I set Compagnon up for my team",
-        ],
-        Lang::Fr => [
-            "Je relis et je valide des plans — je ne code pas",
-            "Je ne code pas, mais je veux que Claude construise quelque chose pour moi",
-            "Je suis développeur et je fais coder Claude",
-            "J'installe Compagnon pour mon équipe",
-        ],
-    }
-}
-
-/// The heading of a path page's "Next" section, per edition.
-pub fn next_heading(lang: Lang) -> &'static str {
-    match lang {
-        Lang::En => "Next, if you need it",
-        Lang::Fr => "Ensuite, si besoin",
-    }
-}
-
-/// The chapter a link opens, anchor and leading `../` removed: a path page
-/// links `../glossary.md#delta`, which opens `glossary.md`.
-fn chapter_of(target: &str) -> &str {
-    target
-        .split('#')
-        .next()
-        .unwrap_or_default()
-        .trim_start_matches("../")
-}
-
-/// The links of a text as `(text, target)`, the text with its inner
-/// whitespace collapsed (a link may wrap across lines).
-fn link_pairs(text: &str) -> Vec<(String, String)> {
-    let flat = text.split_whitespace().collect::<Vec<_>>().join(" ");
-    links(&flat)
-        .into_iter()
-        .map(|(range, target)| (flat[range].to_string(), target))
-        .collect()
-}
-
-/// What is wrong with the profile links of a text: for each label, in
-/// order, a link whose text is the label and whose target ends with the
-/// matching entry of `targets`. Used on Choose your path and the
-/// introduction; the READMEs and the home pages are checked by its mirror
-/// in `tests/repository.rs`, which also reads HTML links.
-pub fn profile_link_problems(text: &str, labels: &[&str; 4], targets: &[String; 4]) -> Vec<String> {
-    let pairs = link_pairs(text);
-    let mut problems = Vec::new();
-    let mut last = None;
-    for (label, target) in labels.iter().zip(targets) {
-        match pairs.iter().position(|(t, _)| t == label) {
-            None => problems.push(format!("no link \"{label}\"")),
-            Some(i) => {
-                let found = pairs[i].1.split('#').next().unwrap_or_default();
-                if !found.ends_with(target.as_str()) {
-                    problems.push(format!("\"{label}\" links {found}, not {target}"));
-                }
-                if last.is_some_and(|l| l > i) {
-                    problems.push(format!("\"{label}\" out of order"));
-                }
-                last = Some(i);
-            }
-        }
-    }
-    problems
-}
-
-/// What is wrong with Choose your path: the four profiles, each a list
-/// item whose only link opens its path page, in order, then a link to
-/// `origins.md` for contributors.
-pub fn choose_path_problems(md: &str, labels: &[&str; 4]) -> Vec<String> {
-    let targets = PATHS.map(String::from);
-    let mut problems = profile_link_problems(md, labels, &targets);
-    for label in labels {
-        if let Some(item) = md
-            .lines()
-            .find(|l| l.trim_start().starts_with("- ") && l.contains(&format!("[{label}]")))
-        {
-            let count = links(item).len();
-            if count != 1 {
-                problems.push(format!("\"{label}\": {count} links in its item"));
-            }
-        }
-    }
-    let from_last_profile = labels
-        .last()
-        .and_then(|l| md.find(&format!("[{l}]")))
-        .map_or("", |i| &md[i..]);
-    // The first link from there is the last profile's own.
-    if !link_pairs(from_last_profile)
-        .iter()
-        .skip(1)
-        .any(|(_, t)| t.split('#').next() == Some("origins.md"))
-    {
-        problems.push("no link to origins.md after the profiles".into());
-    }
-    problems
-}
-
-/// What is wrong with a path page: its title not `title`, no sentence
-/// before the first step, not one to three numbered steps of exactly one
-/// link each whose text is the title of the chapter it opens (`titles`,
-/// by chapter path), no `next` section, or no link back to Choose your
-/// path.
-pub fn path_page_problems(
-    md: &str,
-    title: &str,
-    next: &str,
-    titles: &[(String, String)],
-) -> Vec<String> {
-    let mut problems = Vec::new();
-    let lines: Vec<&str> = md.lines().collect();
-    if lines.first().map(|l| l.trim()) != Some(&format!("# {title}") as &str) {
-        problems.push(format!("not titled \"{title}\""));
-    }
-    let steps: Vec<(usize, &str)> = lines
-        .iter()
-        .enumerate()
-        .filter(|(_, l)| is_step_line(l))
-        .map(|(i, l)| (i, *l))
-        .collect();
-    if steps.is_empty() || steps.len() > 3 {
-        problems.push(format!("{} steps", steps.len()));
-    }
-    if let Some((first, _)) = steps.first()
-        && !lines[1..*first].iter().any(|l| {
-            let t = l.trim();
-            !t.is_empty() && !t.starts_with('#')
-        })
-    {
-        problems.push("no sentence before the first step".into());
-    }
-    for (_, step) in &steps {
-        let pairs = link_pairs(step);
-        if pairs.len() != 1 {
-            problems.push(format!("step with {} links: {step}", pairs.len()));
-            continue;
-        }
-        let (text, target) = &pairs[0];
-        let path = chapter_of(target);
-        match titles.iter().find(|(p, _)| p == path) {
-            Some((_, t)) if t == text => {}
-            Some((_, t)) => problems.push(format!("step \"{text}\" opens \"{t}\"")),
-            None => problems.push(format!("step \"{text}\" opens no chapter: {path}")),
-        }
-    }
-    if !lines.iter().any(|l| l.trim() == format!("## {next}")) {
-        problems.push(format!("no \"{next}\" section"));
-    }
-    if !link_pairs(md)
-        .iter()
-        .any(|(_, t)| t.split('#').next() == Some("../choose-your-path.md"))
-    {
-        problems.push("no link back to Choose your path".into());
-    }
-    problems
-}
-
-/// Whether a line of a path page is one of its numbered steps: digits, then
-/// `. `.
-fn is_step_line(line: &str) -> bool {
-    let digits = line.chars().take_while(char::is_ascii_digit).count();
-    digits > 0 && line[digits..].starts_with(". ")
-}
-
-/// The links a path page lacks. `next_heading` is the title of its "Next"
-/// section; `steps` are the chapters its numbered steps must open, and
-/// `next_links` the chapters that section must link.
-pub fn missing_path_links(
-    md: &str,
-    next_heading: &str,
-    steps: &[&str],
-    next_links: &[&str],
-) -> Vec<String> {
-    let (body, next_section) = md
-        .split_once(&format!("## {next_heading}"))
-        .unwrap_or((md, ""));
-    let step_lines: String = body
-        .lines()
-        .filter(|l| is_step_line(l))
-        .collect::<Vec<_>>()
-        .join("\n");
-    let opens = |text: &str, chapter: &str| {
-        link_pairs(text)
-            .iter()
-            .any(|(_, t)| chapter_of(t) == chapter)
-    };
-    let mut missing: Vec<String> = steps
-        .iter()
-        .filter(|c| !opens(&step_lines, c))
-        .map(|c| format!("no step {c}"))
-        .collect();
-    missing.extend(
-        next_links
-            .iter()
-            .filter(|c| !opens(next_section, c))
-            .map(|c| format!("no {c} under \"{next_heading}\"")),
-    );
-    missing
-}
-
 /// What is wrong with an annotated example: one of `parts` (`## ` headings)
 /// missing or out of order, or a part without a quoted `markdown` block, or
 /// without its `### note` heading after that block.
@@ -426,105 +197,134 @@ pub fn developer_glosses(md: &str) -> Vec<&'static str> {
     GLOSSES.into_iter().filter(|g| flat.contains(g)).collect()
 }
 
-/// What is wrong with a summary's first part: a chapter that does not
-/// belong to the Start here path, or one of its chapters missing or out of
-/// order.
-pub fn start_here_problems(summary: &str) -> Vec<String> {
-    let parts = parts(summary);
-    let Some((_, first)) = parts.first() else {
-        return vec!["no part".into()];
-    };
-    let mut problems: Vec<String> = first
-        .iter()
-        .filter(|c| !START_HERE.contains(&c.as_str()))
-        .map(|c| format!("unexpected {c}"))
-        .collect();
-    problems.extend(
-        START_HERE
-            .iter()
-            .filter(|c| !first.iter().any(|f| f == *c))
-            .map(|c| format!("missing {c}")),
-    );
-    if problems.is_empty() && first.as_slice() != START_HERE {
-        problems.push(format!("out of order: {first:?}"));
-    }
-    problems
-}
+/// The five steps of the reading tunnel, in order: each step's title in
+/// English and in French, and its chapters.
+pub const TUNNEL: [(&str, &str, &[&str]); 5] = [
+    ("Discover", "Découvrir", &["introduction.md"]),
+    (
+        "Get started",
+        "Démarrer",
+        &["installation.md", "quickstart.md"],
+    ),
+    (
+        "Every day",
+        "Au quotidien",
+        &[
+            "skills.md",
+            "guides/mcp.md",
+            "guides/review-a-plan.md",
+            "guides/approve-a-plan.md",
+            "guides/build-and-file.md",
+        ],
+    ),
+    (
+        "Understand",
+        "Comprendre",
+        &[
+            "workflow.md",
+            "concepts.md",
+            "guides/decisions.md",
+            "roles.md",
+            "guides/review-record.md",
+        ],
+    ),
+    (
+        "For your team",
+        "Pour l'équipe",
+        &[
+            "guides/existing-project.md",
+            "guides/team-rollout.md",
+            "guides/inherited-sources.md",
+            "guides/artifact-language.md",
+            "guides/release-notes.md",
+            "guides/custom-schemas.md",
+        ],
+    ),
+];
 
-/// The chapters of the parts after "Start here", in order: Everyday use,
-/// Going further, Reference, Contributing.
-pub const PARTS_AFTER_START: [&[&str]; 4] = [
-    &[
-        "quickstart.md",
-        "guides/start-from-nothing.md",
-        "installation.md",
-        "workflow.md",
-        "skills.md",
-        "guides/mcp.md",
-        "guides/review-a-plan.md",
-        "guides/example-plan.md",
-        "guides/approve-a-plan.md",
-        "concepts.md",
-        "faq.md",
-    ],
-    &[
-        "guides/decisions.md",
-        "guides/review-record.md",
-        "roles.md",
-        "guides/existing-project.md",
-        "guides/team-rollout.md",
-        "guides/repository-integration.md",
-        "guides/release-notes.md",
-        "guides/inherited-sources.md",
-        "guides/artifact-language.md",
-        "guides/custom-schemas.md",
-    ],
+/// The appendices, read apart from the tunnel.
+pub const APPENDICES: (&str, &str, &[&str]) = (
+    "Appendices",
+    "Annexes",
     &[
         "reference/cli.md",
         "reference/configuration.md",
         "reference/file-formats.md",
         "reference/json-output.md",
         "reference/errors.md",
+        "glossary.md",
+        "faq.md",
+        "guides/example-plan.md",
     ],
+);
+
+/// The chapters for contributors, last.
+pub const CONTRIBUTING: (&str, &str, &[&str]) = (
+    "Contributing",
+    "Contribuer",
     &[
         "origins.md",
         "contributing.md",
         "architecture.md",
         "reliability.md",
     ],
-];
+);
 
-/// How a `SUMMARY.md`'s parts after "Start here" depart from
-/// [`PARTS_AFTER_START`]: a chapter in the wrong part, a missing one, or
-/// a part out of order, each named.
-pub fn toc_problems(summary: &str) -> Vec<String> {
-    let parts = parts(summary);
+/// The tunnel's chapters, in reading order.
+pub fn tunnel_chapters() -> impl Iterator<Item = &'static str> {
+    TUNNEL
+        .iter()
+        .flat_map(|(_, _, chapters)| chapters.iter().copied())
+}
+
+/// How a `SUMMARY.md` departs from the tunnel, the appendices and
+/// Contributing, in that order: a part missing or misnamed, a chapter in
+/// the wrong part, a missing one, a part out of order, a nested chapter.
+pub fn toc_problems(summary: &str, lang: Lang) -> Vec<String> {
+    let found = parts(summary);
+    let expected: Vec<(&str, &[&str])> = TUNNEL
+        .iter()
+        .chain([&APPENDICES, &CONTRIBUTING])
+        .map(|(en, fr, chapters)| (if lang == Lang::En { *en } else { *fr }, *chapters))
+        .collect();
     let mut problems = Vec::new();
-    for (i, expected) in PARTS_AFTER_START.iter().enumerate() {
+    if found.len() != expected.len() {
+        problems.push(format!("{} parts, not {}", found.len(), expected.len()));
+    }
+    for (i, (title, chapters)) in expected.iter().enumerate() {
         let before = problems.len();
-        let Some((title, listed)) = parts.get(i + 1) else {
-            problems.push(format!("part {} is missing", i + 2));
+        let Some((found_title, listed)) = found.get(i) else {
+            problems.push(format!("part \"{title}\" is missing"));
             continue;
         };
+        if found_title != title {
+            problems.push(format!(
+                "part {} is \"{found_title}\", not \"{title}\"",
+                i + 1
+            ));
+        }
         for c in listed {
-            if !expected.contains(&c.as_str()) {
+            if !chapters.contains(&c.as_str()) {
                 problems.push(format!("{c} does not belong in \"{title}\""));
             }
         }
-        for c in *expected {
+        for c in *chapters {
             if !listed.iter().any(|l| l == c) {
                 problems.push(format!("{c} is missing from \"{title}\""));
             }
         }
-        // Each part's order is checked once its own chapters are right,
-        // whatever the other parts hold.
         if problems.len() == before
             && listed
                 .iter()
                 .map(String::as_str)
-                .ne(expected.iter().copied())
+                .ne(chapters.iter().copied())
         {
             problems.push(format!("\"{title}\" is out of order: {listed:?}"));
+        }
+    }
+    for line in summary.lines() {
+        if line.starts_with(char::is_whitespace) && line.trim_start().starts_with("- [") {
+            problems.push(format!("nested: {}", line.trim()));
         }
     }
     problems
@@ -592,10 +392,10 @@ pub fn jira_problems(text: &str) -> Vec<String> {
     problems
 }
 
-/// Whether a home page names Jira only after the last of its four profile
-/// labels, so that the question still comes first.
-pub fn jira_after_profiles(page: &str, labels: &[&str; 4]) -> bool {
-    let last = labels.iter().filter_map(|l| page.find(l)).max();
+/// Whether a home page names Jira only after the last of `names` (its
+/// reading cards), so that the way in still comes first.
+pub fn jira_after_last(page: &str, names: &[&str]) -> bool {
+    let last = names.iter().filter_map(|l| page.find(l)).max();
     match (last, page.find("Jira")) {
         (Some(last), Some(jira)) => jira > last,
         _ => false,
@@ -634,58 +434,6 @@ pub fn faq_code_problems(faq: &str, errors: &str, codes: &[&str]) -> Vec<String>
         if !errors.lines().any(|l| l.trim() == heading) {
             problems.push(format!("the errors chapter has no {heading}"));
         }
-    }
-    problems
-}
-
-/// The title of an everyday chapter's last section.
-pub fn go_further_heading(lang: Lang) -> &'static str {
-    match lang {
-        Lang::En => "Go further",
-        Lang::Fr => "Pour aller plus loin",
-    }
-}
-
-/// What keeps an everyday chapter short and open: its prose (code,
-/// `<details>` and `<figure>` blocks not counted) over `cap` words, or a
-/// last `## ` section other than "Go further", or one that links no
-/// chapter by its title. `title_of` gives a chapter's title from a link
-/// target relative to the chapter (`../roles.md#x`).
-pub fn everyday_problems(
-    md: &str,
-    cap: usize,
-    lang: Lang,
-    title_of: impl Fn(&str) -> Option<String>,
-) -> Vec<String> {
-    let mut problems = Vec::new();
-    let words = prose_words(&without_figures(md));
-    if words > cap {
-        problems.push(format!("{words} words, over {cap}"));
-    }
-    let heading = go_further_heading(lang);
-    let last = sections(md, "## ").into_iter().last();
-    match last {
-        Some((title, body)) if title == heading => {
-            let mut chapters = 0;
-            for (text, target) in link_pairs(&body) {
-                if target.starts_with("http") || !chapter_of(&target).ends_with(".md") {
-                    continue;
-                }
-                chapters += 1;
-                match title_of(&target) {
-                    Some(t) if t == text => {}
-                    Some(t) => problems.push(format!("\"{text}\" links {target}, titled \"{t}\"")),
-                    None => {
-                        problems.push(format!("\"{text}\" links {target}, which is no chapter"))
-                    }
-                }
-            }
-            if chapters == 0 {
-                problems.push(format!("\"{heading}\" links no chapter"));
-            }
-        }
-        Some((title, _)) => problems.push(format!("ends with \"{title}\", not \"{heading}\"")),
-        None => problems.push(format!("has no \"{heading}\" section")),
     }
     problems
 }
@@ -1493,30 +1241,46 @@ mod tests {
         );
     }
 
-    const SUMMARY: &str = "# Summary\n\n# Start here\n\n- [A](introduction.md)\n- [B](choose-your-path.md)\n  - [R](paths/review.md)\n  - [U](paths/build.md)\n  - [V](paths/develop.md)\n  - [T](paths/team.md)\n- [D](glossary.md)\n\n# Everyday use\n\n- [E](concepts.md)\n";
+    const TUNNEL_SUMMARY: &str = include_str!("../../../docs/en/src/SUMMARY.md");
 
     #[test]
-    fn a_well_formed_start_here_part_passes() {
-        assert!(start_here_problems(SUMMARY).is_empty());
-        assert_eq!(
-            parts(SUMMARY)[1],
-            ("Everyday use".into(), vec!["concepts.md".into()])
+    fn a_chapter_out_of_its_step_is_caught() {
+        assert!(toc_problems(TUNNEL_SUMMARY, Lang::En).is_empty());
+        let moved = TUNNEL_SUMMARY
+            .replace("- [Glossary](glossary.md)\n", "")
+            .replace(
+                "- [Compagnon in two minutes](introduction.md)\n",
+                "- [Compagnon in two minutes](introduction.md)\n- [Glossary](glossary.md)\n",
+            );
+        let problems = toc_problems(&moved, Lang::En);
+        assert!(
+            problems
+                .iter()
+                .any(|p| p == "glossary.md does not belong in \"Discover\""),
+            "{problems:?}"
+        );
+        assert!(
+            problems
+                .iter()
+                .any(|p| p == "glossary.md is missing from \"Appendices\""),
+            "{problems:?}"
         );
     }
 
     #[test]
-    fn a_chapter_moved_into_start_here_is_caught() {
-        let summary = SUMMARY.replace(
-            "- [D](glossary.md)\n",
-            "- [D](glossary.md)\n- [E](concepts.md)\n",
+    fn a_nested_or_misnamed_part_is_caught() {
+        let nested = TUNNEL_SUMMARY.replace("- [Concepts]", "  - [Concepts]");
+        assert!(
+            toc_problems(&nested, Lang::En)
+                .iter()
+                .any(|p| p.starts_with("nested:"))
         );
-        assert_eq!(start_here_problems(&summary), ["unexpected concepts.md"]);
-    }
-
-    #[test]
-    fn a_chapter_missing_from_start_here_is_caught() {
-        let summary = SUMMARY.replace("- [D](glossary.md)\n", "");
-        assert_eq!(start_here_problems(&summary), ["missing glossary.md"]);
+        let renamed = TUNNEL_SUMMARY.replace("# Every day", "# Everyday use");
+        assert!(
+            toc_problems(&renamed, Lang::En)
+                .iter()
+                .any(|p| p.contains("\"Everyday use\", not \"Every day\""))
+        );
     }
 
     #[test]
@@ -1540,88 +1304,6 @@ mod tests {
         assert_eq!(
             glossary_problems(&md, &["Delta", "Spec", "Plan"], 60),
             ["missing Delta", "Spec: 90 words"]
-        );
-    }
-
-    fn titles() -> Vec<(String, String)> {
-        [
-            ("introduction.md", "Compagnon in two minutes"),
-            ("glossary.md", "Glossary"),
-            ("workflow.md", "The workflow"),
-        ]
-        .map(|(p, t)| (p.to_string(), t.to_string()))
-        .to_vec()
-    }
-
-    const PAGE: &str = "# Review plans\n\nFor you if you do not code; ten minutes.\n\n\
-        1. [Compagnon in two minutes](../introduction.md)\n2. [Glossary](../glossary.md)\n\n\
-        ## Next, if you need it\n\n- [The workflow](../workflow.md)\n\n\
-        [Choose another path](../choose-your-path.md)\n";
-
-    #[test]
-    fn a_step_labelled_differently_from_its_page_is_caught() {
-        assert!(
-            path_page_problems(PAGE, "Review plans", "Next, if you need it", &titles()).is_empty()
-        );
-        let renamed = PAGE.replace(
-            "2. [Glossary](../glossary.md)",
-            "2. [Step by step](../workflow.md)",
-        );
-        assert_eq!(
-            path_page_problems(&renamed, "Review plans", "Next, if you need it", &titles()),
-            ["step \"Step by step\" opens \"The workflow\""]
-        );
-    }
-
-    #[test]
-    fn a_path_page_with_four_steps_is_caught() {
-        let four = PAGE.replace(
-            "2. [Glossary](../glossary.md)\n",
-            "2. [Glossary](../glossary.md)\n3. [Glossary](../glossary.md)\n4. [Glossary](../glossary.md)\n",
-        );
-        assert_eq!(
-            path_page_problems(&four, "Review plans", "Next, if you need it", &titles()),
-            ["4 steps"]
-        );
-    }
-
-    #[test]
-    fn a_profile_with_two_links_or_the_wrong_page_is_caught() {
-        let labels = ["A", "B", "C", "D"];
-        let good = "- [A](paths/review.md)\n- [B](paths/build.md)\n- [C](paths/develop.md)\n\
-                    - [D](paths/team.md)\n\nTo change Compagnon, see [Origins](origins.md).\n";
-        assert!(
-            choose_path_problems(good, &labels).is_empty(),
-            "{:?}",
-            choose_path_problems(good, &labels)
-        );
-        let two = good.replace(
-            "- [A](paths/review.md)",
-            "- [A](paths/review.md), see [the glossary](glossary.md)",
-        );
-        assert_eq!(
-            choose_path_problems(&two, &labels),
-            ["\"A\": 2 links in its item"]
-        );
-        let wrong = good.replace("[B](paths/build.md)", "[B](paths/team.md)");
-        assert_eq!(
-            choose_path_problems(&wrong, &labels),
-            ["\"B\" links paths/team.md, not paths/build.md"]
-        );
-    }
-
-    #[test]
-    fn a_path_page_that_does_not_link_its_new_page_is_caught() {
-        let page = "# Review\n\nFor you.\n\n1. [A](../introduction.md)\n\n## Next, if you need it\n\n\
-                    - [Example](../guides/example-plan.md)\n";
-        assert_eq!(
-            missing_path_links(
-                page,
-                "Next, if you need it",
-                &["introduction.md"],
-                &["guides/example-plan.md", "guides/approve-a-plan.md"]
-            ),
-            ["no guides/approve-a-plan.md under \"Next, if you need it\""]
         );
     }
 
@@ -1933,10 +1615,10 @@ mod tests {
     }
 
     #[test]
-    fn jira_between_two_profiles_is_caught() {
-        let labels = ["A", "B", "C", "D"];
-        assert!(jira_after_profiles("A B C D … Jira", &labels));
-        assert!(!jira_after_profiles("A B Jira C D", &labels));
+    fn jira_between_two_cards_is_caught() {
+        let names = ["A", "B", "C", "D"];
+        assert!(jira_after_last("A B C D … Jira", &names));
+        assert!(!jira_after_last("A B Jira C D", &names));
     }
 
     #[test]
@@ -1959,29 +1641,6 @@ mod tests {
                 "the errors chapter has no ### `decision_seal_mismatch`"
             ]
         );
-    }
-
-    #[test]
-    fn a_long_chapter_or_one_without_go_further_is_caught() {
-        let title = |t: &str| (t == "roles.md").then(|| "Roles".to_string());
-        let good = "# FAQ\n\nShort.\n\n<figure>many many words</figure>\n\n## Go further\n\n- [Roles](roles.md)\n";
-        assert!(
-            everyday_problems(good, 5, Lang::En, title).is_empty(),
-            "{:?}",
-            everyday_problems(good, 5, Lang::En, title)
-        );
-        let long = format!(
-            "# FAQ\n\n{}\n\n## Go further\n\n- [Roles](roles.md)\n",
-            "word ".repeat(1300)
-        );
-        assert!(everyday_problems(&long, 1200, Lang::En, title)[0].contains("over 1200"));
-        let ends = "# Concepts\n\n## Seal\n\nText.\n";
-        assert_eq!(
-            everyday_problems(ends, 1200, Lang::En, title),
-            ["ends with \"Seal\", not \"Go further\""]
-        );
-        let wrong = "# FAQ\n\n## Go further\n\n- [The roles](roles.md)\n";
-        assert_eq!(everyday_problems(wrong, 1200, Lang::En, title).len(), 1);
     }
 
     #[test]
@@ -2033,56 +1692,9 @@ mod chapter_tests {
     }
 
     #[test]
-    fn both_editions_open_with_the_start_here_path() {
-        let titles = [
-            [
-                "Start here",
-                "Everyday use",
-                "Going further",
-                "Reference",
-                "Contributing",
-            ],
-            [
-                "Commencer ici",
-                "Au quotidien",
-                "Aller plus loin",
-                "Référence",
-                "Contribuer",
-            ],
-        ];
-        for (lang, expected) in LANGS.into_iter().zip(titles) {
-            let summary = summary(lang);
-            assert!(
-                start_here_problems(summary).is_empty(),
-                "{}: {:?}",
-                lang.tag(),
-                start_here_problems(summary)
-            );
-            let parts = parts(summary);
-            let found: Vec<&str> = parts.iter().map(|(t, _)| t.as_str()).collect();
-            assert_eq!(found, expected, "{}", lang.tag());
-            assert_eq!(
-                parts[1].1.first().map(String::as_str),
-                Some("quickstart.md"),
-                "{}: Everyday use opens with the quickstart",
-                lang.tag()
-            );
-            // The fifth part is Contributing: its chapter paths.
-            let (_, contributing) = &parts[4];
-            for c in ["origins.md", "architecture.md", "reliability.md"] {
-                assert!(
-                    contributing.iter().any(|p| p == c),
-                    "{}: Contributing lacks {c}",
-                    lang.tag()
-                );
-            }
-        }
-    }
-
-    #[test]
-    fn both_editions_follow_the_refactored_order() {
+    fn both_editions_read_as_the_tunnel() {
         for lang in LANGS {
-            let problems = toc_problems(summary(lang));
+            let problems = toc_problems(summary(lang), lang);
             assert!(problems.is_empty(), "{}: {problems:#?}", lang.tag());
             let titles = title_problems(summary(lang), |path| {
                 lang.chapters()
@@ -2096,80 +1708,44 @@ mod chapter_tests {
     }
 
     #[test]
-    fn a_chapter_out_of_its_part_is_caught() {
-        let moved = summary(Lang::En)
-            .replace("- [Roles](roles.md)\n", "")
-            .replace(
-                "- [FAQ](faq.md)\n",
-                "- [FAQ](faq.md)\n- [Roles](roles.md)\n",
-            );
-        let problems = toc_problems(&moved);
-        assert!(
-            problems
-                .iter()
-                .any(|p| p.contains("roles.md does not belong")),
-            "{problems:?}"
-        );
-        let renamed = summary(Lang::En).replace("[FAQ](faq.md)", "[Questions](faq.md)");
-        let titles = title_problems(&renamed, |_| Some("FAQ".into()));
-        assert!(titles.iter().any(|p| p.contains("faq.md")), "{titles:?}");
-    }
-
-    #[test]
-    fn no_chapter_is_removed() {
-        let before = [
-            "introduction.md",
-            "installation.md",
-            "quickstart.md",
-            "workflow.md",
-            "skills.md",
-            "roles.md",
-            "reliability.md",
-            "concepts.md",
-            "guides/inherited-sources.md",
-            "guides/repository-integration.md",
-            "guides/release-notes.md",
-            "guides/review-record.md",
-            "guides/mcp.md",
-            "guides/artifact-language.md",
-            "guides/custom-schemas.md",
-            "reference/cli.md",
-            "reference/configuration.md",
-            "reference/file-formats.md",
-            "reference/json-output.md",
-            "faq.md",
-            "architecture.md",
-            "guides/decisions.md",
-            "reference/errors.md",
-        ];
+    fn the_manual_follows_the_tunnel() {
         for lang in LANGS {
-            let now = paths(lang);
-            for c in before {
-                assert!(now.contains(&c), "{}: {c} is no longer listed", lang.tag());
-            }
+            let tunnel: Vec<&str> = tunnel_chapters().collect();
+            assert_eq!(&paths(lang)[..tunnel.len()], tunnel, "{}", lang.tag());
         }
     }
 
     #[test]
-    fn the_start_here_path_stays_under_its_caps() {
+    fn the_first_steps_stay_under_their_caps() {
+        let mut found = Vec::new();
         for lang in LANGS {
-            for (path, caps) in [
-                ("introduction.md", (450, 560)),
-                ("choose-your-path.md", (200, 250)),
-                (PATHS[0], (250, 310)),
-                (PATHS[1], (250, 310)),
-                (PATHS[2], (250, 310)),
-                (PATHS[3], (250, 310)),
-                ("quickstart.md", (500, 625)),
-            ] {
+            for path in TUNNEL[..3].iter().flat_map(|(_, _, c)| c.iter()) {
+                let caps = match *path {
+                    "introduction.md" => (450, 560),
+                    "quickstart.md" => (500, 625),
+                    _ => (1200, 1500),
+                };
                 let words = prose_words(&without_figures(chapter(lang, path)));
                 let cap = cap(lang, caps);
-                assert!(
-                    words <= cap,
-                    "{} {path}: {words} words, cap {cap}",
-                    lang.tag()
-                );
+                if words > cap {
+                    found.push(format!("{} {path}: {words} words, cap {cap}", lang.tag()));
+                }
             }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn installation_asks_no_command_beyond_installing() {
+        for lang in LANGS {
+            let page = chapter(lang, "installation.md");
+            let stray = stray_commands(page);
+            assert!(stray.is_empty(), "{}: {stray:?}", lang.tag());
+            assert!(
+                page.contains("[Claude Code](glossary.md#claude-code)"),
+                "{}: installation names Claude Code",
+                lang.tag()
+            );
         }
     }
 
@@ -2260,129 +1836,6 @@ mod chapter_tests {
         }
     }
 
-    /// Each chapter's path and `# ` title: what a reader hears on arriving
-    /// at the page. The path pages also match the sidebar, checked below.
-    fn chapter_titles(lang: Lang) -> Vec<(String, String)> {
-        lang.chapters()
-            .iter()
-            .map(|(p, md)| {
-                let title = md
-                    .lines()
-                    .find_map(|l| l.strip_prefix("# "))
-                    .unwrap_or_default()
-                    .trim()
-                    .to_string();
-                (p.to_string(), title)
-            })
-            .collect()
-    }
-
-    #[test]
-    fn both_editions_ask_the_question_with_the_four_profiles() {
-        for lang in LANGS {
-            let problems =
-                choose_path_problems(chapter(lang, "choose-your-path.md"), &profile_labels(lang));
-            assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
-        }
-    }
-
-    #[test]
-    fn the_introduction_links_the_four_paths() {
-        for lang in LANGS {
-            let problems = profile_link_problems(
-                chapter(lang, "introduction.md"),
-                &profile_labels(lang),
-                &PATHS.map(String::from),
-            );
-            assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
-        }
-    }
-
-    #[test]
-    fn every_path_page_has_at_most_three_steps_titled_as_their_pages() {
-        for lang in LANGS {
-            let titles = chapter_titles(lang);
-            let summary = summary(lang);
-            for (path, label) in PATHS.iter().zip(profile_labels(lang)) {
-                let problems =
-                    path_page_problems(chapter(lang, path), label, next_heading(lang), &titles);
-                assert!(problems.is_empty(), "{} {path}: {problems:?}", lang.tag());
-                assert!(
-                    summary.contains(&format!("[{label}]({path})")),
-                    "{}: SUMMARY.md does not title {path} \"{label}\"",
-                    lang.tag()
-                );
-            }
-        }
-    }
-
-    #[test]
-    fn the_build_path_asks_no_command_beyond_installing() {
-        for lang in LANGS {
-            let page = chapter(lang, PATHS[1]);
-            let (steps, next) = page
-                .split_once(&format!("## {}", next_heading(lang)))
-                .unwrap_or((page, ""));
-            for (_, target) in link_pairs(steps) {
-                let path = chapter_of(&target);
-                if path.ends_with(".md") && path != "choose-your-path.md" {
-                    let stray = stray_commands(chapter(lang, path));
-                    assert!(stray.is_empty(), "{} {path}: {stray:?}", lang.tag());
-                }
-            }
-            for developer in ["workflow.md", "skills.md", "concepts.md", "faq.md"] {
-                assert!(
-                    !next.contains(developer),
-                    "{}: the build path's Next names {developer}",
-                    lang.tag()
-                );
-            }
-        }
-    }
-
-    #[test]
-    fn every_link_of_the_paths_resolves() {
-        for lang in LANGS {
-            let chapters = paths(lang);
-            let pages = std::iter::once("choose-your-path.md").chain(PATHS);
-            for page in pages {
-                let base = if page.starts_with("paths/") {
-                    "paths/"
-                } else {
-                    ""
-                };
-                for (_, target) in link_pairs(chapter(lang, page)) {
-                    if target.contains("://") {
-                        continue;
-                    }
-                    let (path, anchor) = target.split_once('#').unwrap_or((&target, ""));
-                    let resolved = match path.strip_prefix("../") {
-                        Some(up) => up.to_string(),
-                        None => format!("{base}{path}"),
-                    };
-                    assert!(
-                        chapters.contains(&resolved.as_str()),
-                        "{} {page}: {target} is not a chapter",
-                        lang.tag()
-                    );
-                    if !anchor.is_empty() {
-                        let mut slugger = crate::docs::Slugger::default();
-                        let slugs: Vec<String> =
-                            crate::docs::heading_texts(chapter(lang, &resolved))
-                                .iter()
-                                .map(|h| slugger.slug(h))
-                                .collect();
-                        assert!(
-                            slugs.iter().any(|s| s == anchor),
-                            "{} {page}: {target} names no heading",
-                            lang.tag()
-                        );
-                    }
-                }
-            }
-        }
-    }
-
     #[test]
     fn developer_pages_do_not_gloss_everyday_words() {
         for lang in LANGS {
@@ -2446,18 +1899,6 @@ mod chapter_tests {
     }
 
     #[test]
-    fn the_manual_starts_with_the_start_here_path() {
-        for lang in LANGS {
-            assert_eq!(
-                &paths(lang)[..START_HERE.len()],
-                START_HERE,
-                "{}",
-                lang.tag()
-            );
-        }
-    }
-
-    #[test]
     fn the_offline_manual_renders_a_folded_block() {
         let md = "# T\n\n<details>\n<summary>Under the hood: what init writes</summary>\n\n```bash\ncompagnon status\n```\n\n</details>\n";
         let html = crate::docs::render_html(md, Lang::En, "0.7.0");
@@ -2473,48 +1914,12 @@ mod chapter_tests {
         );
     }
 
-    /// The chapters of the "Start here" and "Everyday use" parts, as both
-    /// `SUMMARY.md` list them: `the_everyday_list_follows_the_summary`
-    /// fails if a chapter is added to those parts and not here.
-    const EVERYDAY: [&str; 18] = [
-        "introduction.md",
-        "choose-your-path.md",
-        "paths/review.md",
-        "paths/build.md",
-        "paths/develop.md",
-        "paths/team.md",
-        "glossary.md",
-        "quickstart.md",
-        "guides/start-from-nothing.md",
-        "installation.md",
-        "workflow.md",
-        "skills.md",
-        "guides/mcp.md",
-        "guides/review-a-plan.md",
-        "guides/example-plan.md",
-        "guides/approve-a-plan.md",
-        "concepts.md",
-        "faq.md",
-    ];
-
-    #[test]
-    fn the_everyday_list_follows_the_summary() {
-        for lang in LANGS {
-            let parts = parts(summary(lang));
-            let listed: Vec<&str> = parts[..2]
-                .iter()
-                .flat_map(|(_, chapters)| chapters.iter().map(String::as_str))
-                .collect();
-            assert_eq!(listed, EVERYDAY, "{}", lang.tag());
-        }
-    }
-
     #[test]
     fn every_everyday_chapter_explains_its_terms() {
         let mut found = Vec::new();
         for lang in LANGS {
             let anchors = glossary_anchors(chapter(lang, "glossary.md"));
-            for path in EVERYDAY.iter().filter(|p| **p != "glossary.md") {
+            for path in TUNNEL[..3].iter().flat_map(|(_, _, c)| c.iter()) {
                 let problems = vocabulary_problems(chapter(lang, path), lang, &anchors);
                 if !problems.is_empty() {
                     found.push(format!("{} {path}: {problems:?}", lang.tag()));
@@ -2536,7 +1941,7 @@ mod chapter_tests {
                 "{}: title",
                 lang.tag()
             );
-            let everyday = &parts(summary(lang))[EVERYDAY_PART].1;
+            let everyday = &parts(summary(lang))[2].1;
             assert!(
                 everyday.iter().any(|c| c == "guides/mcp.md"),
                 "{}: part",
@@ -2588,30 +1993,6 @@ mod chapter_tests {
         }
     }
 
-    /// `target`, a link written in chapter `from`, as a chapter path of the
-    /// book (`../roles.md#x` from `guides/mcp.md` is `roles.md`).
-    fn resolve(from: &str, target: &str) -> String {
-        let target = target.split('#').next().unwrap_or_default();
-        let mut parts: Vec<&str> = from.split('/').collect();
-        parts.pop();
-        for segment in target.split('/') {
-            match segment {
-                ".." => {
-                    parts.pop();
-                }
-                "." | "" => {}
-                s => parts.push(s),
-            }
-        }
-        parts.join("/")
-    }
-
-    /// The title `SUMMARY.md` gives a chapter.
-    fn summary_title(lang: Lang, path: &str) -> Option<String> {
-        summary_entries(summary(lang))
-            .find_map(|(title, target)| (target == path).then(|| title.to_string()))
-    }
-
     #[test]
     fn the_documentation_holds_no_trace_of_codev() {
         let mut found = Vec::new();
@@ -2645,10 +2026,7 @@ mod chapter_tests {
     fn every_entry_point_puts_jira_forward() {
         let mut found = Vec::new();
         for lang in LANGS {
-            for path in ["introduction.md", "quickstart.md"]
-                .into_iter()
-                .chain(PATHS)
-            {
+            for path in ["introduction.md", "quickstart.md"] {
                 for p in jira_problems(chapter(lang, path)) {
                     found.push(format!("{}/{path}: {p}", lang.tag()));
                 }
@@ -2665,6 +2043,24 @@ mod chapter_tests {
         assert!(found.is_empty(), "{found:#?}");
     }
 
+    /// The home pages' reading cards, until they show the five steps.
+    fn home_profiles(lang: Lang) -> [&'static str; 4] {
+        match lang {
+            Lang::En => [
+                "I review and approve plans — I do not code",
+                "I do not code, but I want Claude to build something for me",
+                "I am a developer and I have Claude write code",
+                "I set Compagnon up for my team",
+            ],
+            Lang::Fr => [
+                "Je relis et je valide des plans — je ne code pas",
+                "Je ne code pas, mais je veux que Claude construise quelque chose pour moi",
+                "Je suis développeur et je fais coder Claude",
+                "J'installe Compagnon pour mon équipe",
+            ],
+        }
+    }
+
     #[test]
     fn both_home_pages_put_jira_after_the_profiles() {
         for (lang, page) in [
@@ -2674,39 +2070,11 @@ mod chapter_tests {
             let problems = jira_problems(page);
             assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
             assert!(
-                jira_after_profiles(page, &profile_labels(lang)),
+                jira_after_last(page, &home_profiles(lang)),
                 "{}: Jira comes before the last profile",
                 lang.tag()
             );
         }
-    }
-
-    /// Everyday chapters exempt from the word cap and the "Go further"
-    /// ending: the annotated example plan, whose body is a whole plan
-    /// quoted for the reader to study.
-    const UNCAPPED_EVERYDAY: [&str; 1] = ["guides/example-plan.md"];
-
-    #[test]
-    fn everyday_chapters_are_short_and_end_with_go_further() {
-        let mut found = Vec::new();
-        for lang in LANGS {
-            let everyday = &parts(summary(lang))[EVERYDAY_PART].1;
-            for path in everyday
-                .iter()
-                .filter(|p| !UNCAPPED_EVERYDAY.contains(&p.as_str()))
-            {
-                let problems = everyday_problems(
-                    chapter(lang, path),
-                    cap(lang, (1200, 1500)),
-                    lang,
-                    |target| summary_title(lang, &resolve(path, target)),
-                );
-                for p in problems {
-                    found.push(format!("{}/{path}: {p}", lang.tag()));
-                }
-            }
-        }
-        assert!(found.is_empty(), "{found:#?}");
     }
 
     #[test]
@@ -2788,69 +2156,6 @@ mod chapter_tests {
         assert!(found.is_empty(), "{found:#?}");
     }
 
-    /// The parts of `SUMMARY.md`, by their order (`# ` headings).
-    const EVERYDAY_PART: usize = 1;
-    const GOING_FURTHER_PART: usize = 2;
-    const CONTRIBUTING_PART: usize = 4;
-
-    /// The guides the path pages send their readers to, each with the part
-    /// of `SUMMARY.md` that lists it.
-    const PROFILE_GUIDES: [(&str, usize); 6] = [
-        ("guides/example-plan.md", EVERYDAY_PART),
-        ("guides/approve-a-plan.md", EVERYDAY_PART),
-        ("guides/start-from-nothing.md", EVERYDAY_PART),
-        ("guides/existing-project.md", GOING_FURTHER_PART),
-        ("guides/team-rollout.md", GOING_FURTHER_PART),
-        ("contributing.md", CONTRIBUTING_PART),
-    ];
-
-    #[test]
-    fn both_editions_list_the_new_pages_where_their_readers_look() {
-        for lang in LANGS {
-            let parts = parts(summary(lang));
-            for (page, part) in PROFILE_GUIDES {
-                assert!(
-                    parts[part].1.iter().any(|p| p == page),
-                    "{}: {page} not in part {}",
-                    lang.tag(),
-                    parts[part].0
-                );
-            }
-            let next = next_heading(lang);
-            // (path page, chapters its steps open, chapters its "Next" links)
-            for (path, steps, next_links) in [
-                (
-                    "paths/review.md",
-                    &[][..],
-                    &["guides/example-plan.md", "guides/approve-a-plan.md"][..],
-                ),
-                (
-                    "paths/build.md",
-                    &["guides/start-from-nothing.md"][..],
-                    &["guides/example-plan.md"][..],
-                ),
-                (
-                    "paths/develop.md",
-                    &[][..],
-                    &["guides/existing-project.md"][..],
-                ),
-                (
-                    "paths/team.md",
-                    &["guides/team-rollout.md"][..],
-                    &["roles.md"][..],
-                ),
-            ] {
-                let missing = missing_path_links(chapter(lang, path), next, steps, next_links);
-                assert!(missing.is_empty(), "{} {path}: {missing:?}", lang.tag());
-            }
-            assert!(
-                chapter(lang, "origins.md").contains("](contributing.md)"),
-                "{}: origins.md does not link contributing.md",
-                lang.tag()
-            );
-        }
-    }
-
     /// The parts of the example plan and the heading of their notes.
     fn example_parts(lang: Lang) -> ([&'static str; 4], &'static str) {
         match lang {
@@ -2918,22 +2223,13 @@ mod chapter_tests {
                 lang.tag(),
                 shell_blocks(approve)
             );
-            for name in ["GitHub", "GitLab", "_compagnon/changes/"] {
+            for name in ["GitHub", "_compagnon/changes/"] {
                 assert!(
                     approve.contains(name),
                     "{}: the approving page lacks {name}",
                     lang.tag()
                 );
             }
-            let start = chapter(lang, "guides/start-from-nothing.md");
-            let stray = stray_commands(start);
-            assert!(stray.is_empty(), "{}: {stray:?}", lang.tag());
-            let first_block = start.find("```").unwrap_or(start.len());
-            assert!(
-                start[..first_block].contains("Claude Code"),
-                "{}: the starting page does not name Claude Code before its first command",
-                lang.tag()
-            );
         }
         // French labels between parentheses, never as code.
         let approve = chapter(Lang::Fr, "guides/approve-a-plan.md");

@@ -1,22 +1,50 @@
 # Installation
 
-This page is for the person who installs Compagnon; if you only review
-plans, you can skip it.
+You will type two commands, once: one installs Compagnon, the other
+prepares your project's folder. After that, you only talk to Claude. If
+someone in your team is used to a [terminal](glossary.md#terminal) (the
+window where you type commands), they can do this part for you.
 
-Compagnon is a single program, ready to use. One line installs it, with no
-developer tools. You also need [Claude Code](glossary.md#claude-code) to
-use the [skills](glossary.md#skill); the `compagnon` command itself works
-without it.
+## Starting from nothing
 
-## macOS and Linux
+Two things, before any command:
 
-In a [terminal](glossary.md#terminal):
+- **Claude Code.** It is the [Claude Code](glossary.md#claude-code)
+  assistant that writes the plan and builds what you ask for. Get it from
+  [claude.com/claude-code](https://claude.com/claude-code), which explains
+  how to install it. It needs a Claude account with a subscription that
+  includes Claude Code; that page says which.
+- **A folder for your project** on your computer, empty to begin with if
+  you start from an idea. Create it as you would any folder, for example
+  `event-signup` in your Documents. Everything Claude builds will go there.
+
+## 1. Install Compagnon
+
+Open a terminal: on macOS, the Terminal app (press Cmd + Space, type
+"Terminal", then Enter); on Windows, PowerShell. Copy the line for your
+computer, paste it, then press Enter.
+
+On macOS or Linux:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 ```
 
-The script downloads the latest release for your computer from
+On Windows, in PowerShell:
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
+```
+
+If the installer prints a line to add, or if the next command is "not
+found", close the terminal and open a new one; "Under the hood: platforms,
+versions and the PATH" below explains why, for the person helping you.
+
+<details>
+<summary>Under the hood: what the installer does</summary>
+
+On macOS and Linux, the script downloads the latest release for your
+computer from
 [GitHub Releases](https://github.com/mairistem/compagnon/releases), checks
 its SHA-256 fingerprint, and installs the program to
 `~/.local/bin/compagnon`. It refuses to install if the fingerprint does not
@@ -24,35 +52,53 @@ match. When `~/.local/bin` is not on your `PATH`, it prints the line to add
 to `~/.zshrc` or `~/.bashrc`. It needs `curl`, `tar`, and `sha256sum` or
 `shasum`.
 
-## Windows
-
-In PowerShell 5.1 or later (PowerShell 7 included):
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
-```
-
-The script checks the download the same way and copies `compagnon.exe` to
+On Windows (PowerShell 5.1 or later, PowerShell 7 included), the script
+checks the download the same way and copies `compagnon.exe` to
 `%LOCALAPPDATA%\Programs\compagnon\`. It does **not** change your `PATH`:
 when the folder is missing from it, the script prints the command to add
 it. Open a new PowerShell window afterwards. Only x86_64 is prebuilt on
 Windows; on ARM64, build from source (below).
 
-## Check the installation
+To check the installation, `compagnon --version` prints the version. If the
+command is still not found in a new terminal, the install folder is not on
+your `PATH`: add it as the installer said. `command -v compagnon` (macOS,
+Linux) or `Get-Command compagnon` (Windows) shows which program your
+terminal runs.
+
+</details>
+
+## 2. Prepare your project's folder
+
+Open a terminal in your project folder: on macOS, right-click the folder
+in the Finder, then Services and "New Terminal at Folder"; on Windows,
+right-click inside the folder in File Explorer, then "Open in Terminal".
+Then type:
 
 ```bash
-compagnon --version
+compagnon init
 ```
 
-If the command is not found, open a new terminal. If it is still not
-found, the install folder is not on your `PATH`: add it as the installer
-said. `command -v compagnon` (macOS, Linux) or `Get-Command compagnon`
-(Windows) shows which program your terminal runs.
+It may ask which [skills](glossary.md#skill) to give Claude: the proposed
+choice is fine. It then asks for a few words about your project: always
+type one sentence about it, because an empty answer opens an awkward text
+editor (if that happens, call the person helping you). It adds a
+`_compagnon/` folder, where your plans will be kept. You can close the
+terminal now: from here on, you talk to Claude.
 
-## What to do next
+<details>
+<summary>Under the hood: opening Claude Code from the terminal</summary>
 
-In your project's folder, run `compagnon init` once, then ask Claude for
-your first plan: [Your first change](quickstart.md) walks you through it.
+In a terminal opened in the project folder, Claude Code starts with:
+
+```bash
+claude
+```
+
+Start it after `compagnon init`, or restart it, so that it sees the skills.
+What `compagnon init` writes besides `_compagnon/` is described in
+[Deploying Compagnon for a team](guides/team-rollout.md).
+
+</details>
 
 ## Upgrading
 
@@ -230,8 +276,3 @@ checks the result.
 
 </details>
 
-## Go further
-
-- [Your first change](quickstart.md): your first plan, in ten minutes.
-- [Starting from nothing](guides/start-from-nothing.md): if you do not code.
-- [Command-line interface](reference/cli.md): every command and option.
