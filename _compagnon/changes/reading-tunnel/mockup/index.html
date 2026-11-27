@@ -1,386 +1,342 @@
 <title>Compagnon Reading Tunnel</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;450;500;600;700&display=swap">
 <style>
+/* Mairistem Design System — tokens (tokens.css) */
 :root {
-  /* Layout: a book page in the approved Mairistem look — sticky top bar,
-     a stepper sidebar, a progress band, the page, a next-step card. */
-  --font: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --bg: #ffffff; --fg: #2b3f47; --heading: #00263a; --muted: #4f6670; --surface: #f4f8f9; --line: #dce5e8;
-  --link: #c4361b; --focus: #c4361b; --chip: #e7f0f3; --you: #00263a; --you-fg: #ffffff; --claude: #f4f8f9;
-  --logo-ink: #000000; --logo-c: #004c66;
-  
-  --dg-bg: #ffffff;
-  --dg-box: #f4f8f9;
-  --dg-file: #ffffff;
-  --dg-ink: #00263a;
-  --dg-muted: #4f6670;
-  --dg-line: #567079;
-  --dg-you: #e0421f;
-  --dg-you-text: #c4361b;
-  --dg-on-you: #1a0a05;
-  --dg-claude: #004c66;
-
+  --color-corail: #ff5331; --color-bleu-profond: #004c66; --color-vert: #00c39b; --color-jaune: #ffab03;
+  --color-neutral-900: #00394d; --color-neutral-800: #40565e; --color-neutral-700: #5f767e; --color-neutral-600: #6e858d;
+  --color-neutral-500: #8aa3ac; --color-neutral-400: #9cbac4; --color-neutral-300: #b9cdd3; --color-neutral-200: #dce5e8;
+  --color-neutral-150: #e3eaec; --color-neutral-100: #e7edef; --color-neutral-50: #f4f8f9;
+  --color-corail-dark: #c63a1c; --color-corail-texte: #c4361b; --color-corail-texte-hover: #a82d15; --color-vert-ink: #00806a;
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius-xs: 2px; --radius-sm: 6px; --radius-md: 12px; --radius-lg: 14px; --radius-xl: 16px; --radius-pastille: 6px 6px 6px 0;
+  --motion-base: .2s ease-in-out; --motion-fast: .18s ease-in-out;
+  --shadow-cta: 0 6px 18px 0 rgba(255,83,49,.28); --shadow-cta-hover: 0 10px 22px 0 rgba(255,83,49,.34);
+  --shadow-card-hover: 0 8px 18px 0 rgba(0,60,80,.13); --shadow-float: 0 8px 18px 0 rgba(0,60,80,.18);
+  /* roles, light */
+  --page: #ffffff; --soft: var(--color-neutral-50); --card: #ffffff; --strong: var(--color-bleu-profond); --body: var(--color-neutral-800);
+  --muted: var(--color-neutral-700); --subtle: var(--color-neutral-600); --eyebrow: var(--color-neutral-500);
+  --border-card: var(--color-neutral-150); --hairline: var(--color-neutral-100); --field: var(--color-neutral-200);
+  --link: var(--color-corail-texte); --link-hover: var(--color-corail-texte-hover); --focus: var(--color-corail);
+  --dark-deep: var(--color-neutral-900); --dark: var(--color-bleu-profond); --on-dark-muted: #9cbac4;
+  --logo-ink: #000000; --logo-c: #004c66; --filigrane: .3; --dark-card: #00394d; --dark-card-border: transparent; --eyebrow-corail: #c63a1c;
+  --dg-bg: #ffffff; --dg-box: #f4f8f9; --dg-file: #ffffff; --dg-ink: #00263a; --dg-muted: #4f6670; --dg-line: #567079;
+  --dg-you: #e0421f; --dg-you-text: #c4361b; --dg-on-you: #1a0a05; --dg-claude: #004c66;
   color-scheme: light;
 }
+/* Dark theme, from the system's own dark surfaces (bleu profond, neutral-900) and its on-dark rules (white text,
+   #9CBAC4 muted, yellow links, 14% white rules). */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0b1c24; --fg: #d5e2e7; --heading: #ffffff; --muted: #a3b8c0; --surface: #10262f; --line: #22404c;
-  --link: #ff8a70; --focus: #ffab03; --chip: #16343f; --you: #ffab03; --you-fg: #1a1a1a; --claude: #12303d;
-  --logo-ink: #ffffff; --logo-c: #ffffff;
-  
-  --dg-bg: #00394d;
-  --dg-box: #0b4a61;
-  --dg-file: #00394d;
-  --dg-ink: #f2f7f8;
-  --dg-muted: #b4c8cf;
-  --dg-line: #a7c6d1;
-  --dg-you: #ff8a70;
-  --dg-you-text: #ffa390;
-  --dg-on-you: #1a0a05;
-  --dg-claude: #7cc8e2;
-
-  --dg-bg: #0b1c24; color-scheme: dark; } }
+  --page: #00394d; --soft: #004c66; --card: #004c66; --dark-card: #004c66; --dark-card-border: rgba(255,255,255,.14); --eyebrow-corail: #ffab03; --strong: #ffffff; --body: #e7edef; --muted: #9cbac4; --subtle: #9cbac4;
+  --eyebrow: #9cbac4; --border-card: rgba(255,255,255,.14); --hairline: rgba(255,255,255,.14); --field: rgba(255,255,255,.22);
+  --link: #ffab03; --link-hover: #ffc24d; --dark-deep: #002a3a; --logo-ink: #ffffff; --logo-c: #ffffff; --filigrane: .18;
+  --dg-bg: #00394d; --dg-box: #0b4a61; --dg-file: #00394d; --dg-ink: #f2f7f8; --dg-muted: #b4c8cf; --dg-line: #a7c6d1;
+  --dg-you: #ff8a70; --dg-you-text: #ffa390; --dg-claude: #7cc8e2; color-scheme: dark; } }
 :root[data-theme="dark"] {
-  --bg: #0b1c24; --fg: #d5e2e7; --heading: #ffffff; --muted: #a3b8c0; --surface: #10262f; --line: #22404c;
-  --link: #ff8a70; --focus: #ffab03; --chip: #16343f; --you: #ffab03; --you-fg: #1a1a1a; --claude: #12303d;
-  --logo-ink: #ffffff; --logo-c: #ffffff;
-  
-  --dg-bg: #00394d;
-  --dg-box: #0b4a61;
-  --dg-file: #00394d;
-  --dg-ink: #f2f7f8;
-  --dg-muted: #b4c8cf;
-  --dg-line: #a7c6d1;
-  --dg-you: #ff8a70;
-  --dg-you-text: #ffa390;
-  --dg-on-you: #1a0a05;
-  --dg-claude: #7cc8e2;
-
-  --dg-bg: #0b1c24; color-scheme: dark; }
+  --page: #00394d; --soft: #004c66; --card: #004c66; --dark-card: #004c66; --dark-card-border: rgba(255,255,255,.14); --eyebrow-corail: #ffab03; --strong: #ffffff; --body: #e7edef; --muted: #9cbac4; --subtle: #9cbac4;
+  --eyebrow: #9cbac4; --border-card: rgba(255,255,255,.14); --hairline: rgba(255,255,255,.14); --field: rgba(255,255,255,.22);
+  --link: #ffab03; --link-hover: #ffc24d; --dark-deep: #002a3a; --logo-ink: #ffffff; --logo-c: #ffffff; --filigrane: .18;
+  --dg-bg: #00394d; --dg-box: #0b4a61; --dg-file: #00394d; --dg-ink: #f2f7f8; --dg-muted: #b4c8cf; --dg-line: #a7c6d1;
+  --dg-you: #ff8a70; --dg-you-text: #ffa390; --dg-claude: #7cc8e2; color-scheme: dark; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 400 16px/1.65 var(--font); -webkit-font-smoothing: antialiased; }
-a { color: var(--link); text-underline-offset: 3px; }
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
-code { font-family: var(--mono); font-size: .86em; background: var(--chip); padding: .1em .35em; border-radius: 5px; }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); }
-.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; display: flex; align-items: center; gap: 16px; padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
-  background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
-.top svg { height: 34px; width: auto; aspect-ratio: 1188/250; }
-.search { margin-left: auto; display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--muted); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 14px; }
-.search kbd { font: 500 11px/1 var(--mono); border: 1px solid var(--line); border-radius: 5px; padding: 3px 6px; }
-.mock-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #1a1a1a; color: #fff; font: 500 12px/1 var(--mono);
-  padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
-.mock-bar span { margin-right: auto; opacity: .75; }
-.mock-bar button { font: inherit; color: #fff; background: #333; border: 1px solid #555; border-radius: 6px; padding: 6px 9px; cursor: pointer; }
-.mock-bar button[aria-pressed="true"] { background: #ffab03; color: #1a1a1a; border-color: #ffab03; }
-.brand { display: inline-flex; line-height: 0; }
-.site-nav { display: flex; gap: 18px; font-weight: 500; }
-.site-nav a { color: var(--heading); text-decoration: none; }
-.page-hero { position: relative; overflow: hidden; border-radius: 20px; padding: 28px 28px 30px; color: #d9e7ec; display: grid; gap: 14px;
-  background: radial-gradient(900px 400px at 90% -20%, #0b5d7a 0%, transparent 60%), linear-gradient(160deg, #00263a 0%, #003a4f 55%, #004c66 100%); }
-.page-hero::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 32px 32px; mask-image: linear-gradient(180deg, #000 30%, transparent 100%); }
-.page-hero > * { position: relative; }
-.page-hero h1 { color: #ffffff; }
-.page-hero .lede { color: #d9e7ec; }
-.page-hero .seg { background: rgba(255,255,255,.16); }
-.page-hero .seg.now { background: linear-gradient(90deg, var(--c) 40%, rgba(255,255,255,.16) 40%); }
-.page-hero .progress p, .page-hero .progress b { color: #9fd9e9; }
-.page-hero .dots i { background: rgba(255,255,255,.25); }
-.page-hero .dots i.on { background: #ffffff; }
-.page-hero .skip-step a { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.3); color: #ffffff; }
-.page-hero .skip-step a::after { border-color: #ffd27a; }
-.page-hero .skip-step a:hover { border-color: #ffffff; }
-.page-hero code { background: rgba(255,255,255,.12); color: #ffffff; }
-.home-hero { border-radius: 0; padding: 56px max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px)); }
-.home-grid { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 40px; align-items: center; }
-.home-hero h1 { font-size: clamp(2.1rem, 4.4vw, 3.3rem); }
-.home-hero .lede { margin-top: 18px; }
-.eyebrow-h { margin: 0 0 14px; font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #9fd9e9; display: flex; gap: 10px; align-items: center; }
-.eyebrow-h i { width: 8px; height: 8px; border-radius: 50%; background: #00c39b; }
-.actions { margin: 22px 0 0; }
-.btn { display: inline-flex; padding: 12px 18px; border-radius: 10px; font-weight: 600; text-decoration: none; background: #ff5331; color: #1a0a05; }
-.home-steps { max-width: 1120px; margin: 0 auto; padding: 56px max(16px, env(safe-area-inset-right, 0px)) 72px max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 10px; }
-.eyebrow-s { margin: 0; font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.home-steps h2 { margin: 0 0 18px; color: var(--heading); font-size: clamp(1.6rem, 3vw, 2.1rem); }
-.paths { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
-.path { position: relative; border: 1px solid var(--line); border-radius: 14px; padding: 20px 18px; background: var(--bg); display: grid; gap: 8px; align-content: start; }
-.path::before { content: ""; position: absolute; left: 16px; right: 16px; top: -1px; height: 3px; border-radius: 0 0 3px 3px; background: var(--c); }
-.path h3 { margin: 0; font-size: 1.05rem; }
-.path h3 a { color: var(--heading); text-decoration: none; }
-.path h3 a::after { content: ""; position: absolute; inset: 0; border-radius: 14px; }
-.path p { margin: 0; color: var(--muted); font-size: 14px; }
-.path .meta { font: 500 11.5px/1 var(--mono); display: flex; gap: 8px; align-items: center; }
-.path .meta i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
-.path:hover { border-color: var(--c); }
-@media (max-width: 1000px) { .paths { grid-template-columns: repeat(2, minmax(0, 1fr)); } .home-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 560px) { .paths { grid-template-columns: minmax(0, 1fr); } .site-nav { display: none; } }
-.shell { display: grid; grid-template-columns: 280px minmax(0, 1fr); max-width: 1240px; margin: 0 auto; }
-aside { border-right: 1px solid var(--line); padding: 28px 20px; position: sticky; top: 56px; align-self: start; height: calc(100vh - 56px); overflow: auto; }
-.stepper { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; position: relative; }
-.st { position: relative; display: grid; grid-template-columns: 30px 1fr; gap: 0 12px; padding: 6px 0; }
-.st:not(:last-child)::after { content: ""; position: absolute; left: 14px; top: 38px; bottom: -6px; width: 2px; background: var(--line); }
-.st.done:not(:last-child)::after { background: var(--c); }
-.dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 600 13px/1 var(--mono); border: 2px solid var(--line); color: var(--muted); background: var(--bg); z-index: 1; }
-.st.done .dot { background: var(--c); border-color: var(--c); color: #1a0a05; }
-.st.current .dot { border-color: var(--c); color: var(--heading); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 25%, transparent); }
-.st-name { font-weight: 600; color: var(--heading); line-height: 30px; display: flex; flex-direction: column; }
-.st-name small { font: 500 11px/1.2 var(--mono); color: var(--muted); font-weight: 400; }
-.st.todo .st-name { color: var(--muted); }
-.pages { grid-column: 2; list-style: none; margin: 8px 0 4px; padding: 0; display: grid; gap: 2px; }
-.pages a { display: block; padding: 5px 10px; border-radius: 8px; text-decoration: none; color: var(--fg); font-size: 14px; }
-.pages .read a { color: var(--muted); }
-.pages .here a { background: var(--surface); color: var(--heading); font-weight: 600; box-shadow: inset 3px 0 0 var(--c, var(--link)); }
-.appx { margin: 22px 0 0; font: 500 12px/1.5 var(--mono); color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
-main { min-width: 0; padding: 28px max(16px, env(safe-area-inset-right, 0px)) 80px max(16px, env(safe-area-inset-left, 0px)); }
-.page { max-width: 760px; margin: 0 auto; display: grid; gap: 20px; overflow-wrap: anywhere; }
-.progress { display: grid; gap: 8px; }
-.segs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.seg { height: 6px; border-radius: 99px; background: var(--line); }
-.seg.done { background: var(--c); }
-.seg.now { background: linear-gradient(90deg, var(--c) 40%, var(--line) 40%); }
-.progress p { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font: 500 12px/1.2 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-.progress b { color: var(--heading); font-weight: 600; }
-.dots { display: inline-flex; gap: 4px; }
-.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
-.dots i.on { background: var(--heading); }
-h1 { margin: 4px 0 0; font-size: clamp(2rem, 4vw, 2.6rem); line-height: 1.1; letter-spacing: -.02em; color: var(--heading); text-wrap: balance; }
-.lede { margin: 0; font-size: 1.15rem; color: var(--fg); }
-.skip-step { margin: 0; }
-.skip-step a { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--heading); text-decoration: none; font-weight: 600; font-size: 14px; }
-.skip-step a::after { content: ""; width: 7px; height: 7px; border-top: 2px solid var(--link); border-right: 2px solid var(--link); transform: rotate(45deg); }
-.skip-step a:hover { border-color: var(--link); }
-.skip-step a:focus-visible { outline: 3px solid var(--focus); background: var(--bg); }
-.three { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
-.three b { color: var(--heading); }
+body { margin: 0; background: var(--page); color: var(--body); font: 400 15.5px/23.25px var(--font-sans); -webkit-font-smoothing: antialiased; }
+a { color: var(--link); text-decoration: none; }
+a:hover { color: var(--link-hover); text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .9em; background: var(--soft); border: 1px solid var(--hairline); border-radius: 4px; padding: 0 .3em; }
+.gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Mockup controls (not part of the design) */
+.mock { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #1a1a1a; color: #fff; font: 500 12px/1 var(--font-sans); padding-block: 8px; }
+.mock span { margin-right: auto; opacity: .75; }
+.mock button { font: inherit; color: #fff; background: #333; border: 1px solid #555; border-radius: 4px; padding: 6px 9px; cursor: pointer; }
+.mock button[aria-pressed="true"] { background: #ffab03; color: #1a1a1a; border-color: #ffab03; }
+
+/* SiteHeader: top band (surface-dark-deep, 44px, 13.5px) + white band 86px; not sticky */
+.topband { background: var(--dark-deep); color: var(--color-neutral-300); font-size: 13.5px; }
+.topband .in { max-width: 1240px; margin: 0 auto; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.topband b { color: #fff; font-weight: 600; }
+.topband .pill { padding: 6px 14px; background: var(--color-corail); color: #fff; border-radius: 4px; font-weight: 600; }
+.topband .pill:hover { text-decoration: none; color: #fff; }
+.mainband { background: var(--page); border-bottom: 1px solid var(--border-card); }
+.mainband .in { max-width: 1240px; margin: 0 auto; min-height: 86px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; padding-block: 10px; }
+.brand svg { height: 44px; width: auto; aspect-ratio: 1188/250; display: block; }
+.navlinks { display: flex; gap: 6px; flex-wrap: wrap; }
+.navlinks a { padding: 12px 11px; font-size: 15.5px; font-weight: 600; color: var(--strong); border-radius: var(--radius-sm); }
+.navlinks a:hover, .navlinks a[aria-current] { background: #f1f6f7; text-decoration: none; color: var(--color-bleu-profond); }
+
+/* Buttons */
+.btns { display: flex; gap: 13.7px; flex-wrap: wrap; margin: 6px 0 0; }
+.btn { font: 600 16px/1 var(--font-sans); border-radius: var(--radius-sm); padding: 15px 26px; display: inline-flex; align-items: center; border: 1.5px solid transparent; transition: all var(--motion-base); }
+.btn:hover { text-decoration: none; transform: translateY(-1px); }
+.btn.primary { background: var(--color-corail); color: #fff; box-shadow: var(--shadow-cta); }
+.btn.primary:hover { background: #e8431f; color: #fff; box-shadow: var(--shadow-cta-hover); }
+.btn.secondary { color: var(--strong); border-color: var(--strong); }
+.btn.secondary:hover { background: var(--color-bleu-profond); color: #fff; border-color: var(--color-bleu-profond); }
+.btn.sm { font-size: 15px; padding: 13px 22px; }
+
+/* LinkArrow */
+.link-arrow { font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; gap: 6px; transition: all var(--motion-fast); }
+.link-arrow:hover { text-decoration: none; transform: translateX(4px); }
+.link-arrow.corail { color: var(--link); } .link-arrow.corail:hover { color: var(--link-hover); }
+.link-arrow.bleu { color: var(--strong); } .link-arrow.bleu:hover { color: var(--link); }
+.link-arrow.gris { color: var(--subtle); font-size: 14.5px; } .link-arrow.gris:hover { color: var(--link); }
+.link-arrow.jaune { color: var(--color-jaune); } .link-arrow.jaune:hover { color: #ffc24d; }
+
+/* Eyebrow */
+.eyebrow { margin: 0; display: flex; align-items: center; gap: 10px; font: 600 13px/1 var(--font-sans); letter-spacing: 1.17px; text-transform: uppercase; color: var(--eyebrow); }
+.eyebrow.corail { color: var(--eyebrow-corail); letter-spacing: 1.04px; }
+.eyebrow.vert { color: var(--color-vert-ink); letter-spacing: .675px; font-size: 13.5px; }
+.eyebrow.on-dark { color: var(--on-dark-muted); letter-spacing: 1.04px; }
+.eyebrow .sq { width: 10px; height: 10px; border-radius: var(--radius-xs); background: var(--color-corail); flex: none; }
+.eyebrow.vert .sq { background: var(--color-vert); }
+
+/* ProductHero: surface-soft, symbol at 30%, h1 52/600/-1.3, chapo 16/26 muted */
+.hero { position: relative; overflow: hidden; background: var(--soft); }
+.filigrane { position: absolute; right: 40px; top: 20px; width: 200px; height: auto; opacity: var(--filigrane); pointer-events: none; }
+.filigrane.big { width: 300px; right: -30px; top: auto; bottom: -60px; }
+.hero h1 { margin: 0; font-size: clamp(34px, 5vw, 52px); line-height: 1.06; font-weight: 600; letter-spacing: -1.3px; color: var(--strong); text-wrap: balance; }
+.chapo { margin: 0; font-size: 16px; line-height: 26px; color: var(--muted); max-width: 560px; }
+.hero-home { padding: 56px 0 64px; }
+.hero-grid { position: relative; max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); }
+.hero-text { display: grid; gap: 18px; }
+.proofs { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14.5px; color: var(--muted); }
+.proofs li::before { content: "✓"; color: var(--color-vert-ink); font-weight: 700; margin-right: 8px; }
+.hero-page { border-radius: var(--radius-xl); padding: 28px 32px 34px; display: grid; gap: 16px; }
+.hero-page > *:not(.filigrane) { position: relative; }
+.crumb { margin: 0; font-size: 13.5px; color: var(--subtle); display: flex; gap: 8px; flex-wrap: wrap; }
+.crumb a { color: var(--subtle); }
+.progress { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-width: 520px; }
+.seg { height: 5px; border-radius: var(--radius-xs); background: var(--hairline); overflow: hidden; }
+.seg span { display: block; height: 100%; background: var(--c); }
+.skip { margin: 2px 0 0; }
+
+/* StatBar: bleu profond band */
+.statbar { background: var(--color-bleu-profond); color: #fff; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.statbar div { padding: 26px 32px; border-left: 1px solid rgba(255,255,255,.14); display: grid; gap: 4px; }
+.statbar div:first-child { border-left: 0; }
+.statbar b { font-size: 40px; line-height: 40px; font-weight: 400; letter-spacing: -.8px; }
+.statbar span { color: #9cbac4; font-size: 14.5px; }
+
+/* Sections and PersonaCards (5px colored rule, no shadow; hover lift -3px) */
+.section { max-width: 1240px; margin: 0 auto; padding: 76px max(16px, env(safe-area-inset-right, 0px)) 84px max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 14px; }
+.section h2 { margin: 0 0 18px; font-size: clamp(28px, 3.6vw, 38px); line-height: 1.15; font-weight: 600; letter-spacing: -.76px; color: var(--strong); }
+.personas { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+.personas.cols { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.persona { border: 1px solid var(--border-card); border-radius: var(--radius-md); overflow: hidden; background: var(--card); display: flex; flex-direction: column; transition: all var(--motion-base); }
+.persona .rule { height: 5px; background: var(--c); }
+.persona > div { padding: 26px 24px 24px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.persona h3 { margin: 0; font-size: 16.5px; line-height: 22px; font-weight: 600; color: var(--strong); }
+.persona p:not(.eyebrow) { margin: 0; font-size: 14.5px; line-height: 22px; color: var(--muted); flex: 1; }
+.persona:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-hover); border-color: var(--c); }
+
+/* Documentation layout */
+.shell { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 40px; padding: 32px max(16px, env(safe-area-inset-right, 0px)) 84px max(16px, env(safe-area-inset-left, 0px)); }
+.steps-nav ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.st { display: grid; grid-template-columns: 26px 1fr; gap: 4px 12px; align-items: center; }
+.pastille { width: 26px; height: 26px; border-radius: var(--radius-pastille); display: grid; place-items: center; font-size: 13px; font-weight: 600; color: var(--subtle); background: var(--soft); border: 1px solid var(--field); }
+.st.done .pastille { background: var(--c); border-color: var(--c); color: #fff; }
+.st.current .pastille { background: var(--c); border-color: var(--c); color: #fff; }
+.st-name { font-size: 15.5px; font-weight: 600; color: var(--strong); padding: 8px 0; }
+.st.todo .st-name { color: var(--subtle); font-weight: 400; }
+.pages { grid-column: 2; display: grid; gap: 2px; margin: 0 0 8px; }
+.pages a { display: block; padding: 7px 10px; font-size: 14.5px; color: var(--body); border-left: 2px solid var(--hairline); }
+.pages a:hover { color: var(--link); text-decoration: none; }
+.pages .here a { color: var(--strong); font-weight: 600; border-left-color: var(--color-corail); background: var(--soft); }
+.annexes { margin: 26px 0 8px; font: 600 13px/1 var(--font-sans); letter-spacing: 1.17px; text-transform: uppercase; color: var(--eyebrow); border-top: 1px solid var(--hairline); padding-top: 18px; }
+.annexes-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14.5px; color: var(--subtle); }
+.doc { display: grid; gap: 28px; min-width: 0; }
+.doc-body { display: grid; gap: 28px; max-width: 760px; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 16px; }
+.checks li { padding-left: 28px; position: relative; }
+.checks li::before { content: "✓"; position: absolute; left: 0; color: var(--color-vert-ink); font-weight: 700; }
+.checks b { color: var(--strong); font-weight: 600; }
+
+/* Diagrams (unchanged tokens) */
 figure.diagram { margin: 0; display: grid; gap: 10px; min-width: 0; }
-figure.diagram > .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--dg-bg); padding: 14px; }
+figure.diagram > .scroll { overflow-x: auto; border: 1px solid var(--border-card); border-radius: var(--radius-md); background: var(--dg-bg); padding: 14px; }
 figure.diagram svg { display: block; width: 100%; height: auto; min-width: 560px; }
-figure.diagram figcaption { color: var(--muted); font-size: .92rem; }
-figure.diagram text { font-family: var(--font); }
-figure.diagram .mono { font-family: var(--mono); }
-.example { border-radius: 16px; background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; display: grid; gap: 12px; }
-.ex-label { margin: 0; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; gap: 8px; align-items: center; }
-.ex-label::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #00c39b; }
-.cc { margin: 0; border-radius: 12px; overflow: hidden; background: #1e1e1e; border: 1px solid #2f2f2f; box-shadow: 0 18px 40px -24px rgba(0,0,0,.6);
-  font: 13px/1.6 var(--mono); color: #e6e6e6; }
-.cc-bar { display: flex; gap: 7px; align-items: center; padding: 9px 12px; background: #2a2a2a; color: #9a9a9a; font-size: 12px; }
-.cc-bar i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; display: inline-block; }
-.cc-bar i:nth-child(2) { background: #febc2e; } .cc-bar i:nth-child(3) { background: #28c840; }
-.cc-bar span { margin-left: 8px; }
-.cc-body { padding: 14px 16px 6px; display: grid; gap: 8px; overflow-x: auto; }
-.cc-user { color: #9a9a9a; background: #2b2b2b; border-radius: 6px; padding: 4px 8px; }
-.cc-user .cc-gt { color: #9a9a9a; }
-.cc-say, .cc-tool { display: grid; grid-template-columns: 16px 1fr; gap: 6px; }
-.cc-dot { color: #e6e6e6; }
+figure.diagram figcaption, .capture figcaption { color: var(--muted); font-size: 13.5px; line-height: 20px; }
+figure.diagram text { font-family: var(--font-sans); }
+figure.diagram .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+/* Example: an application capture, framed white, 1px #E3EAEC, radius 12, shown as it is */
+.example { display: grid; gap: 14px; }
+.capture { margin: 0; display: grid; gap: 10px; }
+.capture .cc { background: #fff; border: 1px solid var(--color-neutral-150); border-radius: var(--radius-md); padding: 8px; }
+.cc-body, .cc-input, .cc-foot { background: #1e1e1e; color: #e6e6e6; font: 13px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.cc-body { border-radius: 6px 6px 0 0; padding: 14px 16px 6px; display: grid; gap: 8px; overflow-x: auto; }
+.cc-user { color: #9a9a9a; background: #2b2b2b; border-radius: 4px; padding: 4px 8px; }
+.cc-row { display: grid; grid-template-columns: 16px 1fr; gap: 6px; }
 .cc-dot.ok { color: #4eba65; }
-.cc-tool b { font-weight: 700; color: #ffffff; }
+.cc-row b { color: #fff; }
 .cc-res { padding-left: 22px; color: #9a9a9a; }
-.cc-res span[aria-hidden] { color: #6b6b6b; }
-.cc code { background: none; padding: 0; color: #b1b9f9; font-size: 1em; }
-.cc-y { color: #e5c07b; } .cc-g { color: #4eba65; } .cc-m { color: #8c8c8c; }
-.cc-input { margin: 10px 12px 4px; border: 1px solid #5a5a5a; border-radius: 8px; padding: 7px 10px; color: #6b6b6b; }
-.cc-input .cc-gt { color: #e6e6e6; }
-.cc-foot { padding: 0 14px 10px; color: #6b6b6b; font-size: 11.5px; }
-.chat { display: grid; gap: 8px; }
-.chat p { margin: 0; padding: 10px 14px; border-radius: 14px; max-width: 88%; }
-.chat .you { justify-self: end; background: var(--you); color: var(--you-fg); border-bottom-right-radius: 4px; font-weight: 500; }
-.chat .claude { justify-self: start; background: var(--bg); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
-.file { margin: 0; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); overflow: hidden; font: 13px/1.6 var(--mono); }
-.file-name { display: block; padding: 7px 12px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
-.file code { display: block; padding: 10px 12px; background: none; white-space: pre-wrap; }
-.hood { border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; }
-.hood summary { cursor: pointer; list-style: none; padding: 12px 0; font-weight: 600; color: var(--heading); display: flex; gap: 10px; align-items: center; }
-.hood summary::-webkit-details-marker { display: none; }
-.hood summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform .2s; }
-.hood[open] summary::before { transform: rotate(45deg); }
-.hood p { margin: 0 0 14px; color: var(--fg); }
-.next { display: grid; gap: 12px; margin-top: 12px; }
-.next-card { position: relative; display: grid; gap: 4px; padding: 20px 56px 20px 22px; border-radius: 18px; text-decoration: none; color: var(--fg);
-  background: linear-gradient(var(--bg), var(--bg)) padding-box, linear-gradient(120deg, #ff5331, #ffab03, #00c39b) border-box; border: 2px solid transparent; }
-.kicker { font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.next-title { font-size: 1.35rem; font-weight: 700; color: var(--heading); }
-.next-purpose { color: var(--muted); }
-.arrow { position: absolute; right: 22px; top: 50%; width: 14px; height: 14px; border-top: 3px solid var(--link); border-right: 3px solid var(--link); transform: translateY(-50%) rotate(45deg); }
-.prev { font-size: 14px; color: var(--muted); }
-.ov-row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
-.ov { position: relative; border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 8px; align-content: start; }
-.ov::before { content: ""; position: absolute; left: 16px; right: 16px; top: -1px; height: 3px; border-radius: 0 0 3px 3px; background: var(--c); }
-.ov-n { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--c); color: #1a0a05; font: 700 13px/1 var(--mono); }
-.ov h3 { margin: 0; font-size: 1rem; color: var(--heading); }
-.ov ul { margin: 0; padding-left: 1em; font-size: 13.5px; color: var(--muted); display: grid; gap: 3px; }
-.appx-row { margin: 0; font: 500 12.5px/1.6 var(--mono); color: var(--muted); border: 1px dashed var(--line); border-radius: 12px; padding: 10px 14px; }
-@media (prefers-reduced-motion: no-preference) {
-  .next-card { transition: transform .2s ease, box-shadow .2s ease; }
-  .next-card:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -22px rgba(0, 38, 58, .55); }
-}
-@media (max-width: 980px) { .ov-row { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 860px) { .shell { grid-template-columns: minmax(0, 1fr); } aside { display: none; } .search span { display: none; } }
+.cc code { background: none; border: 0; padding: 0; color: #b1b9f9; font-size: 1em; }
+.cc-y { color: #e5c07b; } .cc-g { color: #4eba65; }
+.cc-input { padding: 8px 12px 0; } .cc-input .box { border: 1px solid #5a5a5a; border-radius: 6px; padding: 6px 10px; } .cc-input i { font-style: normal; color: #6b6b6b; }
+.cc-foot { border-radius: 0 0 6px 6px; padding: 6px 14px 10px; color: #6b6b6b; font-size: 11.5px; }
+
+/* Accordion (FAQ): hairlines, question 17/600 bleu, + / − */
+.accs { border-top: 1px solid var(--hairline); }
+.acc { border-bottom: 1px solid var(--hairline); padding: 0; }
+.acc summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 20px 0; font-size: 17px; line-height: 23.8px; font-weight: 600; color: var(--strong); }
+.acc summary::-webkit-details-marker { display: none; }
+.acc .sign::before { content: "+"; font-size: 22px; font-weight: 400; color: var(--color-neutral-300); }
+.acc[open] .sign::before { content: "−"; color: var(--color-corail); }
+.acc p { margin: 0 0 20px; font-size: 15.5px; line-height: 25.58px; color: var(--muted); max-width: 600px; }
+
+/* DarkCard: surface-dark-deep, radius 12, padding 32 */
+.dark-card { background: var(--dark-card); border: 1px solid var(--dark-card-border); border-radius: var(--radius-md); padding: 32px; display: grid; gap: 10px; }
+.dark-card h3 { margin: 0; font-size: 20px; line-height: 25px; font-weight: 600; color: #fff; }
+.dark-card p:not(.eyebrow) { margin: 0; font-size: 14.5px; line-height: 23.2px; color: #9cbac4; }
+.dark-card .link-arrow { margin-top: 6px; }
+.prev { margin: -12px 0 0; }
+
+/* SiteFooter */
+.footer { background: var(--color-neutral-900); color: #9cbac4; font-size: 14.5px; }
+.footer .in { max-width: 1240px; margin: 0 auto; padding-block: 40px; display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.footer a { color: #fff; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (max-width: 1100px) { .personas { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hero-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 860px) { .shell { grid-template-columns: minmax(0, 1fr); } .steps-nav { display: none; } .navlinks { display: none; } .statbar { grid-template-columns: minmax(0, 1fr); } .statbar div { border-left: 0; border-top: 1px solid rgba(255,255,255,.14); } }
+@media (max-width: 560px) { .personas { grid-template-columns: minmax(0, 1fr); } .hero-page { padding: 22px 18px 26px; } .filigrane { width: 120px; right: 10px; } }
 </style>
 <svg width="0" height="0" aria-hidden="true" style="position:absolute"><symbol id="cp-logo" viewBox="0 0 1188 250"><g transform="scale(1.20202) translate(-19,-26)"><path d="M180.82,177.71 A82,82 0 1 1 180.82,72.29" fill="none" style="stroke:var(--logo-c)" stroke-width="34" stroke-linecap="round"/><circle cx="214" cy="88" r="16" fill="#ff5331"/><circle cx="222" cy="125" r="16" fill="#ffab03"/><circle cx="214" cy="162" r="16" fill="#00c39b"/></g><path d="M383.9522393206604 175.05049786628734Q372.01340575024784 175.05049786628734 361.78011983275144 170.78662873399716Q351.546833915255 166.52275960170698 343.87186947713263 158.84779516358464Q336.1969050390103 151.1728307254623 332.08808569334883 140.93954480796586Q327.9792663476874 130.70625889046943 327.9792663476874 118.92247510668562Q327.9792663476874 107.13869132290185 332.08808569334883 96.9054054054054Q336.1969050390103 86.67211948790896 343.87186947713263 79.07467994310099Q351.546833915255 71.47724039829302 361.70259493943706 67.13584637268846Q371.85835596361915 62.79445234708392 383.9522393206604 62.79445234708392Q396.97642139747404 62.79445234708392 406.899607741713 67.05832147937411Q416.822794085952 71.3221906116643 424.42023363076 78.76458036984353L410.15565326091644 93.02916073968706Q405.65920944868316 88.06756756756756 399.14711841027633 85.27667140825035Q392.63502737186946 82.48577524893314 383.9522393206604 82.48577524893314Q376.3547997758524 82.48577524893314 370.07528341738873 85.04409672830725Q363.795767058925 87.60241820768137 359.14427346006295 92.48648648648648Q354.4927798612009 97.3705547652916 352.0119832751412 104.11522048364154Q349.53118668908144 110.85988620199146 349.53118668908144 118.92247510668562Q349.53118668908144 127.14011379800854 352.0119832751412 133.80725462304412Q354.4927798612009 140.47439544807966 359.14427346006295 145.3584637268848Q363.795767058925 150.2425320056899 370.07528341738873 152.8783783783784Q376.3547997758524 155.51422475106685 383.9522393206604 155.51422475106685Q393.1001767317557 155.51422475106685 399.6897926634769 152.72332859174963Q406.2794085951981 149.93243243243242 410.7758524074314 144.81578947368422L425.0404327772749 159.08036984352773Q417.44299323246696 166.6778093883357 407.36475710159925 170.8641536273115Q397.2865209707315 175.05049786628734 383.9522393206604 175.05049786628734Z M472.795767058925 175.05049786628734Q461.4771326350274 175.05049786628734 452.40672011724644 169.85633001422474Q443.3363075994655 164.66216216216216 437.98708996077414 155.74679943100995Q432.63787232208284 146.83143669985776 432.63787232208284 135.82290184921763Q432.63787232208284 124.81436699857753 437.90956506745977 116.05405405405406Q443.18125781283675 107.29374110953059 452.32919522393206 102.099573257468Q461.4771326350274 96.9054054054054 472.64071727229623 96.9054054054054Q484.11440148282253 96.9054054054054 493.18481400060347 102.099573257468Q502.2552265183844 107.29374110953059 507.52691926376133 116.05405405405406Q512.7986120091383 124.81436699857753 512.7986120091383 135.82290184921763Q512.7986120091383 146.83143669985776 507.52691926376133 155.74679943100995Q502.2552265183844 164.66216216216216 493.18481400060347 169.85633001422474Q484.11440148282253 175.05049786628734 472.795767058925 175.05049786628734ZM472.64071727229623 156.1344238975818Q478.37755937755935 156.1344238975818 482.7964782964783 153.57610241820768Q487.2153972153972 151.01778093883357 489.6186689081426 146.4438122332859Q492.02194060088794 141.86984352773825 492.02194060088794 135.97795163584638Q492.02194060088794 130.08605974395448 489.5411440148282 125.5896159317212Q487.06034742876847 121.0931721194879 482.71895340316394 118.5348506401138Q478.37755937755935 115.97652916073969 472.64071727229623 115.97652916073969Q467.0589249536618 115.97652916073969 462.7175309280573 118.5348506401138Q458.3761369024527 121.0931721194879 455.89534031639295 125.5896159317212Q453.4145437303332 130.08605974395448 453.4145437303332 135.97795163584638Q453.4145437303332 141.86984352773825 455.89534031639295 146.4438122332859Q458.3761369024527 151.01778093883357 462.7175309280573 153.57610241820768Q467.0589249536618 156.1344238975818 472.64071727229623 156.1344238975818Z M525.822794085952 173.5V98.61095305832147H546.1343161343161V173.5ZM574.6634768740032 173.5V129.3108108108108Q574.6634768740032 122.79871977240398 570.5546575283417 119.15504978662874Q566.4458381826803 115.51137980085349 560.3988965041597 115.51137980085349Q556.3676020518126 115.51137980085349 553.1115565326091 117.1394025604552Q549.8555110134057 118.7674253200569 547.9949135738609 121.86842105263158Q546.1343161343161 124.96941678520625 546.1343161343161 129.3108108108108L538.2267770162507 125.43456614509246Q538.2267770162507 116.75177809388336 542.0254967886547 110.39473684210526Q545.8242165610586 104.03769559032716 552.3363075994655 100.54907539118065Q558.8483986378723 97.06045519203414 567.0660373291952 97.06045519203414Q574.818526660632 97.06045519203414 581.1755679124101 100.54907539118065Q587.5326091641881 104.03769559032716 591.2538040432778 110.31721194879088Q594.9749989223674 116.59672830725462 594.9749989223674 125.43456614509246V173.5ZM623.5041596620543 173.5V129.3108108108108Q623.5041596620543 122.79871977240398 619.395340316393 119.15504978662874Q615.2865209707315 115.51137980085349 609.2395792922109 115.51137980085349Q605.3633346264925 115.51137980085349 602.0297642139747 117.1394025604552Q598.696193801457 118.7674253200569 596.8355963619122 121.86842105263158Q594.9749989223674 124.96941678520625 594.9749989223674 129.3108108108108L583.3462649252123 126.5199146514936Q583.9664640717272 117.52702702702703 588.152808310703 110.93741109530583Q592.3391525496788 104.34779516358464 599.1613431613432 100.70412517780939Q605.9835337730075 97.06045519203414 614.356222250959 97.06045519203414Q622.7289107289107 97.06045519203414 629.3960515539463 100.54907539118065Q636.0631923789819 104.03769559032716 639.9394370447002 110.54978662873398Q643.8156817104185 117.06187766714082 643.8156817104185 126.0547652916074V173.5Z M701.8043019095651 175.05049786628734Q693.7417130048709 175.05049786628734 687.229621966464 171.71692745376956Q680.7175309280573 168.38335704125177 676.8412862623388 162.64651493598862Q672.9650415966205 156.90967283072547 672.6549420233631 149.46728307254622V122.95376955903271Q672.9650415966205 115.51137980085349 676.9188111556532 109.69701280227596Q680.872580714686 103.88264580369844 687.3071468597784 100.47155049786629Q693.7417130048709 97.06045519203414 701.8043019095651 97.06045519203414Q712.1926376136903 97.06045519203414 720.4102763050132 102.17709815078237Q728.627914996336 107.29374110953059 733.3569334885124 116.13157894736841Q738.0859519806888 124.96941678520625 738.0859519806888 136.1330014224751Q738.0859519806888 147.1415362731152 733.3569334885124 155.97937411095305Q728.627914996336 164.81721194879088 720.4102763050132 169.93385490753911Q712.1926376136903 175.05049786628734 701.8043019095651 175.05049786628734ZM660.2509590930644 204.82005689900427V98.61095305832147H680.5624811414285V118.3022759601707L677.1513858355963 136.44310099573258L680.4074313547998 154.58392603129445V204.82005689900427ZM698.2381568171043 156.28947368421052Q703.8199491357386 156.28947368421052 708.1613431613432 153.7311522048364Q712.5027371869477 151.1728307254623 714.9060088796931 146.59886201991463Q717.3092805724385 142.024893314367 717.3092805724385 135.97795163584638Q717.3092805724385 130.08605974395448 714.9060088796931 125.51209103840682Q712.5027371869477 120.93812233285917 708.1613431613432 118.37980085348505Q703.8199491357386 115.82147937411095 698.2381568171043 115.82147937411095Q692.8114142850985 115.82147937411095 688.4700202594939 118.37980085348505Q684.1286262338893 120.93812233285917 681.725354541144 125.51209103840682Q679.3220828483986 130.08605974395448 679.3220828483986 135.97795163584638Q679.3220828483986 142.024893314367 681.725354541144 146.59886201991463Q684.1286262338893 151.1728307254623 688.3924953661796 153.7311522048364Q692.6563644984698 156.28947368421052 698.2381568171043 156.28947368421052Z M782.7402905297643 175.05049786628734Q772.5070046122678 175.05049786628734 764.2893659209449 169.93385490753911Q756.071727229622 164.81721194879088 751.42023363076 155.97937411095305Q746.768740031898 147.1415362731152 746.768740031898 136.1330014224751Q746.768740031898 124.96941678520625 751.42023363076 116.13157894736841Q756.071727229622 107.29374110953059 764.2893659209449 102.17709815078237Q772.5070046122678 97.06045519203414 782.7402905297643 97.06045519203414Q790.8028794344584 97.06045519203414 797.1599206862365 100.31650071123755Q803.5169619380147 103.57254623044096 807.3156817104186 109.38691322901849Q811.1144014828226 115.20128022759602 811.4245010560801 122.48862019914651V149.46728307254622Q811.1144014828226 156.90967283072547 807.3156817104186 162.64651493598862Q803.5169619380147 168.38335704125177 797.1599206862365 171.71692745376956Q790.8028794344584 175.05049786628734 782.7402905297643 175.05049786628734ZM786.4614854088538 156.28947368421052Q794.9892236734343 156.28947368421052 800.2609164188112 150.63015647226172Q805.5326091641882 144.97083926031294 805.5326091641882 135.97795163584638Q805.5326091641882 130.08605974395448 803.1293374714428 125.51209103840682Q800.7260657786974 120.93812233285917 796.4621966464072 118.37980085348505Q792.1983275141171 115.82147937411095 786.4614854088538 115.82147937411095Q780.8796930902195 115.82147937411095 776.6158239579293 118.37980085348505Q772.351954825639 120.93812233285917 769.9486831328936 125.51209103840682Q767.5454114401483 130.08605974395448 767.5454114401483 135.97795163584638Q767.5454114401483 142.024893314367 769.9486831328936 146.59886201991463Q772.351954825639 151.1728307254623 776.6158239579293 153.7311522048364Q780.8796930902195 156.28947368421052 786.4614854088538 156.28947368421052ZM804.4472606577871 173.5V153.34352773826458L807.7033061769904 135.04765291607396L804.4472606577871 117.06187766714082V98.61095305832147H824.6037329195225V173.5Z M873.9095650674599 206.68065433854906Q861.9707314970474 206.68065433854906 852.8227940859521 202.41678520625888Q843.6748566748568 198.1529160739687 838.248114142851 190.400426742532L851.117246433036 177.53129445234708Q855.4586404586405 182.6479374110953 860.8078580973319 185.36130867709815Q866.1570757360232 188.074679943101 873.7545152808311 188.074679943101Q883.212552265184 188.074679943101 888.716819690504 183.26813655761023Q894.221087115824 178.46159317211948 894.221087115824 169.93385490753911V151.1728307254623L897.6321824216562 134.7375533428165L894.3761369024528 118.3022759601707V98.61095305832147H914.5326091641882V169.62375533428164Q914.5326091641882 180.7873399715505 909.3384413121256 189.08250355618776Q904.144273460063 197.37766714082503 894.9963360489677 202.02916073968703Q885.8483986378724 206.68065433854906 873.9095650674599 206.68065433854906ZM872.9792663476875 171.48435277382646Q862.9010302168198 171.48435277382646 854.8384413121256 166.60028449502136Q846.7758524074314 161.71621621621622 842.2018837018838 153.18847795163583Q837.6279149963361 144.66073968705547 837.6279149963361 134.11735419630156Q837.6279149963361 123.57396870554766 842.2018837018838 115.20128022759602Q846.7758524074314 106.82859174964437 854.8384413121256 101.94452347083926Q862.9010302168198 97.06045519203414 872.9792663476875 97.06045519203414Q881.3519548256392 97.06045519203414 887.7865209707315 100.31650071123755Q894.221087115824 103.57254623044096 897.9422819949136 109.23186344238975Q901.6634768740033 114.89118065433854 901.9735764472607 122.48862019914651V146.0561877667141Q901.6634768740033 153.4985775248933 897.8647571015993 159.31294452347083Q894.0660373291953 165.12731152204836 887.6314711841028 168.3058321479374Q881.1969050390104 171.48435277382646 872.9792663476875 171.48435277382646ZM877.0105608000346 153.0334281650071Q882.592353118669 153.0334281650071 886.7011724643305 150.63015647226172Q890.8099918099919 148.22688477951635 893.1357386094229 143.96301564722617Q895.461485408854 139.699146514936 895.461485408854 134.2724039829303Q895.461485408854 128.6906116642959 893.1357386094229 124.50426742532007Q890.8099918099919 120.31792318634425 886.7011724643305 117.91465149359887Q882.592353118669 115.51137980085349 877.0105608000346 115.51137980085349Q871.4287684814001 115.51137980085349 867.2424242424242 117.91465149359887Q863.0560800034485 120.31792318634425 860.7303332040175 124.58179231863443Q858.4045864045864 128.8456614509246 858.4045864045864 134.2724039829303Q858.4045864045864 139.54409672830724 860.7303332040175 143.80796586059745Q863.0560800034485 148.07183499288763 867.2424242424242 150.55263157894737Q871.4287684814001 153.0334281650071 877.0105608000346 153.0334281650071Z M982.7545152808311 173.5V130.55120910384068Q982.7545152808311 123.88406827880512 978.5681710418553 119.6977240398293Q974.3818268028795 115.51137980085349 967.7146859778439 115.51137980085349Q963.3732919522394 115.51137980085349 959.9621966464072 117.3719772403983Q956.5511013405751 119.2325746799431 954.6129790077159 122.64366998577525Q952.6748566748568 126.0547652916074 952.6748566748568 130.55120910384068L944.7673175567913 126.5199146514936Q944.7673175567913 117.68207681365575 948.5660373291953 111.09246088193456Q952.3647571015993 104.50284495021337 959.1094228199493 100.78165007112375Q965.8540885382992 97.06045519203414 974.3818268028795 97.06045519203414Q982.5994654942024 97.06045519203414 989.1115565326093 101.1692745376956Q995.6236475710161 105.27809388335704 999.3448424501057 111.86770981507823Q1003.0660373291953 118.45732574679943 1003.0660373291953 126.0547652916074V173.5ZM932.3633346264926 173.5V98.61095305832147H952.6748566748568V173.5Z M1054.6976162765638 175.05049786628734Q1043.3789818526661 175.05049786628734 1034.3085693348853 169.85633001422474Q1025.2381568171043 164.66216216216216 1019.888939178413 155.74679943100995Q1014.5397215397217 146.83143669985776 1014.5397215397217 135.82290184921763Q1014.5397215397217 124.81436699857753 1019.8114142850986 116.05405405405406Q1025.0831070304755 107.29374110953059 1034.2310444415707 102.099573257468Q1043.3789818526661 96.9054054054054 1054.542566489935 96.9054054054054Q1066.0162507004613 96.9054054054054 1075.0866632182424 102.099573257468Q1084.1570757360232 107.29374110953059 1089.4287684814003 116.05405405405406Q1094.7004612267772 124.81436699857753 1094.7004612267772 135.82290184921763Q1094.7004612267772 146.83143669985776 1089.4287684814003 155.74679943100995Q1084.1570757360232 164.66216216216216 1075.0866632182424 169.85633001422474Q1066.0162507004613 175.05049786628734 1054.6976162765638 175.05049786628734ZM1054.542566489935 156.1344238975818Q1060.2794085951982 156.1344238975818 1064.698327514117 153.57610241820768Q1069.117246433036 151.01778093883357 1071.5205181257813 146.4438122332859Q1073.9237898185268 141.86984352773825 1073.9237898185268 135.97795163584638Q1073.9237898185268 130.08605974395448 1071.442993232467 125.5896159317212Q1068.9621966464074 121.0931721194879 1064.6208026208028 118.5348506401138Q1060.2794085951982 115.97652916073969 1054.542566489935 115.97652916073969Q1048.9607741713005 115.97652916073969 1044.6193801456961 118.5348506401138Q1040.2779861200916 121.0931721194879 1037.7971895340318 125.5896159317212Q1035.316392947972 130.08605974395448 1035.316392947972 135.97795163584638Q1035.316392947972 141.86984352773825 1037.7971895340318 146.4438122332859Q1040.2779861200916 151.01778093883357 1044.6193801456961 153.57610241820768Q1048.9607741713005 156.1344238975818 1054.542566489935 156.1344238975818Z M1158.1158239579295 173.5V130.55120910384068Q1158.1158239579295 123.88406827880512 1153.9294797189536 119.6977240398293Q1149.7431354799778 115.51137980085349 1143.0759946549422 115.51137980085349Q1138.7346006293376 115.51137980085349 1135.3235053235055 117.3719772403983Q1131.9124100176734 119.2325746799431 1129.974287684814 122.64366998577525Q1128.0361653519549 126.0547652916074 1128.0361653519549 130.55120910384068L1120.1286262338895 126.5199146514936Q1120.1286262338895 117.68207681365575 1123.9273460062936 111.09246088193456Q1127.7260657786976 104.50284495021337 1134.4707314970474 100.78165007112375Q1141.2153972153974 97.06045519203414 1149.7431354799778 97.06045519203414Q1157.9607741713007 97.06045519203414 1164.4728652097074 101.1692745376956Q1170.9849562481143 105.27809388335704 1174.706151127204 111.86770981507823Q1178.4273460062936 118.45732574679943 1178.4273460062936 126.0547652916074V173.5ZM1107.724643303591 173.5V98.61095305832147H1128.0361653519549V173.5Z" style="fill:var(--logo-ink)"/><path d="M825.3712526106084 248.0V243.86455331412103H835.9620307085911Q838.9879673080147 243.86455331412103 840.7026647143548 242.07420749279538Q842.4173621206949 240.28386167146974 842.4173621206949 237.7622478386167Q842.4173621206949 236.04755043227667 841.660877970839 234.6606628242075Q840.904393820983 233.27377521613832 839.4670739362568 232.46685878962535Q838.0297540515305 231.65994236311238 836.1133275385623 231.65994236311238H825.3712526106084V227.52449567723343H835.4072756653634Q837.9288894982164 227.52449567723343 839.4166416595997 226.18804034582132Q840.904393820983 224.8515850144092 840.904393820983 222.3299711815562Q840.904393820983 219.80835734870317 839.3409932446141 218.47190201729106Q837.7775926682452 217.13544668587895 835.2055465587351 217.13544668587895H825.3712526106084V213.0H835.3064111120493Q838.7358059247294 213.0 841.0304745126257 214.235590778098Q843.3251431005219 215.47118155619597 844.5103016019629 217.48847262247838Q845.6954601034038 219.5057636887608 845.6954601034038 221.9265129682997Q845.6954601034038 224.7507204610951 844.1572756653634 226.86887608069165Q842.6190912273231 228.98703170028818 839.6435869045565 230.19740634005763L840.047045117813 228.6844380403458Q843.426007653836 229.89481268011528 845.3172180284757 232.3407780979827Q847.2084284031156 234.78674351585013 847.2084284031156 238.11527377521614Q847.2084284031156 240.88904899135446 845.846756933375 243.10806916426512Q844.4850854636343 245.32708933717578 841.9382554924528 246.6635446685879Q839.3914255212712 248.0 835.7098693253058 248.0ZM822.1940191812135 248.0V213.0H826.9346531869772V248.0Z M866.7084284031155 233.77809798270894 852.940416875738 213.0H858.4375350313576L869.532635895911 229.9956772334294H867.0614543397149L878.2069874809254 213.0H883.6032410832308L869.7343650025391 233.77809798270894ZM865.9015119766026 248.0V230.6512968299712H870.6421459823663V248.0Z" style="fill:var(--logo-ink)"/><path d="M899.5864496454925 248.0V213.0H905.1388575775039L918.9207272658891 234.46600566572238H916.094948229062L929.8272428466257 213.0H935.4292258494586V248.0H927.6459397304784V226.1373937677054L929.0340417134812 226.4844192634561L920.0609538947843 240.46458923512748H914.9051465293452L905.9816337814699 226.4844192634561L907.3201606936511 226.1373937677054V248.0Z M941.494381656824 248.0 955.3754014868523 213.0H962.4150615435095L976.1473561610733 248.0H967.9178944046993L957.407979390535 218.94900849858357H960.2337584273622L949.5751182007333 248.0ZM949.3768179174472 241.6543909348442V235.30878186968837H968.4632201837361V241.6543909348442Z M982.2620870392602 248.0V213.0H990.0453731582404V248.0Z M1004.7365912885521 233.57365439093485V227.82294617563738H1012.12327684096Q1014.4533051695719 227.82294617563738 1015.7174694755208 226.6331444759207Q1016.9816337814699 225.44334277620396 1016.9816337814699 223.41076487252124Q1016.9816337814699 221.52691218130312 1015.7422570109317 220.28753541076486Q1014.5028802403934 219.04815864022663 1012.1728519117815 219.04815864022663H1004.7365912885521V213.0H1013.0652031865691Q1016.5354581440762 213.0 1019.1629368976173 214.31373937677054Q1021.7904156511584 215.62747875354108 1023.2776677758043 217.95750708215297Q1024.7649199004502 220.28753541076486 1024.7649199004502 223.31161473087818Q1024.7649199004502 226.38526912181302 1023.2776677758043 228.69050991501416Q1021.7904156511584 230.9957507082153 1019.1133618267958 232.28470254957506Q1016.4363080024332 233.57365439093485 1012.8173278324615 233.57365439093485ZM998.7875827899685 248.0V213.0H1006.5708689089487V248.0ZM1017.824409985436 248.0 1006.9178944046994 232.92917847025495 1014.0567046029997 230.9957507082153 1027.0453731582404 248.0Z M1033.110528965606 248.0V213.0H1040.893815084586V248.0Z M1060.1459397304784 248.54532577903683Q1055.8329085690052 248.54532577903683 1052.7344666426598 247.13243626062325Q1049.636024716314 245.71954674220964 1047.0581210335945 242.8441926345609L1052.1147782573905 237.8371104815864Q1053.8003306653225 239.77053824362605 1055.857696104416 240.83640226628893Q1057.9150615435094 241.90226628895184 1060.6416904386936 241.90226628895184Q1063.12044397977 241.90226628895184 1064.483758427362 241.0099150141643Q1065.8470728749542 240.11756373937678 1065.8470728749542 238.53116147308782Q1065.8470728749542 237.09348441926346 1064.9547216001665 236.20113314447593Q1064.062370325379 235.30878186968837 1062.5999057361441 234.6643059490085Q1061.137441146909 234.0198300283286 1059.3775261327446 233.42492917847025Q1057.6176111185803 232.8300283286119 1055.8824836398267 232.06161473087818Q1054.1473561610733 231.29320113314446 1052.684891571838 230.12818696883852Q1051.2224269826029 228.96317280453258 1050.3300757078155 227.20325779036827Q1049.4377244330278 225.44334277620396 1049.4377244330278 222.76628895184137Q1049.4377244330278 219.54390934844193 1050.999339163906 217.21388101983Q1052.5609538947842 214.88385269121812 1055.3371578607898 213.66926345609065Q1058.1133618267957 212.45467422096317 1061.7323419967672 212.45467422096317Q1065.4008972375605 212.45467422096317 1068.4497640930845 213.74362606232296Q1071.4986309486087 215.03257790368272 1073.4816337814698 217.26345609065157L1068.4249765576737 222.27053824362605Q1066.8385742913847 220.6345609065156 1065.227384489685 219.8413597733711Q1063.6161946879854 219.04815864022663 1061.5836167843026 219.04815864022663Q1059.55103888062 219.04815864022663 1058.3612371809031 219.81657223796034Q1057.1714354811866 220.58498583569406 1057.1714354811866 222.02266288951841Q1057.1714354811866 223.3611898016997 1058.063786755974 224.17917847025495Q1058.9561380307616 224.9971671388102 1060.4186026199968 225.59206798866856Q1061.8810672092318 226.18696883852692 1063.6409822233961 226.78186968838526Q1065.4008972375605 227.37677053824362 1067.1360247163138 228.1699716713881Q1068.8711521950675 228.96317280453258 1070.3336167843026 230.17776203966005Q1071.7960813735378 231.39235127478753 1072.6884326483255 233.2514164305949Q1073.580783923113 235.11048158640227 1073.580783923113 237.8371104815864Q1073.580783923113 242.8441926345609 1070.0113788239628 245.69475920679886Q1066.4419737248127 248.54532577903683 1060.1459397304784 248.54532577903683Z M1089.1147782573903 248.0V213.4957507082153H1096.8980643763705V248.0ZM1078.1586876058323 219.79178470254956V213.0H1107.8541550279285V219.79178470254956Z M1114.2167612602234 248.0V213.0H1122.0000473792036V248.0ZM1120.1657697588068 248.0V241.25779036827194H1139.351322166739V248.0ZM1120.1657697588068 233.37535410764872V226.88101983002832H1137.6161946879854V233.37535410764872ZM1120.1657697588068 219.69263456090653V213.0H1139.1034468126313V219.69263456090653Z M1146.7054298154642 248.0V213.0H1152.2578377474754L1166.0397074358607 234.46600566572238H1163.2139283990334L1176.9462230165973 213.0H1182.5482060194302V248.0H1174.76491990045V226.1373937677054L1176.1530218834528 226.4844192634561L1167.1799340647558 240.46458923512748H1162.0241266993169L1153.1006139514413 226.4844192634561L1154.4391408636227 226.1373937677054V248.0Z" style="fill:var(--logo-ink)"/></symbol></svg>
-<div class="mock-bar" role="group" aria-label="Mockup views"><span>Mockup — not the live site</span>
-<button type="button" id="v-home" data-show="home" aria-pressed="false">Home page</button>
-<button type="button" id="v-jira" data-show="jira" aria-pressed="true">A page: Jira</button>
-<button type="button" id="v-first" data-show="first" aria-pressed="false">A page: first change</button>
-<button type="button" id="v-ov" data-show="overview" aria-pressed="false">The whole tunnel</button>
-<button type="button" id="t-l" data-theme-set="light">Light</button>
-<button type="button" id="t-d" data-theme-set="dark">Dark</button>
-</div>
-<header class="top">
-<a class="brand" href="#" data-go="home" aria-label="Compagnon, by Mairistem — home"><svg viewBox="0 0 1188 250" aria-hidden="true"><use href="#cp-logo"></use></svg></a>
-<div class="search" aria-hidden="true"><span>Search the docs</span><kbd>/</kbd></div>
-<nav class="site-nav" aria-label="Main"><a href="#" data-go="first">Documentation</a><a href="#" lang="fr">Français</a><a href="#">GitHub</a></nav>
-</header>
-<div class="home" id="home" data-home hidden>
-<section class="page-hero home-hero"><div class="home-grid">
-<div><p class="eyebrow-h"><i></i>Open source · for Claude Code</p>
-<h1>Plan with Claude before it codes.</h1>
-<p class="lede">Before any code is written, Claude writes down what it is about to build: a short plan you read, correct and approve. Then Claude builds exactly that, and the plan stays with your code.</p>
-<p class="actions"><a class="btn" href="#" data-go="first">Read the documentation</a></p></div>
-<figure class="cc" aria-label="Claude Code session: prepare a plan for PROJ-123">
-<div class="cc-bar" aria-hidden="true"><i></i><i></i><i></i><span>claude — ~/shop-app</span></div>
-<div class="cc-body"><div class="cc-user"><span class="cc-gt" aria-hidden="true">&gt;</span> Prepare a plan for PROJ-123</div>
-<div class="cc-tool"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>atlassian - getJiraIssue (MCP)</b>(issueIdOrKey: &quot;PROJ-123&quot;)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Dark mode for the dashboard · <span class="cc-y">In Progress</span></div>
-<div class="cc-tool"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Write</b>(_compagnon/changes/dark-mode/proposal.md)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Wrote 41 lines</div>
-<div class="cc-say"><span class="cc-dot" aria-hidden="true">⏺</span><span>The plan is ready for your review. Nothing is built until you approve it.</span></div></div>
-<div class="cc-input" aria-hidden="true"><span class="cc-gt">&gt;</span> <span class="cc-hint">Implement it</span></div>
-<div class="cc-foot" aria-hidden="true">? for shortcuts</div>
-</figure></div></section>
-<section class="home-steps"><p class="eyebrow-s">The documentation in five steps</p><h2>Read it in order, or jump to your step</h2>
-<ol class="paths"><li class="path" style="--c:#ff5331"><p class="meta"><i></i>step 1 · 1 page</p><h3><a href="#" data-go="overview">Discover</a></h3><p>What Compagnon does and who decides.</p></li><li class="path" style="--c:#ffab03"><p class="meta"><i></i>step 2 · 2 pages</p><h3><a href="#" data-go="first">Get started</a></h3><p>Install, set up, and a first change in ten minutes.</p></li><li class="path" style="--c:#00c39b"><p class="meta"><i></i>step 3 · 5 pages</p><h3><a href="#" data-go="jira">Every day</a></h3><p>Ask, review, approve, build — the daily loop.</p></li><li class="path" style="--c:#3a9ec8"><p class="meta"><i></i>step 4 · 5 pages</p><h3><a href="#" data-go="overview">Understand</a></h3><p>What happens behind each step, for the curious.</p></li><li class="path" style="--c:#8fa8b1"><p class="meta"><i></i>step 5 · 6 pages</p><h3><a href="#" data-go="overview">For your team</a></h3><p>Set Compagnon up for a team and its conventions.</p></li></ol></section>
-</div>
-<div class="shell" data-shell>
-<aside aria-label="The five steps"><ol class="stepper">
-<li class="st done" style="--c:#ff5331"><span class="dot" aria-hidden="true">✓</span><span class="st-name">Discover<small>1 page</small></span></li>
-<li class="st done" style="--c:#ffab03"><span class="dot" aria-hidden="true">✓</span><span class="st-name">Get started<small>2 pages</small></span></li>
-<li class="st current" style="--c:#00c39b"><span class="dot" aria-hidden="true">3</span><span class="st-name">Every day<small>5 pages</small></span><ol class='pages'><li class="read"><a href="#">Asking Claude</a></li><li class="here"><a href="#">Start from a Jira ticket</a></li><li class=""><a href="#">Reviewing a plan</a></li><li class=""><a href="#">Approving a plan on GitHub</a></li><li class=""><a href="#">Building and filing away</a></li></ol></li>
-<li class="st todo" style="--c:#3a9ec8"><span class="dot" aria-hidden="true">4</span><span class="st-name">Understand<small>5 pages</small></span></li>
-<li class="st todo" style="--c:#8fa8b1"><span class="dot" aria-hidden="true">5</span><span class="st-name">For your team<small>6 pages</small></span></li>
-</ol>
-<p class="appx">Appendices · Reference · Glossary · FAQ</p></aside>
+<div class="mock gut" role="group" aria-label="Vues de la maquette"><span>Maquette — pas le site en ligne</span>
+<button type="button" id="v-home" data-show="home" aria-pressed="true">Accueil</button>
+<button type="button" id="v-jira" data-show="jira" aria-pressed="false">Page : Jira</button>
+<button type="button" id="v-first" data-show="first" aria-pressed="false">Page : première modification</button>
+<button type="button" id="v-ov" data-show="overview" aria-pressed="false">Le tunnel</button>
+<button type="button" id="t-l" data-theme-set="light">Clair</button>
+<button type="button" id="t-d" data-theme-set="dark">Sombre</button></div>
+<header>
+<div class="topband gut"><div class="in"><span><b>Un projet libre de Mairistem</b> · Groupe JVS</span><a class="pill" href="#">GitHub</a></div></div>
+<div class="mainband gut"><div class="in">
+<a class="brand" href="#" data-go="home" aria-label="Accueil du site Compagnon, par Mairistem"><svg viewBox="0 0 1188 250" aria-hidden="true"><use href="#cp-logo"></use></svg></a>
+<nav class="navlinks" aria-label="Principal"><a href="#" data-go="first">Démarrer</a><a href="#" data-go="jira">Au quotidien</a><a href="#" data-go="overview">Comprendre</a><a href="#" data-go="overview">Pour l'équipe</a><a href="#">Référence</a></nav>
+<a class="btn primary sm" href="#" data-go="first">Installer</a>
+</div></div></header>
 <main>
-
-<article class="page" id="jira" data-view>
-<header class="page-hero">
-<div class="progress" aria-label="Step 3 of 5, Every day, page 2 of 5"><div class="segs" aria-hidden="true"><span class="seg done" style="--c:#ff5331"></span><span class="seg done" style="--c:#ffab03"></span><span class="seg now" style="--c:#00c39b"></span><span class="seg " style="--c:#3a9ec8"></span><span class="seg " style="--c:#8fa8b1"></span></div><p><b>Step 3 of 5 · Every day</b><span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span><span>page 2 of 5</span></p></div>
-<h1>Start from a Jira ticket</h1>
-<p class="skip-step"><a href="#review">No Jira? Skip to Reviewing a plan</a></p>
-<p class="lede">Your team already writes the work down in Jira. Name the ticket in your request and Claude starts the plan from it — no copy and paste, and the plan says where it comes from.</p>
-</header>
-<ol class="three">
-<li><b>You say</b> “Prepare a plan for PROJ-123”.</li>
-<li><b>Claude reads the ticket</b> once, without changing anything in Jira.</li>
-<li><b>You get a plan that cites it</b> on its first line.</li>
-</ol>
+<div class="home" id="home" data-home hidden>
+<section class="hero hero-home"><svg class="filigrane big" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 518.82 518.82"><g><path d="M259.82,0h-22.42v114.57C190.91,45.46,111.97,0,22.42,0H0v125.17h22.42c74,0,134.09,60.09,134.09,134.19s-60.09,134.39-134.09,134.39H0v125.07h22.42c89.54,0,168.49-45.46,214.97-114.62v114.62h22.42c143.06,0,259-116.15,259-259.46S402.87,0,259.82,0ZM259.82,393.75h-15.75c23.75-39.19,37.41-85.21,37.41-134.39s-13.66-95.05-37.31-134.19h15.65c74,0,134.04,60.09,134.04,134.19s-60.04,134.39-134.04,134.39Z" fill="#004c66"></path></g></svg>
+<div class="hero-grid"><div class="hero-text">
+<p class="eyebrow corail"><span class="sq" aria-hidden="true"></span>Libre · pour Claude Code</p>
+<h1>Planifiez avec Claude avant qu'il ne code.</h1>
+<p class="chapo">Avant d'écrire la moindre ligne, Claude met par écrit ce qu'il va construire : un plan court que vous lisez, corrigez et validez. Ensuite, il construit exactement cela.</p>
+<p class="btns"><a class="btn primary" href="#" data-go="first">Lire la documentation</a><a class="btn secondary" href="#">Voir sur GitHub</a></p>
+<ul class="proofs"><li>Rien n'est construit sans votre accord</li><li>Le plan reste avec le code</li><li>Partir d'un ticket Jira</li></ul>
+</div><figure class="capture" aria-label="Session Claude Code : préparer un plan pour PROJ-123">
+<div class="cc"><div class="cc-body"><div class="cc-user"><span aria-hidden="true">&gt;</span> Prépare un plan pour PROJ-123</div><div class="cc-row"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>atlassian - getJiraIssue (MCP)</b>(issueIdOrKey: &quot;PROJ-123&quot;)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Mode sombre du tableau de bord · <span class="cc-y">In Progress</span></div><div class="cc-row"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Write</b>(_compagnon/changes/mode-sombre/proposal.md)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Wrote 41 lines</div><div class="cc-row"><span class="cc-dot" aria-hidden="true">⏺</span><span>Le plan est prêt pour votre relecture. Rien n'est construit avant votre accord.</span></div></div>
+<div class="cc-input" aria-hidden="true"><div class="box"><span>&gt;</span> <i>Réalise-le</i></div></div>
+<div class="cc-foot" aria-hidden="true">? for shortcuts</div></div>
+<figcaption>Dans Claude Code, tel qu'il s'affiche.</figcaption></figure></div></section>
+<section class="statbar" aria-label="En chiffres"><div><b>5</b><span>étapes de lecture</span></div><div><b>4</b><span>fichiers courts par plan</span></div><div><b>0</b><span>ligne de code avant votre accord</span></div></section>
+<section class="section"><p class="eyebrow gris">La documentation en cinq étapes</p><h2>Lisez-la dans l'ordre, ou entrez à votre étape.</h2><ol class="personas"><li class="persona" style="--c:#ff5331"><span class="rule"></span><div><p class="eyebrow gris">Étape 1 · 1 page</p><h3>Découvrir</h3><p>Ce que fait Compagnon, et qui décide.</p><a class="link-arrow corail" href="#" data-go="overview">Commencer ici<span aria-hidden="true">→</span></a></div></li><li class="persona" style="--c:#00c39b"><span class="rule"></span><div><p class="eyebrow gris">Étape 2 · 2 pages</p><h3>Démarrer</h3><p>Installer, puis une première modification en dix minutes.</p><a class="link-arrow corail" href="#" data-go="first">Commencer ici<span aria-hidden="true">→</span></a></div></li><li class="persona" style="--c:#ffab03"><span class="rule"></span><div><p class="eyebrow gris">Étape 3 · 5 pages</p><h3>Au quotidien</h3><p>Demander, relire, approuver, réaliser : la boucle de tous les jours.</p><a class="link-arrow corail" href="#" data-go="jira">Commencer ici<span aria-hidden="true">→</span></a></div></li><li class="persona" style="--c:#004c66"><span class="rule"></span><div><p class="eyebrow gris">Étape 4 · 5 pages</p><h3>Comprendre</h3><p>Ce qui se passe derrière chaque étape.</p><a class="link-arrow corail" href="#" data-go="overview">Commencer ici<span aria-hidden="true">→</span></a></div></li><li class="persona" style="--c:#8aa3ac"><span class="rule"></span><div><p class="eyebrow gris">Étape 5 · 6 pages</p><h3>Pour l&#x27;équipe</h3><p>Installer Compagnon pour une équipe et ses conventions.</p><a class="link-arrow corail" href="#" data-go="overview">Commencer ici<span aria-hidden="true">→</span></a></div></li></ol></section>
+</div>
+<div class="shell" data-shell hidden>
+<aside><nav class="steps-nav" aria-label="Les cinq étapes"><ol><li class="st done" style="--c:#ff5331"><span class="pastille" aria-hidden="true">✓</span><span class="st-name">Découvrir</span></li><li class="st done" style="--c:#00c39b"><span class="pastille" aria-hidden="true">✓</span><span class="st-name">Démarrer</span></li><li class="st current" style="--c:#ffab03"><span class="pastille" aria-hidden="true">3</span><span class="st-name">Au quotidien</span><ol class="pages"><li class=""><a href="#">Parler à Claude</a></li><li class="here"><a href="#" aria-current="page">Partir d&#x27;un ticket Jira</a></li><li class=""><a href="#">Relire un plan</a></li><li class=""><a href="#">Approuver un plan sur GitHub</a></li><li class=""><a href="#">Réaliser et ranger</a></li></ol></li><li class="st todo" style="--c:#004c66"><span class="pastille" aria-hidden="true">4</span><span class="st-name">Comprendre</span></li><li class="st todo" style="--c:#8aa3ac"><span class="pastille" aria-hidden="true">5</span><span class="st-name">Pour l&#x27;équipe</span></li></ol><p class="annexes">Annexes</p><ul class="annexes-list"><li>Référence des commandes</li><li>Configuration</li><li>Codes d'erreur</li><li>Glossaire</li><li>FAQ</li></ul></nav></aside>
+<div><article class="doc" id="jira" data-view>
+<section class="hero hero-page"><svg class="filigrane" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 518.83 518.83"><g><path d="M393.76,259.15c0,17.02,0,56.87-63.44,96.38-25.33,15.77-51.91,32.15-70.9,38.23-18.99-6.08-45.57-22.46-70.9-38.23-63.44-39.51-63.44-79.36-63.44-96.38V125.07h268.69v134.08ZM518.83,0H0v259.02c0,210.81,259.41,259.81,259.41,259.81,0,0,259.42-49,259.42-259.81V0h0Z" fill="#ffab03"></path></g></svg>
+<p class="crumb"><a href="#">Documentation</a> <span aria-hidden="true">›</span> <a href="#">Au quotidien</a> <span aria-hidden="true">›</span> <span>Partir d&#x27;un ticket Jira</span></p>
+<div class="progress" role="img" aria-label="Étape 3 sur 5, Au quotidien, page 2 sur 5"><span class="seg" style="--c:#ff5331"><span style="width:100%"></span></span><span class="seg" style="--c:#00c39b"><span style="width:100%"></span></span><span class="seg" style="--c:#ffab03"><span style="width:40%"></span></span><span class="seg" style="--c:#004c66"><span style="width:0%"></span></span><span class="seg" style="--c:#8aa3ac"><span style="width:0%"></span></span></div>
+<p class="eyebrow corail"><span class="sq" aria-hidden="true"></span>Étape 3 sur 5 · Au quotidien · page 2 sur 5</p>
+<h1>Partir d&#x27;un ticket Jira</h1>
+<p class="chapo">Votre équipe décrit déjà le travail dans Jira. Nommez le ticket dans votre demande : Claude part du ticket, et le plan dit d&#x27;où il vient.</p>
+<p class="skip"><a class="link-arrow bleu" href="#">Pas de Jira ? Passez à Relire un plan<span aria-hidden="true">→</span></a></p>
+</section>
+<div class="doc-body">
+<ol class="checks"><li><b>Vous dites</b> « Prépare un plan pour PROJ-123 ».</li><li><b>Claude lit le ticket</b> une fois, sans rien changer dans Jira.</li><li><b>Vous obtenez un plan qui le cite</b> sur sa première ligne.</li></ol>
 <figure class="diagram">
 <div class="scroll">
-<svg viewBox="0 0 760 210" role="img" aria-label="From a Jira ticket to a plan: you name ticket PROJ-123 in your request; Claude reads the ticket once, read-only; Claude writes proposal.md, whose first line cites the ticket.">
+<svg viewBox="0 0 760 210" role="img" aria-label="D'un ticket Jira à un plan : vous nommez le ticket PROJ-123 dans votre demande ; Claude lit le ticket une seule fois, en lecture seule ; Claude écrit proposal.md, dont la première ligne cite le ticket.">
 <defs><marker id="dg-mcp-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
 <rect x="8" y="36" width="210" height="138" rx="12" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="2"/>
-<text x="26" y="64" class="mono" font-size="13" style="fill:var(--dg-muted)">Jira ticket</text>
+<text x="26" y="64" class="mono" font-size="13" style="fill:var(--dg-muted)">Ticket Jira</text>
 <text x="26" y="92" class="mono" font-size="18" font-weight="600" style="fill:var(--dg-ink)">PROJ-123</text>
-<text x="26" y="118" font-size="15" style="fill:var(--dg-ink)">Dark mode for the</text>
-<text x="26" y="138" font-size="15" style="fill:var(--dg-ink)">dashboard</text>
+<text x="26" y="118" font-size="15" style="fill:var(--dg-ink)">Mode sombre pour le</text>
+<text x="26" y="138" font-size="15" style="fill:var(--dg-ink)">tableau de bord</text>
 <circle cx="32" cy="158" r="5" style="fill:var(--dg-you)"/>
-<text x="44" y="163" font-size="13" style="fill:var(--dg-muted)">In Progress</text>
+<text x="44" y="163" font-size="13" style="fill:var(--dg-muted)">En cours</text>
 <line x1="222" y1="105" x2="282" y2="105" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-mcp-arrow)"/>
-<text x="252" y="92" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">named</text>
+<text x="252" y="92" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">nommé</text>
 <rect x="288" y="56" width="180" height="98" rx="49" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
 <circle cx="318" cy="88" r="5" fill="#ff5331"/><circle cx="332" cy="88" r="5" fill="#ffab03"/><circle cx="346" cy="88" r="5" fill="#00c39b"/>
 <text x="378" y="94" font-size="17" font-weight="600" style="fill:var(--dg-ink)">Claude</text>
-<text x="378" y="118" text-anchor="middle" font-size="14" style="fill:var(--dg-ink)">reads it once</text>
-<text x="378" y="138" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">read-only</text>
+<text x="378" y="118" text-anchor="middle" font-size="14" style="fill:var(--dg-ink)">le lit une fois</text>
+<text x="378" y="138" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">en lecture seule</text>
 <line x1="472" y1="105" x2="532" y2="105" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-mcp-arrow)"/>
-<text x="502" y="92" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">writes</text>
+<text x="502" y="92" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">écrit</text>
 <rect x="538" y="24" width="214" height="162" rx="12" style="fill:var(--dg-file);stroke:var(--dg-claude)" stroke-width="2"/>
 <rect x="538" y="24" width="214" height="30" rx="12" style="fill:var(--dg-box)"/>
 <text x="554" y="44" class="mono" font-size="13" style="fill:var(--dg-ink)">proposal.md</text>
-<text x="554" y="80" class="mono" font-size="13" font-weight="600" style="fill:var(--dg-ink)"># Proposal: Dark mode</text>
+<text x="554" y="80" class="mono" font-size="12" font-weight="600" style="fill:var(--dg-ink)"># Proposition : Mode sombre</text>
 <rect x="550" y="94" width="190" height="44" rx="6" style="fill:var(--dg-box)"/>
 <rect x="550" y="94" width="4" height="44" style="fill:var(--dg-you)"/>
-<text x="562" y="112" class="mono" font-size="12" style="fill:var(--dg-ink)">Source: ticket PROJ-123</text>
-<text x="562" y="129" class="mono" font-size="12" style="fill:var(--dg-muted)">"Dark mode for the…"</text>
-<text x="554" y="162" class="mono" font-size="13" font-weight="600" style="fill:var(--dg-ink)">## Why</text>
+<text x="562" y="112" class="mono" font-size="12" style="fill:var(--dg-ink)">Source : ticket PROJ-123</text>
+<text x="562" y="129" class="mono" font-size="12" style="fill:var(--dg-muted)">« Mode sombre pour… »</text>
+<text x="554" y="162" class="mono" font-size="13" font-weight="600" style="fill:var(--dg-ink)">## Pourquoi</text>
 </svg>
 </div>
-<figcaption>From a Jira ticket to a plan: you name the ticket, Claude reads it once without changing it, and the plan cites it on its first line.</figcaption>
+<figcaption>D'un ticket Jira à un plan : vous nommez le ticket, Claude le lit une fois sans le modifier, et le plan le cite dès sa première ligne.</figcaption>
 </figure>
-<div class="example"><p class="ex-label">Example</p>
-<figure class="cc" aria-label="Claude Code session: Prepare a plan for PROJ-123">
-<div class="cc-bar" aria-hidden="true"><i></i><i></i><i></i><span>claude — ~/shop-app</span></div>
-<div class="cc-body"><div class="cc-user"><span class="cc-gt" aria-hidden="true">&gt;</span> Prepare a plan for PROJ-123</div>
-<div class="cc-say"><span class="cc-dot" aria-hidden="true">⏺</span><span>I'll start from the Jira ticket, then write the plan.</span></div>
-<div class="cc-tool"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>atlassian - getJiraIssue (MCP)</b>(issueIdOrKey: &quot;PROJ-123&quot;)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Dark mode for the dashboard · Story · <span class="cc-y">In Progress</span></div>
-<div class="cc-tool"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Write</b>(_compagnon/changes/dark-mode/proposal.md)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Wrote 41 lines to _compagnon/changes/dark-mode/proposal.md</div><div class="cc-res"><span aria-hidden="true">⎿</span> <span class="cc-m"># Proposal: Dark mode for the dashboard</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> <span class="cc-m">&gt; Source: ticket **PROJ-123** — "Dark mode for the dashboard" (In Progress)</span></div>
-<div class="cc-say"><span class="cc-dot" aria-hidden="true">⏺</span><span>The plan is ready in <code>_compagnon/changes/dark-mode/</code>: why, what changes, how, and 7 tasks. Nothing is built until you approve it — read <code>proposal.md</code> first.</span></div></div>
-<div class="cc-input" aria-hidden="true"><span class="cc-gt">&gt;</span> <span class="cc-hint">Implement it</span></div>
-<div class="cc-foot" aria-hidden="true">? for shortcuts</div>
-</figure></div>
-<details class="hood"><summary>Under the hood: set it up</summary><p>Compagnon needs the name of your Jira connector's ticket tool in <code>_compagnon/config.yaml</code>; <code>compagnon init</code> fills it in when it finds a Jira or Atlassian server in your Claude Code setup.</p></details>
-<details class="hood"><summary>Under the hood: what Claude may do with Jira</summary><p>One read of the first ticket named. Never a search, a comment or a status change.</p></details>
-<nav class="next" aria-label="Next step">
-<a class="next-card" href="#"><span class="kicker">Next step · page 3 of 5</span><span class="next-title">Reviewing a plan</span><span class="next-purpose">What to check in a plan before you say yes, file by file.</span><span class="arrow" aria-hidden="true"></span></a>
-<a class="prev" href="#">← Asking Claude</a>
-</nav>
-</article>
-
-<article class="page" id="first" data-view hidden>
-<header class="page-hero">
-<div class="progress" aria-label="Step 2 of 5, Get started, page 2 of 2"><div class="segs" aria-hidden="true"><span class="seg done" style="--c:#ff5331"></span><span class="seg now" style="--c:#ffab03"></span><span class="seg " style="--c:#00c39b"></span><span class="seg " style="--c:#3a9ec8"></span><span class="seg " style="--c:#8fa8b1"></span></div><p><b>Step 2 of 5 · Get started</b><span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i></span><span>page 2 of 2</span></p></div>
-<h1>Your first change</h1>
-<p class="skip-step"><a href="#jira">Already made a change? Skip to Asking Claude</a></p>
-<p class="lede">One whole change, in ten minutes: you ask, you read the plan, Claude builds it, and the change is filed away.</p>
-</header>
+<section class="example" aria-label="Exemple"><p class="eyebrow vert"><span class="sq" aria-hidden="true"></span>Exemple</p><figure class="capture" aria-label="Session Claude Code : préparer un plan pour PROJ-123">
+<div class="cc"><div class="cc-body"><div class="cc-user"><span aria-hidden="true">&gt;</span> Prépare un plan pour PROJ-123</div><div class="cc-row"><span class="cc-dot" aria-hidden="true">⏺</span><span>Je pars du ticket Jira, puis j'écris le plan.</span></div><div class="cc-row"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>atlassian - getJiraIssue (MCP)</b>(issueIdOrKey: &quot;PROJ-123&quot;)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Mode sombre du tableau de bord · Story · <span class="cc-y">In Progress</span></div><div class="cc-row"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Write</b>(_compagnon/changes/mode-sombre/proposal.md)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Wrote 41 lines to _compagnon/changes/mode-sombre/proposal.md</div><div class="cc-row"><span class="cc-dot" aria-hidden="true">⏺</span><span>Le plan est prêt dans <code>_compagnon/changes/mode-sombre/</code> : pourquoi, ce qui change, comment, et 7 tâches. Rien n'est construit avant votre accord — lisez d'abord <code>proposal.md</code>.</span></div></div>
+<div class="cc-input" aria-hidden="true"><div class="box"><span>&gt;</span> <i>Réalise-le</i></div></div>
+<div class="cc-foot" aria-hidden="true">? for shortcuts</div></div>
+<figcaption>Dans Claude Code, tel qu'il s'affiche.</figcaption></figure></section>
+<div class="accs"><details class="acc"><summary><span>Sous le capot : le mettre en place</span><span class="sign" aria-hidden="true"></span></summary><p>Compagnon a besoin du nom de l'outil de lecture de ticket de votre connecteur Jira, dans <code>_compagnon/config.yaml</code> ; <code>compagnon init</code> le remplit s'il trouve un serveur Jira ou Atlassian dans votre configuration de Claude Code.</p></details><details class="acc"><summary><span>Sous le capot : ce que Claude peut faire avec Jira</span><span class="sign" aria-hidden="true"></span></summary><p>Une lecture du premier ticket nommé. Jamais de recherche, de commentaire ni de changement de statut.</p></details></div>
+<nav class="dark-card" aria-label="Étape suivante"><p class="eyebrow on-dark">Étape suivante · page 3 sur 5</p>
+<h3>Relire un plan</h3><p>Ce qu&#x27;il faut vérifier dans un plan avant de dire oui, fichier par fichier.</p><a class="link-arrow jaune" href="#">Continuer<span aria-hidden="true">→</span></a></nav>
+<p class="prev"><a class="link-arrow gris" href="#">Précédent : Parler à Claude<span aria-hidden="true">→</span></a></p>
+</div></article><article class="doc" id="first" data-view hidden>
+<section class="hero hero-page"><svg class="filigrane" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 518.82 518.83"><g><path d="M144.32,518.83H0V248.99h144.32v269.84ZM331.57,124.5h-144.32v394.33h144.32V124.5ZM518.82,0h-144.32v518.83h144.32V0Z" fill="#004c66"></path></g></svg>
+<p class="crumb"><a href="#">Documentation</a> <span aria-hidden="true">›</span> <a href="#">Démarrer</a> <span aria-hidden="true">›</span> <span>Votre première modification</span></p>
+<div class="progress" role="img" aria-label="Étape 2 sur 5, Démarrer, page 2 sur 2"><span class="seg" style="--c:#ff5331"><span style="width:100%"></span></span><span class="seg" style="--c:#00c39b"><span style="width:100%"></span></span><span class="seg" style="--c:#ffab03"><span style="width:0%"></span></span><span class="seg" style="--c:#004c66"><span style="width:0%"></span></span><span class="seg" style="--c:#8aa3ac"><span style="width:0%"></span></span></div>
+<p class="eyebrow corail"><span class="sq" aria-hidden="true"></span>Étape 2 sur 5 · Démarrer · page 2 sur 2</p>
+<h1>Votre première modification</h1>
+<p class="chapo">Une modification complète en dix minutes : vous demandez, vous lisez le plan, Claude le réalise, et la modification est rangée.</p>
+<p class="skip"><a class="link-arrow bleu" href="#">Déjà fait une modification ? Passez à Parler à Claude<span aria-hidden="true">→</span></a></p>
+</section>
+<div class="doc-body">
 <figure class="diagram">
 <div class="scroll">
-<svg viewBox="0 0 760 220" role="img" aria-label="A change's folder: _compagnon/changes/&lt;name&gt;/ holds proposal.md, specs/, design.md and tasks.md; archiving moves it to _compagnon/changes/archive/&lt;date&gt;-&lt;name&gt;/ and updates the project's specs.">
+<svg viewBox="0 0 760 220" role="img" aria-label="Le dossier d'une modification : _compagnon/changes/&lt;nom&gt;/ contient la proposition, les spécifications, la conception et les tâches ; l'archivage le déplace vers _compagnon/changes/archive/&lt;date&gt;-&lt;nom&gt;/ et met à jour les spécifications du projet.">
 <g stroke-width="2" style="fill:var(--dg-file)">
 <rect x="8" y="20" width="300" height="180" rx="12" style="stroke:var(--dg-claude)"/><rect x="420" y="20" width="332" height="80" rx="12" style="stroke:var(--dg-line)" stroke-dasharray="5 4"/><rect x="420" y="120" width="332" height="80" rx="12" style="stroke:var(--dg-line)"/>
 </g>
 <path d="M312,110h60M372,110V60h42m-6,-5l6,5l-6,5M372,110V160h42m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
 <g class="mono" font-size="13" style="fill:var(--dg-ink)">
-<text x="24" y="48" font-weight="600">_compagnon/changes/&lt;name&gt;/</text><text x="40" y="84">proposal.md</text><text x="40" y="112">specs/</text><text x="40" y="140">design.md</text><text x="40" y="168">tasks.md</text>
-<text x="436" y="48" font-weight="600">_compagnon/changes/archive/</text><text x="436" y="70">&lt;date&gt;-&lt;name&gt;/</text><text x="436" y="148" font-weight="600">_compagnon/specs/</text>
+<text x="24" y="48" font-weight="600">_compagnon/changes/&lt;nom&gt;/</text><text x="40" y="84">proposal.md</text><text x="40" y="112">specs/…/spec.md</text><text x="40" y="140">design.md</text><text x="40" y="168">tasks.md</text>
+<text x="436" y="48" font-weight="600">_compagnon/changes/archive/</text><text x="436" y="70">&lt;date&gt;-&lt;nom&gt;/</text><text x="436" y="148" font-weight="600">_compagnon/specs/…/spec.md</text>
 </g>
 <g font-size="13" style="fill:var(--dg-muted)">
-<text x="318" y="102" font-size="12">archive</text><text x="436" y="90">kept as written</text><text x="436" y="176">updated by the plan</text>
+<text x="316" y="102" font-size="12">archiver</text><text x="436" y="90">conservé tel quel</text><text x="436" y="176">mis à jour par le plan</text>
 </g>
 </svg>
 </div>
-<figcaption>From start to archive: the plan is kept, and the project's specs say what it changed.</figcaption>
+<figcaption>Du début à l'archive : le plan est conservé, et les spécifications du projet disent ce qu'il a changé.</figcaption>
 </figure>
-<div class="example"><p class="ex-label">Example</p>
-<figure class="cc" aria-label="Claude Code session: your first change, from the request to the archive">
-<div class="cc-bar" aria-hidden="true"><i></i><i></i><i></i><span>claude — ~/shop-app</span></div>
-<div class="cc-body"><div class="cc-user"><span class="cc-gt" aria-hidden="true">&gt;</span> Add a dark mode that follows the system setting</div>
-<div class="cc-tool"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Bash</b>(compagnon new change dark-mode)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Change `dark-mode` created</div>
-<div class="cc-say"><span class="cc-dot" aria-hidden="true">⏺</span><span>The plan is ready in <code>_compagnon/changes/dark-mode/</code>. Read <code>proposal.md</code> first — it says why and what changes.</span></div>
-<div class="cc-user"><span class="cc-gt" aria-hidden="true">&gt;</span> Implement it</div>
-<div class="cc-tool"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Update</b>(src/theme.ts)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Updated src/theme.ts with 18 additions and 2 removals</div>
-<div class="cc-tool"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Bash</b>(npm test)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> <span class="cc-g">✓</span> 42 tests passed</div>
-<div class="cc-say"><span class="cc-dot" aria-hidden="true">⏺</span><span>7 of 7 tasks done · 2 review notes, nothing to decide.</span></div>
-<div class="cc-user"><span class="cc-gt" aria-hidden="true">&gt;</span> Archive it</div>
-<div class="cc-tool"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Bash</b>(compagnon archive --change dark-mode)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> ✓ Archived · moved to _compagnon/changes/archive/2026-11-27-dark-mode</div></div>
-<div class="cc-input" aria-hidden="true"><span class="cc-gt">&gt;</span> <span class="cc-hint">Try &quot;Where am I?&quot;</span></div>
-<div class="cc-foot" aria-hidden="true">? for shortcuts</div>
-</figure></div>
-<details class="hood"><summary>Under the hood: the commands behind each request</summary><p><code>/compagnon-propose</code>, <code>/compagnon-apply</code>, <code>/compagnon-archive</code> — the same steps, typed as commands.</p></details>
-<nav class="next" aria-label="Next step">
-<a class="next-card" href="#"><span class="kicker">Next step · step 3 · Every day</span><span class="next-title">Asking Claude</span><span class="next-purpose">What to say to Claude at each step, in your own words.</span><span class="arrow" aria-hidden="true"></span></a>
-<a class="prev" href="#">← Installation</a>
-</nav>
-</article>
-
-<article class="page" id="overview" data-view hidden>
-<h1>The whole tunnel</h1>
-<p class="lede">Five steps, read in order. Beginners can stop after step 3; experts go on.</p>
-<ol class="ov-row"><li class="ov" style="--c:#ff5331"><span class="ov-n">1</span><h3>Discover</h3><ul><li>Compagnon in two minutes</li></ul></li><li class="ov" style="--c:#ffab03"><span class="ov-n">2</span><h3>Get started</h3><ul><li>Installation</li><li>Your first change</li></ul></li><li class="ov" style="--c:#00c39b"><span class="ov-n">3</span><h3>Every day</h3><ul><li>Asking Claude</li><li>Start from a Jira ticket</li><li>Reviewing a plan</li><li>Approving a plan on GitHub</li><li>Building and filing away</li></ul></li><li class="ov" style="--c:#3a9ec8"><span class="ov-n">4</span><h3>Understand</h3><ul><li>How it works</li><li>Concepts</li><li>Decisions</li><li>Roles</li><li>Review record</li></ul></li><li class="ov" style="--c:#8fa8b1"><span class="ov-n">5</span><h3>For your team</h3><ul><li>Adopting Compagnon on an existing project</li><li>Deploying Compagnon for a team</li><li>Inherited sources</li><li>Artifact language</li><li>Release notes and CHANGELOG</li><li>Custom schemas</li></ul></li></ol>
-<p class="appx-row">Appendices, looked up when needed: command-line interface · configuration · file formats · JSON output · error codes · glossary · FAQ · annotated example plan</p>
-</article>
-</main>
+<section class="example" aria-label="Exemple"><p class="eyebrow vert"><span class="sq" aria-hidden="true"></span>Exemple</p><figure class="capture" aria-label="Session Claude Code : une première modification, de la demande au rangement">
+<div class="cc"><div class="cc-body"><div class="cc-user"><span aria-hidden="true">&gt;</span> Ajoute un mode sombre qui suit le réglage du système</div><div class="cc-row"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Bash</b>(compagnon new change mode-sombre)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Change `mode-sombre` created</div><div class="cc-row"><span class="cc-dot" aria-hidden="true">⏺</span><span>Le plan est prêt dans <code>_compagnon/changes/mode-sombre/</code>. Lisez d'abord <code>proposal.md</code>.</span></div><div class="cc-user"><span aria-hidden="true">&gt;</span> Réalise-le</div><div class="cc-row"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Update</b>(src/theme.ts)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> Updated src/theme.ts with 18 additions and 2 removals</div><div class="cc-row"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Bash</b>(npm test)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> <span class="cc-g">✓</span> 42 tests passed</div><div class="cc-row"><span class="cc-dot" aria-hidden="true">⏺</span><span>7 tâches sur 7 faites · 2 remarques de relecture, rien à trancher.</span></div><div class="cc-user"><span aria-hidden="true">&gt;</span> Range-le</div><div class="cc-row"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>Bash</b>(compagnon archive --change mode-sombre)</span></div><div class="cc-res"><span aria-hidden="true">⎿</span> ✓ Archived · moved to _compagnon/changes/archive/2026-11-27-mode-sombre</div></div>
+<div class="cc-input" aria-hidden="true"><div class="box"><span>&gt;</span> <i>Où en suis-je ?</i></div></div>
+<div class="cc-foot" aria-hidden="true">? for shortcuts</div></div>
+<figcaption>Dans Claude Code, tel qu'il s'affiche.</figcaption></figure></section>
+<div class="accs"><details class="acc"><summary><span>Sous le capot : les commandes derrière chaque demande</span><span class="sign" aria-hidden="true"></span></summary><p><code>/compagnon-propose</code>, <code>/compagnon-apply</code>, <code>/compagnon-archive</code> — les mêmes étapes, tapées comme des commandes.</p></details></div>
+<nav class="dark-card" aria-label="Étape suivante"><p class="eyebrow on-dark">Étape suivante · étape 3 · Au quotidien</p>
+<h3>Parler à Claude</h3><p>Ce qu&#x27;il faut dire à Claude à chaque étape, avec vos mots.</p><a class="link-arrow jaune" href="#">Continuer<span aria-hidden="true">→</span></a></nav>
+<p class="prev"><a class="link-arrow gris" href="#">Précédent : Installation<span aria-hidden="true">→</span></a></p>
+</div></article><article class="doc" id="overview" data-view hidden>
+<section class="hero hero-page"><svg class="filigrane" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 518.82 518.83"><g><path d="M144.32,518.83H0V248.99h144.32v269.84ZM331.57,124.5h-144.32v394.33h144.32V124.5ZM518.82,0h-144.32v518.83h144.32V0Z" fill="#004c66"></path></g></svg>
+<p class="eyebrow corail"><span class="sq" aria-hidden="true"></span>Le tunnel de lecture</p><h1>Cinq étapes, lues dans l'ordre.</h1>
+<p class="chapo">Les débutants peuvent s'arrêter après l'étape 3 ; les experts continuent. Les annexes se consultent au besoin.</p></section>
+<div class="doc-body"><ol class="personas cols"><li class="persona" style="--c:#ff5331"><span class="rule"></span><div><p class="eyebrow gris">Étape 1 · 1 page</p><h3>Découvrir</h3><p>Ce que fait Compagnon, et qui décide.</p><a class="link-arrow corail" href="#" data-go="overview">Commencer ici<span aria-hidden="true">→</span></a></div></li><li class="persona" style="--c:#00c39b"><span class="rule"></span><div><p class="eyebrow gris">Étape 2 · 2 pages</p><h3>Démarrer</h3><p>Installer, puis une première modification en dix minutes.</p><a class="link-arrow corail" href="#" data-go="first">Commencer ici<span aria-hidden="true">→</span></a></div></li><li class="persona" style="--c:#ffab03"><span class="rule"></span><div><p class="eyebrow gris">Étape 3 · 5 pages</p><h3>Au quotidien</h3><p>Demander, relire, approuver, réaliser : la boucle de tous les jours.</p><a class="link-arrow corail" href="#" data-go="jira">Commencer ici<span aria-hidden="true">→</span></a></div></li><li class="persona" style="--c:#004c66"><span class="rule"></span><div><p class="eyebrow gris">Étape 4 · 5 pages</p><h3>Comprendre</h3><p>Ce qui se passe derrière chaque étape.</p><a class="link-arrow corail" href="#" data-go="overview">Commencer ici<span aria-hidden="true">→</span></a></div></li><li class="persona" style="--c:#8aa3ac"><span class="rule"></span><div><p class="eyebrow gris">Étape 5 · 6 pages</p><h3>Pour l&#x27;équipe</h3><p>Installer Compagnon pour une équipe et ses conventions.</p><a class="link-arrow corail" href="#" data-go="overview">Commencer ici<span aria-hidden="true">→</span></a></div></li></ol></div></article></div>
 </div>
+</main>
+<footer class="footer gut"><div class="in"><span>Compagnon — un projet libre de <a href="#">Mairistem</a> · Licence MIT</span><span><a href="#">Documentation</a> · <a href="#">English</a> · <a href="#">GitHub</a></span></div></footer>
 <script>
 (function () {
   var root = document.documentElement;
@@ -389,10 +345,11 @@ figure.diagram .mono { font-family: var(--mono); }
     document.querySelector('[data-shell]').hidden = v === 'home';
     document.querySelectorAll('[data-view]').forEach(function (p) { p.hidden = p.id !== v; });
     document.querySelectorAll('[data-show]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.show === v)); });
+    window.scrollTo(0, 0);
   }
-  document.querySelectorAll('[data-show]').forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.show); window.scrollTo(0, 0); }); });
-  document.querySelectorAll('[data-go]').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); show(a.dataset.go); window.scrollTo(0, 0); }); });
-  document.querySelectorAll('.skip-step a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); show(a.getAttribute('href') === '#review' ? 'overview' : 'jira'); }); });
+  document.querySelectorAll('[data-show]').forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.show); }); });
+  document.querySelectorAll('[data-go]').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); show(a.dataset.go); }); });
   document.querySelectorAll('[data-theme-set]').forEach(function (b) { b.addEventListener('click', function () { root.setAttribute('data-theme', b.dataset.themeSet); }); });
+  show('home');
 })();
 </script>

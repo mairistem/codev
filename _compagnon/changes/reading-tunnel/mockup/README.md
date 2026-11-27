@@ -1,4 +1,4 @@
-# Tunnel mockup — status: principle approved, look rejected (version 1)
+# Tunnel mockup — status: version 3 (strict Mairistem design system) awaiting approval
 
 Version 1 (2026-11-27): the owner approves the principle — the five steps,
 the pages, the two layers, the skip buttons, the next steps — but rejects
@@ -32,3 +32,17 @@ At the owner's request: examples look like a real Claude Code session
 page's identity — same header, the home hero's dark band on each page,
 the same colored-rule cards, one Claude Code terminal everywhere. A
 "Home page" view shows the five step cards replacing the profiles.
+
+## Version 3 — strict Mairistem design system
+
+At the owner's request, `build_v3.py` writes `index.html` (version 2 kept as
+`index-v2.html`) following the Mairistem design system strictly: the four
+brand colours plus black and white, no gradient, no blur, IBM Plex Sans
+only, the DS header (dark top band, white band, primary "Installer"
+button), the product hero on the soft surface with the symbol watermark,
+persona cards with a coloured top rule for the five steps, upper-case
+eyebrows, accordions with + and −, a dark card for "Next step" with a
+yellow arrow link, and Claude Code shown as a capture in a white frame
+with a 1 px border. The DS defines no dark theme: the dark mode uses its
+dark surfaces (#00394d page, #004c66 cards). Checked with Playwright at
+360 px and 1280 px, light and dark: no horizontal scroll, no script error.
