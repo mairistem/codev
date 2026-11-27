@@ -424,13 +424,13 @@ Open the compagnon documentation in the browser
 
 Three forms:
 
-- default: writes `compagnon-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM).
+- default: writes `compagnon-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM), the diagrams' drawings left out and their captions kept.
 
 Usage: compagnon docs [OPTIONS]
 
 Options:
       --print
-          Print the markdown source to stdout (does not open anything)
+          Print the markdown source to stdout, without the diagrams' drawings (does not open anything)
 
       --write <PATH>
           Write the HTML to the given path (does not open anything)
@@ -452,7 +452,7 @@ Renders this documentation as one self-contained HTML page — inline CSS, no
 network access — and opens it in your browser. The page is written to
 `compagnon-docs-<version>.html` in the system temporary folder. `--write` writes
 it elsewhere without opening it, for sharing; `--print` prints the Markdown
-source. `--lang` selects the English (`en`, the default) or French (`fr`)
+source, with each diagram's caption in place of its drawing. `--lang` selects the English (`en`, the default) or French (`fr`)
 edition. `compagnon docs` works anywhere, including outside a Compagnon project.
 
 `--print` is meant to be piped: when the reader stops early, as in

@@ -447,13 +447,13 @@ Open the compagnon documentation in the browser
 
 Three forms:
 
-- default: writes `compagnon-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM).
+- default: writes `compagnon-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM), the diagrams' drawings left out and their captions kept.
 
 Usage: compagnon docs [OPTIONS]
 
 Options:
       --print
-          Print the markdown source to stdout (does not open anything)
+          Print the markdown source to stdout, without the diagrams' drawings (does not open anything)
 
       --write <PATH>
           Write the HTML to the given path (does not open anything)
@@ -475,7 +475,8 @@ Produit cette documentation sous la forme d'une page HTML autonome — CSS
 intégré, aucun accès réseau — et l'ouvre dans votre navigateur. La page est
 écrite dans `compagnon-docs-<version>.html`, dans le dossier temporaire du
 système. `--write` l'écrit ailleurs sans l'ouvrir, pour la partager ;
-`--print` affiche la source Markdown. `--lang` choisit l'édition anglaise
+`--print` affiche la source Markdown, la légende de chaque schéma tenant
+lieu de son dessin. `--lang` choisit l'édition anglaise
 (`en`, par défaut) ou française (`fr`). `compagnon docs` fonctionne partout, y
 compris en dehors d'un projet Compagnon.
 

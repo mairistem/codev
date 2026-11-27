@@ -985,7 +985,7 @@ fn is_identifier_heading(heading: &str) -> bool {
 fn without_svg(md: &str) -> String {
     let mut out = String::with_capacity(md.len());
     let mut from = 0;
-    for (start, svg) in svg_elements(md) {
+    for (start, svg) in crate::docs::svg_elements(md) {
         out.push_str(&md[from..start]);
         out.push_str("\n\n");
         out.push_str(&svg_words(svg));
@@ -993,21 +993,6 @@ fn without_svg(md: &str) -> String {
         from = start + svg.len();
     }
     out.push_str(&md[from..]);
-    out
-}
-
-/// The `<svg …>…</svg>` elements of `text`, each with its byte offset.
-/// An unclosed one runs to the end.
-fn svg_elements(text: &str) -> Vec<(usize, &str)> {
-    let mut out = Vec::new();
-    let mut from = 0;
-    while let Some(start) = text[from..].find("<svg").map(|i| from + i) {
-        let end = text[start..]
-            .find("</svg>")
-            .map_or(text.len(), |i| start + i + "</svg>".len());
-        out.push((start, &text[start..end]));
-        from = end;
-    }
     out
 }
 
@@ -1066,7 +1051,7 @@ fn svg_words(svg: &str) -> String {
 /// rest of the drawing would be printed as text.
 pub fn diagram_problems(text: &str) -> Vec<String> {
     let mut problems = Vec::new();
-    for (n, (start, svg)) in svg_elements(text).into_iter().enumerate() {
+    for (n, (start, svg)) in crate::docs::svg_elements(text).into_iter().enumerate() {
         let open = &svg[..svg.find('>').map_or(svg.len(), |i| i + 1)];
         if attribute(open, "aria-hidden") == Some("true")
             || attribute(open, "class").is_some_and(|c| c.split(' ').any(|c| c == "logo"))
@@ -1076,10 +1061,13 @@ pub fn diagram_problems(text: &str) -> Vec<String> {
         let name = attribute(open, "aria-label")
             .filter(|l| !l.trim().is_empty())
             .or_else(|| attribute(open, "aria-labelledby"));
-        let label = name.map_or_else(|| format!("diagram {}", n + 1), |l| {
-            let short: String = l.chars().take(40).collect();
-            format!("diagram \"{short}\"")
-        });
+        let label = name.map_or_else(
+            || format!("diagram {}", n + 1),
+            |l| {
+                let short: String = l.chars().take(40).collect();
+                format!("diagram \"{short}\"")
+            },
+        );
         let before = &text[..start];
         let in_figure = before
             .rfind("<figure")
@@ -1109,7 +1097,10 @@ pub fn diagram_problems(text: &str) -> Vec<String> {
                 rest = value;
             }
         }
-        if svg.contains("\n\n") || svg.contains("\n\r\n") || svg.lines().any(|l| l.trim().is_empty()) {
+        if svg.contains("\n\n")
+            || svg.contains("\n\r\n")
+            || svg.lines().any(|l| l.trim().is_empty())
+        {
             problems.push(format!("{label} holds a blank line"));
         }
     }
@@ -1124,7 +1115,11 @@ fn luminance(hex: &str) -> Option<f64> {
     }
     let channel = |i: usize| -> Option<f64> {
         let v = f64::from(u8::from_str_radix(&hex[i..i + 2], 16).ok()?) / 255.0;
-        Some(if v <= 0.040_45 { v / 12.92 } else { ((v + 0.055) / 1.055).powf(2.4) })
+        Some(if v <= 0.040_45 {
+            v / 12.92
+        } else {
+            ((v + 0.055) / 1.055).powf(2.4)
+        })
     };
     Some(0.2126 * channel(0)? + 0.7152 * channel(2)? + 0.0722 * channel(4)?)
 }
@@ -1159,10 +1154,14 @@ pub fn diagram_themes(css: &str) -> Vec<(String, Vec<(String, String)>)> {
                 .filter_map(|d| {
                     let (k, v) = d.split_once(':')?;
                     let k = k.trim();
-                    k.starts_with("--dg-").then(|| (k.to_string(), v.trim().to_string()))
+                    k.starts_with("--dg-")
+                        .then(|| (k.to_string(), v.trim().to_string()))
                 })
                 .collect();
-            out.push((selector.split_whitespace().collect::<Vec<_>>().join(" "), tokens));
+            out.push((
+                selector.split_whitespace().collect::<Vec<_>>().join(" "),
+                tokens,
+            ));
         }
         from = open + 1;
     }
@@ -1575,34 +1574,58 @@ mod tests {
 
     #[test]
     fn a_complete_diagram_passes() {
-        assert!(diagram_problems(GOOD_DIAGRAM).is_empty(), "{:?}", diagram_problems(GOOD_DIAGRAM));
+        assert!(
+            diagram_problems(GOOD_DIAGRAM).is_empty(),
+            "{:?}",
+            diagram_problems(GOOD_DIAGRAM)
+        );
         let hidden = "<svg aria-hidden=\"true\"><use href=\"#cp-mark\"/></svg>\n\
                       <svg class=\"logo\" role=\"img\" aria-label=\"Mairistem\"></svg>";
-        assert!(diagram_problems(hidden).is_empty(), "{:?}", diagram_problems(hidden));
+        assert!(
+            diagram_problems(hidden).is_empty(),
+            "{:?}",
+            diagram_problems(hidden)
+        );
     }
 
     #[test]
     fn a_diagram_without_label_is_caught() {
         let md = GOOD_DIAGRAM.replace(" aria-label=\"Two steps: you ask, Claude plans\"", "");
         let problems = diagram_problems(&md);
-        assert!(problems.iter().any(|p| p.contains("no aria-label")), "{problems:?}");
+        assert!(
+            problems.iter().any(|p| p.contains("no aria-label")),
+            "{problems:?}"
+        );
     }
 
     #[test]
     fn a_diagram_split_by_a_blank_line_is_caught() {
         let md = GOOD_DIAGRAM.replace("<text x", "\n<text x");
         let problems = diagram_problems(&md);
-        assert!(problems.iter().any(|p| p.contains("blank line")), "{problems:?}");
+        assert!(
+            problems.iter().any(|p| p.contains("blank line")),
+            "{problems:?}"
+        );
     }
 
     #[test]
     fn a_diagram_outside_a_figure_or_pointing_out_is_caught() {
         let bare = "<svg role=\"img\" aria-label=\"x\"><image href=\"chart.png\"/></svg>";
         let problems = diagram_problems(bare);
-        assert!(problems.iter().any(|p| p.contains("<figure>")), "{problems:?}");
-        assert!(problems.iter().any(|p| p.contains("another file")), "{problems:?}");
+        assert!(
+            problems.iter().any(|p| p.contains("<figure>")),
+            "{problems:?}"
+        );
+        assert!(
+            problems.iter().any(|p| p.contains("another file")),
+            "{problems:?}"
+        );
         let no_caption = GOOD_DIAGRAM.replace("<figcaption>The workflow.</figcaption>\n", "");
-        assert!(diagram_problems(&no_caption).iter().any(|p| p.contains("figcaption")));
+        assert!(
+            diagram_problems(&no_caption)
+                .iter()
+                .any(|p| p.contains("figcaption"))
+        );
     }
 
     #[test]
@@ -1623,7 +1646,9 @@ mod tests {
         assert_eq!(themes[0].0, ".light");
         let problems = contrast_problems(&themes[0].0, &themes[0].1);
         assert!(
-            problems.iter().any(|p| p.contains(".light") && p.contains("--dg-muted #b0b0b0")),
+            problems
+                .iter()
+                .any(|p| p.contains(".light") && p.contains("--dg-muted #b0b0b0")),
             "{problems:?}"
         );
     }
@@ -1632,7 +1657,10 @@ mod tests {
     fn a_french_diagram_speaks_french() {
         let fr = GOOD_DIAGRAM.replace("The workflow.", "Le déroulé.");
         let md = fr
-            .replace("Two steps: you ask, Claude plans", "Le workflow en deux étapes")
+            .replace(
+                "Two steps: you ask, Claude plans",
+                "Le workflow en deux étapes",
+            )
             .replace(">Ask<", ">Demander<");
         assert_eq!(anglicisms(&md), ["workflow"]);
         let text = fr
@@ -2130,13 +2158,20 @@ mod chapter_tests {
     #[test]
     fn every_diagram_theme_is_contrasted_enough() {
         let sheets = [
-            ("docs/theme/mairistem.css", include_str!("../../../docs/theme/mairistem.css")),
+            (
+                "docs/theme/mairistem.css",
+                include_str!("../../../docs/theme/mairistem.css"),
+            ),
             ("assets/docs.css", include_str!("../assets/docs.css")),
         ];
         let mut found = Vec::new();
         for (file, css) in sheets {
             let themes = diagram_themes(css);
-            assert_eq!(themes.len(), 2, "{file} should define a light and a dark diagram theme");
+            assert_eq!(
+                themes.len(),
+                2,
+                "{file} should define a light and a dark diagram theme"
+            );
             for (selector, tokens) in themes {
                 found.extend(contrast_problems(&format!("{file} {selector}"), &tokens));
             }
@@ -2155,8 +2190,14 @@ mod chapter_tests {
             }
         }
         for (page, html) in [
-            ("docs/site/index.html", include_str!("../../../docs/site/index.html")),
-            ("docs/site/fr.html", include_str!("../../../docs/site/fr.html")),
+            (
+                "docs/site/index.html",
+                include_str!("../../../docs/site/index.html"),
+            ),
+            (
+                "docs/site/fr.html",
+                include_str!("../../../docs/site/fr.html"),
+            ),
         ] {
             for p in diagram_problems(html) {
                 found.push(format!("{page}: {p}"));
