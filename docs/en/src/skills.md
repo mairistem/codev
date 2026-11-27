@@ -7,6 +7,49 @@ it away, and so on. Claude Code finds them on its own, so you can simply
 ask in your own words. You can also start one directly by typing its
 name, such as `/compagnon-propose`.
 
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 140" role="img" aria-label="Asking Claude in four steps: 1, you say what you want in your own words; 2, Claude picks the skill that matches, here the one that plans; 3, Claude does that step, writes the plan, then stops; 4, you decide: correct it or approve it.">
+<g stroke-width="2" style="fill:var(--dg-box)">
+<rect x="4" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="198" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-claude)"/>
+<rect x="392" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-claude)"/>
+<rect x="586" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+</g>
+<path d="M175,75h18m-6,-5l6,5l-6,5M369,75h18m-6,-5l6,5l-6,5M563,75h18m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="12" style="fill:var(--dg-muted)">
+<text x="20" y="44">1 · YOU</text><text x="214" y="44">2 · CLAUDE</text><text x="408" y="44">3 · CLAUDE</text><text x="602" y="44">4 · YOU</text>
+</g>
+<g font-size="16" font-weight="600" style="fill:var(--dg-ink)">
+<text x="20" y="78">Your words</text><text x="214" y="78">Picks a skill</text><text x="408" y="78">Does the step</text><text x="602" y="78">Decide</text>
+</g>
+<g font-size="13" style="fill:var(--dg-muted)">
+<text x="20" y="102">“prepare a plan</text><text x="20" y="120">for a dark mode”</text><text x="214" y="102">here, the one</text><text x="214" y="120">that plans</text><text x="408" y="102">writes the plan,</text><text x="408" y="120">then stops</text><text x="602" y="102">correct it,</text><text x="602" y="120">or approve it</text>
+</g>
+</svg>
+</div>
+<figcaption>You never need a command: Claude picks the skill from your words.</figcaption>
+</figure>
+
+<div class="example">
+<p class="example-title">Example</p>
+
+```text
+> Plan a dark mode that follows the system setting
+⏺ Skill(compagnon-propose)
+  ⎿ Successfully loaded skill
+⏺ I will write the plan in _compagnon/changes/add-dark-mode/.
+⏺ The plan is ready. Read proposal.md first; nothing is built before
+  you approve it.
+```
+
+You never typed `/compagnon-propose`: Claude picked the skill from your words.
+
+</div>
+
+<details>
+<summary>Under the hood: the eight skills, where they live and what they may change</summary>
+
 You do not install them by hand: `compagnon init` and `compagnon update`
 write each one in its own folder, `.claude/skills/compagnon-<workflow>/SKILL.md`.
 
@@ -26,6 +69,8 @@ run any command, because it runs your [tests](glossary.md#test). In
 isolated review mode, `/compagnon-propose` and `/compagnon-apply` also use
 `Agent`, Claude Code's sub-agent tool. See
 [Tool permissions](reference/configuration.md#tool-permissions).
+
+</details>
 
 ## How to ask
 
@@ -155,13 +200,6 @@ Where it goes depends on whom it concerns:
 
 An entry names no person, and quotes no personal data and no secret.
 
-## Go further
+## Next step
 
-- [How it works](workflow.md): what each skill does, step by step, and
-  the files it writes.
-- [Start from a Jira ticket](guides/mcp.md): "Prepare a plan for
-  PROJ-123".
-- [Roles](roles.md): the criteria Claude checks at each step.
-- [Configuration](reference/configuration.md#the-installed-skills):
-  choosing which skills to install, their tool permissions, and editing a
-  generated skill.
+[Start from a Jira ticket](guides/mcp.md) Your work is already a Jira ticket? Start from it.

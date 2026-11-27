@@ -116,15 +116,28 @@ GitHub renomme ses boutons de temps en temps.
 Vous ne modifiez pas le plan vous-même. Le développeur ouvre Claude Code
 et demande à Claude de tenir compte de vos commentaires, par exemple :
 
-> Tiens compte dans le plan des commentaires de la demande de fusion.
+<div class="example">
+<p class="example-title">Exemple</p>
+
+```text
+> Tiens compte dans le plan des commentaires de la demande de fusion
+⏺ Bash(gh pr view 42 --comments)
+  ⎿ 2 review comments on specs/ui/theme/spec.md and tasks.md
+⏺ Update(_compagnon/changes/add-dark-mode/specs/ui/theme/spec.md)
+  ⎿ Updated with 3 additions and 1 removal
+⏺ Les deux commentaires ont leur réponse dans le plan. Envoyez-le dans la
+  même demande de fusion et demandez une nouvelle relecture.
+```
+
+Le développeur relaie vos commentaires ; vous lisez la nouvelle version sur GitHub.
+
+</div>
 
 Claude met le plan à jour, et le développeur envoie la nouvelle version
 dans la même demande. Relisez les parties modifiées, répondez à vos
 commentaires, et approuvez quand le plan dit ce que vous voulez. Alors
 seulement, Claude construit.
 
-## Pour aller plus loin
+## Étape suivante
 
-- [Relire un plan](review-a-plan.md)
-- [Un exemple de plan commenté](example-plan.md)
-- [Compte rendu de relecture](review-record.md)
+[Réaliser et ranger](build-and-file.md) Ce qui se passe une fois votre accord donné.

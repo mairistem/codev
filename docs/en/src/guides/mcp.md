@@ -1,5 +1,12 @@
 # Start from a Jira ticket
 
+<div class="skip-step">
+
+[No Jira? Skip to Reviewing a plan](review-a-plan.md)
+
+</div>
+
+
 Your team already describes the work in Jira. Name the ticket in your
 request and Claude starts the [plan](../glossary.md#plan) from it: no copy
 and paste, and the plan says where it comes from.
@@ -44,6 +51,19 @@ and paste, and the plan says where it comes from.
 <figcaption>From a Jira ticket to a plan: you name the ticket, Claude reads it once without changing it, and the plan cites it on its first line.</figcaption>
 </figure>
 
+<div class="example">
+<p class="example-title">Example</p>
+
+```text
+> Prepare a plan for PROJ-123
+⏺ atlassian - getJiraIssue (MCP)(issueIdOrKey: "PROJ-123")
+  ⎿ Dark mode for the dashboard · Story · In Progress
+⏺ Write(_compagnon/changes/add-dark-mode/proposal.md)
+  ⎿ Wrote 41 lines to _compagnon/changes/add-dark-mode/proposal.md
+⏺ The plan is ready and cites PROJ-123 on its first line. Nothing
+  changed in Jira.
+```
+
 The top of the [proposal](../glossary.md#proposal) then reads:
 
 ```markdown
@@ -54,11 +74,21 @@ The top of the [proposal](../glossary.md#proposal) then reads:
 ## Why
 ```
 
+</div>
+
 Any request to `/compagnon-propose` works, as long as it names a ticket:
 "Plan PROJ-123, and keep the old theme as an option" adds your own words
 to the ticket's.
 
 ## Set it up
+
+Someone sets this up once per computer, and `compagnon init` usually
+does it alone: it finds your Jira connector and writes its name in the
+project's configuration. If a ticket name is treated as plain text, ask
+the person who installed Compagnon to look below.
+
+<details>
+<summary>Under the hood: set it up</summary>
 
 Jira reaches Claude Code through an [MCP](../glossary.md#mcp) server — a
 connector to another tool. The `compagnon` command itself never talks to
@@ -103,6 +133,8 @@ the skill behaves exactly as in a project without any MCP integration.
 > tool names depend on each person's Claude Code setup, not on a shared
 > repository.
 
+</details>
+
 ## What Claude may do with Jira
 
 A ticket is anything matching `[A-Z]{2,}-\d+`, such as `PROJ-123`. When
@@ -144,8 +176,6 @@ The existing skill is extended rather than duplicated: there is one
 
 </details>
 
-## Go further
+## Next step
 
-- [Reviewing a plan](review-a-plan.md)
-- [Configuration](../reference/configuration.md#mcp)
-- [Inherited sources](inherited-sources.md)
+[Reviewing a plan](review-a-plan.md) Read the plan Claude wrote before anything is built.

@@ -105,14 +105,27 @@ GitHub renames its buttons from time to time.
 You do not edit the plan yourself. The developer opens Claude Code and
 asks Claude to take your comments into account, for example:
 
-> Take the comments on the pull request into account in the plan.
+<div class="example">
+<p class="example-title">Example</p>
+
+```text
+> Take the comments on the pull request into account in the plan
+⏺ Bash(gh pr view 42 --comments)
+  ⎿ 2 review comments on specs/ui/theme/spec.md and tasks.md
+⏺ Update(_compagnon/changes/add-dark-mode/specs/ui/theme/spec.md)
+  ⎿ Updated with 3 additions and 1 removal
+⏺ Both comments are answered in the plan. Push it to the same pull
+  request and ask for a new review.
+```
+
+The developer relays your comments; you read the new version on GitHub.
+
+</div>
 
 Claude updates the plan, and the developer sends the new version to the
 same request. Read the parts that changed, answer your comments, and
 approve when the plan says what you want. Only then does Claude build.
 
-## Go further
+## Next step
 
-- [Reviewing a plan](review-a-plan.md)
-- [An annotated example plan](example-plan.md)
-- [Review record](review-record.md)
+[Building and filing away](build-and-file.md) What happens once you approve.

@@ -147,10 +147,22 @@ will see is left without a test.
 You never edit the files yourself. Tell Claude what to change, in plain
 words, and it updates the plan and keeps its parts consistent:
 
-> In the plan, a user who picks a theme by hand keeps it, even if the
-> system setting changes.
+<div class="example">
+<p class="example-title">Example</p>
 
-> Remove PDF export from this change: we will do it later.
+```text
+> In the plan, a user who picks a theme by hand keeps it, even if the
+  system setting changes
+⏺ Update(_compagnon/changes/add-dark-mode/specs/ui/theme/spec.md)
+  ⎿ Updated with 1 addition: Scenario: A theme picked by hand is kept
+⏺ Update(_compagnon/changes/add-dark-mode/tasks.md)
+  ⎿ Updated with 1 addition: 2.3 Keep the theme picked by hand
+⏺ The specs and the tasks now say it. Read the new scenario in specs/.
+```
+
+One sentence of yours; Claude changed every part of the plan it concerns.
+
+</div>
 
 Then read the parts that changed. Repeat until the plan says what you want.
 
@@ -162,9 +174,6 @@ reviews work on GitHub, the plan comes as a
 [pull request](../glossary.md#pull-request) (a request to add it to the
 project). Approve it there: your approval is recorded.
 
-## Go further
+## Next step
 
-- [An annotated example plan](example-plan.md)
-- [Approving a plan on GitHub](approve-a-plan.md)
-- [Start from a Jira ticket](mcp.md)
-- [Review record](review-record.md)
+[Approving a plan on GitHub](approve-a-plan.md) Your team reviews on GitHub? Approve the plan there.

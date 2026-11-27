@@ -1,5 +1,12 @@
 # Partir d'un ticket Jira
 
+<div class="skip-step">
+
+[Pas de Jira ? Passez à Relire un plan](review-a-plan.md)
+
+</div>
+
+
 Votre équipe décrit déjà le travail dans Jira. Nommez le ticket dans votre
 demande et Claude part de lui pour écrire le [plan](../glossary.md#plan) :
 pas de copier-coller, et le plan dit d'où il vient.
@@ -44,6 +51,19 @@ pas de copier-coller, et le plan dit d'où il vient.
 <figcaption>D'un ticket Jira à un plan : vous nommez le ticket, Claude le lit une fois sans le modifier, et le plan le cite dès sa première ligne.</figcaption>
 </figure>
 
+<div class="example">
+<p class="example-title">Exemple</p>
+
+```text
+> Prépare un plan pour PROJ-123
+⏺ atlassian - getJiraIssue (MCP)(issueIdOrKey: "PROJ-123")
+  ⎿ Mode sombre pour le tableau de bord · Story · In Progress
+⏺ Write(_compagnon/changes/add-dark-mode/proposal.md)
+  ⎿ Wrote 41 lines to _compagnon/changes/add-dark-mode/proposal.md
+⏺ Le plan est prêt et cite PROJ-123 dès sa première ligne. Rien n'a
+  changé dans Jira.
+```
+
 Le haut de la [proposition](../glossary.md#proposition) se lit alors ainsi :
 
 ```markdown
@@ -54,11 +74,22 @@ Le haut de la [proposition](../glossary.md#proposition) se lit alors ainsi :
 ## Why
 ```
 
+</div>
+
 Toute demande à `/compagnon-propose` convient, pourvu qu'elle nomme un
 ticket : « Planifie PROJ-123, et garde l'ancien thème en option » ajoute
 vos propres mots à ceux du ticket.
 
 ## Mettre en place
+
+Quelqu'un le met en place une fois par ordinateur, et `compagnon init` le
+fait en général seul : il trouve votre connecteur Jira et écrit son nom
+dans la configuration du projet. Si un nom de ticket est traité comme du
+texte ordinaire, demandez à la personne qui a installé Compagnon de
+regarder ci-dessous.
+
+<details>
+<summary>Sous le capot : la mise en place</summary>
 
 Jira parvient à Claude Code par un serveur [MCP](../glossary.md#mcp) — un
 connecteur vers un autre outil. La commande `compagnon` elle-même ne parle
@@ -105,6 +136,8 @@ intégration MCP.
 > `mcp:` n'est jamais repris d'une [source héritée](inherited-sources.md) :
 > les noms d'outils dépendent de l'installation de Claude Code de chacun, et
 > non d'un dépôt partagé.
+
+</details>
 
 ## Ce que Claude peut faire avec Jira
 
@@ -153,8 +186,6 @@ qu'une seule `/compagnon-propose`, quelle que soit l'origine de la demande.
 
 </details>
 
-## Pour aller plus loin
+## Étape suivante
 
-- [Relire un plan](review-a-plan.md)
-- [Configuration](../reference/configuration.md#mcp)
-- [Sources héritées](inherited-sources.md)
+[Relire un plan](review-a-plan.md) Lisez le plan qu'a écrit Claude avant que rien ne soit construit.

@@ -668,7 +668,7 @@ Options:
 
 Validates the change, refuses if validation reports an error, then merges its
 deltas into the main specs, without moving the change. Running it again
-reports the specs as unchanged. See [Sync](../workflow.md#sync).
+reports the specs as unchanged. See [Building and filing away](../guides/build-and-file.md#archive).
 
 ### compagnon review
 
@@ -719,7 +719,7 @@ its [review record](../guides/review-record.md) and refuses with
 were active or a high-severity finding is still open or disputed; then
 merges its deltas into the main specs and moves it, record included, to
 `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`. See
-[Archive](../workflow.md#archive).
+[Building and filing away](../guides/build-and-file.md#archive).
 
 ### compagnon changelog
 

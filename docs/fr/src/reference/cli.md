@@ -701,7 +701,7 @@ Options:
 Valide la modification, refuse de continuer si la validation signale une erreur,
 puis fusionne ses deltas dans les spécifications principales, sans déplacer la modification.
 Relancée, la commande indique que les spécifications sont inchangées. Voir
-[Synchroniser](../workflow.md#synchroniser).
+[Réaliser et ranger](../guides/build-and-file.md#archiver).
 
 ### compagnon review
 
@@ -754,7 +754,7 @@ relecture étaient actifs ou si un constat de gravité haute est encore ouvert
 ou contesté ; fusionne ensuite ses deltas dans les spécifications principales et la
 déplace, compte rendu compris, dans
 `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`. Voir
-[Archiver](../workflow.md#archiver).
+[Réaliser et ranger](../guides/build-and-file.md#archiver).
 
 ### compagnon changelog
 
