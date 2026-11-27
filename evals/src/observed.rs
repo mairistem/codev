@@ -236,6 +236,24 @@ pub struct RunInfo {
     /// appended.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fixture_config: Option<String>,
+    /// The steps later resumed runs added with another Compagnon than the
+    /// one recorded above, in the order they were added; empty, as in a
+    /// `run.json` written before the field, when every step ran with it.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub added: Vec<AddedSteps>,
+}
+
+/// Steps a resumed run added to the output directory with a Compagnon
+/// other than the one `run.json` records: the recorded fields stay those
+/// of the first run, and this entry says which version these steps ran.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AddedSteps {
+    /// The steps of the cases the resumed run ran, in the order `Step`
+    /// lists them.
+    pub steps: Vec<String>,
+    pub compagnon_version: String,
+    pub date: String,
 }
 
 impl RunInfo {
@@ -434,9 +452,41 @@ mod tests {
             jobs: None,
             review_mode: Some(ReviewMode::Isolated),
             fixture_config: Some("roles: {}\n".into()),
+            added: Vec::new(),
         };
         let text = serde_json::to_string(&info).unwrap();
         assert_eq!(parse_run_info(&text).unwrap(), info);
         assert!(parse_run_info("{}").unwrap_err().contains("format"));
+    }
+
+    #[test]
+    fn a_run_json_without_added_reads_with_no_added_step() {
+        let text = r#"{"format": 2, "model": null, "date": "2026-10-15",
+            "claudeVersion": "2.1.289 (Claude Code)", "compagnonVersion": "compagnon 0.6.1",
+            "repeat": 5}"#;
+        let info = parse_run_info(text).unwrap();
+        assert!(info.added.is_empty());
+        assert_eq!(info.compagnon_version.as_deref(), Some("compagnon 0.6.1"));
+        // Written back, it stays without the field.
+        assert!(!serde_json::to_string(&info).unwrap().contains("added"));
+    }
+
+    #[test]
+    fn run_info_round_trips_with_an_added_entry() {
+        let text = r#"{"format": 2, "model": null, "date": "2026-10-15",
+            "claudeVersion": null, "compagnonVersion": "compagnon 0.6.1", "repeat": 5,
+            "added": [{"steps": ["idea.explore", "project.onboard"],
+                       "compagnonVersion": "compagnon 0.7.0", "date": "2026-11-26"}]}"#;
+        let info = parse_run_info(text).unwrap();
+        assert_eq!(
+            info.added,
+            vec![AddedSteps {
+                steps: vec!["idea.explore".into(), "project.onboard".into()],
+                compagnon_version: "compagnon 0.7.0".into(),
+                date: "2026-11-26".into(),
+            }]
+        );
+        let written = serde_json::to_string(&info).unwrap();
+        assert_eq!(parse_run_info(&written).unwrap(), info);
     }
 }

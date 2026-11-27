@@ -6,7 +6,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 
 ## 1. The record
 
-- [ ] 1.1 Add `added` to `RunInfo` (`evals/src/observed.rs`) as the
+- [x] 1.1 Add `added` to `RunInfo` (`evals/src/observed.rs`) as the
   design says, read as empty when absent, and update the test fixtures
   that build a `RunInfo` (`score.rs`, `runner.rs`, `reliability.rs`);
   verified by unit tests in `observed.rs` named after "A run.json without

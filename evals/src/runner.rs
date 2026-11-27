@@ -12,7 +12,9 @@ use std::time::{Duration, Instant};
 
 use crate::case::{Case, Step};
 use crate::implement_run;
-use crate::observed::{Consumption, FORMAT, Observed, ReviewMode, RunInfo, Tokens};
+use crate::observed::{
+    AddedSteps, Consumption, FORMAT, Observed, ReviewMode, RunInfo, Tokens,
+};
 use crate::suite::{Recorded, RunState};
 
 /// The `change.yaml` the runner writes: every role in `disable` set to
@@ -2535,15 +2537,61 @@ pub fn check_resume_review(recorded: &RunInfo, review: &ReviewSettings) -> Resul
 /// Writes `run.json` unless the output directory already has one (a
 /// resumed run keeps its date and versions).
 pub fn ensure_run_info(out: &Path, info: &RunInfo) -> std::io::Result<()> {
-    let path = out.join("run.json");
-    if path.exists() {
+    if out.join("run.json").exists() {
         return Ok(());
     }
+    write_run_info(out, info)
+}
+
+/// Writes `run.json`, replacing the one the output directory has.
+pub fn write_run_info(out: &Path, info: &RunInfo) -> std::io::Result<()> {
     fs::create_dir_all(out)?;
     fs::write(
-        path,
+        out.join("run.json"),
         serde_json::to_string_pretty(info).expect("serializes") + "\n",
     )
+}
+
+/// The `run.json` a resumed run leaves: the recorded one, its fields
+/// unchanged, with one more `added` entry when the Compagnon under test,
+/// `version`, is not the recorded one. The entry names the steps of the
+/// runs actually made, `steps` (those of the pending jobs), in the order
+/// `Step` lists them, so that a run resumed for a few cases or with nothing
+/// left to run names only what ran. A last entry naming the same steps and
+/// version is kept as it is: a run resumed again after a stop adds nothing
+/// new to say.
+pub fn record_added(
+    recorded: &RunInfo,
+    version: &str,
+    steps: impl IntoIterator<Item = Step>,
+    date: &str,
+) -> RunInfo {
+    let mut info = recorded.clone();
+    if recorded.compagnon_version.as_deref() == Some(version) {
+        return info;
+    }
+    let steps: Vec<String> = steps
+        .into_iter()
+        .collect::<BTreeSet<Step>>()
+        .into_iter()
+        .map(|step| step.as_str().to_string())
+        .collect();
+    if steps.is_empty() {
+        return info;
+    }
+    if info
+        .added
+        .last()
+        .is_some_and(|last| last.steps == steps && last.compagnon_version == version)
+    {
+        return info;
+    }
+    info.added.push(AddedSteps {
+        steps,
+        compagnon_version: version.to_string(),
+        date: date.to_string(),
+    });
+    info
 }
 
 /// Brings a tree extracted from a commit that predates the product's
@@ -3088,6 +3136,7 @@ mod tests {
             jobs: None,
             review_mode: None,
             fixture_config: None,
+            added: Vec::new(),
         };
         assert!(check_resume(&recorded, None, None).is_ok());
         let err = check_resume(&recorded, Some("claude-sonnet-4-5"), None).unwrap_err();
@@ -3445,10 +3494,139 @@ mod tests {
             jobs: None,
             review_mode: None,
             fixture_config: None,
+            added: Vec::new(),
         };
         assert!(check_resume(&recorded, None, Some("2.1.289 (Claude Code)")).is_ok());
         let err = check_resume(&recorded, None, Some("2.1.301 (Claude Code)")).unwrap_err();
         assert!(err.contains("2.1.289") && err.contains("2.1.301"), "{err}");
+    }
+
+    /// A `run.json` recorded with `version`, and the explore and onboard
+    /// cases of a resumed run, with none of their observations recorded.
+    fn recorded_with(version: &str) -> RunInfo {
+        RunInfo {
+            format: FORMAT,
+            model: None,
+            date: "2026-10-15".into(),
+            claude_version: Some("2.1.289 (Claude Code)".into()),
+            compagnon_version: Some(version.into()),
+            repeat: Some(5),
+            jobs: None,
+            review_mode: None,
+            fixture_config: None,
+            added: Vec::new(),
+        }
+    }
+
+    fn read_only_cases() -> Vec<Case> {
+        [
+            ("onboard-thin-config", Step::ProjectOnboard),
+            ("explore-missing-sms-reminders", Step::IdeaExplore),
+            ("onboard-configured", Step::ProjectOnboard),
+        ]
+        .into_iter()
+        .map(|(id, step)| {
+            let mut c = a_case("product", Kind::Control, &[]);
+            c.id = id.into();
+            c.step = step;
+            c
+        })
+        .collect()
+    }
+
+    fn steps_of<'a>(jobs: &'a [Job<'a>]) -> impl Iterator<Item = Step> + 'a {
+        jobs.iter().map(|job| job.case.step)
+    }
+
+    #[test]
+    fn steps_added_with_another_compagnon() {
+        let recorded = recorded_with("compagnon 0.6.1");
+        let cases: Vec<Case> = read_only_cases()
+            .into_iter()
+            .filter(|c| c.step == Step::IdeaExplore)
+            .collect();
+        let jobs = pending(&cases, &Recorded::new(), 5, false);
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written.compagnon_version.as_deref(), Some("compagnon 0.6.1"));
+        assert_eq!(
+            RunInfo {
+                added: Vec::new(),
+                ..written.clone()
+            },
+            recorded
+        );
+        assert_eq!(
+            written.added,
+            vec![AddedSteps {
+                steps: vec!["idea.explore".into()],
+                compagnon_version: "compagnon 0.7.0".into(),
+                date: "2026-11-26".into(),
+            }]
+        );
+    }
+
+    #[test]
+    fn steps_added_with_another_compagnon_are_named_in_step_order() {
+        let recorded = recorded_with("compagnon 0.6.1");
+        let cases = read_only_cases();
+        let jobs = pending(&cases, &Recorded::new(), 1, false);
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written.added[0].steps, ["idea.explore", "project.onboard"]);
+    }
+
+    #[test]
+    fn resuming_with_the_same_compagnon_adds_no_entry() {
+        let recorded = recorded_with("compagnon 0.7.0");
+        let cases = read_only_cases();
+        let jobs = pending(&cases, &Recorded::new(), 5, false);
+        assert!(!jobs.is_empty());
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written, recorded);
+    }
+
+    #[test]
+    fn a_resume_with_nothing_left_to_run_adds_no_entry() {
+        let recorded = recorded_with("compagnon 0.6.1");
+        let cases = read_only_cases();
+        let observed: Recorded = cases
+            .iter()
+            .flat_map(|c| (1..=5).map(move |n| ((c.id.clone(), n), RunState::Done)))
+            .collect();
+        let jobs = pending(&cases, &observed, 5, false);
+        assert!(jobs.is_empty());
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written, recorded);
+    }
+
+    #[test]
+    fn a_resume_of_a_few_cases_names_only_their_steps() {
+        let recorded = recorded_with("compagnon 0.6.1");
+        let cases: Vec<Case> = read_only_cases()
+            .into_iter()
+            .filter(|c| c.id == "onboard-thin-config")
+            .collect();
+        let jobs = pending(&cases, &Recorded::new(), 5, false);
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written.added.len(), 1);
+        assert_eq!(written.added[0].steps, ["project.onboard"]);
+    }
+
+    #[test]
+    fn a_last_entry_with_the_same_steps_and_version_is_kept_as_it_is() {
+        let mut recorded = recorded_with("compagnon 0.6.1");
+        recorded.added.push(AddedSteps {
+            steps: vec!["idea.explore".into(), "project.onboard".into()],
+            compagnon_version: "compagnon 0.7.0".into(),
+            date: "2026-11-25".into(),
+        });
+        let cases = read_only_cases();
+        let jobs = pending(&cases, &Recorded::new(), 5, false);
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written, recorded);
+        // Another version after it is a new entry.
+        let later = record_added(&recorded, "compagnon 0.7.1", steps_of(&jobs), "2026-11-27");
+        assert_eq!(later.added.len(), 2);
+        assert_eq!(later.added[1].compagnon_version, "compagnon 0.7.1");
     }
 
     #[test]
@@ -3793,6 +3971,7 @@ mod tests {
             jobs: Some(2),
             review_mode: None,
             fixture_config: None,
+            added: Vec::new(),
         };
         review.record(&mut info);
         info

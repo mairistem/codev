@@ -2452,6 +2452,7 @@ pub(crate) mod tests {
             jobs: None,
             review_mode: None,
             fixture_config: None,
+            added: Vec::new(),
         }
     }
 

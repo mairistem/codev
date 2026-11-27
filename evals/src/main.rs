@@ -483,21 +483,25 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
         jobs: Some(args.jobs as u32),
         review_mode: None,
         fixture_config: None,
+        added: Vec::new(),
     };
     review.record(&mut info);
-    if let Ok(text) = fs::read_to_string(out.join("run.json")) {
-        let resumed = match observed::parse_run_info(&text) {
-            Ok(r) => r,
+    let resumed = match fs::read_to_string(out.join("run.json")) {
+        Ok(text) => match observed::parse_run_info(&text) {
+            Ok(r) => Some(r),
             Err(e) => return usage(e),
-        };
+        },
+        Err(_) => None,
+    };
+    if let Some(resumed) = &resumed {
         if let Err(e) = runner::check_resume(
-            &resumed,
+            resumed,
             info.model.as_deref(),
             info.claude_version.as_deref(),
         ) {
             return usage(e);
         }
-        if let Err(e) = runner::check_resume_review(&resumed, &review) {
+        if let Err(e) = runner::check_resume_review(resumed, &review) {
             return usage(e);
         }
     }
@@ -506,6 +510,21 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
     }
     let recorded = suite::recorded(&out);
     let pending = runner::pending(&selected, &recorded, repeat, args.rerun);
+    // A resume with another Compagnon says which steps it ran with it; the
+    // fields the first run recorded stay as they are.
+    if let (Some(resumed), Some(version)) = (&resumed, info.compagnon_version.as_deref()) {
+        let written = runner::record_added(
+            resumed,
+            version,
+            pending.iter().map(|job| job.case.step),
+            &info.date,
+        );
+        if &written != resumed
+            && let Err(e) = runner::write_run_info(&out, &written)
+        {
+            return usage(format!("{}: {e}", out.display()));
+        }
+    }
     eprintln!(
         "[compagnon-evals] {} run(s) to make, {} already recorded in {}",
         pending.len(),

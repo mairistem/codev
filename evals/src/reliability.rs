@@ -2184,6 +2184,7 @@ mod tests {
                 jobs: None,
                 review_mode: None,
                 fixture_config: None,
+                added: Vec::new(),
             },
             thresholds: Thresholds::default(),
             cost_usd: 15.1836,
