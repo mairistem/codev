@@ -1,22 +1,74 @@
 # Installation
 
-This page is for the person who installs Compagnon; if you only review
-plans, you can skip it.
+You will type two commands, once: one installs Compagnon, the other
+prepares your project's folder. After that, you only talk to Claude. If
+someone in your team is used to a [terminal](glossary.md#terminal) (the
+window where you type commands), they can do this part for you.
 
-Compagnon is a single program, ready to use. One line installs it, with no
-developer tools. You also need [Claude Code](glossary.md#claude-code) to
-use the [skills](glossary.md#skill); the `compagnon` command itself works
-without it.
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 140" role="img" aria-label="Installing in four steps: 1, you install Compagnon with one line, once, in a terminal; 2, you set up your folder with compagnon init; 3, you ask Claude in your own words, in Claude Code; 4, Claude writes a plan and waits for your approval.">
+<g stroke-width="2" style="fill:var(--dg-box)">
+<rect x="4" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="198" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="392" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="586" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-claude)"/>
+</g>
+<path d="M175,75h18m-6,-5l6,5l-6,5M369,75h18m-6,-5l6,5l-6,5M563,75h18m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="12" style="fill:var(--dg-muted)">
+<text x="20" y="44">1 · YOU</text><text x="214" y="44">2 · YOU</text><text x="408" y="44">3 · YOU</text><text x="602" y="44">4 · CLAUDE</text>
+</g>
+<g font-size="16" font-weight="600" style="fill:var(--dg-ink)">
+<text x="20" y="78">Install</text><text x="214" y="78">Set up</text><text x="408" y="78">Ask Claude</text><text x="602" y="78">Plans</text>
+</g>
+<g font-size="13" style="fill:var(--dg-muted)">
+<text x="20" y="102">one line, once</text><text x="20" y="120">in a terminal</text><text x="214" y="102">compagnon init</text><text x="214" y="120">in your folder</text><text x="408" y="102">in your own words</text><text x="408" y="120">in Claude Code</text><text x="602" y="102">and waits for</text><text x="602" y="120">your approval</text>
+</g>
+</svg>
+</div>
+<figcaption>Two commands, once; after that, you only talk to Claude.</figcaption>
+</figure>
 
-## macOS and Linux
+## Starting from nothing
 
-In a [terminal](glossary.md#terminal):
+Two things, before any command:
+
+- **Claude Code.** It is the [Claude Code](glossary.md#claude-code)
+  assistant that writes the plan and builds what you ask for. Get it from
+  [claude.com/claude-code](https://claude.com/claude-code), which explains
+  how to install it. It needs a Claude account with a subscription that
+  includes Claude Code; that page says which.
+- **A folder for your project** on your computer, empty to begin with if
+  you start from an idea. Create it as you would any folder, for example
+  `event-signup` in your Documents. Everything Claude builds will go there.
+
+## 1. Install Compagnon
+
+Open a terminal: on macOS, the Terminal app (press Cmd + Space, type
+"Terminal", then Enter); on Windows, PowerShell. Copy the line for your
+computer, paste it, then press Enter.
+
+On macOS or Linux:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 ```
 
-The script downloads the latest release for your computer from
+On Windows, in PowerShell:
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
+```
+
+If the installer prints a line to add, or if the next command is "not
+found", close the terminal and open a new one; "Under the hood: platforms,
+versions and the PATH" below explains why, for the person helping you.
+
+<details>
+<summary>Under the hood: what the installer does</summary>
+
+On macOS and Linux, the script downloads the latest release for your
+computer from
 [GitHub Releases](https://github.com/mairistem/compagnon/releases), checks
 its SHA-256 fingerprint, and installs the program to
 `~/.local/bin/compagnon`. It refuses to install if the fingerprint does not
@@ -24,35 +76,105 @@ match. When `~/.local/bin` is not on your `PATH`, it prints the line to add
 to `~/.zshrc` or `~/.bashrc`. It needs `curl`, `tar`, and `sha256sum` or
 `shasum`.
 
-## Windows
-
-In PowerShell 5.1 or later (PowerShell 7 included):
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
-```
-
-The script checks the download the same way and copies `compagnon.exe` to
+On Windows (PowerShell 5.1 or later, PowerShell 7 included), the script
+checks the download the same way and copies `compagnon.exe` to
 `%LOCALAPPDATA%\Programs\compagnon\`. It does **not** change your `PATH`:
 when the folder is missing from it, the script prints the command to add
 it. Open a new PowerShell window afterwards. Only x86_64 is prebuilt on
 Windows; on ARM64, build from source (below).
 
-## Check the installation
+To check the installation, `compagnon --version` prints the version. If the
+command is still not found in a new terminal, the install folder is not on
+your `PATH`: add it as the installer said. `command -v compagnon` (macOS,
+Linux) or `Get-Command compagnon` (Windows) shows which program your
+terminal runs.
+
+</details>
+
+## 2. Prepare your project's folder
+
+Open a terminal in your project folder: on macOS, right-click the folder
+in the Finder, then Services and "New Terminal at Folder"; on Windows,
+right-click inside the folder in File Explorer, then "Open in Terminal".
+Then type:
 
 ```bash
-compagnon --version
+compagnon init
 ```
 
-If the command is not found, open a new terminal. If it is still not
-found, the install folder is not on your `PATH`: add it as the installer
-said. `command -v compagnon` (macOS, Linux) or `Get-Command compagnon`
-(Windows) shows which program your terminal runs.
+It may ask which [skills](glossary.md#skill) to give Claude: the proposed
+choice is fine. It then asks for a few words about your project: always
+type one sentence about it, because an empty answer opens an awkward text
+editor (if that happens, call the person helping you). It adds a
+`_compagnon/` folder, where your plans will be kept. You can close the
+terminal now: from here on, you talk to Claude.
 
-## What to do next
+<details>
+<summary>Under the hood: opening Claude Code from the terminal</summary>
 
-In your project's folder, run `compagnon init` once, then ask Claude for
-your first plan: [Your first change](quickstart.md) walks you through it.
+In a terminal opened in the project folder, Claude Code starts with:
+
+```bash
+claude
+```
+
+Start it after `compagnon init`, or restart it, so that it sees the skills.
+What `compagnon init` writes besides `_compagnon/` is described in
+[Deploying Compagnon for a team](guides/team-rollout.md).
+
+</details>
+
+<details>
+<summary>Under the hood: what init writes</summary>
+
+```bash
+compagnon init --yes --language en
+```
+
+```text
+compagnon initialized in /home/you/acme-app
+
+  Structure   _compagnon/ — specs, decisions, changes, schemas
+  Skills      compagnon-propose, compagnon-explore, compagnon-onboard, compagnon-apply, compagnon-sync, compagnon-archive, compagnon-update, compagnon-configure → .claude/skills/
+
+  Repository integration
+    + CLAUDE.md                          created
+    + .github/workflows/compagnon.yml        created
+    + .github/PULL_REQUEST_TEMPLATE.md   created
+
+  17 file(s) created, 0 updated
+
+→ Recommended next step: in Claude Code, ask
+  "configure Compagnon for this project" (shortcut: /compagnon-configure).
+```
+
+The probe, the questions and every file written are described in
+[What `compagnon init` does](reference/cli.md#what-compagnon-init-does).
+`compagnon doctor` then lists what the setup still lacks, with the fix for
+each item.
+
+</details>
+
+## Your first request
+
+Open Claude Code on your project folder, for example from the Claude
+desktop app, choosing that folder. Then say, in your own words, what you
+want, and ask for a plan first:
+
+<div class="example">
+<p class="example-title">Example</p>
+
+```text
+> Prepare a plan for a sign-up form for an event
+⏺ I will write the plan in _compagnon/changes/event-signup/: why, what
+  changes, how, and the tasks.
+⏺ The plan is ready. Read proposal.md first; nothing is built before
+  you approve it.
+```
+
+Claude writes a plan and stops: it builds nothing yet. The next page reads it with you.
+
+</div>
 
 ## Upgrading
 
@@ -230,8 +352,6 @@ checks the result.
 
 </details>
 
-## Go further
+## Next step
 
-- [Your first change](quickstart.md): your first plan, in ten minutes.
-- [Starting from nothing](guides/start-from-nothing.md): if you do not code.
-- [Command-line interface](reference/cli.md): every command and option.
+[Your first change](quickstart.md)

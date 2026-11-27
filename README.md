@@ -63,12 +63,10 @@ builds exactly that — and the plan stays in your repository.
 
 ## Find your way
 
-What will you do with Compagnon? Each answer opens a short path:
-
-- [I review and approve plans — I do not code](https://mairistem.github.io/compagnon/en/paths/review.html)
-- [I do not code, but I want Claude to build something for me](https://mairistem.github.io/compagnon/en/paths/build.html)
-- [I am a developer and I have Claude write code](https://mairistem.github.io/compagnon/en/paths/develop.html)
-- [I set Compagnon up for my team](https://mairistem.github.io/compagnon/en/paths/team.html)
+The documentation reads as a path in five steps — discover, get started,
+every day, understand, for your team. Start with
+[Compagnon in two minutes](https://mairistem.github.io/compagnon/en/introduction.html)
+and follow "Next step" at the end of each page.
 
 ## How it works
 

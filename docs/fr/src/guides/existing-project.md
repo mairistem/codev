@@ -24,10 +24,9 @@ vérification d'[intégration continue](../glossary.md#intégration-continue)
 et une section dans le modèle de
 [demande de fusion](../glossary.md#demande-de-fusion).
 
-Votre propre texte n'est jamais remplacé, et Compagnon ne modifie jamais
-`.gitlab-ci.yml`. Chaque fichier qu'il écrit, et les options qui permettent
+Votre propre texte n'est jamais remplacé. Chaque fichier qu'il écrit, et les options qui permettent
 de sauter chacun, sont dans
-[Intégration au dépôt et compagnon doctor](repository-integration.md).
+[Déployer Compagnon pour une équipe](team-rollout.md).
 
 Si `_compagnon/config.yaml` existe déjà, `compagnon init` le laisse tel
 quel : il installe ou met à jour seulement les compétences et ces sections.
@@ -110,7 +109,11 @@ aucune.
 ## Pour aller plus loin
 
 - [Votre première modification](../quickstart.md)
-- [Intégration au dépôt et compagnon doctor](repository-integration.md)
+- [Déployer Compagnon pour une équipe](team-rollout.md)
 - [Décisions](decisions.md)
 - [Configuration](../reference/configuration.md)
 - [Concepts](../concepts.md)
+
+## Étape suivante
+
+[Déployer Compagnon pour une équipe](team-rollout.md)

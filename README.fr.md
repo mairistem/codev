@@ -66,12 +66,10 @@ cela — et le plan reste dans votre dépôt.
 
 ## Trouver votre chemin
 
-Qu'allez-vous faire avec Compagnon ? Chaque réponse ouvre un parcours court :
-
-- [Je relis et je valide des plans — je ne code pas](https://mairistem.github.io/compagnon/fr/paths/review.html)
-- [Je ne code pas, mais je veux que Claude construise quelque chose pour moi](https://mairistem.github.io/compagnon/fr/paths/build.html)
-- [Je suis développeur et je fais coder Claude](https://mairistem.github.io/compagnon/fr/paths/develop.html)
-- [J'installe Compagnon pour mon équipe](https://mairistem.github.io/compagnon/fr/paths/team.html)
+La documentation se lit comme un parcours en cinq étapes : découvrir,
+démarrer, au quotidien, comprendre, pour l'équipe. Commencez par
+[Compagnon en deux minutes](https://mairistem.github.io/compagnon/fr/introduction.html)
+et suivez « Étape suivante » à la fin de chaque page.
 
 ## Fonctionnement
 

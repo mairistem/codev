@@ -284,3 +284,7 @@ quand même.
 - [Rôles](../roles.md)
 - [Formats de fichiers](../reference/file-formats.md)
 - [Interface en ligne de commande](../reference/cli.md)
+
+## Étape suivante
+
+[Adopter Compagnon sur un projet existant](existing-project.md)

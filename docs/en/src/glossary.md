@@ -112,14 +112,14 @@ will change, and what it affects.
 
 ## Pull request
 
-A request to add work to the shared project, on GitHub or GitLab. Your
+A request to add work to the shared project, on GitHub. Your
 team reads it, comments, then approves or asks for changes; the plan and
 the code usually come together in one.
 
 ## Repository
 
 The folder that holds a project's files and their whole history, usually
-shared on GitHub or GitLab. Compagnon keeps its plans in it, in the
+shared on GitHub. Compagnon keeps its plans in it, in the
 `_compagnon/` folder.
 
 ## Requirement

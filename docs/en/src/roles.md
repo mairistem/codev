@@ -1,5 +1,11 @@
 # Roles
 
+<div class="skip-step">
+
+[No review to configure? Skip to Review record](guides/review-record.md)
+
+</div>
+
 A Compagnon skill is one agent, but it does not do everything in the same frame
 of mind. Each step is given a role: one question it owns, and "done when"
 criteria the agent checks before moving on. You and your team approve at
@@ -723,3 +729,7 @@ The agent stops and hands over at these points:
 - [Configuration](reference/configuration.md)
 - [Custom schemas](guides/custom-schemas.md)
 - [Reliability of the roles](reliability.md)
+
+## Next step
+
+[Review record](guides/review-record.md)

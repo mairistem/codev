@@ -207,5 +207,5 @@ that proves it done.
 ## Go further
 
 - [Reviewing a plan](review-a-plan.md)
-- [Approving a plan on GitHub or GitLab](approve-a-plan.md)
+- [Approving a plan on GitHub](approve-a-plan.md)
 - [Start from a Jira ticket](mcp.md)

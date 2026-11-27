@@ -70,7 +70,7 @@ Yes. When you set up the project, `compagnon init --no-claude-md`,
 `--no-ci` and `--no-pr-template` leave each of them alone, and
 `--no-integration` does all three; `compagnon update` never adds them
 later. You can also take them back after setup. See
-[Repository integration and compagnon doctor](guides/repository-integration.md).
+[Deploying Compagnon for a team](guides/team-rollout.md).
 
 ### Can Claude start from a Jira ticket?
 

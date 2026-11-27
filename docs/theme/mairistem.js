@@ -98,3 +98,75 @@
     }).observe(header, { childList: true, characterData: true, subtree: true });
   }
 })();
+
+/* The reading tunnel: above a tunnel chapter's title, its step ("Step 3
+ * of 5 · Every day") and five progress segments; its "Next step" section
+ * drawn as a card; the lines of its examples marked as Claude Code marks
+ * them. Without script, the chapter reads the same, without these. The
+ * chapters and step titles follow docs_checks::TUNNEL. */
+(function () {
+  'use strict';
+  var STEPS = [
+    { en: 'Discover', fr: 'Découvrir', color: '#ff5331', chapters: ['introduction'] },
+    { en: 'Get started', fr: 'Démarrer', color: '#00c39b', chapters: ['installation', 'quickstart'] },
+    { en: 'Every day', fr: 'Au quotidien', color: '#ffab03', chapters: ['skills', 'guides/mcp', 'guides/review-a-plan', 'guides/approve-a-plan', 'guides/build-and-file'] },
+    { en: 'Understand', fr: 'Comprendre', color: '#004c66', chapters: ['workflow', 'concepts', 'guides/decisions', 'roles', 'guides/review-record'] },
+    { en: 'For your team', fr: "Pour l'équipe", color: '#8aa3ac', chapters: ['guides/existing-project', 'guides/team-rollout', 'guides/inherited-sources', 'guides/artifact-language', 'guides/release-notes', 'guides/custom-schemas'] }
+  ];
+  var fr = (document.documentElement.lang || '').indexOf('fr') === 0;
+  var path = window.location.pathname.replace(/\/index\.html$/, '/introduction.html');
+  var here = -1;
+  STEPS.forEach(function (step, i) {
+    step.chapters.forEach(function (chapter) {
+      if (path.endsWith('/' + chapter + '.html')) { here = i; }
+    });
+  });
+  var main = document.querySelector('#mdbook-content main, .content main, main');
+
+  if (main && here >= 0) {
+    var title = main.querySelector('h1');
+    if (title) {
+      var head = document.createElement('div');
+      head.className = 'tn-head';
+      var eyebrow = document.createElement('p');
+      eyebrow.className = 'tn-eyebrow';
+      var label = fr
+        ? 'Étape ' + (here + 1) + ' sur ' + STEPS.length + ' · ' + STEPS[here].fr
+        : 'Step ' + (here + 1) + ' of ' + STEPS.length + ' · ' + STEPS[here].en;
+      eyebrow.textContent = label;
+      var bar = document.createElement('ol');
+      bar.className = 'tn-progress';
+      bar.setAttribute('aria-hidden', 'true');
+      STEPS.forEach(function (step, i) {
+        var seg = document.createElement('li');
+        seg.className = i < here ? 'done' : i === here ? 'current' : 'todo';
+        seg.style.setProperty('--seg', step.color);
+        bar.appendChild(seg);
+      });
+      head.appendChild(eyebrow);
+      head.appendChild(bar);
+      title.parentNode.insertBefore(head, title);
+    }
+
+    var next = main.querySelector('h2#next-step, h2#étape-suivante');
+    if (next) {
+      var card = document.createElement('section');
+      card.className = 'tn-next';
+      card.setAttribute('aria-labelledby', next.id);
+      next.parentNode.insertBefore(card, next);
+      while (card.nextSibling) { card.appendChild(card.nextSibling); }
+    }
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.example pre code.language-text'), function (code) {
+    var escape = function (text) {
+      return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    };
+    code.innerHTML = code.textContent.split('\n').map(function (line) {
+      if (/^> /.test(line)) { return '<span class="cc-user">' + escape(line) + '</span>'; }
+      if (/^⏺/.test(line)) { return '<span class="cc-dot">⏺</span>' + escape(line.slice(1)); }
+      if (/^\s+⎿/.test(line)) { return '<span class="cc-res">' + escape(line) + '</span>'; }
+      return escape(line);
+    }).join('\n');
+  });
+})();

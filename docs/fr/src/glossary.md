@@ -63,15 +63,15 @@ l'archivage, le delta est reporté dans les spécifications du projet.
 
 ## Demande de fusion
 
-Une demande pour ajouter un travail au projet partagé, sur GitHub ou
-GitLab (en anglais : pull request). L'équipe la lit, la commente, puis
+Une demande pour ajouter un travail au projet partagé, sur GitHub
+(en anglais : pull request). L'équipe la lit, la commente, puis
 l'approuve ou demande des corrections ; le plan et le code y arrivent
 souvent ensemble.
 
 ## Dépôt
 
 Le dossier qui contient les fichiers d'un projet et tout leur historique,
-le plus souvent partagé sur GitHub ou GitLab. Compagnon y range ses
+le plus souvent partagé sur GitHub. Compagnon y range ses
 plans, dans le dossier `_compagnon/`.
 
 ## Déroulé

@@ -221,3 +221,7 @@ bloc `### Decision:` de son `design.md`.
   `compagnon decision` et ses options.
 - [Codes d'erreur et solutions](../reference/errors.md) : que faire quand
   une décision est signalée.
+
+## Étape suivante
+
+[Rôles](../roles.md)

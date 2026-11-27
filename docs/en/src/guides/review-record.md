@@ -272,3 +272,7 @@ ships it: an older Compagnon ignores `review.md` and archives anyway.
 - [Roles](../roles.md)
 - [File formats](../reference/file-formats.md)
 - [Command-line interface](../reference/cli.md)
+
+## Next step
+
+[Adopting Compagnon on an existing project](existing-project.md)

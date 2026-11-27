@@ -1,7 +1,7 @@
-# Approuver un plan sur GitHub ou GitLab
+# Approuver un plan sur GitHub
 
-Cette page s'adresse à vous si votre équipe travaille sur GitHub ou GitLab
-et qu'on vous demande d'approuver un plan, sans Claude Code et sans
+Cette page s'adresse à vous si votre équipe travaille sur GitHub et
+qu'on vous demande d'approuver un plan, sans Claude Code et sans
 [terminal](../glossary.md#terminal). Tout se passe dans votre navigateur,
 sur le site que votre équipe utilise déjà.
 
@@ -11,10 +11,10 @@ commenté](example-plan.md) en montre un complet.
 
 <figure class="diagram">
 <div class="scroll">
-<svg viewBox="0 0 760 230" role="img" aria-label="Approuver sur GitHub ou GitLab, la vie de la demande en cinq étapes : 1, le plan est envoyé dans une demande de fusion ; 2, vous commentez ses lignes, et Claude met le plan à jour jusqu'à ce qu'il vous convienne ; 3, vous approuvez la demande ; 4, Claude construit exactement ce que dit le plan ; 5, l'équipe relit le code.">
+<svg viewBox="0 0 760 230" role="img" aria-label="Approuver sur GitHub, la vie de la demande en cinq étapes : 1, le plan est envoyé dans une demande de fusion ; 2, vous commentez ses lignes, et Claude met le plan à jour jusqu'à ce qu'il vous convienne ; 3, vous approuvez la demande ; 4, Claude construit exactement ce que dit le plan ; 5, l'équipe relit le code.">
 <defs><marker id="dg-approve-a-plan-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
 <rect x="4" y="6" width="752" height="218" rx="14" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="1.5"/>
-<text x="740" y="30" text-anchor="end" font-size="13" style="fill:var(--dg-muted)">Demande de fusion, sur GitHub ou GitLab</text>
+<text x="740" y="30" text-anchor="end" font-size="13" style="fill:var(--dg-muted)">Demande de fusion sur GitHub</text>
 <path d="M226,102 C222,58 80,58 77,98" style="fill:none;stroke:var(--dg-you)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#dg-approve-a-plan-arrow)"/>
 <text x="152" y="58" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">Claude met le plan à jour</text>
 <line x1="96" y1="120" x2="206" y2="120" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-approve-a-plan-arrow)"/>
@@ -48,18 +48,18 @@ commenté](example-plan.md) en montre un complet.
 <text x="684" y="201" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">puis le fusionne</text>
 </svg>
 </div>
-<figcaption>Approuver sur GitHub ou GitLab : le plan arrive dans une demande, vous commentez jusqu'à ce qu'il vous convienne, vous approuvez, et alors seulement Claude construit le code que l'équipe relit.</figcaption>
+<figcaption>Approuver sur GitHub : le plan arrive dans une demande, vous commentez jusqu'à ce qu'il vous convienne, vous approuvez, et alors seulement Claude construit le code que l'équipe relit.</figcaption>
 </figure>
 
 ## Où arrive le plan
 
 Quand un développeur a fait écrire un plan par Claude, il l'envoie à
 l'équipe sous forme de demande d'ajout au projet : une
-[demande de fusion](../glossary.md#demande-de-fusion) (pull request sur
-GitHub, merge request sur GitLab). Vous recevez en général une
+[demande de fusion](../glossary.md#demande-de-fusion) (pull request, sur
+GitHub). Vous recevez en général une
 notification ou un courriel avec son lien.
 
-Sur les deux sites, le plan se trouve parmi les fichiers modifiés de la
+Le plan se trouve parmi les fichiers modifiés de la
 demande, dans un dossier : `_compagnon/changes/<nom>/`, où `<nom>` est le
 nom court de la modification, par exemple `add-dark-mode`. Le dossier
 contient les quatre parties du plan :
@@ -69,7 +69,7 @@ contient les quatre parties du plan :
 - `design.md` : la conception, le comment ;
 - `tasks.md` : les tâches, les étapes.
 
-Sur GitHub seulement, la description de la demande peut aussi nommer ce
+La description de la demande peut aussi nommer ce
 dossier, dans sa section « compagnon », à la ligne `- compagnon change:`,
 si le développeur l'a remplie.
 
@@ -108,52 +108,36 @@ GitHub affiche ses boutons en anglais.
 
    Puis envoyez (bouton « Submit review »).
 
-## Sur GitLab
-
-GitLab affiche ses boutons dans votre langue. Les libellés sont donnés
-ici en anglais, puis en français.
-
-1. **Ouvrir les fichiers modifiés.** Dans la demande de fusion, cliquez
-   sur l'onglet des fichiers modifiés (onglet « Changes » ou
-   « Modifications »). Cherchez les fichiers sous
-   `_compagnon/changes/<nom>/`.
-2. **Commenter une ligne.** Passez la souris sur le numéro de la ligne,
-   puis cliquez sur la bulle qui apparaît (sans souris, allez jusqu'à la
-   ligne avec la touche Tab : un lecteur d'écran annonce le même bouton
-   de commentaire ; ou écrivez dans l'onglet de vue d'ensemble, onglet
-   « Overview » ou « Vue d'ensemble », en nommant le fichier et la ligne). Écrivez votre commentaire,
-   puis commencez une relecture pour regrouper plusieurs commentaires
-   (bouton « Start a review » ou « Commencer une revue »), ou envoyez ce
-   seul commentaire tout de suite (bouton « Add comment now » ou
-   « Ajouter un commentaire maintenant »).
-3. **Demander des corrections.** Si vous avez commencé une relecture,
-   terminez-la (bouton « Finish review » ou « Submit review », en
-   français « Terminer la revue » ou « Soumettre la revue »), puis
-   demandez des modifications (choix « Request changes » ou « Demander
-   des modifications ») si votre GitLab le propose. Sinon, vos
-   commentaires suffisent : dites clairement que le plan doit changer
-   avant votre accord.
-4. **Approuver.** Dans l'onglet de présentation de la demande (onglet
-   « Overview » ou « Vue d'ensemble »), approuvez (bouton « Approve » ou
-   « Approuver »). Votre accord est consigné sur la demande.
-
 Si vous ne trouvez pas un bouton, cherchez l'action plutôt que le mot :
-les deux sites renomment leurs boutons de temps en temps.
+GitHub renomme ses boutons de temps en temps.
 
 ## Après vos commentaires
 
 Vous ne modifiez pas le plan vous-même. Le développeur ouvre Claude Code
 et demande à Claude de tenir compte de vos commentaires, par exemple :
 
-> Tiens compte dans le plan des commentaires de la demande de fusion.
+<div class="example">
+<p class="example-title">Exemple</p>
+
+```text
+> Tiens compte dans le plan des commentaires de la demande de fusion
+⏺ Bash(gh pr view 42 --comments)
+  ⎿ 2 review comments on specs/ui/theme/spec.md and tasks.md
+⏺ Update(_compagnon/changes/add-dark-mode/specs/ui/theme/spec.md)
+  ⎿ Updated with 3 additions and 1 removal
+⏺ Les deux commentaires ont leur réponse dans le plan. Envoyez-le dans la
+  même demande de fusion et demandez une nouvelle relecture.
+```
+
+Le développeur relaie vos commentaires ; vous lisez la nouvelle version sur GitHub.
+
+</div>
 
 Claude met le plan à jour, et le développeur envoie la nouvelle version
 dans la même demande. Relisez les parties modifiées, répondez à vos
 commentaires, et approuvez quand le plan dit ce que vous voulez. Alors
 seulement, Claude construit.
 
-## Pour aller plus loin
+## Étape suivante
 
-- [Relire un plan](review-a-plan.md)
-- [Un exemple de plan commenté](example-plan.md)
-- [Compte rendu de relecture](review-record.md)
+[Réaliser et ranger](build-and-file.md) Ce qui se passe une fois votre accord donné.

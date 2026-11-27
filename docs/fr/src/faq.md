@@ -75,7 +75,7 @@ Oui. Lors de la mise en place du projet, `compagnon init --no-claude-md`,
 `--no-ci` et `--no-pr-template` laissent chacun d'eux tranquille, et
 `--no-integration` fait les trois ; `compagnon update` ne les ajoute jamais
 par la suite. Vous pouvez aussi les reprendre en main après coup. Voir
-[Intégration au dépôt et compagnon doctor](guides/repository-integration.md).
+[Déployer Compagnon pour une équipe](guides/team-rollout.md).
 
 ### Claude peut-il partir d'un ticket Jira ?
 

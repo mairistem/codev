@@ -1,5 +1,11 @@
 # Comment ça marche
 
+<div class="skip-step">
+
+[Vous utilisez seulement Compagnon ? Passez à Adopter Compagnon sur un projet existant](guides/existing-project.md)
+
+</div>
+
 Dans un projet Compagnon, chaque modification passe par les cinq mêmes
 étapes, dans le même ordre : le [déroulé](glossary.md#déroulé) de
 Compagnon. Vous décidez à deux d'entre elles ; Claude travaille aux autres
@@ -43,7 +49,7 @@ Pour aller plus loin : [Un exemple de plan commenté](guides/example-plan.md).
 <details><summary>3. Vous approuvez</summary>
 
 Vous lisez le plan, demandez des corrections, puis l'approuvez. Vous
-pouvez le faire dans la conversation ou sur GitHub et GitLab.
+pouvez le faire dans la conversation ou sur GitHub.
 Pour aller plus loin : [Relire un plan](guides/review-a-plan.md).
 
 </details>
@@ -227,111 +233,6 @@ du constat. S'il n'y en a aucun, le résumé le dit.
 
 </details>
 
-## Réaliser
-
-`/compagnon-apply <name>` construit ce que décrit le plan :
-
-1. La compétence vérifie que le plan est complet.
-2. Elle prend dans l'ordre chaque tâche non cochée de `tasks.md`
-   (`- [ ]`), la réalise, lance la vérification que la tâche indique, et ne
-   coche la case qu'une fois cette vérification réussie.
-3. Elle écrit les tests à la manière de vos tests existants, puis selon
-   les habitudes de votre langage et vos
-   [`rules`](reference/configuration.md#rules), et vous demande comment les
-   lancer quand votre projet ne le dit pas.
-4. Une fois toutes les tâches cochées, Claude relit le code qu'il a
-   touché, comme le ferait un nouvel arrivant sur le projet, rejoint par
-   les [experts](roles.md#experts-et-domaines) des domaines que coche la
-   proposition. Il simplifie ce qui ne fait pas de doute, sans élargir le
-   périmètre, et liste au plus cinq notes de relecture. Un constat grave de
-   sécurité ou de données personnelles est toujours signalé.
-5. Enfin, elle lance une fois tous les tests du projet.
-
-Chaque constat va dans le compte rendu de relecture, avec la réponse de
-l'auteur et la vérification du relecteur. Le résumé se termine par ce que
-vous seul pouvez trancher : par exemple, le code touche désormais des
-données personnelles que le plan ne listait pas.
-
-Claude s'arrête au premier blocage ou au premier doute pour vous
-consulter, plutôt que de deviner. Il ne travaille que sur la modification
-désignée, et ne synchronise ni n'archive jamais : c'est à vous de demander
-ces étapes. La réalisation est la seule compétence autorisée à lancer
-n'importe quelle commande dans le terminal, parce qu'elle doit lancer vos
-tests.
-
-<details>
-<summary>Sous le capot : les corrections des experts et le mode isolé</summary>
-
-Claude trouve comment lancer vos tests dans la configuration du projet,
-son manifeste ou son [intégration continue](glossary.md#intégration-continue).
-Un expert corrige un défaut manifeste dans le périmètre de la modification,
-avec un test. Tout autre changement de comportement, il le signale au lieu
-de le faire. Les critères et les connaissances de ces deux étapes viennent
-de `compagnon roles` ; lorsqu'aucun rôle n'est actif pour la relecture,
-celle-ci est sautée et le résumé le signale. En mode isolé, chaque
-relecteur travaille d'abord seul comme [sous-agent](glossary.md#sous-agent)
-(une copie distincte de Claude qui ne voit pas votre conversation), et la
-compétence fusionne leurs constats.
-
-</details>
-
-## Synchroniser
-
-```bash
-compagnon sync --change <name>
-```
-
-`/compagnon-sync` recopie les deltas de la modification dans les
-spécifications du projet, sous `_compagnon/specs/`, **sans** déplacer la
-modification. Elle sert quand une autre modification en cours a besoin de
-voir une nouvelle capacité, ou pour vérifier le résultat avant
-l'archivage. Elle vous dit quelles spécifications ont été créées, mises à
-jour ou laissées inchangées. En général, vous sautez cette étape :
-l'archivage synchronise pour vous.
-
-## Archiver
-
-```bash
-compagnon archive --change <name>
-```
-
-`/compagnon-archive` clôt une modification terminée, en quatre temps :
-
-1. Elle valide la modification, et **refuse** de continuer sur une erreur.
-2. Elle vérifie le [compte rendu de relecture](guides/review-record.md),
-   et **refuse** de continuer si une relecture était attendue mais n'a pas
-   été consignée, ou si un constat grave n'est pas encore réglé
-   (`review_blocked`). `compagnon review --change <name>` montre ce qui
-   reste. Claude ne consigne jamais une décision à votre place.
-3. Elle recopie les deltas dans les spécifications du projet, comme la
-   synchronisation.
-4. Elle déplace le dossier de la modification dans
-   `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`.
-
-Rien ne change sur le disque tant que toute la mise à jour n'a pas été
-vérifiée. Ensuite, les spécifications du projet décrivent ce que vous
-avez livré, et le dossier archivé garde le pourquoi et le comment.
-Enregistrez les deux dans [Git](glossary.md#git) : c'est un
-[enregistrement](glossary.md#enregistrement) (commit). Si la modification
-a une note de version, `compagnon changelog --write` l'ajoute à
-`CHANGELOG.md` (voir [Notes de version et CHANGELOG](guides/release-notes.md)).
-
-<details>
-<summary>Sous le capot : quand l'archivage refuse à cause du compte rendu</summary>
-
-L'archivage signale `review_blocked` quand le compte rendu manque pour une
-étape où des rôles de relecture étaient actifs, ou quand un constat de
-gravité `high` est encore `open` ou `disputed`. La synchronisation, comme
-l'archivage, valide d'abord : sur une erreur, elle n'écrit rien et renvoie
-vers `compagnon validate <name>`.
-
-</details>
-
-Ce que vérifie `compagnon validate`, et comment `--change` est choisi
-quand plusieurs modifications sont en cours, se trouvent dans la
-référence de l'[Interface en ligne de commande](reference/cli.md#compagnon-validate)
-et ses [conventions](reference/cli.md#conventions).
-
 ## Les autres compétences
 
 - `/compagnon-explore` mûrit une idée avec vous et n'écrit rien.
@@ -358,3 +259,7 @@ Leurs postures sont décrites dans [Rôles](roles.md).
   constat.
 - [Interface en ligne de commande](reference/cli.md) : chaque commande et
   chaque option.
+
+## Étape suivante
+
+[Concepts](concepts.md)

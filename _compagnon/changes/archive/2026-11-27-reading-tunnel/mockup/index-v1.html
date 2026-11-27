@@ -1,0 +1,253 @@
+<title>Compagnon Reading Tunnel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root {
+  --font: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --bg: #ffffff; --fg: #2b3f47; --heading: #00263a; --muted: #4f6670; --surface: #f4f8f9;
+  --line: #dce5e8; --link: #c4361b; --focus: #c4361b; --skip-bg: #fff4f1;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0b1c24; --fg: #d5e2e7; --heading: #ffffff; --muted: #a3b8c0; --surface: #10262f;
+  --line: #22404c; --link: #ff8a70; --focus: #ffab03; --skip-bg: #2a1a16; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0b1c24; --fg: #d5e2e7; --heading: #ffffff; --muted: #a3b8c0; --surface: #10262f;
+  --line: #22404c; --link: #ff8a70; --focus: #ffab03; --skip-bg: #2a1a16; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 15px/1.55 var(--font); }
+a { color: var(--link); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: #1a1a1a; color: #fff; font: 500 13px/1 var(--mono);
+  padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 6; background: #1a1a1a; }
+.bar span { margin-right: auto; opacity: .8; }
+.bar button { font: inherit; color: #fff; background: #333; border: 1px solid #555; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.bar button[aria-pressed="true"] { background: #ffab03; color: #1a1a1a; border-color: #ffab03; }
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 32px; max-width: 1200px; margin: 0 auto;
+  padding: 24px max(16px, env(safe-area-inset-right, 0px)) 80px max(16px, env(safe-area-inset-left, 0px)); }
+nav h1 { font-size: 20px; color: var(--heading); margin: 0 0 4px; }
+nav > p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+.toc { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; position: sticky; top: 56px; }
+.toc ol, .toc ul { margin: 6px 0 0 30px; padding: 0; display: grid; gap: 2px; font-size: 14px; }
+.step-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--c); color: #1a0a05; font: 700 12px/1 var(--mono); margin-right: 8px; }
+.step-t { font: 600 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--heading); }
+.step-t i { font-style: normal; color: var(--muted); text-transform: none; letter-spacing: 0; }
+.appendix { opacity: .6; }
+.appendix ul { list-style: none; margin-left: 0; color: var(--muted); }
+main { display: grid; gap: 18px; min-width: 0; }
+.intro { border: 1px dashed var(--line); border-radius: 14px; padding: 16px 18px; color: var(--muted); }
+.intro strong { color: var(--heading); }
+.card { overflow-wrap: anywhere; position: relative; border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; background: var(--bg); display: grid; gap: 10px; scroll-margin-top: 60px; }
+.card::before { content: ""; position: absolute; left: 18px; right: 18px; top: -1px; height: 3px; border-radius: 0 0 3px 3px; background: var(--c); }
+.card:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+.eyebrow { margin: 0; font: 500 12px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.card h2 { margin: 0; font-size: 22px; color: var(--heading); }
+.fr { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+.purpose { margin: 0; font-size: 16px; }
+.skip-step { margin: 0; }
+.skip-step a { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border: 1.5px solid var(--link); border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 14px; }
+.skip-step a::after { content: ""; width: 7px; height: 7px; border-top: 2px solid currentColor; border-right: 2px solid currentColor; transform: rotate(45deg); }
+.skip-step a:hover, .skip-step a:focus-visible { background: var(--skip-bg); }
+.layer { border-radius: 10px; padding: 10px 14px; background: var(--surface); }
+.layer h3 { margin: 0 0 6px; font: 600 12px/1.3 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--heading); }
+.layer ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.layer b { display: inline-block; min-width: 70px; color: var(--heading); }
+.folded { background: transparent; border: 1px dashed var(--line); }
+.folded ul { color: var(--muted); }
+.next { margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; border-top: 1px solid var(--line); padding-top: 10px; }
+.next span:first-child { font: 600 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.next a { font-weight: 600; }
+.end { border-style: dashed; }
+@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { position: static; } }
+</style>
+<div class="bar" role="region" aria-label="Mockup controls"><span>Mockup of the reading tunnel — not the live documentation</span>
+<button type="button" id="t-light" data-theme-set="light" aria-pressed="false">Light</button>
+<button type="button" id="t-dark" data-theme-set="dark" aria-pressed="false">Dark</button></div>
+<div class="layout">
+<nav aria-label="Table of contents">
+<h1>Compagnon documentation</h1>
+<p>Five steps, read in order. Click a page, or follow “Next step”.</p>
+<ol class="toc">
+<li class="step" style="--c:#ff5331"><span class="step-n">1</span><span class="step-t">Discover <i lang="fr">· Découvrir</i></span><ol><li><a href="#introduction">Compagnon in two minutes</a></li></ol></li>
+<li class="step" style="--c:#ffab03"><span class="step-n">2</span><span class="step-t">Get started <i lang="fr">· Démarrer</i></span><ol><li><a href="#installation">Installation</a></li><li><a href="#quickstart">Your first change</a></li></ol></li>
+<li class="step" style="--c:#00c39b"><span class="step-n">3</span><span class="step-t">Every day <i lang="fr">· Au quotidien</i></span><ol><li><a href="#skills">Asking Claude</a></li><li><a href="#mcp">Start from a Jira ticket</a></li><li><a href="#review-a-plan">Reviewing a plan</a></li><li><a href="#approve-a-plan">Approving a plan on GitHub</a></li><li><a href="#build-and-file">Building and filing away</a></li></ol></li>
+<li class="step" style="--c:#5fb8d3"><span class="step-n">4</span><span class="step-t">Understand <i lang="fr">· Comprendre</i></span><ol><li><a href="#workflow">How it works</a></li><li><a href="#concepts">Concepts</a></li><li><a href="#decisions">Decisions</a></li><li><a href="#roles">Roles</a></li><li><a href="#review-record">Review record</a></li></ol></li>
+<li class="step" style="--c:#8fa8b1"><span class="step-n">5</span><span class="step-t">For your team <i lang="fr">· Pour l&#x27;équipe</i></span><ol><li><a href="#existing-project">Adopting Compagnon on an existing project</a></li><li><a href="#team-rollout">Deploying Compagnon for a team</a></li><li><a href="#inherited-sources">Inherited sources</a></li><li><a href="#artifact-language">Artifact language</a></li><li><a href="#release-notes">Release notes and CHANGELOG</a></li><li><a href="#custom-schemas">Custom schemas</a></li></ol></li>
+<li class="appendix"><span class="step-t">Appendices <i lang="fr">· Annexes</i></span><ul><li>Command-line interface</li><li>Configuration</li><li>File formats</li><li>JSON output</li><li>Error codes and fixes</li><li>Glossary</li><li>FAQ</li><li>An annotated example plan</li></ul></li>
+<li class="appendix"><span class="step-t">Contributing <i lang="fr">· Contribuer</i></span><ul><li>Origins</li><li>Contributing to Compagnon</li><li>Architecture</li><li>Reliability of the roles</li></ul></li>
+</ol>
+</nav>
+<main>
+<p class="intro"><strong>How to read this mockup.</strong> Each card is one page of the tunnel. “Everyone sees” is the beginner layer: short text, a diagram and a concrete example. “Folded, for experts” lists what sits in closed “Under the hood” blocks. A round button lets readers skip a page that is not for them. “Next step” is where every page leads.</p>
+<article class="card" id="introduction" tabindex="-1" style="--c:#ff5331" aria-labelledby="introduction-t">
+<p class="eyebrow">Step 1 · Discover</p>
+<h2 id="introduction-t">Compagnon in two minutes</h2><p class="fr" lang="fr">Compagnon en deux minutes</p>
+<p class="purpose">What Compagnon does, who decides, and the five steps of this documentation.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> The workflow: you ask → Claude plans → you approve → Claude builds → filed away. Then the five steps you are about to read.</li><li><b>Example</b> You say “Add a dark mode that follows the system setting”. Claude answers with a plan of four short files and waits: “Nothing is built until you approve it.”</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>Why the name Compagnon</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#installation">Installation <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="installation" tabindex="-1" style="--c:#ffab03" aria-labelledby="installation-t">
+<p class="eyebrow">Step 2 · Get started</p>
+<h2 id="installation-t">Installation</h2><p class="fr" lang="fr">Installation</p>
+<p class="purpose">Get Claude Code and a project folder if you start from nothing, install Compagnon in one line, set up your project, check it works.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> Installing: install Compagnon → set up the project (compagnon init) → your first request.</li><li><b>Example</b> On a Mac: curl … | sh, then in your project compagnon init answers “✓ 8 skills installed · ✓ CLAUDE.md updated · Next: ask Claude for a change”.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>Other ways to install (manual download, cargo)</li><li>Installing a specific version</li><li>Shell completions</li><li>Updating Compagnon</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#quickstart">Your first change <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="quickstart" tabindex="-1" style="--c:#ffab03" aria-labelledby="quickstart-t">
+<p class="eyebrow">Step 2 · Get started</p>
+<h2 id="quickstart-t">Your first change</h2><p class="fr" lang="fr">Votre première modification</p>
+<p class="skip-step"><a href="#skills">Already made a change? Skip to Asking Claude</a></p>
+<p class="purpose">One whole change in ten minutes: ask, read the plan, let Claude build it, file it away.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> A change&#x27;s folder: _compagnon/changes/dark-mode/ with its four files → archive → the project&#x27;s specs updated.</li><li><b>Example</b> “Add a dark mode that follows the system setting” → plan in _compagnon/changes/dark-mode/ → “implement it” → 7 tasks done → “archive it”.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>The commands behind each request (/compagnon-propose …)</li><li>What each command prints</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#skills">Asking Claude <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="skills" tabindex="-1" style="--c:#00c39b" aria-labelledby="skills-t">
+<p class="eyebrow">Step 3 · Every day</p>
+<h2 id="skills-t">Asking Claude</h2><p class="fr" lang="fr">Parler à Claude</p>
+<p class="purpose">What to say to Claude at each step, in your own words.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> Asking Claude: your words → the skill Claude picks → what it does.</li><li><b>Example</b> “Prepare a plan for a login page” · “Implement it” · “Where am I?” · “Archive it” — each with Claude&#x27;s first line of answer.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>The slash commands, for those who prefer them</li><li>The update notice</li><li>When Claude learns from your corrections</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#mcp">Start from a Jira ticket <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="mcp" tabindex="-1" style="--c:#00c39b" aria-labelledby="mcp-t">
+<p class="eyebrow">Step 3 · Every day</p>
+<h2 id="mcp-t">Start from a Jira ticket</h2><p class="fr" lang="fr">Partir d&#x27;un ticket Jira</p>
+<p class="skip-step"><a href="#review-a-plan">No Jira? Skip to Reviewing a plan</a></p>
+<p class="purpose">Name a Jira ticket in your request: Claude reads it once and cites it at the top of the plan.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> From a Jira ticket to a plan: PROJ-123 → Claude reads it once, read-only → proposal.md citing it.</li><li><b>Example</b> “Prepare a plan for PROJ-123” → the proposal opens with “Source: ticket PROJ-123 — Dark mode for the dashboard (In Progress)”.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>Setting it up (mcp.jira_tool, what compagnon init detects)</li><li>What Claude may and may not do with Jira</li><li>Other connected tools</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#review-a-plan">Reviewing a plan <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="review-a-plan" tabindex="-1" style="--c:#00c39b" aria-labelledby="review-a-plan-t">
+<p class="eyebrow">Step 3 · Every day</p>
+<h2 id="review-a-plan-t">Reviewing a plan</h2><p class="fr" lang="fr">Relire un plan</p>
+<p class="purpose">What to check in a plan before you say yes, file by file.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> Inside a plan: proposal (why) → specs (what) → design (how) → tasks — most people stop after the first.</li><li><b>Example</b> A real excerpt: the rule “The chosen theme is remembered” before and after the change, and the question to ask Claude about it.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>The review record and the reviewers&#x27; points</li><li>How points to challenge are chosen</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#approve-a-plan">Approving a plan on GitHub <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="approve-a-plan" tabindex="-1" style="--c:#00c39b" aria-labelledby="approve-a-plan-t">
+<p class="eyebrow">Step 3 · Every day</p>
+<h2 id="approve-a-plan-t">Approving a plan on GitHub</h2><p class="fr" lang="fr">Approuver un plan sur GitHub</p>
+<p class="skip-step"><a href="#build-and-file">You work alone, in the conversation? Skip to Building and filing away</a></p>
+<p class="purpose">Comment, ask for changes and approve a plan on GitHub, without a terminal.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> Approving on GitHub: plan pushed → comments → approval → Claude builds → code reviewed.</li><li><b>Example</b> Pull request “Plan: dark mode”: a comment “Follow the system setting only, no toggle”, Claude&#x27;s updated plan, then “Approve”.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>Protecting the main branch</li><li>The checks GitHub runs on a plan</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#build-and-file">Building and filing away <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="build-and-file" tabindex="-1" style="--c:#00c39b" aria-labelledby="build-and-file-t">
+<p class="eyebrow">Step 3 · Every day</p>
+<h2 id="build-and-file-t">Building and filing away</h2><p class="fr" lang="fr">Réaliser et ranger</p>
+<p class="purpose">Let Claude build the approved plan task by task, then file the change away.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> Building and filing away: tasks done one by one → review → archive → specs updated.</li><li><b>Example</b> “Implement it” → “✓ 7 of 7 tasks · 2 review notes, nothing to decide” → “Archive it” → “Moved to _compagnon/changes/archive/2026-11-27-dark-mode”.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>Updating the specs without archiving (sync)</li><li>When archiving refuses</li><li>Stopping on a doubt</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#workflow">How it works <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="workflow" tabindex="-1" style="--c:#5fb8d3" aria-labelledby="workflow-t">
+<p class="eyebrow">Step 4 · Understand</p>
+<h2 id="workflow-t">How it works</h2><p class="fr" lang="fr">Comment ça marche</p>
+<p class="skip-step"><a href="#existing-project">You only use Compagnon? Skip to Adopting Compagnon on an existing project</a></p>
+<p class="purpose">What happens behind each step: the plan&#x27;s files, who writes them, how a plan is built.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> How a plan is built: understand → investigate → write → trace → challenge → you approve.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>The roles at each step</li><li>Validation rules</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#concepts">Concepts <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="concepts" tabindex="-1" style="--c:#5fb8d3" aria-labelledby="concepts-t">
+<p class="eyebrow">Step 4 · Understand</p>
+<h2 id="concepts-t">Concepts</h2><p class="fr" lang="fr">Concepts</p>
+<p class="purpose">Specs, decisions, changes and deltas: what the project keeps and why.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> The project&#x27;s records: specs (what) · decisions (why) · changes (the work), and a delta merging into the specs.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>Capabilities</li><li>Schemas</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#decisions">Decisions <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="decisions" tabindex="-1" style="--c:#5fb8d3" aria-labelledby="decisions-t">
+<p class="eyebrow">Step 4 · Understand</p>
+<h2 id="decisions-t">Decisions</h2><p class="fr" lang="fr">Décisions</p>
+<p class="purpose">Architecture decisions: proposed, accepted, replaced, departed from.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> The life of a decision: proposed → accepted (sealed) → superseded, with deviations and promotions.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>The commands</li><li>The seal</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#roles">Roles <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="roles" tabindex="-1" style="--c:#5fb8d3" aria-labelledby="roles-t">
+<p class="eyebrow">Step 4 · Understand</p>
+<h2 id="roles-t">Roles</h2><p class="fr" lang="fr">Rôles</p>
+<p class="skip-step"><a href="#review-record">No review to configure? Skip to Review record</a></p>
+<p class="purpose">Who reviews what, at each step, and how to configure it.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> Who reviews when: the steps of a change across, the roles down.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>Inline or isolated review</li><li>Each role&#x27;s criteria</li><li>The reviewers&#x27; models</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#review-record">Review record <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="review-record" tabindex="-1" style="--c:#5fb8d3" aria-labelledby="review-record-t">
+<p class="eyebrow">Step 4 · Understand</p>
+<h2 id="review-record-t">Review record</h2><p class="fr" lang="fr">Compte rendu de relecture</p>
+<p class="purpose">The record of every finding, and why it can block archiving.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> The life of a finding: open → fixed / disputed / accepted risk / deferred → archive gate.</li></ul></div>
+<div class="layer folded"><h3>Folded, for experts — “Under the hood”</h3><ul><li>The record&#x27;s format</li><li>Changes started with an older Compagnon</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#existing-project">Adopting Compagnon on an existing project <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="existing-project" tabindex="-1" style="--c:#8fa8b1" aria-labelledby="existing-project-t">
+<p class="eyebrow">Step 5 · For your team</p>
+<h2 id="existing-project-t">Adopting Compagnon on an existing project</h2><p class="fr" lang="fr">Adopter Compagnon sur un projet existant</p>
+<p class="purpose">Start on a project that already has code and no specs.</p>
+<p class="next"><span>Next step</span> <a href="#team-rollout">Deploying Compagnon for a team <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="team-rollout" tabindex="-1" style="--c:#8fa8b1" aria-labelledby="team-rollout-t">
+<p class="eyebrow">Step 5 · For your team</p>
+<h2 id="team-rollout-t">Deploying Compagnon for a team</h2><p class="fr" lang="fr">Déployer Compagnon pour une équipe</p>
+<p class="purpose">Set up a shared project: what compagnon init writes, compagnon doctor, CI on GitHub, who reviews.</p>
+<p class="next"><span>Next step</span> <a href="#inherited-sources">Inherited sources <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="inherited-sources" tabindex="-1" style="--c:#8fa8b1" aria-labelledby="inherited-sources-t">
+<p class="eyebrow">Step 5 · For your team</p>
+<h2 id="inherited-sources-t">Inherited sources</h2><p class="fr" lang="fr">Sources héritées</p>
+<p class="purpose">Share conventions and decisions across projects.</p>
+<div class="layer"><h3>Everyone sees</h3><ul><li><b>Diagram</b> Inherited sources: projects reading a shared repository, pinned by a lock.</li></ul></div>
+<p class="next"><span>Next step</span> <a href="#artifact-language">Artifact language <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="artifact-language" tabindex="-1" style="--c:#8fa8b1" aria-labelledby="artifact-language-t">
+<p class="eyebrow">Step 5 · For your team</p>
+<h2 id="artifact-language-t">Artifact language</h2><p class="fr" lang="fr">Langue des artefacts</p>
+<p class="purpose">Write plans in your team&#x27;s language.</p>
+<p class="next"><span>Next step</span> <a href="#release-notes">Release notes and CHANGELOG <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="release-notes" tabindex="-1" style="--c:#8fa8b1" aria-labelledby="release-notes-t">
+<p class="eyebrow">Step 5 · For your team</p>
+<h2 id="release-notes-t">Release notes and CHANGELOG</h2><p class="fr" lang="fr">Notes de version et CHANGELOG</p>
+<p class="purpose">Release notes written from the plans.</p>
+<p class="next"><span>Next step</span> <a href="#custom-schemas">Custom schemas <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card" id="custom-schemas" tabindex="-1" style="--c:#8fa8b1" aria-labelledby="custom-schemas-t">
+<p class="eyebrow">Step 5 · For your team</p>
+<h2 id="custom-schemas-t">Custom schemas</h2><p class="fr" lang="fr">Schémas personnalisés</p>
+<p class="purpose">Your own planning steps.</p>
+<p class="next"><span>Next step</span> <a href="#appendices">Command-line interface <span aria-hidden="true">→</span></a></p>
+</article>
+<article class="card end" id="appendices" tabindex="-1" style="--c:#dce5e8" aria-labelledby="appendices-t">
+<p class="eyebrow">After the tunnel</p>
+<h2 id="appendices-t">Appendices</h2>
+<p class="purpose">Looked up when needed, not read in order: the command-line interface, the configuration, file formats, JSON output, error codes and fixes, the glossary, the FAQ, an annotated example plan. Then Contributing: origins, contributing, architecture, reliability of the roles.</p>
+<p class="next"><span>Back to</span> <a href="#introduction">Compagnon in two minutes <span aria-hidden="true">↑</span></a></p>
+</article>
+</main>
+</div>
+<script>
+(function () {
+  function focusTarget() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    var el = id && document.getElementById(id);
+    if (el) { el.focus({ preventScroll: false }); }
+  }
+  window.addEventListener('hashchange', focusTarget);
+  var root = document.documentElement;
+  document.querySelectorAll('[data-theme-set]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      root.setAttribute('data-theme', b.dataset.themeSet);
+      document.querySelectorAll('[data-theme-set]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+    });
+  });
+})();
+</script>

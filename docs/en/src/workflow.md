@@ -1,5 +1,11 @@
 # How it works
 
+<div class="skip-step">
+
+[You only use Compagnon? Skip to Adopting Compagnon on an existing project](guides/existing-project.md)
+
+</div>
+
 Every change in a Compagnon project goes through the same five steps, in
 the same order: the Compagnon [workflow](glossary.md#workflow). You decide
 at two of them; Claude works at the others and stops whenever it needs you.
@@ -40,7 +46,7 @@ Go further: [An annotated example plan](guides/example-plan.md).
 <details><summary>3. You approve</summary>
 
 You read the plan, ask for corrections, then approve it. You can do this
-in the conversation or on GitHub and GitLab.
+in the conversation or on GitHub.
 Go further: [Reviewing a plan](guides/review-a-plan.md).
 
 </details>
@@ -213,99 +219,6 @@ raised it, and the finding's id and status. With none, the summary says
 
 </details>
 
-## Apply
-
-`/compagnon-apply <name>` builds what the plan describes:
-
-1. It checks that the plan is complete.
-2. It takes each unticked task of `tasks.md` (`- [ ]`) in order, does it,
-   runs the check the task names, and ticks the box only once that check
-   passes.
-3. It writes tests like your existing ones, then by your language's
-   habits and your [`rules`](reference/configuration.md#rules), and asks
-   you how to run them when your project does not say.
-4. Once every task is ticked, Claude re-reads the code it touched, the way
-   a newcomer to the project would, joined by the
-   [experts](roles.md#experts-and-domains) of the domains the proposal
-   ticks. It simplifies what is clear-cut, without widening the scope, and
-   lists up to five review notes. A serious security or privacy finding is
-   always reported.
-5. Finally, it runs all the project's tests once.
-
-Every finding goes to the review record, with the author's answer and the
-reviewer's check. The summary ends with what only you can decide: for
-example, the code now touches personal data that the plan did not list.
-
-Claude stops at the first blocker or doubt and asks you, rather than
-guessing. It works only on the change you named, and never syncs or
-archives: you ask for those steps yourself. Apply is the only skill allowed
-to run any terminal command, because it must run your tests.
-
-<details>
-<summary>Under the hood: experts' fixes and isolated mode</summary>
-
-Claude finds how to run your tests in the project's configuration, its
-manifest or its [CI](glossary.md#ci). An expert fixes a clear defect
-within the change's scope, with a test. Any
-other change of behavior, it reports instead of making it. The criteria and
-knowledge of both steps come from `compagnon roles`; when no role is active
-for the review, the review is skipped and the summary says so. In isolated
-mode, each reviewer first works alone as a
-[sub-agent](glossary.md#sub-agent) (a separate copy of Claude that does not
-see your conversation), and the skill merges their findings.
-
-</details>
-
-## Sync
-
-```bash
-compagnon sync --change <name>
-```
-
-`/compagnon-sync` copies the change's deltas into the project's specs, in
-`_compagnon/specs/`, **without** moving the change. Use it when another
-change in progress needs to see a new capability, or to check the result
-before archiving. It tells you which specs were created, updated or left
-unchanged. Usually you skip it: archiving syncs for you.
-
-## Archive
-
-```bash
-compagnon archive --change <name>
-```
-
-`/compagnon-archive` closes a finished change, in four steps:
-
-1. It validates the change, and **refuses** on an error.
-2. It checks the [review record](guides/review-record.md), and **refuses**
-   if a review was expected but not recorded, or if a serious finding is
-   not settled yet (`review_blocked`). `compagnon review --change <name>`
-   shows what is left. Claude never records a decision in your place.
-3. It copies the deltas into the project's specs, as sync does.
-4. It moves the change's folder to
-   `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`.
-
-Nothing on disk changes until the whole update has been checked.
-Afterwards, the project's specs describe what you shipped, and the
-archived folder keeps why and how. Save both in a [commit](glossary.md#commit). If the change
-has a release note, `compagnon changelog --write` adds it to
-`CHANGELOG.md` (see [Release notes and CHANGELOG](guides/release-notes.md)).
-
-<details>
-<summary>Under the hood: when archiving refuses on the review record</summary>
-
-Archiving reports `review_blocked` when the review record is missing for a
-step where review roles were active, or when a finding of severity `high`
-is still `open` or `disputed`. Sync, like archive, validates first: on an
-error it writes nothing and points to `compagnon validate <name>`.
-
-</details>
-
-What `compagnon validate` checks, and how `--change` is chosen when
-several changes are in progress, are in the
-[Command-line interface](reference/cli.md#compagnon-validate) reference
-and its [conventions](reference/cli.md#conventions).
-
 ## The other skills
 
 - `/compagnon-explore` thinks an idea through with you and writes nothing.
@@ -327,3 +240,7 @@ Their stances are in [Roles](roles.md).
 - [Roles](roles.md): the criteria of each role, at each step.
 - [Review record](guides/review-record.md): the life of a finding.
 - [Command-line interface](reference/cli.md): every command and option.
+
+## Next step
+
+[Concepts](concepts.md)

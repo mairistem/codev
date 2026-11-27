@@ -269,3 +269,7 @@ rend l'écart visible, mais elle n'est plus en vigueur pour votre projet. Voir
 - [Décisions](decisions.md)
 - [Configuration](../reference/configuration.md)
 - [Interface en ligne de commande](../reference/cli.md)
+
+## Étape suivante
+
+[Langue des artefacts](artifact-language.md)

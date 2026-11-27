@@ -1,74 +1,43 @@
 # Your first change
 
-This page takes you from an empty
-[repository](glossary.md#repository) to your first finished change, in
-about ten minutes. Each step shows what to say to Claude, then the shortcut
-command.
+<div class="skip-step">
 
-You need [Claude Code](glossary.md#claude-code). The example adds a dark
-mode to an application; use your own idea.
+[You do not code? Skip to Asking Claude](skills.md)
 
-## 1. Install Compagnon
+</div>
 
-On macOS or Linux:
+This page takes you from a prepared project to your first finished
+change, in about ten minutes. Each step shows what to say to Claude, then
+the shortcut command, which does the same.
 
-```bash
-curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
-```
+You need Compagnon installed and `compagnon init` run in your project
+([Installation](installation.md)), and Claude Code open on it. The example
+adds a dark mode to an application; use your own idea.
 
-On Windows, in PowerShell:
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
-```
-
-Other ways to install are in [Installation](installation.md).
-
-## 2. Set up your repository
-
-In a [terminal](glossary.md#terminal) (the window where you type commands), in
-your project's main folder, type once:
-
-```bash
-compagnon init
-```
-
-It may ask a few questions, then adds a `_compagnon/` folder and gives
-Claude Code the [skills](glossary.md#skill). Restart Claude Code so it sees
-them.
-
-<details>
-<summary>Under the hood: what init writes</summary>
-
-```bash
-compagnon init --yes --language en
-```
+<div class="example">
+<p class="example-title">Example</p>
 
 ```text
-compagnon initialized in /home/you/acme-app
-
-  Structure   _compagnon/ — specs, decisions, changes, schemas
-  Skills      compagnon-propose, compagnon-explore, compagnon-onboard, compagnon-apply, compagnon-sync, compagnon-archive, compagnon-update, compagnon-configure → .claude/skills/
-
-  Repository integration
-    + CLAUDE.md                          created
-    + .github/workflows/compagnon.yml        created
-    + .github/PULL_REQUEST_TEMPLATE.md   created
-
-  17 file(s) created, 0 updated
-
-→ Recommended next step: in Claude Code, ask
-  "configure Compagnon for this project" (shortcut: /compagnon-configure).
+> Add a dark mode that follows the system setting
+⏺ Bash(compagnon new change add-dark-mode)
+  ⎿ Change `add-dark-mode` created
+⏺ The plan is ready in _compagnon/changes/add-dark-mode/. Read proposal.md first.
+> The plan is good, implement it
+⏺ Update(src/theme.ts)
+  ⎿ Updated src/theme.ts with 18 additions and 2 removals
+⏺ Bash(npm test)
+  ⎿ ✓ 42 tests passed
+⏺ 7 tasks out of 7 done · 2 review notes, nothing to decide.
+> The change is done, archive it
+⏺ Bash(compagnon archive --change add-dark-mode)
+  ⎿ ✓ Archived · moved to _compagnon/changes/archive/2026-11-27-add-dark-mode
 ```
 
-The probe, the questions and every file written are described in
-[What `compagnon init` does](reference/cli.md#what-compagnon-init-does).
-`compagnon doctor` then lists what the setup still lacks, with the fix for
-each item.
+Three sentences of yours; the steps below take them one at a time.
 
-</details>
+</div>
 
-## 3. Ask for a change (`/compagnon-propose`)
+## 1. Ask for a change (`/compagnon-propose`)
 
 In Claude Code, say what you want:
 
@@ -104,7 +73,7 @@ Language: en — prose and structural keywords in en
 
 </details>
 
-## 4. Read the plan
+## 2. Read the plan
 
 The plan sits in `_compagnon/changes/add-dark-mode/`, in four short files:
 the **proposal** (why), the **specs** (what will be true afterwards), the
@@ -126,7 +95,7 @@ A change with no spec fails on purpose with `zero_delta_without_marker`.
 
 </details>
 
-## 5. Let Claude build it (`/compagnon-apply`)
+## 3. Let Claude build it (`/compagnon-apply`)
 
 Once the plan suits you:
 
@@ -136,7 +105,7 @@ Claude works through the tasks one by one, checks each with its
 [test](glossary.md#test) (a small program that proves the task works), and
 asks you if something is unclear. Shortcut: `/compagnon-apply add-dark-mode`.
 
-## 6. File it away (`/compagnon-archive`)
+## 4. File it away (`/compagnon-archive`)
 
 Check the result, then:
 
@@ -184,9 +153,6 @@ Moved to: /home/you/acme-app/_compagnon/changes/archive/2026-09-30-add-dark-mode
 
 </details>
 
-## Go further
+## Next step
 
-- [How it works](workflow.md): each step in detail.
-- [Asking Claude](skills.md#how-to-ask): other ways to ask.
-- [Start from a Jira ticket](guides/mcp.md)
-- [Reviewing a plan](guides/review-a-plan.md): what to check in a plan.
+[Asking Claude](skills.md)

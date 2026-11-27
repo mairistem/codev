@@ -1,76 +1,44 @@
 # Votre première modification
 
-Cette page vous mène d'un
-[dépôt](glossary.md#dépôt) vide à votre première modification terminée, en une
-dizaine de minutes. Vous parlez à Claude avec vos mots : chaque étape donne
-la phrase à dire, puis la commande raccourcie, qui fait la même chose.
+<div class="skip-step">
 
-Il vous faut [Claude Code](glossary.md#claude-code) et un dépôt où
-travailler. L'exemple ajoute un mode sombre à une application ; prenez votre
-propre idée.
+[Vous ne codez pas ? Passez à Parler à Claude](skills.md)
 
-## 1. Installer Compagnon
+</div>
 
-Sur macOS ou Linux :
+Cette page vous mène d'un projet préparé à votre première modification
+terminée, en une dizaine de minutes. Vous parlez à Claude avec vos mots :
+chaque étape donne la phrase à dire, puis la commande raccourcie, qui fait
+la même chose.
 
-```bash
-curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
-```
+Il vous faut Compagnon installé et `compagnon init` lancé dans votre projet
+([Installation](installation.md)), et Claude Code ouvert dessus. L'exemple
+ajoute un mode sombre à une application ; prenez votre propre idée.
 
-Sur Windows, dans PowerShell :
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
-```
-
-Les autres façons d'installer sont dans [Installation](installation.md).
-
-## 2. Préparer votre dépôt
-
-Ouvrez un [terminal](glossary.md#terminal) (la fenêtre où l'on tape des
-commandes) dans le dossier principal de votre projet, puis tapez une fois :
-
-```bash
-compagnon init
-```
-
-Il peut vous demander quelles [compétences](glossary.md#compétence)
-installer, et quelques mots sur votre projet. Puis il ajoute un dossier
-`_compagnon/` et donne les compétences à Claude Code. Redémarrez Claude Code
-pour qu'il les voie.
-
-<details>
-<summary>Sous le capot : ce qu'écrit init</summary>
-
-```bash
-compagnon init --yes --language fr
-```
+<div class="example">
+<p class="example-title">Exemple</p>
 
 ```text
-compagnon initialized in /home/you/acme-app
-
-  Structure   _compagnon/ — specs, decisions, changes, schemas
-  Skills      compagnon-propose, compagnon-explore, compagnon-onboard, compagnon-apply, compagnon-sync, compagnon-archive, compagnon-update, compagnon-configure → .claude/skills/
-
-  Repository integration
-    + CLAUDE.md                          created
-    + .github/workflows/compagnon.yml        created
-    + .github/PULL_REQUEST_TEMPLATE.md   created
-
-  17 file(s) created, 0 updated
-
-→ Recommended next step: in Claude Code, ask
-  "configure Compagnon for this project" (shortcut: /compagnon-configure).
+> Ajoute un mode sombre qui suit le réglage du système
+⏺ Bash(compagnon new change add-dark-mode)
+  ⎿ Change `add-dark-mode` created
+⏺ Le plan est prêt dans _compagnon/changes/add-dark-mode/. Lisez d'abord proposal.md.
+> Le plan me va, réalise-le
+⏺ Update(src/theme.ts)
+  ⎿ Updated src/theme.ts with 18 additions and 2 removals
+⏺ Bash(npm test)
+  ⎿ ✓ 42 tests passed
+⏺ 7 tâches sur 7 faites · 2 remarques de relecture, rien à trancher.
+> La modification est terminée, archive-la
+⏺ Bash(compagnon archive --change add-dark-mode)
+  ⎿ ✓ Archived · moved to _compagnon/changes/archive/2026-11-27-add-dark-mode
 ```
 
-La détection, les questions et chaque fichier écrit sont décrits dans
-[Ce que fait `compagnon init`](reference/cli.md#ce-que-fait-compagnon-init).
-`compagnon doctor` liste ensuite ce qui manque encore à l'installation, avec
-la correction de chaque point.
+Trois phrases de votre part ; les étapes ci-dessous les prennent une à une.
 
-</details>
+</div>
 
-## 3. Demander une modification (`/compagnon-propose`)
+## 1. Demander une modification (`/compagnon-propose`)
 
 Dans Claude Code, dites ce que vous voulez :
 
@@ -106,7 +74,7 @@ Language: fr — prose and structural keywords in fr
 
 </details>
 
-## 4. Relire le plan
+## 2. Relire le plan
 
 Le plan se trouve dans `_compagnon/changes/add-dark-mode/`, en quatre
 fichiers courts : la **proposition** (pourquoi), les **spécifications** (ce qui sera
@@ -130,7 +98,7 @@ format. Une modification sans spécification échoue volontairement avec
 
 </details>
 
-## 5. Laisser Claude la réaliser (`/compagnon-apply`)
+## 3. Laisser Claude la réaliser (`/compagnon-apply`)
 
 Une fois le plan à votre goût :
 
@@ -141,7 +109,7 @@ Claude traite les tâches une à une, vérifie chacune avec son
 fonctionne), et s'arrête pour vous demander si quelque chose n'est pas clair. Raccourci :
 `/compagnon-apply add-dark-mode`.
 
-## 6. La classer (`/compagnon-archive`)
+## 4. La classer (`/compagnon-archive`)
 
 Vérifiez le résultat, puis :
 
@@ -190,10 +158,6 @@ Moved to: /home/you/acme-app/_compagnon/changes/archive/2026-09-30-add-dark-mode
 
 </details>
 
-## Pour aller plus loin
+## Étape suivante
 
-- [Comment ça marche](workflow.md) : chaque étape en détail.
-- [Parler à Claude](skills.md#comment-demander) : d'autres façons de
-  demander.
-- [Partir d'un ticket Jira](guides/mcp.md)
-- [Relire un plan](guides/review-a-plan.md) : quoi vérifier dans un plan.
+[Parler à Claude](skills.md)

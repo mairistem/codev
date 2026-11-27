@@ -1,62 +1,190 @@
 # Installation
 
-Cette page s'adresse à la personne qui installe Compagnon ; si vous relisez
-seulement des plans, vous pouvez la passer.
+Vous taperez deux commandes, une seule fois : l'une installe Compagnon,
+l'autre prépare le dossier de votre projet. Ensuite, vous parlez seulement
+à Claude. Si quelqu'un de votre équipe a l'habitude d'un
+[terminal](glossary.md#terminal) (la fenêtre où l'on tape des commandes),
+il peut faire cette partie pour vous.
 
-Compagnon est un programme unique, prêt à l'emploi. Une ligne l'installe,
-sans aucun outil de développement. Il vous faut aussi
-[Claude Code](glossary.md#claude-code) pour utiliser les
-[compétences](glossary.md#compétence) ; la commande `compagnon` elle-même
-fonctionne sans.
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 140" role="img" aria-label="L'installation en quatre étapes : 1, vous installez Compagnon avec une ligne, une fois, dans un terminal ; 2, vous préparez votre dossier avec compagnon init ; 3, vous demandez à Claude avec vos mots, dans Claude Code ; 4, Claude écrit un plan et attend votre accord.">
+<g stroke-width="2" style="fill:var(--dg-box)">
+<rect x="4" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="198" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="392" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="586" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-claude)"/>
+</g>
+<path d="M175,75h18m-6,-5l6,5l-6,5M369,75h18m-6,-5l6,5l-6,5M563,75h18m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="12" style="fill:var(--dg-muted)">
+<text x="20" y="44">1 · VOUS</text><text x="214" y="44">2 · VOUS</text><text x="408" y="44">3 · VOUS</text><text x="602" y="44">4 · CLAUDE</text>
+</g>
+<g font-size="16" font-weight="600" style="fill:var(--dg-ink)">
+<text x="20" y="78">Installer</text><text x="214" y="78">Préparer</text><text x="408" y="78">Demander</text><text x="602" y="78">Planifie</text>
+</g>
+<g font-size="13" style="fill:var(--dg-muted)">
+<text x="20" y="102">une ligne, une fois</text><text x="20" y="120">dans un terminal</text><text x="214" y="102">compagnon init</text><text x="214" y="120">dans votre dossier</text><text x="408" y="102">avec vos mots</text><text x="408" y="120">dans Claude Code</text><text x="602" y="102">et attend</text><text x="602" y="120">votre accord</text>
+</g>
+</svg>
+</div>
+<figcaption>Deux commandes, une seule fois ; ensuite, vous parlez seulement à Claude.</figcaption>
+</figure>
 
-## macOS et Linux
+## Partir de rien
 
-Dans un [terminal](glossary.md#terminal) :
+Deux choses, avant toute commande :
+
+- **Claude Code.** C'est l'assistant
+  [Claude Code](glossary.md#claude-code) qui écrit le plan et construit
+  ce que vous demandez. Procurez-le sur
+  [claude.com/claude-code](https://claude.com/claude-code), qui explique
+  comment l'installer. Il faut un compte Claude avec un abonnement qui
+  comprend Claude Code ; cette page dit lequel.
+- **Un dossier pour votre projet** sur votre ordinateur, vide pour
+  commencer si vous partez d'une idée. Créez-le comme n'importe quel
+  dossier, par exemple `inscription-evenement` dans vos Documents. Tout ce
+  que Claude construit ira là.
+
+## 1. Installer Compagnon
+
+Ouvrez un terminal : sur macOS, l'application Terminal (appuyez sur
+Cmd + Espace, tapez « Terminal », puis Entrée) ; sur Windows, PowerShell
+(touche Windows, tapez « PowerShell », puis Entrée). Copiez la ligne qui
+correspond à votre ordinateur, collez-la, puis appuyez sur Entrée.
+
+Sur macOS ou Linux :
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 ```
 
-Le script télécharge la dernière version publiée pour votre ordinateur
-depuis [GitHub Releases](https://github.com/mairistem/compagnon/releases),
-vérifie son empreinte SHA-256, et installe le programme dans
-`~/.local/bin/compagnon`. Il refuse d'installer si l'empreinte ne
-correspond pas. Si `~/.local/bin` n'est pas dans votre `PATH`, il affiche
-la ligne à ajouter à `~/.zshrc` ou `~/.bashrc`. Il nécessite `curl`, `tar`,
-ainsi que `sha256sum` ou `shasum`.
-
-## Windows
-
-Dans PowerShell 5.1 ou ultérieur (PowerShell 7 compris) :
+Sur Windows, dans PowerShell :
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```
 
-Le script vérifie le téléchargement de la même façon et copie
-`compagnon.exe` dans `%LOCALAPPDATA%\Programs\compagnon\`. Il ne modifie
-**pas** votre `PATH` : si le dossier en est absent, le script affiche la
-commande pour l'y ajouter. Ouvrez ensuite une nouvelle fenêtre PowerShell.
-Sous Windows, seule l'architecture x86_64 est précompilée ; sur ARM64,
-compilez depuis les sources (plus bas).
+Si l'installation affiche une ligne à ajouter, ou si la commande suivante
+est introuvable (« not found »), fermez le terminal et ouvrez-en un
+nouveau ; « Sous le capot : plateformes, versions et PATH », plus bas,
+explique pourquoi, pour la personne qui vous aide.
 
-## Vérifier l'installation
+<details>
+<summary>Sous le capot : ce que fait l'installation</summary>
+
+Sur macOS et Linux, le script télécharge la dernière version publiée pour
+votre ordinateur depuis
+[GitHub Releases](https://github.com/mairistem/compagnon/releases), vérifie
+son empreinte SHA-256, et installe le programme dans
+`~/.local/bin/compagnon`. Il refuse d'installer si l'empreinte ne
+correspond pas. Si `~/.local/bin` n'est pas dans votre `PATH`, il affiche
+la ligne à ajouter à `~/.zshrc` ou `~/.bashrc`. Il nécessite `curl`, `tar`,
+ainsi que `sha256sum` ou `shasum`.
+
+Sur Windows (PowerShell 5.1 ou ultérieur, PowerShell 7 compris), le script
+vérifie le téléchargement de la même façon et copie `compagnon.exe` dans
+`%LOCALAPPDATA%\Programs\compagnon\`. Il ne modifie **pas** votre
+`PATH` : si le dossier en est absent, le script affiche la commande pour
+l'y ajouter. Ouvrez ensuite une nouvelle fenêtre PowerShell. Sous Windows,
+seule l'architecture x86_64 est précompilée ; sur ARM64, compilez depuis
+les sources (plus bas).
+
+Pour vérifier l'installation, `compagnon --version` affiche la version. Si
+la commande reste introuvable dans un nouveau terminal, le dossier
+d'installation n'est pas dans votre `PATH` : ajoutez-le comme
+l'installateur l'a indiqué. `command -v compagnon` (macOS, Linux) ou
+`Get-Command compagnon` (Windows) indique quel programme votre terminal
+exécute.
+
+</details>
+
+## 2. Préparer le dossier de votre projet
+
+Ouvrez un terminal dans le dossier de votre projet : sur macOS, dans le
+Finder, faites un clic droit sur le dossier, puis Services et « Nouveau
+terminal au dossier » ; sur Windows, faites un clic droit dans le dossier,
+dans l'Explorateur de fichiers, puis « Ouvrir dans le Terminal ». Tapez
+ensuite :
 
 ```bash
-compagnon --version
+compagnon init
 ```
 
-Si la commande est introuvable, ouvrez un nouveau terminal. Si elle l'est
-toujours, le dossier d'installation n'est pas dans votre `PATH` :
-ajoutez-le comme l'installateur l'a indiqué. `command -v compagnon` (macOS,
-Linux) ou `Get-Command compagnon` (Windows) indique quel programme votre
-terminal exécute.
+Il peut vous demander quelles [compétences](glossary.md#compétence)
+donner à Claude : le choix proposé convient. Il demande ensuite quelques
+mots sur votre projet : tapez toujours une phrase à son sujet, car une
+réponse vide ouvre un éditeur de texte peu commode (si cela arrive,
+appelez la personne qui vous aide). Il ajoute un dossier `_compagnon/`, où
+vos plans seront rangés. Vous pouvez fermer le terminal : désormais, vous
+parlez à Claude.
 
-## Et maintenant
+<details>
+<summary>Sous le capot : ouvrir Claude Code depuis le terminal</summary>
 
-Dans le dossier de votre projet, lancez une fois `compagnon init`, puis
-demandez à Claude votre premier plan :
-[Votre première modification](quickstart.md) vous guide pas à pas.
+Dans un terminal ouvert dans le dossier du projet, Claude Code démarre
+avec :
+
+```bash
+claude
+```
+
+Démarrez-le après `compagnon init`, ou redémarrez-le, pour qu'il voie les
+compétences. Ce que `compagnon init` écrit en plus de `_compagnon/` est
+décrit dans [Déployer Compagnon pour une équipe](guides/team-rollout.md).
+
+</details>
+
+<details>
+<summary>Sous le capot : ce qu'écrit init</summary>
+
+```bash
+compagnon init --yes --language fr
+```
+
+```text
+compagnon initialized in /home/you/acme-app
+
+  Structure   _compagnon/ — specs, decisions, changes, schemas
+  Skills      compagnon-propose, compagnon-explore, compagnon-onboard, compagnon-apply, compagnon-sync, compagnon-archive, compagnon-update, compagnon-configure → .claude/skills/
+
+  Repository integration
+    + CLAUDE.md                          created
+    + .github/workflows/compagnon.yml        created
+    + .github/PULL_REQUEST_TEMPLATE.md   created
+
+  17 file(s) created, 0 updated
+
+→ Recommended next step: in Claude Code, ask
+  "configure Compagnon for this project" (shortcut: /compagnon-configure).
+```
+
+La détection, les questions et chaque fichier écrit sont décrits dans
+[Ce que fait `compagnon init`](reference/cli.md#ce-que-fait-compagnon-init).
+`compagnon doctor` liste ensuite ce qui manque encore à l'installation, avec
+la correction de chaque point.
+
+</details>
+
+## Votre première demande
+
+Ouvrez Claude Code sur le dossier de votre projet, par exemple depuis
+l'application Claude pour ordinateur, en choisissant ce dossier. Dites
+ensuite, avec vos mots, ce que vous voulez, en demandant d'abord un plan :
+
+<div class="example">
+<p class="example-title">Exemple</p>
+
+```text
+> Prépare un plan pour un formulaire d'inscription à un événement
+⏺ J'écris le plan dans _compagnon/changes/inscription-evenement/ : pourquoi,
+  ce qui change, comment, et les tâches.
+⏺ Le plan est prêt. Lisez d'abord proposal.md ; rien n'est construit avant
+  votre accord.
+```
+
+Claude rédige un plan et s'arrête : il ne construit encore rien. La page suivante le lit avec vous.
+
+</div>
 
 ## Mise à jour
 
@@ -242,10 +370,6 @@ résultat.
 
 </details>
 
-## Pour aller plus loin
+## Étape suivante
 
-- [Votre première modification](quickstart.md) : votre premier plan, en
-  dix minutes.
-- [Partir de rien](guides/start-from-nothing.md) : si vous ne codez pas.
-- [Interface en ligne de commande](reference/cli.md) : chaque commande et
-  option.
+[Votre première modification](quickstart.md)

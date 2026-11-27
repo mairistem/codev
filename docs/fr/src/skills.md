@@ -7,6 +7,49 @@ la réaliser, la classer, etc. Claude Code les trouve tout seul : il vous
 suffit de demander avec vos mots. Vous pouvez aussi en lancer une
 directement en tapant son nom, par exemple `/compagnon-propose`.
 
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 140" role="img" aria-label="Parler à Claude en quatre étapes : 1, vous dites ce que vous voulez avec vos mots ; 2, Claude choisit la compétence qui correspond, ici celle qui planifie ; 3, Claude fait cette étape, écrit le plan, puis s'arrête ; 4, vous décidez : vous le corrigez ou le validez.">
+<g stroke-width="2" style="fill:var(--dg-box)">
+<rect x="4" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="198" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-claude)"/>
+<rect x="392" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-claude)"/>
+<rect x="586" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+</g>
+<path d="M175,75h18m-6,-5l6,5l-6,5M369,75h18m-6,-5l6,5l-6,5M563,75h18m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="12" style="fill:var(--dg-muted)">
+<text x="20" y="44">1 · VOUS</text><text x="214" y="44">2 · CLAUDE</text><text x="408" y="44">3 · CLAUDE</text><text x="602" y="44">4 · VOUS</text>
+</g>
+<g font-size="16" font-weight="600" style="fill:var(--dg-ink)">
+<text x="20" y="78">Vos mots</text><text x="214" y="78">Choisit</text><text x="408" y="78">Fait l'étape</text><text x="602" y="78">Décidez</text>
+</g>
+<g font-size="13" style="fill:var(--dg-muted)">
+<text x="20" y="102">« prépare un plan</text><text x="20" y="120">de mode sombre »</text><text x="214" y="102">la compétence</text><text x="214" y="120">qui planifie</text><text x="408" y="102">écrit le plan,</text><text x="408" y="120">puis s'arrête</text><text x="602" y="102">corrigez-le,</text><text x="602" y="120">ou validez-le</text>
+</g>
+</svg>
+</div>
+<figcaption>Aucune commande à connaître : Claude choisit la compétence d'après vos mots.</figcaption>
+</figure>
+
+<div class="example">
+<p class="example-title">Exemple</p>
+
+```text
+> Prépare un plan pour un mode sombre qui suit le réglage du système
+⏺ Skill(compagnon-propose)
+  ⎿ Successfully loaded skill
+⏺ J'écris le plan dans _compagnon/changes/add-dark-mode/.
+⏺ Le plan est prêt. Lisez d'abord proposal.md ; rien n'est construit
+  avant votre accord.
+```
+
+Vous n'avez jamais tapé `/compagnon-propose` : Claude a choisi la compétence d'après vos mots.
+
+</div>
+
+<details>
+<summary>Sous le capot : les huit compétences, où elles vivent et ce qu'elles peuvent modifier</summary>
+
 Vous n'avez rien à installer à la main : `compagnon init` et
 `compagnon update` installent chaque compétence dans son propre dossier,
 `.claude/skills/compagnon-<workflow>/SKILL.md`.
@@ -28,6 +71,8 @@ lance vos [tests](glossary.md#test). En mode de relecture isolé,
 `/compagnon-propose` et `/compagnon-apply` utilisent aussi `Agent`,
 l'outil de sous-agent de Claude Code. Voir
 [Permissions des outils](reference/configuration.md#permissions-des-outils).
+
+</details>
 
 ## Comment demander
 
@@ -165,13 +210,6 @@ L'endroit où elle va dépend de qui elle concerne :
 
 Une entrée ne nomme personne, et ne cite ni donnée personnelle ni secret.
 
-## Pour aller plus loin
+## Étape suivante
 
-- [Comment ça marche](workflow.md) : ce que fait chaque compétence, étape
-  par étape, et les fichiers qu'elle écrit.
-- [Partir d'un ticket Jira](guides/mcp.md) : « Prépare un plan pour
-  PROJ-123 ».
-- [Rôles](roles.md) : les critères que Claude vérifie à chaque étape.
-- [Configuration](reference/configuration.md#les-compétences-installées) :
-  choisir les compétences à installer, leurs permissions, et modifier une
-  compétence générée.
+[Partir d'un ticket Jira](guides/mcp.md) Votre travail est déjà un ticket Jira ? Partez-en.

@@ -361,92 +361,12 @@ version in the dark themes.
 - **WHEN** the check runs on it
 - **THEN** it fails naming the page
 
-### Requirement: Moving from codev to Compagnon is documented in both languages
-
-The documentation SHALL hold, in `docs/en` and `docs/fr`, a guide to
-moving a project from codev to Compagnon: what is renamed (binary, planning
-root, lock file, configuration key, skills, environment variables, JSON
-codes, CI workflow), how to install `compagnon`, how to run
-`compagnon migrate --dry-run` then `compagnon migrate`, what to do with a
-shared source repository still laid out for codev, and what a hand-edited
-`codev-*` skill becomes. The CLI reference SHALL document
-`compagnon migrate`.
-
-#### Scenario: The migration guide exists in both editions
-
-- **GIVEN** the repository's `docs/en/src/SUMMARY.md` and
-  `docs/fr/src/SUMMARY.md`
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** both list the same migration guide chapter
-- **AND** both chapters name `compagnon migrate --dry-run`
-
-#### Scenario: A guide missing from one edition is caught
-
-- **GIVEN** the migration guide listed in `docs/en/src/SUMMARY.md` only
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** it fails naming the missing chapter
-
-### Requirement: The documentation opens with a short Start here path
-
-Each language's `SUMMARY.md` SHALL open with a part titled "Start here"
-("Commencer ici" in French) listing exactly, in this order:
-`introduction.md` (Compagnon in two minutes), `choose-your-path.md`, the
-four path pages `paths/review.md`, `paths/build.md`, `paths/develop.md`
-and `paths/team.md` (nested under Choose your path), and `glossary.md`.
-The table of contents SHALL then group the other chapters in four parts,
-in this order: Everyday use, Going further, Reference, Contributing ("Au
-quotidien", "Aller plus loin", "Référence", "Contribuer"); Everyday use
-opens with `quickstart.md`. The Contributing part MUST
-hold `origins.md`, `architecture.md` and `reliability.md`. No chapter is
-removed: every chapter listed before this change stays listed, under its
-file path, so that existing links keep working.
-
-#### Scenario: Both editions open with the Start here path
-
-- **GIVEN** the repository's `docs/en/src/SUMMARY.md` and
-  `docs/fr/src/SUMMARY.md`
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each lists exactly `introduction.md`, `choose-your-path.md`,
-  `paths/review.md`, `paths/build.md`, `paths/develop.md`, `paths/team.md`
-  and `glossary.md`, in that order, under its first part
-- **AND** its Everyday use part opens with `quickstart.md`
-- **AND** its parts are, in order, Start here, Everyday use, Going further,
-  Reference, Contributing (or their French titles)
-- **AND** the Contributing part holds `origins.md`, `architecture.md` and
-  `reliability.md`
-
-#### Scenario: A chapter moved into the Start here path is caught
-
-- **GIVEN** a `SUMMARY.md` that lists `concepts.md` inside the Start here
-  part
-- **WHEN** the check runs on it
-- **THEN** it fails naming `concepts.md`
-
-#### Scenario: A chapter missing from the Start here path is caught
-
-- **GIVEN** a `SUMMARY.md` whose Start here part lacks `glossary.md`
-- **WHEN** the check runs on it
-- **THEN** it fails naming `glossary.md`
-
-#### Scenario: No chapter is removed
-
-- **GIVEN** the 22 chapters each `SUMMARY.md` listed before this change
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** it fails naming any of them no longer listed
-
-#### Scenario: The offline manual follows the new order
-
-- **WHEN** the user runs `compagnon docs --print`
-- **THEN** the manual starts with the introduction, then Choose your path,
-  then the four path pages, then the glossary
-
-### Requirement: The Start here path stays short and plain
+### Requirement: The first steps stay short and plain
 
 Not counting fenced code blocks, "Under the hood" blocks (`<details>`)
 nor figures (`<figure>`, a diagram and its caption),
 the introduction SHALL hold at most 450 words in English and 560 in
-French, Choose your path at most 200 and 250, each path page at most 250
-and 310, and the quickstart at most 500 and 625. The introduction MUST
+French, and the quickstart at most 500 and 625. The introduction MUST
 hold a section titled "Who decides" ("Qui décide") saying, in plain words,
 that the reader decides, that Claude proposes and carries out, and that
 nothing is applied without the reader's approval. The quickstart MUST walk
@@ -456,13 +376,12 @@ through the Claude Code path, with one section per step in this order:
 `console`, `powershell`, `pwsh`) outside an "Under the hood" block MAY only
 install Compagnon or run `compagnon init`.
 
-#### Scenario: The path stays under its word caps
+#### Scenario: The first steps stay under their word caps
 
-- **GIVEN** the Start here chapters of both editions
+- **GIVEN** the introduction and the quickstart of both editions
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails naming the chapter, the edition and the count when the
-  introduction, Choose your path, a path page or the quickstart exceeds its
-  cap
+  introduction or the quickstart exceeds its cap
 
 #### Scenario: Under the hood blocks, code and figures are not counted
 
@@ -528,7 +447,7 @@ words and the cue that makes Claude pick that skill.
 - **WHEN** the check runs on it
 - **THEN** it fails naming `compagnon-sync`
 
-### Requirement: The glossary defines every term of the Start here path
+### Requirement: The glossary defines every term of the first steps
 
 `glossary.md` SHALL hold one `## <Term>` section per term, defining, in
 plain words, at least: agent, Claude Code, skill, change, plan, proposal,
@@ -618,31 +537,30 @@ and the browser makes it operable with the keyboard.
 `README.md` and `README.fr.md` SHALL hold, after the mark: the promise in
 at most two sentences, a "Getting started" section ("Démarrer" in French)
 in three numbered steps — install, `compagnon init`, `/compagnon-propose` —
-showing the `curl … | sh` and `iwr … | iex` one-liners, and the four
-profile labels of Choose your path, each linking its path page on the
+showing the `curl … | sh` and `iwr … | iex` one-liners, and a link to
+the first page of the tunnel, `introduction.html` of its edition on the
 documentation site. Each MUST hold at
 most 600 words in English and 750 in French, code blocks excluded.
 
-#### Scenario: Both READMEs stay short, keep the one-liners and link the profiles
+#### Scenario: Both READMEs stay short, keep the one-liners and link the tunnel
 
 - **GIVEN** the repository's `README.md` and `README.fr.md`
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails if either exceeds its cap
 - **AND** it fails unless each "Getting started" section shows both
   one-liners, `compagnon init` and `/compagnon-propose`
-- **AND** it fails unless each holds the four profile labels of its
-  language, each linking its path page
+- **AND** it fails unless each links the introduction of its edition
 
-#### Scenario: A README missing a path page is caught
+#### Scenario: A README without the tunnel's start is caught
 
-- **GIVEN** a README that links three of the four path pages
+- **GIVEN** a README that never links the introduction
 - **WHEN** the check runs on it
-- **THEN** it fails naming the missing page
+- **THEN** it fails naming the README
 
 ### Requirement: The everyday pages explain the technical terms they use
 
-In the chapters of the "Start here" and "Everyday use" parts, glossary
-excepted, the first use of a listed technical term SHALL be a link to its
+In the chapters of the first three steps of the tunnel — Discover, Get
+started and Every day — the first use of a listed technical term SHALL be a link to its
 glossary entry; the later uses of that term in the chapter need no link.
 The listed terms are, in English, delta, artifact, capability, schema,
 workflow, frontmatter and kebab-case, and in French, delta, artefact,
@@ -654,8 +572,8 @@ configuration key such as `workflows:` stays as it is.
 
 #### Scenario: Every everyday chapter explains its terms
 
-- **GIVEN** the chapters of the "Start here" and "Everyday use" parts of
-  both editions
+- **GIVEN** the chapters of the first three steps of the tunnel of both
+  editions
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** in each, the first use of every listed term is a link to the
   glossary
@@ -773,125 +691,34 @@ lexicon (« réalise la modification », not « applique le change »).
 - **THEN** the check that every link of the offline manual lands on a
   heading fails until the link names the new anchor
 
-### Requirement: Choose your path asks one question with four answers
-
-`choose-your-path.md` SHALL ask one question, "What will you do with
-Compagnon?" ("Qu'allez-vous faire avec Compagnon ?"), answered by four
-profiles phrased as activities, in this order, each a list item whose
-only link opens its path page:
-
-- "I review and approve plans — I do not code" (`paths/review.md`);
-- "I do not code, but I want Claude to build something for me"
-  (`paths/build.md`);
-- "I am a developer and I have Claude write code" (`paths/develop.md`);
-- "I set Compagnon up for my team" (`paths/team.md`).
-
-Below them, one sentence MUST point those who want to change Compagnon
-itself to `origins.md`, the first chapter of the Contributing part. The same four labels, in the same words,
-SHALL be used by the introduction, the READMEs and the home pages of the
-site.
-
-#### Scenario: Both editions ask the question with the four profiles
-
-- **GIVEN** both editions of `choose-your-path.md`
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each holds the four profile labels of its language, in order,
-  each linking its path page and nothing else
-- **AND** a link to `origins.md` follows them
-
-#### Scenario: The introduction uses the four labels
-
-- **GIVEN** both editions of `introduction.md`
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each holds the four profile labels of its language, each
-  linking its path page
-
-#### Scenario: A profile with two links or the wrong page is caught
-
-- **GIVEN** a Choose your path page whose first profile links both
-  `paths/review.md` and `glossary.md`
-- **WHEN** the check runs on it
-- **THEN** it fails naming that profile
-
-### Requirement: Each profile has a short path page
-
-Each path page SHALL be titled with its profile's label, word for word —
-its `# ` heading and its entry in `SUMMARY.md` — so that every link to it,
-from any entry point, names the page it opens. It SHALL open, under that
-title, with one sentence saying who it is for and how long the path takes, then list at most three numbered
-steps, each holding exactly one link to a chapter of the same edition whose
-text is that chapter's title, then a "Next, if you need it" ("Ensuite, si
-besoin") section, and end with a link back to Choose your path. The path
-for people who do not code but want Claude to build something MUST NOT
-take, as a step, a chapter whose fenced shell blocks outside "Under the
-hood" blocks run anything but installing Compagnon or `compagnon init`;
-its "Next" section names no developer chapter.
-
-#### Scenario: Every path page has at most three steps, titled as their pages
-
-- **GIVEN** the four path pages of both editions
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each is titled with its profile's label, in `SUMMARY.md` too
-- **AND** each has one to three numbered steps, each with one link whose
-  text equals the title of the chapter it opens
-- **AND** a sentence comes between the title and the first step
-- **AND** each holds a "Next, if you need it" / « Ensuite, si besoin »
-  section and links back to Choose your path
-
-#### Scenario: The build path asks no command beyond installing
-
-- **GIVEN** the build path page of both editions
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** no chapter it takes as a step holds, outside "Under the hood"
-  blocks, a shell block running anything but installing or
-  `compagnon init`
-
-#### Scenario: Every link of the paths resolves
-
-- **GIVEN** Choose your path and the four path pages of both editions
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** every link to a chapter resolves to a chapter of the table of
-  contents, and every anchor it names to a heading of that chapter
-
-#### Scenario: A path page with four steps is caught
-
-- **GIVEN** a path page with four numbered steps
-- **WHEN** the check runs on it
-- **THEN** it fails naming the page
-
-#### Scenario: A step labelled differently from its page is caught
-
-- **GIVEN** a path page whose step reads "[Step by step](workflow.md)"
-  while `workflow.md` is titled "The workflow"
-- **WHEN** the check runs on it
-- **THEN** it fails naming "Step by step"
-
-### Requirement: The home page asks the question first, in both languages
+### Requirement: The home page shows the tunnel first, in both languages
 
 The site SHALL have a home page in English, `docs/site/index.html`, and in
 French, `docs/site/fr.html` (`lang="fr"`), each linking the other with the
 other's `lang` and `hreflang`; the English page's links to the French
 edition lead to `fr.html`. Each MUST show, before
-any installation command or technical section, the question of Choose your
-path and its four profiles in its language, each linking the path page of
-its edition, and the link for contributors; these links are plain
-`<a href>` elements, which work without script.
+any installation command or technical section, the five steps of the
+tunnel in its language, each a card linking the first chapter of its step
+in its edition (`introduction.html`, `installation.html`, `skills.html`,
+`workflow.html`, `guides/existing-project.html`), and the link for
+contributors; these links are plain `<a href>` elements, which work
+without script. The home pages show no reader profile.
 
-#### Scenario: Both home pages lead with the four profiles
+#### Scenario: Both home pages lead with the five steps
 
 - **GIVEN** `docs/site/index.html` and `docs/site/fr.html`
 - **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each holds the four labels of its language, each linking
-  `en/paths/…` or `fr/paths/…`
-- **AND** the first label comes before the first installation command
+- **THEN** each holds the five step titles of its language, each linking
+  the first chapter of its step under `en/` or `fr/`
+- **AND** the first step comes before the first installation command
 - **AND** each links `origins.html` of its edition for contributors
 - **AND** `fr.html` declares `lang="fr"`, and each page links the other
   with the other's `lang` and `hreflang`
 
 #### Scenario: A home page that asks after installing is caught
 
-- **GIVEN** a home page whose first profile label comes after its
-  `curl … | sh` command
+- **GIVEN** a home page whose first step comes after its `curl … | sh`
+  command
 - **WHEN** the check runs on it
 - **THEN** it fails naming the page
 
@@ -916,43 +743,6 @@ qui vérifie »); the glossary link on first use stays.
   commands)"
 - **WHEN** the check runs on it
 - **THEN** it fails naming the gloss
-
-### Requirement: Each profile finds the pages it asked for
-
-Each edition SHALL hold these pages, listed in its `SUMMARY.md`:
-`guides/example-plan.md` (an annotated example plan),
-`guides/approve-a-plan.md` (approving a plan on GitHub or GitLab) and
-`guides/start-from-nothing.md` (starting from nothing) in the Everyday use
-part; `guides/existing-project.md` (adopting Compagnon on an existing
-project) and `guides/team-rollout.md` (deploying for a team) in the Going
-further part; `contributing.md` in the Contributing part. The path pages
-SHALL lead to them: the build path takes starting from nothing as a
-step and its "Next" names the example plan; the review path's "Next"
-names the example plan and approving; the developer path's "Next" names
-adopting on an existing project; the team path takes deploying for a team
-as a step, Roles moving to its "Next"; `origins.md` ends with a link to
-`contributing.md`.
-
-#### Scenario: Both editions list the new pages where their readers look
-
-- **GIVEN** both editions' `SUMMARY.md` and path pages
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each lists the six pages in their parts
-- **AND** the build path takes `guides/start-from-nothing.md` as a step
-  and names `guides/example-plan.md` under "Next"
-- **AND** the review path names `guides/example-plan.md` and
-  `guides/approve-a-plan.md` under "Next"
-- **AND** the developer path names `guides/existing-project.md` under
-  "Next"
-- **AND** the team path takes `guides/team-rollout.md` as a step and names
-  `roles.md` under "Next"
-- **AND** each edition's `origins.md` links `contributing.md`
-
-#### Scenario: A path page that does not link its new page is caught
-
-- **GIVEN** a review path page whose "Next" lacks `guides/approve-a-plan.md`
-- **WHEN** the check runs on it
-- **THEN** it fails naming the page and the missing link
 
 ### Requirement: The example plan is complete and annotated
 
@@ -988,30 +778,31 @@ French.
 
 `guides/approve-a-plan.md` SHALL explain, without Claude Code or a
 terminal, where a plan arrives — among the request's changed files, in
-`_compagnon/changes/<name>/`, on GitHub and GitLab alike — where its points to discuss are, and how
-to comment, ask for changes and approve on GitHub and on GitLab; it MUST
-hold no fenced shell block. `guides/start-from-nothing.md` SHALL say what
-to get first — Claude Code and a folder for the project — and its fenced
-shell blocks outside "Under the hood" blocks MAY only install Compagnon or
-run `compagnon init`.
+`_compagnon/changes/<name>/`, on GitHub — where its points to discuss are, and how
+to comment, ask for changes and approve on GitHub; it MUST
+hold no fenced shell block. The "Starting from nothing" section of
+`installation.md` (« Partir de rien » in French) SHALL say what to get
+first — Claude Code and a folder for the project — and the chapter's
+fenced shell blocks outside "Under the hood" blocks MAY only install
+Compagnon or run `compagnon init`.
 
 #### Scenario: The two pages keep to what a non-developer can do
 
 - **GIVEN** both editions of `guides/approve-a-plan.md` and
-  `guides/start-from-nothing.md`
+  `installation.md`
 - **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** the approving page holds no fenced shell block, names GitHub
-  and GitLab, and names `_compagnon/changes/` as where the plan is
+- **THEN** the approving page holds no fenced shell block, names GitHub,
+  and names `_compagnon/changes/` as where the plan is
 - **AND** in French, each quoted button label stands between parentheses
   after its action, never as inline code
-- **AND** the starting page names Claude Code before its first shell
-  block, and runs nothing but installing and `compagnon init` outside
-  "Under the hood" blocks
+- **AND** the installation chapter's "Starting from nothing" section
+  names Claude Code, and the chapter runs nothing but installing and
+  `compagnon init` outside "Under the hood" blocks
 
 #### Scenario: A command in a page for non-developers is caught
 
-- **GIVEN** an approving page holding a fenced `bash` block, and a
-  starting page running `compagnon validate`
+- **GIVEN** an approving page holding a fenced `bash` block, and an
+  installation chapter running `compagnon validate`
 - **WHEN** the check runs on them
 - **THEN** each fails, naming the block or the command
 
@@ -1023,24 +814,23 @@ plain words, that naming a Jira ticket in a request — the example
 "PROJ-123" — makes Claude read the ticket and cite it at the top of the
 plan, and SHALL link the Jira guide of their language (`guides/mcp.md`,
 or its published `guides/mcp.html` from the home pages and the READMEs).
-On the home pages, this mention MUST come after the four profiles of
-Choose your path, so that the question still comes first. The "Next, if
-you need it" section of the four path pages SHALL link the Jira guide,
-with its title as the link text.
+On the home pages, this mention MUST come after the five step cards, so
+that the tunnel still comes first. In the tunnel, the Jira guide is
+the step after Asking Claude.
 
 #### Scenario: Every entry point mentions Jira and links the guide
 
 - **GIVEN** both home pages, both READMEs, and both editions of
-  `introduction.md`, `quickstart.md` and the four path pages
+  `introduction.md` and `quickstart.md`
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** each holds "Jira" and a link to the Jira guide of its language
-- **AND** on each home page, the last of the four profile labels comes
+- **AND** on each home page, the last of the five step titles comes
   before the first mention of Jira
 
 #### Scenario: An entry point without Jira is caught
 
 - **GIVEN** an introduction that never names Jira, and a home page naming
-  Jira between its first and its last profile
+  Jira between its first and its last step
 - **WHEN** the check runs on them
 - **THEN** each fails naming the page
 
@@ -1048,7 +838,7 @@ with its title as the link text.
 
 The Jira guide SHALL be titled "Start from a Jira ticket" in English and
 « Partir d'un ticket Jira » in French — its `# ` heading and its entry in
-`SUMMARY.md` — and SHALL be listed in the "Everyday use" part, keeping
+`SUMMARY.md` — and SHALL be listed in the "Every day" step of the tunnel, keeping
 its file `guides/mcp.md` so that existing links still resolve. Before its
 first configuration section, it MUST show what the reader says (a request
 naming a ticket), what Claude does (reads the ticket, once, read-only)
@@ -1056,11 +846,11 @@ and what the reader gets (the plan citing the ticket), with the diagram
 "From a Jira ticket to a plan". The configuration, the read-only rules
 and the section on other MCP servers follow.
 
-#### Scenario: The guide is in Everyday use and leads with the benefit
+#### Scenario: The guide is in the Every day step and leads with the benefit
 
 - **GIVEN** both editions of `SUMMARY.md` and `guides/mcp.md`
 - **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** the guide's entry is in the "Everyday use" part, titled
+- **THEN** the guide's entry is in the "Every day" part, titled
   "Start from a Jira ticket" / « Partir d'un ticket Jira »
 - **AND** the guide holds a diagram before its first `## ` heading
 
@@ -1073,13 +863,16 @@ and the section on other MCP servers follow.
 
 ### Requirement: The documentation's diagrams are accessible in every rendering
 
-The documentation SHALL hold these thirteen diagrams, in both editions:
+The documentation SHALL hold these sixteen diagrams, in both editions:
 
 | Diagram | Where |
 |---|---|
 | The workflow (ask, plan, approve, build, file away) | `introduction.md`, `workflow.md`, home pages |
+| Installing: install, set up the project, first request | `installation.md` |
+| Asking Claude: your words, the skill Claude picks, what it does | `skills.md` |
+| Building and filing away: tasks done one by one, review, archive | `guides/build-and-file.md` |
 | From a Jira ticket to a plan | `guides/mcp.md`, home pages |
-| The four paths | `choose-your-path.md` |
+| The reading tunnel (its five steps) | `introduction.md` |
 | Inside a plan (proposal, specs, design, tasks) | `guides/review-a-plan.md`, home pages |
 | A change's folder, from start to archive | `quickstart.md` |
 | How a plan is built (the steps of `/compagnon-propose`) | `workflow.md` |
@@ -1087,7 +880,7 @@ The documentation SHALL hold these thirteen diagrams, in both editions:
 | The life of a decision | `guides/decisions.md` |
 | The life of a review finding | `guides/review-record.md` |
 | Who reviews when (steps and roles) | `roles.md` |
-| Approving a plan on GitHub or GitLab | `guides/approve-a-plan.md` |
+| Approving a plan on GitHub | `guides/approve-a-plan.md` |
 | Inherited sources | `guides/inherited-sources.md` |
 | The crate graph | `architecture.md` |
 
@@ -1167,67 +960,6 @@ the start.
 - **WHEN** it is checked before the restyle is committed
 - **THEN** the restyle is not committed until the layout is fixed
 
-### Requirement: The table of contents follows the refactored order
-
-Below the Start here part, which keeps its chapters and order, each
-`SUMMARY.md` SHALL list, in this order:
-
-- Everyday use: `quickstart.md`, `guides/start-from-nothing.md`,
-  `installation.md`, `workflow.md` ("How it works" / « Comment ça
-  marche »), `skills.md` ("Asking Claude" / « Parler à Claude »),
-  `guides/mcp.md`, `guides/review-a-plan.md`, `guides/example-plan.md`,
-  `guides/approve-a-plan.md`, `concepts.md`, `faq.md`;
-- Going further: `guides/decisions.md`, `guides/review-record.md`,
-  `roles.md`, `guides/existing-project.md`, `guides/team-rollout.md`,
-  `guides/repository-integration.md`, `guides/release-notes.md`,
-  `guides/inherited-sources.md`, `guides/artifact-language.md`,
-  `guides/custom-schemas.md`, `guides/moving-from-codev.md`;
-- Reference: `reference/cli.md`, `reference/configuration.md`,
-  `reference/file-formats.md`, `reference/json-output.md`,
-  `reference/errors.md`;
-- Contributing: `origins.md`, `contributing.md`, `architecture.md`,
-  `reliability.md`.
-
-No chapter file listed before this change is renamed or removed. Each
-chapter's `# ` heading equals its `SUMMARY.md` entry.
-
-#### Scenario: Both editions follow the refactored order
-
-- **GIVEN** both editions of `SUMMARY.md`
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each part lists exactly the files above, in that order
-- **AND** each chapter's `# ` heading equals its entry's title
-
-#### Scenario: A chapter out of its part is caught
-
-- **GIVEN** a `SUMMARY.md` listing `roles.md` under Everyday use
-- **WHEN** the check runs on it
-- **THEN** it fails naming `roles.md`
-
-### Requirement: Everyday chapters are short and end with Go further
-
-Each chapter of the Everyday use part, `guides/example-plan.md` excepted
-(its body is the example), SHALL hold at most 1 200 words in English and
-1 500 in French, not counting fenced code blocks, "Under the hood" blocks
-(`<details>`) and figures. Its last `## ` section SHALL be titled "Go
-further" (« Pour aller plus loin ») and link at least one chapter, each
-link's text being that chapter's title.
-
-#### Scenario: Every everyday chapter stays under its cap and ends with Go further
-
-- **GIVEN** the Everyday use chapters of both editions
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each, example plan excepted, is under its cap
-- **AND** each ends with a "Go further" / « Pour aller plus loin »
-  section linking at least one chapter by its title
-
-#### Scenario: A long chapter or a chapter without Go further is caught
-
-- **GIVEN** a 1 300-word English FAQ, and a concepts chapter whose last
-  section is "Seal"
-- **WHEN** the check runs on them
-- **THEN** each fails naming its chapter
-
 ### Requirement: Error codes and decisions have their own chapters
 
 `reference/errors.md` ("Error codes and fixes" / « Codes d'erreur et
@@ -1254,3 +986,257 @@ linking it.
 - **GIVEN** a FAQ with a section headed `` `decision_seal_mismatch` ``
 - **WHEN** the check runs on it
 - **THEN** it fails naming the code
+
+### Requirement: The documentation reads as one tunnel in five steps
+
+Each language's `SUMMARY.md` SHALL list, in this order, five parts — the
+steps of the tunnel — then the appendices and Contributing, with these
+chapters in this order:
+
+| Part (EN / FR) | Chapters |
+|---|---|
+| Discover / Découvrir | `introduction.md` |
+| Get started / Démarrer | `installation.md`, `quickstart.md` |
+| Every day / Au quotidien | `skills.md`, `guides/mcp.md`, `guides/review-a-plan.md`, `guides/approve-a-plan.md`, `guides/build-and-file.md` |
+| Understand / Comprendre | `workflow.md`, `concepts.md`, `guides/decisions.md`, `roles.md`, `guides/review-record.md` |
+| For your team / Pour l'équipe | `guides/existing-project.md`, `guides/team-rollout.md`, `guides/inherited-sources.md`, `guides/artifact-language.md`, `guides/release-notes.md`, `guides/custom-schemas.md` |
+| Appendices / Annexes | `reference/cli.md`, `reference/configuration.md`, `reference/file-formats.md`, `reference/json-output.md`, `reference/errors.md`, `glossary.md`, `faq.md`, `guides/example-plan.md` |
+| Contributing / Contribuer | `origins.md`, `contributing.md`, `architecture.md`, `reliability.md` |
+
+Each chapter's `# ` heading SHALL equal its `SUMMARY.md` entry. The new
+chapter `guides/build-and-file.md` is titled "Building and filing away"
+(« Réaliser et ranger »), and `guides/approve-a-plan.md` "Approving a plan
+on GitHub" (« Approuver un plan sur GitHub »). No chapter is nested under
+another.
+
+#### Scenario: Both editions list the tunnel, then the appendices
+
+- **GIVEN** both editions of `SUMMARY.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each lists exactly the parts and chapters above, in that order
+- **AND** each chapter's `# ` heading equals its entry's title
+
+#### Scenario: A chapter out of its step is caught
+
+- **GIVEN** a `SUMMARY.md` listing `glossary.md` under Discover
+- **WHEN** the check runs on it
+- **THEN** it fails naming `glossary.md`
+
+### Requirement: Each tunnel page leads to the next
+
+Every chapter of the five tunnel steps SHALL end with a section titled
+"Next step" (« Étape suivante ») whose first link opens the next chapter
+of the tunnel, its text being that chapter's title; the last chapter of
+the tunnel leads to the first appendix, `reference/cli.md`. A chapter that
+some readers can skip MAY open, right under its title, with a skip button:
+one link, alone in a `<div class="skip-step">` block placed before the
+chapter's first paragraph and drawn as a button by the theme, whose text
+says in plain words who can skip and ends with the title of the chapter
+it opens — "<who>? Skip to <title>" (« <qui> ? Passez à <titre> »), for
+example "No Jira? Skip to Reviewing a plan" — and which opens a later
+chapter of the tunnel. There is no other notion of reader profile.
+The chapters of the first three steps SHALL hold at most 1 200 words in
+English and 1 500 in French, not counting fenced code blocks, "Under the
+hood" blocks and figures; the introduction and the quickstart keep their
+own caps.
+
+#### Scenario: The tunnel reads from page to page
+
+- **GIVEN** the tunnel chapters of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each ends with "Next step" / « Étape suivante », whose first
+  link opens the next chapter of the tunnel and is titled as it
+- **AND** each chapter of the first three steps is under its cap
+
+#### Scenario: A page leading elsewhere is caught
+
+- **GIVEN** a Concepts chapter whose "Next step" links Roles, while
+  Decisions comes next
+- **WHEN** the check runs on it
+- **THEN** it fails naming `concepts.md` and `guides/decisions.md`
+
+#### Scenario: A skip button leading backwards is caught
+
+- **GIVEN** a Roles chapter opening with the skip button "Not for you?
+  Skip to Concepts", linking `concepts.md`
+- **WHEN** the check runs on it
+- **THEN** it fails: the skip button opens a chapter before it
+
+#### Scenario: A skip button out of place or misnamed is caught
+
+- **GIVEN** a Jira guide whose skip link sits in its second section, and a
+  Roles chapter whose skip button reads "Skip ahead" while it opens
+  Review record
+- **WHEN** the check runs on them
+- **THEN** each fails: the first because the button is not before the
+  chapter's first paragraph in a `skip-step` block, the second because
+  its text does not end with "Review record"
+
+### Requirement: Removed pages leave nothing behind
+
+The pages this change removes — `choose-your-path.md`, `paths/*.md`,
+`guides/start-from-nothing.md`, `guides/repository-integration.md` and
+`guides/moving-from-codev.md` — SHALL no longer exist in either edition,
+and nothing SHALL point to them: no chapter, README, home page or CHANGELOG
+entry links them, and the books hold no redirect for them.
+
+#### Scenario: No trace of a removed page
+
+- **GIVEN** both editions, both `book.toml`, both READMEs and both home
+  pages
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** none of the removed files exists
+- **AND** nothing links one of them, the CHANGELOG included, and no
+  `book.toml` holds an `[output.html.redirect]` entry
+
+#### Scenario: A link to a removed page is caught
+
+- **GIVEN** a chapter linking `paths/review.md`, and a `book.toml` holding
+  a redirect for `choose-your-path.html`
+- **WHEN** the check runs on them
+- **THEN** each fails naming the removed page
+
+### Requirement: The documentation names GitHub only
+
+No chapter of the tunnel, glossary, FAQ, example plan, README or home
+page SHALL name GitLab: approving a plan, continuous integration and every
+example are described on GitHub. The command-line and JSON-output
+reference chapters MAY name it only to describe, literally, what
+`compagnon init` prints, as long as the command does.
+
+#### Scenario: GitLab is not named
+
+- **GIVEN** every chapter of both editions but `reference/cli.md` and
+  `reference/json-output.md`, both READMEs and both home pages
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** none holds "GitLab"
+
+#### Scenario: A chapter naming GitLab is caught
+
+- **GIVEN** an approval guide that says "on GitHub or GitLab"
+- **WHEN** the check runs on it
+- **THEN** it fails naming the guide
+
+### Requirement: The tunnel is approved on a mockup before the rewrite
+
+The new order SHALL first be shown to the owner as a clickable mockup — the
+tunnel's table of contents, each page's one-line purpose, its skip button
+if any and its "Next step" — and the chapters SHALL be rewritten only once
+the owner has approved it. The approved mockup stays in the change folder.
+
+#### Scenario: The rewrite waits for the approval
+
+- **GIVEN** the change's tasks
+- **WHEN** the mockup is published
+- **THEN** no chapter is moved or rewritten until the owner approves the
+  mockup
+
+#### Scenario: Changes asked on the mockup are shown again
+
+- **GIVEN** an owner who asks to move a chapter on the mockup
+- **WHEN** the mockup is changed
+- **THEN** it is published again and the rewrite still waits for the
+  owner's approval
+
+### Requirement: The documentation's look follows the Mairistem design system
+
+The books' theme (`docs/theme/mairistem.css`, `mairistem.js`), the offline
+manual's stylesheet (`crates/compagnon-cli/assets/docs.css`) and the home
+pages (`docs/site/index.html`, `docs/site/fr.html`) SHALL follow the
+Mairistem design system as the approved mockup shows it: the four brand
+colors (coral, deep blue, green, yellow) with black, white and the
+system's greys; no gradient and no blur; IBM Plex Sans as the only text
+font, a monospace font only for code. Each tunnel chapter of the books
+SHALL show, above its title, an eyebrow naming its place — "Step <n> of
+5 · <step>" (« Étape <n> sur 5 · <étape> ») — and a five-segment progress
+bar; its "Next step" section SHALL be drawn as a dark card; its "Under the
+hood" blocks as accordions marked + and −; its example block as a capture
+of a Claude Code session in a white frame with a 1 px border. The home
+pages SHALL open with the design system's header and product hero, and
+show the five steps as cards with a colored top rule.
+
+#### Scenario: The styles hold no gradient, blur or other font
+
+- **GIVEN** `mairistem.css`, `docs.css` and both home pages
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** none holds `gradient(`, `blur(` or `backdrop-filter`
+- **AND** every `font-family` names IBM Plex Sans, a monospace font, or
+  inherits
+
+#### Scenario: A gradient is caught
+
+- **GIVEN** a stylesheet whose hero uses `linear-gradient(…)`
+- **WHEN** the check runs on it
+- **THEN** it fails naming the file and the gradient
+
+### Requirement: The documentation holds no trace of codev
+
+No chapter of either edition, README or home page SHALL name codev
+(in any case): the command-line reference has no `compagnon migrate`
+section, no error code or chapter describes the former layout, and the
+introduction and the origins tell Compagnon's story without its former
+name. The CHANGELOG keeps its dated history but no note pointing readers
+to a codev migration.
+
+#### Scenario: codev is not named
+
+- **GIVEN** every chapter of both editions, both READMEs and both home
+  pages
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** none holds "codev", whatever its case
+
+#### Scenario: A chapter naming codev is caught
+
+- **GIVEN** an origins chapter saying "formerly codev"
+- **WHEN** the check runs on it
+- **THEN** it fails naming the chapter
+
+### Requirement: Beginners read a simple path, experts open the detail
+
+In the chapters of the first three steps of the tunnel, the text shown
+by default SHALL be written for a beginner: outside "Under the hood"
+blocks (`<details>`, whose summary starts "Under the hood:" / « Sous le
+capot : »), a fenced block MAY only be a shell block that installs
+Compagnon or runs `compagnon init`, or a `markdown` or `text` block
+quoting a request, an answer or an excerpt of a plan; configuration,
+options and internals live in "Under the hood" blocks or in the
+Understand and For your team steps and the appendices.
+
+#### Scenario: The first steps show only what a beginner needs
+
+- **GIVEN** the chapters of the first three steps of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** no fenced block outside "Under the hood" blocks is in another
+  language than a shell install or init, `markdown` or `text`
+
+#### Scenario: Configuration shown to a beginner is caught
+
+- **GIVEN** a Jira guide showing a `yaml` block outside any "Under the
+  hood" block
+- **WHEN** the check runs on it
+- **THEN** it fails naming the guide and the `yaml` block
+
+### Requirement: Every tunnel page shows a diagram and a concrete example
+
+Every chapter of the first four steps of the tunnel SHALL hold at least
+one diagram (a `<figure class="diagram">`), and every chapter of the first
+three steps at least one concrete example: a `<div class="example">`
+block, titled "Example" (« Exemple »), showing a real request and what
+comes of it — Claude's answer, a plan's excerpt, a pull request — with
+real names and values, never placeholders alone. The request and Claude's
+answer are written as a Claude Code session: a `text` block whose request
+line starts with `>` and whose answer lines start with `⏺`.
+
+#### Scenario: Each page draws and shows
+
+- **GIVEN** the tunnel chapters of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each chapter of the first four steps holds a diagram
+- **AND** each chapter of the first three steps holds an example block
+
+#### Scenario: A page without diagram or example is caught
+
+- **GIVEN** an Asking Claude chapter with no figure, and an installation
+  chapter with no example block
+- **WHEN** the check runs on them
+- **THEN** each fails naming the chapter and what it lacks

@@ -158,7 +158,7 @@ for the probe and the questions.
   [Inherited sources](../guides/inherited-sources.md).
 - `--no-claude-md`, `--no-ci` and `--no-pr-template` skip one integration
   file each; `--no-integration` skips all three. See
-  [Repository integration and compagnon doctor](../guides/repository-integration.md).
+  [Deploying Compagnon for a team](../guides/team-rollout.md).
 
 Unless you opt out, `compagnon init` also writes Compagnon's section in `CLAUDE.md`
 and, on GitHub, `.github/workflows/compagnon.yml` and a section in the pull
@@ -224,7 +224,7 @@ Skills you edited by hand are preserved unless you pass `--force`.
    Compagnon's text sits between `<!-- compagnon:begin -->` and `<!-- compagnon:end -->`
    markers and never replaces yours. `--no-claude-md`, `--no-ci`,
    `--no-pr-template` and `--no-integration` skip these files. See
-   [Repository integration and compagnon doctor](../guides/repository-integration.md).
+   [Deploying Compagnon for a team](../guides/team-rollout.md).
 6. **Declares inherited sources** given with `--inherit`, and pins the git
    ones right away. See [Inherited sources](../guides/inherited-sources.md).
 
@@ -265,46 +265,6 @@ pull request template, and `.github/workflows/compagnon.yml` when its first line
 is `# compagnon:managed` — which moves its pinned version to the running one. It
 only refreshes what exists: it never creates these files nor adds a section,
 so a project initialized with `--no-integration` stays as it is.
-
-### compagnon migrate
-
-```text
-Convert a project set up before the rename to Compagnon
-
-Usage: compagnon migrate [OPTIONS]
-
-Options:
-      --dry-run  Print the operations without performing them
-      --json
-  -h, --help     Print help (see more with '--help')
-```
-
-Converts a project set up with codev, the product's name before 0.7.0, in
-place. It finds the project from the current directory like any other
-command, under `_codev/` or `_compagnon/`, then:
-
-- moves `_codev/` to `_compagnon/`, and `codev.lock` to `compagnon.lock`;
-- renames the `codev_version` key to `compagnon_version` in
-  `_compagnon/config.yaml`, keeping its value, its comments and every other
-  byte;
-- rewrites the format markers of `review.md` and `corrections.md`, and the
-  markers of the managed sections of `CLAUDE.md` and of the pull request
-  template;
-- replaces the generated `codev-*` skills and `.github/workflows/codev.yml`
-  with their Compagnon versions, then refreshes everything as
-  `compagnon update` does.
-
-A `codev-*` skill or a `codev.yml` edited by hand is kept and reported. The
-prose of specs, decisions and changes is never rewritten. `--dry-run` prints
-the operations and writes nothing. A run that stops on an error
-(`migration_incomplete`) names the failing path and what was already done:
-fix the cause and run it again to complete it. A project already migrated is
-left as it is. The command refuses, without writing, a directory holding
-both `_codev/` and `_compagnon/` (`migration_conflict`) and a version
-requirement the running Compagnon does not satisfy
-(`migration_version_unsatisfied`). When the project declares git sources, it
-reminds you to run `compagnon sources update`. See
-[Moving from codev](../guides/moving-from-codev.md).
 
 ### compagnon self-update
 
@@ -422,7 +382,7 @@ it never contacts the network.
 Each line shows `✓` (ok), `✗` (missing) or `!` (warning); the last line
 counts the checks and those left to fix. The exit status is `0`, unless
 `--strict` is given and a check is missing: warnings never fail. See
-[Repository integration and compagnon doctor](../guides/repository-integration.md)
+[Deploying Compagnon for a team](../guides/team-rollout.md)
 and, for `--json`, [JSON output](json-output.md#doctor).
 
 ### compagnon docs
@@ -708,7 +668,7 @@ Options:
 
 Validates the change, refuses if validation reports an error, then merges its
 deltas into the main specs, without moving the change. Running it again
-reports the specs as unchanged. See [Sync](../workflow.md#sync).
+reports the specs as unchanged. See [Building and filing away](../guides/build-and-file.md#archive).
 
 ### compagnon review
 
@@ -759,7 +719,7 @@ its [review record](../guides/review-record.md) and refuses with
 were active or a high-severity finding is still open or disputed; then
 merges its deltas into the main specs and moves it, record included, to
 `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`. See
-[Archive](../workflow.md#archive).
+[Building and filing away](../guides/build-and-file.md#archive).
 
 ### compagnon changelog
 
