@@ -2614,6 +2614,22 @@ mod chapter_tests {
     }
 
     #[test]
+    fn both_home_pages_put_jira_after_the_profiles() {
+        for (lang, page) in [
+            (Lang::En, include_str!("../../../docs/site/index.html")),
+            (Lang::Fr, include_str!("../../../docs/site/fr.html")),
+        ] {
+            let problems = jira_problems(page);
+            assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
+            assert!(
+                jira_after_profiles(page, &profile_labels(lang)),
+                "{}: Jira comes before the last profile",
+                lang.tag()
+            );
+        }
+    }
+
+    #[test]
     fn everyday_chapters_are_short_and_end_with_go_further() {
         let mut found = Vec::new();
         for lang in LANGS {
@@ -2641,6 +2657,14 @@ mod chapter_tests {
                 include_str!("../../../docs/theme/mairistem.css"),
             ),
             ("assets/docs.css", include_str!("../assets/docs.css")),
+            (
+                "docs/site/index.html",
+                include_str!("../../../docs/site/index.html"),
+            ),
+            (
+                "docs/site/fr.html",
+                include_str!("../../../docs/site/fr.html"),
+            ),
         ];
         let mut found = Vec::new();
         for (file, css) in sheets {
