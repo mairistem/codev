@@ -556,8 +556,9 @@ details[open] > summary {
   --dg-file: #ffffff;
   --dg-ink: #00263a;
   --dg-muted: #4f6670;
-  --dg-line: #6b8590;
+  --dg-line: #567079;
   --dg-you: #e0421f;
+  --dg-you-text: #c4361b;
   --dg-on-you: #1a0a05;
   --dg-claude: #004c66;
 }
@@ -569,8 +570,9 @@ details[open] > summary {
     --dg-file: #00394d;
     --dg-ink: #f2f7f8;
     --dg-muted: #b4c8cf;
-    --dg-line: #8fb4c2;
+    --dg-line: #a7c6d1;
     --dg-you: #ff8a70;
+    --dg-you-text: #ffa390;
     --dg-on-you: #1a0a05;
     --dg-claude: #7cc8e2;
   }

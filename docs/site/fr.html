@@ -52,8 +52,9 @@
   --dg-file: #ffffff;
   --dg-ink: #00263a;
   --dg-muted: #4f6670;
-  --dg-line: #6b8590;
+  --dg-line: #567079;
   --dg-you: #e0421f;
+  --dg-you-text: #c4361b;
   --dg-on-you: #1a0a05;
   --dg-claude: #004c66;
 }
@@ -85,6 +86,7 @@
     --dg-muted: #a9bcc3;
     --dg-line: #8fa8b1;
     --dg-you: #ff7a5c;
+    --dg-you-text: #ff7a5c;
     --dg-on-you: #1a0a05;
     --dg-claude: #5fb8d3;
   }
@@ -350,11 +352,11 @@ figure.diagram .mono { font-family: var(--mono); }
 <div class="scroll">
 <svg viewBox="0 0 760 170" role="img" aria-label="Cinq étapes : vous demandez avec vos mots ; Claude rédige un plan ; vous l'approuvez ou demandez des corrections ; Claude le réalise tâche par tâche ; la modification est classée et le plan reste avec le code.">
 <defs><marker id="dg-workflow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
-<g class="st"><text x="70" y="22" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-you)">VOUS</text><rect x="4" y="32" width="132" height="118" rx="14" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="2"/><circle cx="30" cy="58" r="13" style="fill:var(--dg-you)"/><text x="30" y="63" text-anchor="middle" class="mono" font-size="13" font-weight="700" style="fill:var(--dg-on-you)">1</text><text x="20" y="98" font-size="16" font-weight="600" style="fill:var(--dg-ink)">Demander</text><text x="20" y="120" font-size="13" style="fill:var(--dg-muted)">avec vos mots</text></g>
+<g class="st"><text x="70" y="22" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-you-text)">VOUS</text><rect x="4" y="32" width="132" height="118" rx="14" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="2"/><circle cx="30" cy="58" r="13" style="fill:var(--dg-you)"/><text x="30" y="63" text-anchor="middle" class="mono" font-size="13" font-weight="700" style="fill:var(--dg-on-you)">1</text><text x="20" y="98" font-size="16" font-weight="600" style="fill:var(--dg-ink)">Demander</text><text x="20" y="120" font-size="13" style="fill:var(--dg-muted)">avec vos mots</text></g>
 <line x1="138" y1="91" x2="154" y2="91" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-workflow-arrow)"/>
 <g class="st"><text x="223" y="22" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-claude)">CLAUDE</text><rect x="157" y="32" width="132" height="118" rx="14" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/><circle cx="183" cy="58" r="13" style="fill:var(--dg-claude)"/><text x="183" y="63" text-anchor="middle" class="mono" font-size="13" font-weight="700" style="fill:var(--dg-box)">2</text><text x="173" y="98" font-size="16" font-weight="600" style="fill:var(--dg-ink)">Planifier</text><text x="173" y="120" font-size="13" style="fill:var(--dg-muted)">pourquoi, quoi,</text><text x="173" y="137" font-size="13" style="fill:var(--dg-muted)">comment, tâches</text></g>
 <line x1="291" y1="91" x2="307" y2="91" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-workflow-arrow)"/>
-<g class="st"><text x="376" y="22" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-you)">VOUS</text><rect x="310" y="32" width="132" height="118" rx="14" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="2"/><circle cx="336" cy="58" r="13" style="fill:var(--dg-you)"/><text x="336" y="63" text-anchor="middle" class="mono" font-size="13" font-weight="700" style="fill:var(--dg-on-you)">3</text><text x="326" y="98" font-size="16" font-weight="600" style="fill:var(--dg-ink)">Approuver</text><text x="326" y="120" font-size="13" style="fill:var(--dg-muted)">ou demander des</text><text x="326" y="137" font-size="13" style="fill:var(--dg-muted)">corrections</text></g>
+<g class="st"><text x="376" y="22" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-you-text)">VOUS</text><rect x="310" y="32" width="132" height="118" rx="14" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="2"/><circle cx="336" cy="58" r="13" style="fill:var(--dg-you)"/><text x="336" y="63" text-anchor="middle" class="mono" font-size="13" font-weight="700" style="fill:var(--dg-on-you)">3</text><text x="326" y="98" font-size="16" font-weight="600" style="fill:var(--dg-ink)">Approuver</text><text x="326" y="120" font-size="13" style="fill:var(--dg-muted)">ou demander des</text><text x="326" y="137" font-size="13" style="fill:var(--dg-muted)">corrections</text></g>
 <line x1="444" y1="91" x2="460" y2="91" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-workflow-arrow)"/>
 <g class="st"><text x="529" y="22" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-claude)">CLAUDE</text><rect x="463" y="32" width="132" height="118" rx="14" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/><circle cx="489" cy="58" r="13" style="fill:var(--dg-claude)"/><text x="489" y="63" text-anchor="middle" class="mono" font-size="13" font-weight="700" style="fill:var(--dg-box)">4</text><text x="479" y="98" font-size="16" font-weight="600" style="fill:var(--dg-ink)">Réaliser</text><text x="479" y="120" font-size="13" style="fill:var(--dg-muted)">tâche par tâche,</text><text x="479" y="137" font-size="13" style="fill:var(--dg-muted)">testé</text></g>
 <line x1="597" y1="91" x2="613" y2="91" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-workflow-arrow)"/>
@@ -484,8 +486,10 @@ figure.diagram .mono { font-family: var(--mono); }
   }
   document.querySelectorAll('[data-copy]').forEach(function (button) {
     button.addEventListener('click', function () {
-      var text = button.parentNode.querySelector('pre').textContent.trim();
-      copy(text).then(function () {
+      var block = button.closest('.codeblock');
+      var pre = block && block.querySelector('pre');
+      var text = pre ? pre.textContent.trim() : '';
+      (text ? copy(text) : Promise.reject()).then(function () {
         button.textContent = 'Copié';
         button.setAttribute('data-state', 'done');
         status.textContent = 'Commande copiée dans le presse-papiers';

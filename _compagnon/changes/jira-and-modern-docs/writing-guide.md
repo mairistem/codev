@@ -56,7 +56,8 @@ Models: `mockup/jira-diagram.html`, `mockup/workflow-diagram.html`,
   `style="stroke:var(--dg-line)"`: `--dg-bg`, `--dg-box` (box fill),
   `--dg-file` (file card fill), `--dg-ink` (text), `--dg-muted` (secondary
   text), `--dg-line` (arrows, neutral borders), `--dg-you` (borders and
-  dots where the reader decides), `--dg-on-you` (digits on a `--dg-you`
+  dots where the reader decides), `--dg-you-text` (coral text, such as a
+  "YOU" label), `--dg-on-you` (digits on a `--dg-you`
   dot), `--dg-claude` (borders and dots where Claude works; digits on it
   use `--dg-box`). The three Mairistem dots (`#ff5331`, `#ffab03`,
   `#00c39b`) may appear as small decorative dots only. Text is always ink

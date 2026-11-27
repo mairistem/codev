@@ -621,3 +621,33 @@ fn a_header_still_showing_the_mairistem_logo_is_caught() {
         ]
     );
 }
+
+/// The home pages' copy buttons sit in each code block's header, beside the
+/// command: the script must find the command from the block, not from the
+/// button's parent, or a click does nothing and announces nothing.
+#[test]
+fn home_page_copy_buttons_find_their_command() {
+    for file in ["docs/site/index.html", "docs/site/fr.html"] {
+        let page = read(file);
+        let buttons = page.matches("<button class=\"copy\"").count();
+        assert_eq!(buttons, 2, "{file}: two copy buttons");
+        for (i, _) in page.match_indices("<button class=\"copy\"") {
+            let block_start = page[..i]
+                .rfind("<div class=\"codeblock\">")
+                .expect("in a code block");
+            let block_end = block_start + page[block_start..].find("</div>").expect("closed");
+            assert!(
+                page[block_start..block_end].contains("<pre"),
+                "{file}: a copy button's block has no command"
+            );
+        }
+        assert!(
+            page.contains("button.closest('.codeblock')"),
+            "{file}: the script finds the command from the button's code block"
+        );
+        assert!(
+            !page.contains("button.parentNode.querySelector('pre')"),
+            "{file}: the script looks for the command beside the button, where it is not"
+        );
+    }
+}

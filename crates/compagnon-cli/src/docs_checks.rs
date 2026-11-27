@@ -502,6 +502,7 @@ pub fn toc_problems(summary: &str) -> Vec<String> {
     let parts = parts(summary);
     let mut problems = Vec::new();
     for (i, expected) in PARTS_AFTER_START.iter().enumerate() {
+        let before = problems.len();
         let Some((title, listed)) = parts.get(i + 1) else {
             problems.push(format!("part {} is missing", i + 2));
             continue;
@@ -516,7 +517,9 @@ pub fn toc_problems(summary: &str) -> Vec<String> {
                 problems.push(format!("{c} is missing from \"{title}\""));
             }
         }
-        if problems.is_empty()
+        // Each part's order is checked once its own chapters are right,
+        // whatever the other parts hold.
+        if problems.len() == before
             && listed
                 .iter()
                 .map(String::as_str)
@@ -528,19 +531,20 @@ pub fn toc_problems(summary: &str) -> Vec<String> {
     problems
 }
 
+/// The entries of a `SUMMARY.md`, as `(title, target)`, in order.
+pub fn summary_entries(summary: &str) -> impl Iterator<Item = (&str, &str)> {
+    summary.lines().filter_map(|line| {
+        let rest = line.trim_start().strip_prefix("- [")?;
+        let (title, target) = rest.split_once("](")?;
+        Some((title, target.trim_end_matches(')')))
+    })
+}
+
 /// The entries of a `SUMMARY.md` whose title is not the `# ` heading of
 /// their chapter, as `path: entry ≠ heading`.
 pub fn title_problems(summary: &str, heading_of: impl Fn(&str) -> Option<String>) -> Vec<String> {
     let mut problems = Vec::new();
-    for line in summary.lines() {
-        let line = line.trim_start();
-        let Some(rest) = line.strip_prefix("- [") else {
-            continue;
-        };
-        let Some((title, target)) = rest.split_once("](") else {
-            continue;
-        };
-        let path = target.trim_end_matches(')');
+    for (title, path) in summary_entries(summary) {
         match heading_of(path) {
             Some(h) if h == title => {}
             Some(h) => problems.push(format!("{path}: entry \"{title}\" ≠ heading \"{h}\"")),
@@ -1126,7 +1130,7 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         }
     };
     // Headings count: a French heading must be French too.
-    for paragraph in prose_paragraphs(&without_svg(md), Headings::Keep) {
+    for paragraph in prose_paragraphs(&with_diagrams_as_words(md), Headings::Keep) {
         let heading = paragraph.trim_start().starts_with('#');
         if heading && is_identifier_heading(&paragraph) {
             continue;
@@ -1209,7 +1213,7 @@ fn is_identifier_heading(heading: &str) -> bool {
 /// `md` with each `<svg>` block replaced by what it says in words (its
 /// `aria-label` and its `<text>`), each as its own paragraph: a French
 /// diagram speaks French too.
-fn without_svg(md: &str) -> String {
+fn with_diagrams_as_words(md: &str) -> String {
     let mut out = String::with_capacity(md.len());
     let mut from = 0;
     for (start, svg) in crate::docs::svg_elements(md) {
@@ -1313,25 +1317,36 @@ pub fn diagram_problems(text: &str) -> Vec<String> {
         if in_figure && !after[..closes].contains("<figcaption") {
             problems.push(format!("{label} is not followed by a <figcaption>"));
         }
-        for attr in ["href=\"", "src=\""] {
-            let mut rest = svg;
-            while let Some(i) = rest.find(attr) {
-                let value = &rest[i + attr.len()..];
-                if !value.starts_with('#') {
-                    problems.push(format!("{label} points at another file"));
-                    break;
-                }
-                rest = value;
-            }
+        if points_outside(svg) {
+            problems.push(format!("{label} points at another file"));
         }
-        if svg.contains("\n\n")
-            || svg.contains("\n\r\n")
-            || svg.lines().any(|l| l.trim().is_empty())
-        {
+        if svg.lines().any(|l| l.trim().is_empty()) {
             problems.push(format!("{label} holds a blank line"));
         }
     }
     problems
+}
+
+/// Whether a drawing points at another file: an `href` or `src` that is
+/// not an in-page reference (`#marker`).
+fn points_outside(svg: &str) -> bool {
+    ["href=\"", "src=\""].iter().any(|attr| {
+        svg.match_indices(attr)
+            .any(|(i, _)| !svg[i + attr.len()..].starts_with('#'))
+    })
+}
+
+/// The selector of the rule whose `{` ends `head`: the text since the
+/// previous rule or declaration, comment lines left out, on one line.
+fn selector_before(head: &str) -> String {
+    head.rsplit(['}', ';', '{'])
+        .next()
+        .unwrap_or(head)
+        .lines()
+        .filter(|l| !l.trim().starts_with("/*") && !l.trim().starts_with('*'))
+        .flat_map(str::split_whitespace)
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 /// The relative luminance of a `#rrggbb` color (WCAG 2.2).
@@ -1368,14 +1383,7 @@ pub fn diagram_themes(css: &str) -> Vec<(String, Vec<(String, String)>)> {
         let body = &css[open + 1..close];
         if body.contains("--dg-ink:") && !body.contains('{') {
             let head = &css[from..open];
-            let selector = head
-                .rsplit(['}', ';', '{'])
-                .next()
-                .unwrap_or(head)
-                .lines()
-                .filter(|l| !l.trim().starts_with("/*") && !l.trim().starts_with('*'))
-                .collect::<Vec<_>>()
-                .join(" ");
+            let selector = selector_before(head);
             let tokens = body
                 .split(';')
                 .filter_map(|d| {
@@ -1385,10 +1393,7 @@ pub fn diagram_themes(css: &str) -> Vec<(String, Vec<(String, String)>)> {
                         .then(|| (k.to_string(), v.trim().to_string()))
                 })
                 .collect();
-            out.push((
-                selector.split_whitespace().collect::<Vec<_>>().join(" "),
-                tokens,
-            ));
+            out.push((selector, tokens));
         }
         from = open + 1;
     }
@@ -1400,7 +1405,10 @@ pub fn diagram_themes(css: &str) -> Vec<(String, Vec<(String, String)>)> {
 /// drawn on, lines, borders and dots at least 3:1 against the page and the
 /// boxes.
 pub fn contrast_problems(theme: &str, tokens: &[(String, String)]) -> Vec<String> {
-    const TEXT: [(&str, &str); 8] = [
+    const TEXT: [(&str, &str); 11] = [
+        ("--dg-you-text", "--dg-bg"),
+        ("--dg-you-text", "--dg-box"),
+        ("--dg-box", "--dg-line"),
         ("--dg-ink", "--dg-box"),
         ("--dg-muted", "--dg-box"),
         ("--dg-ink", "--dg-file"),
@@ -1876,8 +1884,9 @@ mod tests {
     #[test]
     fn a_diagram_pair_under_its_threshold_is_caught() {
         let css = ".light {\n  --dg-bg: #ffffff;\n  --dg-box: #f4f8f9;\n  --dg-file: #ffffff;\n\
-                   --dg-ink: #00263a;\n  --dg-muted: #b0b0b0;\n  --dg-line: #6b8590;\n\
-                   --dg-you: #e0421f;\n  --dg-on-you: #1a0a05;\n  --dg-claude: #004c66;\n}\n";
+                   --dg-ink: #00263a;\n  --dg-muted: #b0b0b0;\n  --dg-line: #567079;\n\
+                   --dg-you: #e0421f;\n  --dg-you-text: #c4361b;\n  --dg-on-you: #1a0a05;\n\
+                   --dg-claude: #004c66;\n}\n";
         let themes = diagram_themes(css);
         assert_eq!(themes.len(), 1);
         assert_eq!(themes[0].0, ".light");
@@ -2582,11 +2591,8 @@ mod chapter_tests {
 
     /// The title `SUMMARY.md` gives a chapter.
     fn summary_title(lang: Lang, path: &str) -> Option<String> {
-        summary(lang).lines().find_map(|l| {
-            let rest = l.trim_start().strip_prefix("- [")?;
-            let (title, target) = rest.split_once("](")?;
-            (target.trim_end_matches(')') == path).then(|| title.to_string())
-        })
+        summary_entries(summary(lang))
+            .find_map(|(title, target)| (target == path).then(|| title.to_string()))
     }
 
     #[test]
@@ -2629,12 +2635,20 @@ mod chapter_tests {
         }
     }
 
+    /// Everyday chapters exempt from the word cap and the "Go further"
+    /// ending: the annotated example plan, whose body is a whole plan
+    /// quoted for the reader to study.
+    const UNCAPPED_EVERYDAY: [&str; 1] = ["guides/example-plan.md"];
+
     #[test]
     fn everyday_chapters_are_short_and_end_with_go_further() {
         let mut found = Vec::new();
         for lang in LANGS {
             let everyday = &parts(summary(lang))[EVERYDAY_PART].1;
-            for path in everyday.iter().filter(|p| *p != "guides/example-plan.md") {
+            for path in everyday
+                .iter()
+                .filter(|p| !UNCAPPED_EVERYDAY.contains(&p.as_str()))
+            {
                 let problems = everyday_problems(
                     chapter(lang, path),
                     cap(lang, (1200, 1500)),

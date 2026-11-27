@@ -31,7 +31,16 @@ def sprites_of(page):
 
 
 def script_of(page):
-    return page[page.index("<script>") :]
+    # The copy button sits in the code block's header, beside the command:
+    # look the command up from the block, and say so when it is missing.
+    script = page[page.index("<script>") :]
+    return script.replace(
+        "var text = button.parentNode.querySelector('pre').textContent.trim();",
+        "var block = button.closest('.codeblock');\n      var pre = block && block.querySelector('pre');\n      var text = pre ? pre.textContent.trim() : '';",
+    ).replace(
+        "      copy(text).then(function () {",
+        "      (text ? copy(text) : Promise.reject()).then(function () {",
+    )
 
 
 CSS = """:root {
@@ -64,8 +73,9 @@ CSS = """:root {
   --dg-file: #ffffff;
   --dg-ink: #00263a;
   --dg-muted: #4f6670;
-  --dg-line: #6b8590;
+  --dg-line: #567079;
   --dg-you: #e0421f;
+  --dg-you-text: #c4361b;
   --dg-on-you: #1a0a05;
   --dg-claude: #004c66;
 }
@@ -97,6 +107,7 @@ CSS = """:root {
     --dg-muted: #a9bcc3;
     --dg-line: #8fa8b1;
     --dg-you: #ff7a5c;
+    --dg-you-text: #ff7a5c;
     --dg-on-you: #1a0a05;
     --dg-claude: #5fb8d3;
   }

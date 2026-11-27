@@ -244,3 +244,190 @@ history:
   - status: fixed
     by: accessibility
 ```
+
+## code.review
+
+Mode: isolated.
+Summarized: 43 files — the change exceeds the material limit (1.2 MB for 160 KB); summaries written by nine summarizer sub-agents of about five files each, not one per file, to limit cost.
+
+### accessibility
+
+#### R-accessibility-6 The home pages' Copy buttons no longer copy and announce nothing
+
+```yaml
+severity: medium
+confidence: high
+location: 'docs/site/index.html:487'
+evidence: |
+        var text = button.parentNode.querySelector('pre').textContent.trim();
+recommendation: 'Find the command with button.closest(''.codeblock''); announce the failure when it is missing. Same in fr.html.'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: 'docs/site/index.html, docs/site/fr.html, site/build_home.py (script_of); test home_page_copy_buttons_find_their_command'
+  - status: fixed
+    by: accessibility
+```
+
+#### R-accessibility-7 The coral YOU labels in the workflow diagram are below 4.5:1
+
+```yaml
+severity: low
+confidence: high
+location: 'docs/en/src/workflow.md:11'
+evidence: |
+  style="fill:var(--dg-you)">YOU</text>
+recommendation: 'Draw coral text with a text token (--dg-you-text, #c4361b on white) and add it to the checked text pairs; same in FR and on the home pages.'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: '--dg-you-text in mairistem.css, docs.css and the home pages; text fills in docs/{en,fr}/src/workflow.md; pairs added to contrast_problems'
+  - status: fixed
+    by: accessibility
+```
+
+#### R-accessibility-8 The digit on the kept step badge is 3.65:1
+
+```yaml
+severity: low
+confidence: high
+location: 'docs/site/index.html:186'
+evidence: |
+  .n.kept { background: var(--dg-line); color: var(--dg-box); }
+recommendation: 'Make the box-on-line pair reach 4.5:1 and add it to the checked text pairs.'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: '--dg-line #567079 light, #a7c6d1 dark; pair (--dg-box, --dg-line) added to contrast_problems'
+  - status: fixed
+    by: accessibility
+```
+
+### newcomer
+
+#### R-newcomer-1 The order check in toc_problems depends on problems from earlier parts
+
+```yaml
+severity: medium
+confidence: high
+location: 'crates/compagnon-cli/src/docs_checks.rs:519-526'
+evidence: |
+          if problems.is_empty()
+              && listed
+                  .iter()
+                  .map(String::as_str)
+                  .ne(expected.iter().copied())
+          {
+              problems.push(format!("\"{title}\" is out of order: {listed:?}"));
+          }
+recommendation: 'Track problems per part (`let before = problems.len()`) so each part''s order is checked.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'docs_checks.rs toc_problems: per-part `before` counter with a comment'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 without_svg no longer removes SVG; it replaces each drawing with its words
+
+```yaml
+severity: medium
+confidence: high
+location: 'crates/compagnon-cli/src/docs_checks.rs:1212'
+evidence: |
+  fn without_svg(md: &str) -> String {
+recommendation: 'Rename it for what it returns.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'docs_checks.rs: without_svg renamed with_diagrams_as_words'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 No comment explains why the example plan is exempt from the everyday check
+
+```yaml
+severity: low
+confidence: high
+location: 'crates/compagnon-cli/src/docs_checks.rs:2637'
+evidence: |
+              for path in everyday.iter().filter(|p| *p != "guides/example-plan.md") {
+recommendation: 'Name the exemption in a documented constant.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'docs_checks.rs: UNCAPPED_EVERYDAY constant with its reason'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 diagram_problems' blank-line test repeats itself and nests the href scan
+
+```yaml
+severity: low
+confidence: high
+location: 'crates/compagnon-cli/src/docs_checks.rs:1327'
+evidence: |
+          if svg.contains("\n\n")
+recommendation: 'Keep one blank-line test; move the href/src scan into a helper.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'docs_checks.rs: one blank-line test; points_outside helper'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-5 The selector extraction in diagram_themes is a dense one-off chain
+
+```yaml
+severity: low
+confidence: high
+location: 'crates/compagnon-cli/src/docs_checks.rs:1372'
+evidence: |
+                  .rsplit(['}', ';', '{'])
+recommendation: 'Move it into a named helper that normalizes whitespace once.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'docs_checks.rs: selector_before helper, whitespace normalized once'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-6 SUMMARY.md entry lines are parsed in two places
+
+```yaml
+severity: low
+confidence: high
+location: 'crates/compagnon-cli/src/docs_checks.rs:2584'
+evidence: |
+      fn summary_title(lang: Lang, path: &str) -> Option<String> {
+recommendation: 'Extract one summary_entries helper used by both.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'docs_checks.rs: summary_entries used by title_problems and summary_title'
+  - status: fixed
+    by: newcomer
+```
