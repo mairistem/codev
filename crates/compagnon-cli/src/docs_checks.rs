@@ -330,6 +330,42 @@ pub fn toc_problems(summary: &str, lang: Lang) -> Vec<String> {
     problems
 }
 
+/// The pages the tunnel removed, without extension: their addresses
+/// disappear, with no redirect.
+pub const REMOVED_PAGES: [&str; 8] = [
+    "choose-your-path",
+    "paths/review",
+    "paths/build",
+    "paths/develop",
+    "paths/team",
+    "guides/start-from-nothing",
+    "guides/repository-integration",
+    "guides/moving-from-codev",
+];
+
+/// What in a text — a chapter, a `SUMMARY.md`, a README, a home page, a
+/// `book.toml` — still lists, links or redirects a removed page.
+pub fn removed_pages_problems(text: &str) -> Vec<String> {
+    let mut problems: Vec<String> = REMOVED_PAGES
+        .iter()
+        .filter(|page| {
+            let name = page.rsplit('/').next().unwrap_or(page);
+            [".md", ".html"].iter().any(|ext| {
+                text.match_indices(&format!("{name}{ext}")).any(|(i, _)| {
+                    // `paths/review.md`, not `guides/review-a-plan.md`.
+                    let before = &text[..i];
+                    !page.contains('/') || before.ends_with(&page[..page.len() - name.len()])
+                })
+            })
+        })
+        .map(|page| format!("names the removed page {page}"))
+        .collect();
+    if text.contains("[output.html.redirect]") {
+        problems.push("redirects an address".into());
+    }
+    problems
+}
+
 /// The entries of a `SUMMARY.md`, as `(title, target)`, in order.
 pub fn summary_entries(summary: &str) -> impl Iterator<Item = (&str, &str)> {
     summary.lines().filter_map(|line| {
@@ -1284,6 +1320,23 @@ mod tests {
     }
 
     #[test]
+    fn a_link_or_redirect_to_a_removed_page_is_caught() {
+        assert_eq!(
+            removed_pages_problems("See [Review](paths/review.md)."),
+            ["names the removed page paths/review"]
+        );
+        assert!(removed_pages_problems("See [Review](guides/review-a-plan.md).").is_empty());
+        let book = "[output.html.redirect]\n\"/choose-your-path.html\" = \"introduction.html\"\n";
+        assert_eq!(
+            removed_pages_problems(book),
+            [
+                "names the removed page choose-your-path",
+                "redirects an address"
+            ]
+        );
+    }
+
+    #[test]
     fn a_terminal_command_outside_under_the_hood_is_caught() {
         let md = "Step.\n\n```bash\ncompagnon validate\n```\n\n<details>\n<summary>Under the hood: y</summary>\n\n```bash\ncompagnon status\n```\n</details>\n";
         assert_eq!(stray_commands(md), ["compagnon validate"]);
@@ -1994,6 +2047,50 @@ mod chapter_tests {
     }
 
     #[test]
+    fn removed_pages_leave_nothing_behind() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            let listed = paths(lang);
+            for page in REMOVED_PAGES {
+                if listed.contains(&format!("{page}.md").as_str()) {
+                    found.push(format!("{}/SUMMARY.md lists {page}", lang.tag()));
+                }
+            }
+            for (path, md) in lang.chapters() {
+                for p in removed_pages_problems(md) {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+            }
+        }
+        for (name, text) in [
+            ("README.md", include_str!("../../../README.md")),
+            ("README.fr.md", include_str!("../../../README.fr.md")),
+            ("CHANGELOG.md", include_str!("../../../CHANGELOG.md")),
+            (
+                "docs/site/index.html",
+                include_str!("../../../docs/site/index.html"),
+            ),
+            (
+                "docs/site/fr.html",
+                include_str!("../../../docs/site/fr.html"),
+            ),
+            (
+                "docs/en/book.toml",
+                include_str!("../../../docs/en/book.toml"),
+            ),
+            (
+                "docs/fr/book.toml",
+                include_str!("../../../docs/fr/book.toml"),
+            ),
+        ] {
+            for p in removed_pages_problems(text) {
+                found.push(format!("{name}: {p}"));
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
     fn the_documentation_holds_no_trace_of_codev() {
         let mut found = Vec::new();
         for lang in LANGS {
@@ -2043,26 +2140,8 @@ mod chapter_tests {
         assert!(found.is_empty(), "{found:#?}");
     }
 
-    /// The home pages' reading cards, until they show the five steps.
-    fn home_profiles(lang: Lang) -> [&'static str; 4] {
-        match lang {
-            Lang::En => [
-                "I review and approve plans — I do not code",
-                "I do not code, but I want Claude to build something for me",
-                "I am a developer and I have Claude write code",
-                "I set Compagnon up for my team",
-            ],
-            Lang::Fr => [
-                "Je relis et je valide des plans — je ne code pas",
-                "Je ne code pas, mais je veux que Claude construise quelque chose pour moi",
-                "Je suis développeur et je fais coder Claude",
-                "J'installe Compagnon pour mon équipe",
-            ],
-        }
-    }
-
     #[test]
-    fn both_home_pages_put_jira_after_the_profiles() {
+    fn both_home_pages_put_jira_after_the_steps() {
         for (lang, page) in [
             (Lang::En, include_str!("../../../docs/site/index.html")),
             (Lang::Fr, include_str!("../../../docs/site/fr.html")),
@@ -2070,8 +2149,11 @@ mod chapter_tests {
             let problems = jira_problems(page);
             assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
             assert!(
-                jira_after_last(page, &home_profiles(lang)),
-                "{}: Jira comes before the last profile",
+                jira_after_last(
+                    page,
+                    &TUNNEL.map(|(en, fr, _)| if lang == Lang::En { en } else { fr })
+                ),
+                "{}: Jira comes before the last step",
                 lang.tag()
             );
         }

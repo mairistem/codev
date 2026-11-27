@@ -156,4 +156,4 @@ peut être vidée. Voir [Configuration](../reference/configuration.md#changelog)
 
 - [Formats de fichiers](../reference/file-formats.md)
 - [Interface en ligne de commande](../reference/cli.md)
-- [Intégration au dépôt et compagnon doctor](repository-integration.md)
+- [Déployer Compagnon pour une équipe](team-rollout.md)

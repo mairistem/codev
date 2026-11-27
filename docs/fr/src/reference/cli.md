@@ -166,7 +166,7 @@ détection et les questions.
   [Sources héritées](../guides/inherited-sources.md).
 - `--no-claude-md`, `--no-ci` et `--no-pr-template` écartent chacun un
   fichier d'intégration ; `--no-integration` écarte les trois. Voir
-  [Intégration au dépôt et compagnon doctor](../guides/repository-integration.md).
+  [Déployer Compagnon pour une équipe](../guides/team-rollout.md).
 
 Sauf refus de votre part, `compagnon init` écrit aussi la section de Compagnon dans
 `CLAUDE.md` et, sur GitHub, `.github/workflows/compagnon.yml` et une section dans
@@ -236,7 +236,7 @@ modifiées à la main sont préservées, sauf si vous passez `--force`.
    Le texte de Compagnon se trouve entre les marqueurs `<!-- compagnon:begin -->` et
    `<!-- compagnon:end -->` et ne remplace jamais le vôtre. `--no-claude-md`,
    `--no-ci`, `--no-pr-template` et `--no-integration` écartent ces fichiers.
-   Voir [Intégration au dépôt et compagnon doctor](../guides/repository-integration.md).
+   Voir [Déployer Compagnon pour une équipe](../guides/team-rollout.md).
 6. **Il déclare les sources héritées** passées avec `--inherit`, et épingle
    aussitôt les sources git. Voir [Sources héritées](../guides/inherited-sources.md).
 
@@ -405,7 +405,7 @@ Chaque ligne affiche `✓` (ok), `✗` (manquant) ou `!` (avertissement) ; la
 dernière ligne compte les vérifications et celles qui restent à corriger. Le
 code de sortie vaut `0`, sauf avec `--strict` lorsqu'une vérification manque :
 les avertissements ne font jamais échouer la commande. Voir
-[Intégration au dépôt et compagnon doctor](../guides/repository-integration.md)
+[Déployer Compagnon pour une équipe](../guides/team-rollout.md)
 et, pour `--json`, [Sortie JSON](json-output.md#doctor).
 
 ### compagnon docs

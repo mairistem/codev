@@ -65,13 +65,10 @@ sont vos compagnons.
 
 ## Par où commencer
 
-Qu'allez-vous faire avec Compagnon ? Chaque réponse ouvre un parcours
-court :
-
-- [Je relis et je valide des plans — je ne code pas](paths/review.md)
-- [Je ne code pas, mais je veux que Claude construise quelque chose pour moi](paths/build.md)
-- [Je suis développeur et je fais coder Claude](paths/develop.md)
-- [J'installe Compagnon pour mon équipe](paths/team.md)
+La documentation se lit comme un parcours en cinq étapes : découvrir,
+démarrer, au quotidien, comprendre, pour l'équipe. Commencez par
+[Installation](installation.md), puis suivez « Étape suivante » à la fin
+de chaque page.
 
 Chaque terme est expliqué, en mots simples, dans le [Glossaire](glossary.md).
 

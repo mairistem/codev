@@ -58,9 +58,9 @@ history?](../faq.md#should-i-save-_compagnon-and-claudeskills-in-the-projects-hi
 ## The check that blocks a pull request
 
 The check `compagnon init` sets up fails a push or a pull request whose
-spec or change is invalid, or which edits an accepted decision; on
-GitLab, you paste the job `compagnon init` prints. See
-[Repository integration and compagnon doctor](repository-integration.md).
+spec or change is invalid, or which edits an accepted decision; what
+it writes is described in [What compagnon init writes](#what-compagnon-init-writes)
+below.
 
 A failing check only blocks merging once you make it required, in your
 site's settings:
@@ -308,7 +308,6 @@ with stable check ids and codes — see [JSON output](../reference/json-output.m
 
 ## Go further
 
-- [Repository integration and compagnon doctor](repository-integration.md)
 - [Roles](../roles.md)
 - [Configuration](../reference/configuration.md)
 - [Inherited sources](inherited-sources.md)

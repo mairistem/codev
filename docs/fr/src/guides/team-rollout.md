@@ -65,9 +65,9 @@ git ?](../faq.md#faut-il-enregistrer-_compagnon-et-claudeskills-dans-git-) dans 
 
 La vérification que met en place `compagnon init` fait échouer un envoi ou
 une demande de fusion dont une spécification ou une modification est
-invalide, ou qui retouche une décision acceptée ; sur GitLab, vous collez
-la tâche qu'affiche `compagnon init`. Voir
-[Intégration au dépôt et compagnon doctor](repository-integration.md).
+invalide, ou qui retouche une décision acceptée  ; ce
+qu'il écrit est décrit plus bas, dans
+[Ce qu'écrit compagnon init](#ce-quécrit-compagnon-init).
 
 Une vérification en échec ne bloque la fusion qu'une fois rendue
 obligatoire, dans les réglages de votre site :
@@ -330,7 +330,6 @@ identifiants et des codes stables — voir [Sortie JSON](../reference/json-outpu
 
 ## Pour aller plus loin
 
-- [Intégration au dépôt et compagnon doctor](repository-integration.md)
 - [Rôles](../roles.md)
 - [Configuration](../reference/configuration.md)
 - [Sources héritées](inherited-sources.md)

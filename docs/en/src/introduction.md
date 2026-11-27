@@ -58,12 +58,10 @@ are your compagnons.
 
 ## Where to start
 
-What will you do with Compagnon? Each answer opens a short path:
-
-- [I review and approve plans — I do not code](paths/review.md)
-- [I do not code, but I want Claude to build something for me](paths/build.md)
-- [I am a developer and I have Claude write code](paths/develop.md)
-- [I set Compagnon up for my team](paths/team.md)
+The documentation reads as a path in five steps — discover, get started,
+every day, understand, for your team. Start with
+[Installation](installation.md), then follow "Next step" at the end of
+each page.
 
 Every term is explained in the [Glossary](glossary.md).
 

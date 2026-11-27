@@ -359,7 +359,7 @@ fn readme_words(text: &str) -> usize {
 }
 
 #[test]
-fn both_readmes_stay_short_keep_the_one_liners_and_link_the_profiles() {
+fn both_readmes_stay_short_keep_the_one_liners_and_link_the_introduction() {
     for (file, heading, cap) in [
         ("README.md", "## Getting started", 600),
         ("README.fr.md", "## Démarrer", 750),
@@ -384,35 +384,40 @@ fn both_readmes_stay_short_keep_the_one_liners_and_link_the_profiles() {
             );
         }
         let lang = if file.ends_with(".fr.md") { "fr" } else { "en" };
-        let problems = profile_problems(&text, &labels(lang), &path_pages(lang, ".html"));
+        let problems = readme_problems(&text, lang);
         assert!(problems.is_empty(), "{file}: {problems:?}");
     }
 }
 
-/// The four profile labels of Choose your path, per edition — the same
-/// words on every entry point (`docs_checks::profile_labels`, which this
-/// integration test cannot reach).
-fn labels(lang: &str) -> [&'static str; 4] {
-    if lang == "fr" {
+/// The five steps of the reading tunnel, per edition, each with the first
+/// chapter it opens — the same words as `docs_checks::TUNNEL`, which this
+/// integration test cannot reach.
+fn steps(lang: &str) -> [(&'static str, &'static str); 5] {
+    let chapters = [
+        "introduction.html",
+        "installation.html",
+        "skills.html",
+        "workflow.html",
+        "guides/existing-project.html",
+    ];
+    let titles = if lang == "fr" {
         [
-            "Je relis et je valide des plans — je ne code pas",
-            "Je ne code pas, mais je veux que Claude construise quelque chose pour moi",
-            "Je suis développeur et je fais coder Claude",
-            "J'installe Compagnon pour mon équipe",
+            "Découvrir",
+            "Démarrer",
+            "Au quotidien",
+            "Comprendre",
+            "Pour l'équipe",
         ]
     } else {
         [
-            "I review and approve plans — I do not code",
-            "I do not code, but I want Claude to build something for me",
-            "I am a developer and I have Claude write code",
-            "I set Compagnon up for my team",
+            "Discover",
+            "Get started",
+            "Every day",
+            "Understand",
+            "For your team",
         ]
-    }
-}
-
-/// The path pages of an edition, as a link to them ends.
-fn path_pages(lang: &str, extension: &str) -> [String; 4] {
-    ["review", "build", "develop", "team"].map(|p| format!("{lang}/paths/{p}{extension}"))
+    };
+    [0, 1, 2, 3, 4].map(|i| (titles[i], chapters[i]))
 }
 
 /// Where the link labelled `label` points, in Markdown (`[label](…)`) or
@@ -428,39 +433,47 @@ fn link_for(text: &str, label: &str) -> Option<(usize, String)> {
     Some((i, text[start..end].to_string()))
 }
 
-/// What is wrong with the profile links of a page: each label, in order,
-/// linking a target that ends with its path page.
-/// It mirrors `docs_checks::profile_link_problems`, which this integration
-/// test cannot reach, and also reads HTML links: change the two together.
-fn profile_problems(text: &str, labels: &[&str; 4], pages: &[String; 4]) -> Vec<String> {
+/// What is wrong with a README's way in: no link to its edition's
+/// introduction, the start of the tunnel.
+fn readme_problems(text: &str, lang: &str) -> Vec<String> {
+    let target = format!("/{lang}/introduction.html");
+    if text.contains(&format!("{target})")) {
+        Vec::new()
+    } else {
+        vec![format!("no link to {target}")]
+    }
+}
+
+/// What is wrong with a home page: a step missing, out of order or not
+/// linking the first chapter of its step, the first step after the install
+/// command, Jira named before the last step, or no link to its edition's
+/// Origins for contributors.
+fn home_page_problems(html: &str, lang: &str) -> Vec<String> {
     let mut problems = Vec::new();
     let mut last = 0;
-    for (label, page) in labels.iter().zip(pages) {
-        match link_for(text, label) {
-            None => problems.push(format!("no link \"{label}\"")),
+    for (title, chapter) in steps(lang) {
+        let expected = format!("{lang}/{chapter}");
+        match link_for(html, title) {
+            None => problems.push(format!("no step \"{title}\"")),
             Some((at, target)) => {
-                if !target.ends_with(page.as_str()) {
-                    problems.push(format!("\"{label}\" links {target}, not {page}"));
+                if target != expected {
+                    problems.push(format!("\"{title}\" links {target}, not {expected}"));
                 }
                 if at < last {
-                    problems.push(format!("\"{label}\" out of order"));
+                    problems.push(format!("\"{title}\" out of order"));
                 }
                 last = at;
             }
         }
     }
-    problems
-}
-
-/// What is wrong with a home page: its profiles, the first one after the
-/// install command, or no link to its edition's Origins for contributors.
-fn home_page_problems(html: &str, lang: &str) -> Vec<String> {
-    let labels = labels(lang);
-    let mut problems = profile_problems(html, &labels, &path_pages(lang, ".html"));
-    if let (Some((first, _)), Some(install)) = (link_for(html, labels[0]), html.find("curl -sSL"))
+    if let (Some((first, _)), Some(install)) =
+        (link_for(html, steps(lang)[0].0), html.find("curl -sSL"))
         && first > install
     {
-        problems.push("the profiles come after the install command".into());
+        problems.push("the steps come after the install command".into());
+    }
+    if html.find("Jira").is_some_and(|jira| jira < last) {
+        problems.push("Jira is named before the last step".into());
     }
     if !html.contains(&format!("href=\"{lang}/origins.html\"")) {
         problems.push(format!("no link to {lang}/origins.html"));
@@ -468,36 +481,53 @@ fn home_page_problems(html: &str, lang: &str) -> Vec<String> {
     problems
 }
 
-#[test]
-fn a_readme_missing_a_path_page_is_caught() {
-    let labels = labels("en");
-    let pages = path_pages("en", ".html");
-    let mut text = String::new();
-    for (label, page) in labels.iter().zip(&pages).take(3) {
-        text.push_str(&format!("- [{label}](https://x/{page})\n"));
+/// A home page leading with the five steps, then `tail`.
+fn home_with_steps(tail: &str) -> String {
+    let mut html = String::new();
+    for (title, chapter) in steps("en") {
+        html.push_str(&format!("<a href=\"en/{chapter}\">{title}</a>\n"));
     }
+    html.push_str("<a href=\"en/origins.html\">Origins</a>\n");
+    html.push_str(tail);
+    html
+}
+
+#[test]
+fn a_readme_without_the_introduction_is_caught() {
+    let text = "Read [the docs](https://mairistem.github.io/compagnon/en/quickstart.html).";
     assert_eq!(
-        profile_problems(&text, &labels, &pages),
-        ["no link \"I set Compagnon up for my team\""]
+        readme_problems(text, "en"),
+        ["no link to /en/introduction.html"]
     );
 }
 
 #[test]
 fn a_home_page_that_asks_after_installing_is_caught() {
-    let labels = labels("en");
-    let mut html = String::from("<pre>curl -sSL https://x/install.sh | sh</pre>\n");
-    for (label, page) in labels.iter().zip(path_pages("en", ".html")) {
-        html.push_str(&format!("<a href=\"{page}\">{label}</a>\n"));
-    }
-    html.push_str("<a href=\"en/origins.html\">Origins</a>\n");
+    let html = format!(
+        "<pre>curl -sSL https://x/install.sh | sh</pre>\n{}",
+        home_with_steps("")
+    );
     assert_eq!(
         home_page_problems(&html, "en"),
-        ["the profiles come after the install command"]
+        ["the steps come after the install command"]
     );
 }
 
 #[test]
-fn both_home_pages_lead_with_the_four_profiles() {
+fn a_home_page_naming_jira_between_two_steps_is_caught() {
+    let html = home_with_steps("").replace(
+        "<a href=\"en/workflow.html\">",
+        "<p>Start from a Jira ticket</p>\n<a href=\"en/workflow.html\">",
+    );
+    assert_eq!(
+        home_page_problems(&html, "en"),
+        ["Jira is named before the last step"]
+    );
+    assert!(home_page_problems(&home_with_steps("<p>Jira</p>"), "en").is_empty());
+}
+
+#[test]
+fn both_home_pages_lead_with_the_five_steps() {
     for (file, lang) in [("docs/site/index.html", "en"), ("docs/site/fr.html", "fr")] {
         let html = read(file);
         let problems = home_page_problems(&html, lang);

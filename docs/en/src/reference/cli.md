@@ -158,7 +158,7 @@ for the probe and the questions.
   [Inherited sources](../guides/inherited-sources.md).
 - `--no-claude-md`, `--no-ci` and `--no-pr-template` skip one integration
   file each; `--no-integration` skips all three. See
-  [Repository integration and compagnon doctor](../guides/repository-integration.md).
+  [Deploying Compagnon for a team](../guides/team-rollout.md).
 
 Unless you opt out, `compagnon init` also writes Compagnon's section in `CLAUDE.md`
 and, on GitHub, `.github/workflows/compagnon.yml` and a section in the pull
@@ -224,7 +224,7 @@ Skills you edited by hand are preserved unless you pass `--force`.
    Compagnon's text sits between `<!-- compagnon:begin -->` and `<!-- compagnon:end -->`
    markers and never replaces yours. `--no-claude-md`, `--no-ci`,
    `--no-pr-template` and `--no-integration` skip these files. See
-   [Repository integration and compagnon doctor](../guides/repository-integration.md).
+   [Deploying Compagnon for a team](../guides/team-rollout.md).
 6. **Declares inherited sources** given with `--inherit`, and pins the git
    ones right away. See [Inherited sources](../guides/inherited-sources.md).
 
@@ -382,7 +382,7 @@ it never contacts the network.
 Each line shows `✓` (ok), `✗` (missing) or `!` (warning); the last line
 counts the checks and those left to fix. The exit status is `0`, unless
 `--strict` is given and a check is missing: warnings never fail. See
-[Repository integration and compagnon doctor](../guides/repository-integration.md)
+[Deploying Compagnon for a team](../guides/team-rollout.md)
 and, for `--json`, [JSON output](json-output.md#doctor).
 
 ### compagnon docs
