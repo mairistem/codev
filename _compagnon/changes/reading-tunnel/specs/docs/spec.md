@@ -42,10 +42,12 @@ Every chapter of the five tunnel steps SHALL end with a section titled
 of the tunnel, its text being that chapter's title; the last chapter of
 the tunnel leads to the first appendix, `reference/cli.md`. A chapter that
 some readers can skip MAY open, right under its title, with a skip button:
-one link, drawn as a button by the theme, whose text says in plain words
-who can skip and where to — "Not for you? Skip to <title>" (« Pas pour
-vous ? Passez à <titre> ») — and which opens a later chapter of the
-tunnel. There is no other notion of reader profile.
+one link, alone in a `<div class="skip-step">` block placed before the
+chapter's first paragraph and drawn as a button by the theme, whose text
+says in plain words who can skip and ends with the title of the chapter
+it opens — "<who>? Skip to <title>" (« <qui> ? Passez à <titre> »), for
+example "No Jira? Skip to Reviewing a plan" — and which opens a later
+chapter of the tunnel. There is no other notion of reader profile.
 The chapters of the first three steps SHALL hold at most 1 200 words in
 English and 1 500 in French, not counting fenced code blocks, "Under the
 hood" blocks and figures; the introduction and the quickstart keep their
@@ -73,13 +75,23 @@ own caps.
 - **WHEN** the check runs on it
 - **THEN** it fails: the skip button opens a chapter before it
 
+#### Scenario: A skip button out of place or misnamed is caught
+
+- **GIVEN** a Jira guide whose skip link sits in its second section, and a
+  Roles chapter whose skip button reads "Skip ahead" while it opens
+  Review record
+- **WHEN** the check runs on them
+- **THEN** each fails: the first because the button is not before the
+  chapter's first paragraph in a `skip-step` block, the second because
+  its text does not end with "Review record"
+
 ### Requirement: Removed pages leave nothing behind
 
 The pages this change removes — `choose-your-path.md`, `paths/*.md`,
 `guides/start-from-nothing.md`, `guides/repository-integration.md` and
 `guides/moving-from-codev.md` — SHALL no longer exist in either edition,
-and nothing SHALL point to them: no chapter, README or home page links
-them, and the books hold no redirect for them.
+and nothing SHALL point to them: no chapter, README, home page or CHANGELOG
+entry links them, and the books hold no redirect for them.
 
 #### Scenario: No trace of a removed page
 
@@ -87,21 +99,36 @@ them, and the books hold no redirect for them.
   pages
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** none of the removed files exists
-- **AND** nothing links one of them, and no `book.toml` holds an
-  `[output.html.redirect]` entry
+- **AND** nothing links one of them, the CHANGELOG included, and no
+  `book.toml` holds an `[output.html.redirect]` entry
+
+#### Scenario: A link to a removed page is caught
+
+- **GIVEN** a chapter linking `paths/review.md`, and a `book.toml` holding
+  a redirect for `choose-your-path.html`
+- **WHEN** the check runs on them
+- **THEN** each fails naming the removed page
 
 ### Requirement: The documentation names GitHub only
 
-No chapter of either edition, README or home page SHALL name GitLab:
-approving a plan, continuous integration and every example are described
-on GitHub.
+No chapter of the tunnel, glossary, FAQ, example plan, README or home
+page SHALL name GitLab: approving a plan, continuous integration and every
+example are described on GitHub. The command-line and JSON-output
+reference chapters MAY name it only to describe, literally, what
+`compagnon init` prints, as long as the command does.
 
 #### Scenario: GitLab is not named
 
-- **GIVEN** every chapter of both editions, both READMEs and both home
-  pages
+- **GIVEN** every chapter of both editions but `reference/cli.md` and
+  `reference/json-output.md`, both READMEs and both home pages
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** none holds "GitLab"
+
+#### Scenario: A chapter naming GitLab is caught
+
+- **GIVEN** an approval guide that says "on GitHub or GitLab"
+- **WHEN** the check runs on it
+- **THEN** it fails naming the guide
 
 ### Requirement: The tunnel is approved on a mockup before the rewrite
 
@@ -115,7 +142,14 @@ the owner has approved it. The approved mockup stays in the change folder.
 - **GIVEN** the change's tasks
 - **WHEN** the mockup is published
 - **THEN** no chapter is moved or rewritten until the owner approves the
-  mockup or asks for changes, which are made to the mockup first
+  mockup
+
+#### Scenario: Changes asked on the mockup are shown again
+
+- **GIVEN** an owner who asks to move a chapter on the mockup
+- **WHEN** the mockup is changed
+- **THEN** it is published again and the rewrite still waits for the
+  owner's approval
 
 ## MODIFIED Requirements
 
@@ -250,7 +284,7 @@ configuration key such as `workflows:` stays as it is.
 - **WHEN** the check runs on it
 - **THEN** it fails naming "main specs"
 
-### Requirement: The home page asks the question first, in both languages
+### Requirement: The home page shows the tunnel first, in both languages
 
 The site SHALL have a home page in English, `docs/site/index.html`, and in
 French, `docs/site/fr.html` (`lang="fr"`), each linking the other with the
@@ -442,21 +476,22 @@ French.
 
 **Reason**: The Start here part and its profile pages are replaced by the
 tunnel's first steps.
-**Migration**: Read "The documentation reads as one tunnel in five steps";
-old addresses redirect.
+**Migration**: None: the old addresses disappear on the owner's request;
+the introduction opens the tunnel ("The documentation reads as one tunnel
+in five steps").
 
 ### Requirement: Choose your path asks one question with four answers
 
 **Reason**: Profiles scattered readers; the tunnel guides everyone through
-the same pages, with skip lines.
-**Migration**: `choose-your-path.html` redirects to the introduction; the
-home page keeps the question with four shortcut cards.
+the same pages, with skip buttons.
+**Migration**: None: `choose-your-path.html` disappears; the home page
+shows the five steps of the tunnel instead.
 
 ### Requirement: Each profile has a short path page
 
 **Reason**: The four path pages are removed with the profiles.
-**Migration**: Each path page redirects to the tunnel page that serves its
-reader.
+**Migration**: None: the path pages disappear; their readers find their
+pages in the tunnel, helped by skip buttons.
 
 ### Requirement: Each profile finds the pages it asked for
 
@@ -487,3 +522,7 @@ reference; the CHANGELOG keeps the note on moving from codev.
 
 - FROM: `### Requirement: The Start here path stays short and plain`
 - TO: `### Requirement: The first steps stay short and plain`
+- FROM: `### Requirement: The home page asks the question first, in both languages`
+- TO: `### Requirement: The home page shows the tunnel first, in both languages`
+- FROM: `### Requirement: The glossary defines every term of the Start here path`
+- TO: `### Requirement: The glossary defines every term of the first steps`

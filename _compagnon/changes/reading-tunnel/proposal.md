@@ -42,8 +42,10 @@ end, no profiles, nothing kept for the past, and GitHub only.
   path pages, Starting from nothing and Repository integration as pages
   (their content moves into the tunnel), and Moving from codev with its
   requirement. No redirect: the old addresses simply disappear.
-- **GitHub only**: the documentation and the home pages name GitHub alone;
-  every GitLab mention goes.
+- **GitHub only**: the tunnel, the glossary, the FAQ, the example plan,
+  the READMEs and the home pages name GitHub alone; the command-line
+  reference keeps describing what `compagnon init` prints while the
+  command prints it.
 - **A clickable mockup of the tunnel first** — the table of contents, each
   page's purpose, its skip button and its "Next step" — approved by the
   owner before any chapter is rewritten.
@@ -67,8 +69,11 @@ end, no profiles, nothing kept for the past, and GitHub only.
   `quickstart.md`, `workflow.md`, `guides/approve-a-plan.md`,
   `guides/team-rollout.md` reshaped; every tunnel page gains its "Next
   step"; links to removed pages rewritten; GitLab removed everywhere.
-- `docs/theme/mairistem.css` (the skip button), `docs/site/index.html`,
-  `docs/site/fr.html` (five step cards), `README.md`, `README.fr.md`.
+- `docs/theme/mairistem.css` and `crates/compagnon-cli/assets/docs.css`
+  (the skip button), `docs/site/index.html`, `docs/site/fr.html` (five
+  step cards), `README.md`, `README.fr.md`, `CHANGELOG.md` (its codev note
+  links the command-line reference instead of the removed guide).
+- In the change folder: `mockup/` and an adapted copy of `build_home.py`.
 - `crates/compagnon-cli/src/docs_checks.rs`, `docs.rs`, `tests/repository.rs`:
   checks of the Start here path, profiles, parts and the codev guide
   replaced by checks of the tunnel; the offline manual follows the new
@@ -87,7 +92,7 @@ end, no profiles, nothing kept for the past, and GitHub only.
 - [x] user-interface
 - [ ] performance — static pages
 - [ ] operations — the existing Pages workflow publishes unchanged
-- [ ] migration — no configuration or data change; removed pages are documentation addresses only, dropped on the owner's request
+- [x] migration
 
 ## Release note
 

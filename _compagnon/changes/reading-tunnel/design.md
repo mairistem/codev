@@ -43,9 +43,10 @@ content apart from removing GitLab and links to removed pages;
 The first task builds `mockup/` in the change folder: one page with the
 tunnel's table of contents on the left (five steps, then the appendices
 and Contributing, greyed), and, for each chapter, a card with its title,
-its one-line purpose, its skip button if any, and its "Next step"; clicking
-a card's "Next step" or a skip button moves to that card, so the owner can
-walk the tunnel. It is published as a private page; the rewrite waits for
+its one-line purpose, its skip button if any, and its "Next step"; each
+"Next step" and skip button is a plain `<a href="#card-id">`, and each card
+is a focus target (`tabindex="-1"`, focused on `hashchange`), so the owner
+walks the tunnel with a mouse or a keyboard and focus follows the jump. It is published as a private page; the rewrite waits for
 the owner's approval, and changes the owner asks for go to the mockup
 first. The approved version stays in the change folder.
 
@@ -74,14 +75,14 @@ judges, and it is cheap to change before the text exists).
 | reference chapters, glossary, FAQ, example plan | Appendices |
 | `guides/moving-from-codev.md` | removed (the reference keeps `compagnon migrate`) |
 
-Skip buttons, where a reader may not need the page: Installation's
-"Starting from nothing" ("Already have Claude Code and a project? Skip
-to …" stays inside the page as a heading link, not a button); Your first
-change for readers who do not code ("Not for you? Skip to Reviewing a
-plan"); Start from a Jira ticket ("No Jira? Skip to Reviewing a plan");
-Approving a plan on GitHub; the whole Understand step from How it works
-("Not for you? Skip to For your team"); Roles; each For your team
-chapter. The mockup fixes the final list.
+Skip buttons, where a reader may not need the page, each ending with the
+title of the chapter it opens: Your first change ("You do not code? Skip
+to Asking Claude"); Start from a Jira ticket ("No Jira? Skip to Reviewing
+a plan"); How it works, for the whole Understand step ("You only use
+Compagnon? Skip to Adopting Compagnon on an existing project"); Roles
+("No review to configure? Skip to Review record"). Installation's
+"Starting from nothing" is a section, not a skip. The mockup fixes the
+final list.
 
 ### Decision: "Next step" is a markdown section; the skip button a wrapped markdown link
 
@@ -99,8 +100,12 @@ so that mdBook and the offline manual both rewrite its `.md` target:
 ```
 
 The theme (`mairistem.css`) and the offline manual's CSS (`docs.css`)
-draw `.skip-step a` as a button (border, padding, arrow), with a visible
-focus; it is a link, so keyboard and screen readers treat it as such.
+draw `.skip-step a` as a button: border, padding, and an arrow drawn as a
+CSS shape (a rotated bordered square), not text, so that the link's
+accessible name stays its words. Its focus is distinct from its border:
+a 3 px outline in the focus color, offset 2 px, plus a filled background,
+checked at 3:1 against the page and the border. It is a link, so keyboard
+and screen readers treat it as such.
 
 **Alternatives considered**: an `<a class>` in raw HTML (rejected: its
 `.html` target breaks in the offline manual, which rewrites only `.md`
@@ -117,11 +122,17 @@ not a page of the books).
 
 ### Decision: GitHub only
 
-Every chapter, README and home page drops GitLab: the approval guide
+Every chapter of the tunnel, the glossary, the FAQ, the example plan, the
+READMEs and the home pages drop GitLab (`guides/existing-project.md`'s
+`.gitlab-ci.yml` mention included): the approval guide
 describes GitHub's pull request; the review guide, the team guide and the
 FAQ say "pull request" (French « demande de fusion ») without the GitLab
-variant. A check greps for "GitLab". The CLI's GitLab job printed by
-`compagnon init` is out of scope (proposal).
+variant. A check greps for "GitLab" everywhere but `reference/cli.md` and
+`reference/json-output.md`, which describe literally what `compagnon init`
+prints; the command's GitLab job is out of scope (proposal), and removing
+it later would let the check cover the whole book. The CHANGELOG's codev
+note links `reference/cli.md#compagnon-migrate` instead of the removed
+guide.
 
 ### Decision: The home pages show the five steps
 
@@ -146,8 +157,10 @@ In `docs_checks.rs`:
 - the caps of the first three steps move to `TUNNEL[..3]`; the
   introduction and quickstart keep theirs;
 - `removed_pages_problems`: no removed file in the chapter list, no link
-  to one in chapters, READMEs, home pages, no redirect in `book.toml`;
-- `gitlab_mentions`: every chapter, README and home page;
+  to one in chapters, READMEs, home pages or the CHANGELOG, no redirect in
+  `book.toml`;
+- `gitlab_mentions`: every chapter but the command-line and JSON-output
+  references, the READMEs and the home pages;
 - removed: the profile and path functions and tests, `EVERYDAY` (replaced
   by the first three steps), `PROFILE_GUIDES`, the codev guide tests in
   `tests/repository.rs`; the home page and README checks in
