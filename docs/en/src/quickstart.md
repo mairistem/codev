@@ -153,13 +153,13 @@ history ([commit](glossary.md#commit) it), or ask Claude to.
 <g stroke-width="2" style="fill:var(--dg-file)">
 <rect x="8" y="20" width="300" height="180" rx="12" style="stroke:var(--dg-claude)"/><rect x="420" y="20" width="332" height="80" rx="12" style="stroke:var(--dg-line)" stroke-dasharray="5 4"/><rect x="420" y="120" width="332" height="80" rx="12" style="stroke:var(--dg-line)"/>
 </g>
-<path d="M312,110h40M352,110V60h62m-6,-5l6,5l-6,5M352,110V160h62m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<path d="M312,110h60M372,110V60h42m-6,-5l6,5l-6,5M372,110V160h42m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
 <g class="mono" font-size="13" style="fill:var(--dg-ink)">
 <text x="24" y="48" font-weight="600">_compagnon/changes/&lt;name&gt;/</text><text x="40" y="84">proposal.md</text><text x="40" y="112">specs/</text><text x="40" y="140">design.md</text><text x="40" y="168">tasks.md</text>
 <text x="436" y="48" font-weight="600">_compagnon/changes/archive/</text><text x="436" y="70">&lt;date&gt;-&lt;name&gt;/</text><text x="436" y="148" font-weight="600">_compagnon/specs/</text>
 </g>
 <g font-size="13" style="fill:var(--dg-muted)">
-<text x="320" y="100">archive</text><text x="436" y="90">kept as written</text><text x="436" y="176">updated by the plan</text>
+<text x="318" y="102" font-size="12">archive</text><text x="436" y="90">kept as written</text><text x="436" y="176">updated by the plan</text>
 </g>
 </svg>
 </div>

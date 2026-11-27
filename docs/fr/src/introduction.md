@@ -36,7 +36,7 @@ accord :
 <text x="20" y="78">Demander</text><text x="173" y="78">Planifier</text><text x="326" y="78">Valider</text><text x="479" y="78">Construire</text><text x="632" y="78">Classer</text>
 </g>
 <g font-size="13" style="fill:var(--dg-muted)">
-<text x="20" y="104">avec vos mots</text><text x="173" y="104">pourquoi, comment,</text><text x="173" y="121">tâches</text><text x="326" y="104">ou le corriger</text><text x="479" y="104">tâche par tâche</text><text x="632" y="104">avec le code</text>
+<text x="20" y="104">avec vos mots</text><text x="173" y="104">pourquoi,</text><text x="173" y="121">comment, tâches</text><text x="326" y="104">ou le corriger</text><text x="479" y="104">tâche par tâche</text><text x="632" y="104">avec le code</text>
 </g>
 </svg>
 </div>
