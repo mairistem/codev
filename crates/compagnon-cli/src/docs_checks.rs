@@ -536,6 +536,130 @@ pub fn title_problems(summary: &str, heading_of: impl Fn(&str) -> Option<String>
     problems
 }
 
+/// `md` without its `<figure>…</figure>` blocks: a diagram's words are
+/// not the chapter's prose.
+pub fn without_figures(md: &str) -> String {
+    let mut out = String::with_capacity(md.len());
+    let mut rest = md;
+    while let Some(start) = rest.find("<figure") {
+        out.push_str(&rest[..start]);
+        match rest[start..].find("</figure>") {
+            Some(end) => rest = &rest[start + end + "</figure>".len()..],
+            None => return out,
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// What keeps an entry point from putting Jira forward: it must name Jira
+/// and link the Jira guide (`guides/mcp.md`, or `guides/mcp.html` once
+/// published).
+pub fn jira_problems(text: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if !text.contains("Jira") {
+        problems.push("never names Jira".to_string());
+    }
+    if !text.contains("guides/mcp.md") && !text.contains("guides/mcp.html") {
+        problems.push("does not link the Jira guide".to_string());
+    }
+    problems
+}
+
+/// Whether a home page names Jira only after the last of its four profile
+/// labels, so that the question still comes first.
+pub fn jira_after_profiles(page: &str, labels: &[&str; 4]) -> bool {
+    let last = labels.iter().filter_map(|l| page.find(l)).max();
+    match (last, page.find("Jira")) {
+        (Some(last), Some(jira)) => jira > last,
+        _ => false,
+    }
+}
+
+/// What is wrong with the Jira guide's shape: its diagram must come before
+/// its first `## ` heading — what the reader gets before how to set it up.
+pub fn jira_guide_problems(md: &str) -> Vec<String> {
+    let figure = md.find("<figure class=\"diagram\"");
+    let heading = md.find("\n## ");
+    match (figure, heading) {
+        (None, _) => vec!["has no diagram".to_string()],
+        (Some(f), Some(h)) if h < f => {
+            vec!["shows its first `## ` section before its diagram".to_string()]
+        }
+        _ => Vec::new(),
+    }
+}
+
+/// The error codes still headed in the FAQ, and those `codes` the errors
+/// chapter does not head with `### \`code\``.
+pub fn faq_code_problems(faq: &str, errors: &str, codes: &[&str]) -> Vec<String> {
+    let mut problems = Vec::new();
+    for line in faq.lines() {
+        let Some(title) = line.strip_prefix("### ") else { continue };
+        let title = title.trim();
+        if title.starts_with('`') && title.ends_with('`') && !title.contains(' ') {
+            problems.push(format!("the FAQ still explains {title}"));
+        }
+    }
+    for code in codes {
+        let heading = format!("### `{code}`");
+        if !errors.lines().any(|l| l.trim() == heading) {
+            problems.push(format!("the errors chapter has no {heading}"));
+        }
+    }
+    problems
+}
+
+/// The title of an everyday chapter's last section.
+pub fn go_further_heading(lang: Lang) -> &'static str {
+    match lang {
+        Lang::En => "Go further",
+        Lang::Fr => "Pour aller plus loin",
+    }
+}
+
+/// What keeps an everyday chapter short and open: its prose (code,
+/// `<details>` and `<figure>` blocks not counted) over `cap` words, or a
+/// last `## ` section other than "Go further", or one that links no
+/// chapter by its title. `title_of` gives a chapter's title from a link
+/// target relative to the chapter (`../roles.md#x`).
+pub fn everyday_problems(
+    md: &str,
+    cap: usize,
+    lang: Lang,
+    title_of: impl Fn(&str) -> Option<String>,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    let words = prose_words(&without_figures(md));
+    if words > cap {
+        problems.push(format!("{words} words, over {cap}"));
+    }
+    let heading = go_further_heading(lang);
+    let last = sections(md, "## ").into_iter().last();
+    match last {
+        Some((title, body)) if title == heading => {
+            let mut chapters = 0;
+            for (text, target) in link_pairs(&body) {
+                if target.starts_with("http") || !chapter_of(&target).ends_with(".md") {
+                    continue;
+                }
+                chapters += 1;
+                match title_of(&target) {
+                    Some(t) if t == text => {}
+                    Some(t) => problems.push(format!("\"{text}\" links {target}, titled \"{t}\"")),
+                    None => problems.push(format!("\"{text}\" links {target}, which is no chapter")),
+                }
+            }
+            if chapters == 0 {
+                problems.push(format!("\"{heading}\" links no chapter"));
+            }
+        }
+        Some((title, _)) => problems.push(format!("ends with \"{title}\", not \"{heading}\"")),
+        None => problems.push(format!("has no \"{heading}\" section")),
+    }
+    problems
+}
+
 /// The commands of shell blocks outside `<details>` that neither install
 /// Compagnon nor run `compagnon init`.
 pub fn stray_commands(md: &str) -> Vec<String> {
@@ -1736,6 +1860,55 @@ mod tests {
                 .any(|p| p.contains(".light") && p.contains("--dg-muted #b0b0b0")),
             "{problems:?}"
         );
+    }
+
+    #[test]
+    fn an_entry_point_without_jira_is_caught() {
+        assert!(jira_problems("Say \"Prepare a plan for PROJ-123\": [Start from a Jira ticket](guides/mcp.md).").is_empty());
+        let problems = jira_problems("# Compagnon in two minutes\n\nPlan with Claude.\n");
+        assert_eq!(problems, ["never names Jira", "does not link the Jira guide"]);
+    }
+
+    #[test]
+    fn jira_between_two_profiles_is_caught() {
+        let labels = ["A", "B", "C", "D"];
+        assert!(jira_after_profiles("A B C D … Jira", &labels));
+        assert!(!jira_after_profiles("A B Jira C D", &labels));
+    }
+
+    #[test]
+    fn a_guide_that_configures_before_it_shows_is_caught() {
+        let good = "# Start\n\nSay it.\n\n<figure class=\"diagram\">…</figure>\n\n## Set it up\n";
+        assert!(jira_guide_problems(good).is_empty());
+        let bad = "# Start\n\n## Set it up\n\n<figure class=\"diagram\">…</figure>\n";
+        assert_eq!(jira_guide_problems(bad).len(), 1);
+    }
+
+    #[test]
+    fn a_code_left_in_the_faq_is_caught() {
+        let faq = "# FAQ\n\n### `decision_seal_mismatch`\n\nFix it.\n";
+        let errors = "# Error codes\n\n### `legacy_source`\n";
+        let problems = faq_code_problems(faq, errors, &["decision_seal_mismatch", "legacy_source"]);
+        assert_eq!(
+            problems,
+            [
+                "the FAQ still explains `decision_seal_mismatch`",
+                "the errors chapter has no ### `decision_seal_mismatch`"
+            ]
+        );
+    }
+
+    #[test]
+    fn a_long_chapter_or_one_without_go_further_is_caught() {
+        let title = |t: &str| (t == "roles.md").then(|| "Roles".to_string());
+        let good = "# FAQ\n\nShort.\n\n<figure>many many words</figure>\n\n## Go further\n\n- [Roles](roles.md)\n";
+        assert!(everyday_problems(good, 5, Lang::En, title).is_empty(), "{:?}", everyday_problems(good, 5, Lang::En, title));
+        let long = format!("# FAQ\n\n{}\n\n## Go further\n\n- [Roles](roles.md)\n", "word ".repeat(1300));
+        assert!(everyday_problems(&long, 1200, Lang::En, title)[0].contains("over 1200"));
+        let ends = "# Concepts\n\n## Seal\n\nText.\n";
+        assert_eq!(everyday_problems(ends, 1200, Lang::En, title), ["ends with \"Seal\", not \"Go further\""]);
+        let wrong = "# FAQ\n\n## Go further\n\n- [The roles](roles.md)\n";
+        assert_eq!(everyday_problems(wrong, 1200, Lang::En, title).len(), 1);
     }
 
     #[test]
