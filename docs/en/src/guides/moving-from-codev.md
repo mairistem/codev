@@ -88,3 +88,9 @@ After, revert the commit. To reinstall codev itself:
 ```sh
 compagnon self-update --version 0.6.1
 ```
+
+## Go further
+
+- [Installation](../installation.md)
+- [Inherited sources](inherited-sources.md)
+- [Error codes and fixes](../reference/errors.md)

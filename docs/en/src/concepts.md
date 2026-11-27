@@ -10,23 +10,20 @@ Compagnon keeps three kinds of records in your project's
 
 <figure class="diagram">
 <div class="scroll">
-<svg viewBox="0 0 760 300" role="img" aria-label="The project's records: specs, in _compagnon/specs/, say what the system does; decisions, in _compagnon/decisions/, say why it is built this way; changes, in _compagnon/changes/, are the work in progress. A change holds a delta, with ADDED, MODIFIED and REMOVED requirements, which is merged into the specs when the change is synced or archived.">
+<svg viewBox="0 0 760 300" role="img" aria-label="The project's records: specs say what the system does; decisions say why it is built this way; changes are the work in progress. A change holds a delta, with ADDED, MODIFIED and REMOVED requirements, which is merged into the specs when the change is synced or archived.">
 <defs><marker id="dg-concepts-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
 <rect x="8" y="20" width="228" height="112" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
-<circle cx="30" cy="44" r="5" fill="#00c39b"/>
-<text x="44" y="49" class="mono" font-size="13" style="fill:var(--dg-muted)">_compagnon/specs/</text>
-<text x="24" y="84" font-size="18" font-weight="600" style="fill:var(--dg-ink)">Specs</text>
-<text x="24" y="110" font-size="14" style="fill:var(--dg-muted)">What the system does</text>
+<circle cx="30" cy="58" r="5" fill="#00c39b"/>
+<text x="44" y="64" font-size="18" font-weight="600" style="fill:var(--dg-ink)">Specs</text>
+<text x="24" y="100" font-size="14" style="fill:var(--dg-muted)">What the system does</text>
 <rect x="266" y="20" width="228" height="112" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
-<circle cx="288" cy="44" r="5" fill="#ffab03"/>
-<text x="302" y="49" class="mono" font-size="13" style="fill:var(--dg-muted)">_compagnon/decisions/</text>
-<text x="282" y="84" font-size="18" font-weight="600" style="fill:var(--dg-ink)">Decisions</text>
-<text x="282" y="110" font-size="14" style="fill:var(--dg-muted)">Why it is built this way</text>
+<circle cx="288" cy="58" r="5" fill="#ffab03"/>
+<text x="302" y="64" font-size="18" font-weight="600" style="fill:var(--dg-ink)">Decisions</text>
+<text x="282" y="100" font-size="14" style="fill:var(--dg-muted)">Why it is built this way</text>
 <rect x="524" y="20" width="228" height="112" rx="12" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
-<circle cx="546" cy="44" r="5" fill="#ff5331"/>
-<text x="560" y="49" class="mono" font-size="13" style="fill:var(--dg-muted)">_compagnon/changes/</text>
-<text x="540" y="84" font-size="18" font-weight="600" style="fill:var(--dg-ink)">Changes</text>
-<text x="540" y="110" font-size="14" style="fill:var(--dg-muted)">The work in progress</text>
+<circle cx="546" cy="58" r="5" fill="#ff5331"/>
+<text x="560" y="64" font-size="18" font-weight="600" style="fill:var(--dg-ink)">Changes</text>
+<text x="540" y="100" font-size="14" style="fill:var(--dg-muted)">The work in progress</text>
 <line x1="638" y1="134" x2="638" y2="158" style="stroke:var(--dg-line)" stroke-width="2" stroke-dasharray="4 4"/>
 <text x="648" y="151" font-size="12" style="fill:var(--dg-muted)">holds</text>
 <rect x="524" y="160" width="228" height="128" rx="12" style="fill:var(--dg-file);stroke:var(--dg-claude)" stroke-width="2"/>

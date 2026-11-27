@@ -66,25 +66,18 @@ décidez après les relectures :
 
 <figure class="diagram">
 <div class="scroll">
-<svg viewBox="0 0 760 406" role="img" aria-label="Qui relit quand. Les étapes d'une modification, de gauche à droite : plan.understand, plan.investigate, plan.write, plan.trace et plan.challenge dans /compagnon-propose, puis code.implement et code.review dans /compagnon-apply. Les rôles, de haut en bas : l'analyste travaille à plan.understand ; l'enquêteur à plan.investigate ; les quatre rôles d'artefact rédigent à plan.write ; le contrôleur de traçabilité relit à plan.trace ; le contradicteur relit à plan.challenge ; les six experts relisent à plan.challenge et à code.review quand la modification coche leur domaine ; le développeur travaille à code.implement ; le nouvel arrivant relit à code.review ; vous validez le plan après plan.challenge et tranchez ce qui reste après code.review.">
+<svg viewBox="0 0 760 406" role="img" aria-label="Qui relit quand. Les étapes d'une modification, de gauche à droite : comprendre (plan.understand), enquêter (plan.investigate), rédiger (plan.write), confronter (plan.trace) et contester (plan.challenge) dans /compagnon-propose, puis implémenter (code.implement) et relire (code.review) dans /compagnon-apply. Les rôles, de haut en bas : l'analyste travaille à l'étape comprendre ; l'enquêteur à l'étape enquêter ; les quatre rôles d'artefact rédigent ; le contrôleur de traçabilité relit à l'étape confronter ; le contradicteur relit à l'étape contester ; les six experts relisent aux étapes contester et relire quand la modification coche leur domaine ; le développeur travaille à l'étape implémenter ; le nouvel arrivant relit à l'étape relire ; vous validez le plan après l'étape contester et tranchez ce qui reste après l'étape relire.">
 <text x="365" y="20" text-anchor="middle" class="mono" font-size="13" style="fill:var(--dg-muted)">/compagnon-propose</text>
 <line x1="154" y1="30" x2="576" y2="30" style="stroke:var(--dg-line)" stroke-width="2"/>
 <text x="666" y="20" text-anchor="middle" class="mono" font-size="13" style="fill:var(--dg-muted)">/compagnon-apply</text>
 <line x1="584" y1="30" x2="748" y2="30" style="stroke:var(--dg-line)" stroke-width="2"/>
-<text x="193" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
-<text x="193" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">understand</text>
-<text x="279" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
-<text x="279" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">investigate</text>
-<text x="365" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
-<text x="365" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">write</text>
-<text x="451" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
-<text x="451" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">trace</text>
-<text x="537" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
-<text x="537" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">challenge</text>
-<text x="623" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">code.</text>
-<text x="623" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">implement</text>
-<text x="709" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">code.</text>
-<text x="709" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">review</text>
+<text x="193" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">comprendre</text>
+<text x="279" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">enquêter</text>
+<text x="365" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">rédiger</text>
+<text x="451" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">confronter</text>
+<text x="537" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">contester</text>
+<text x="623" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">implémenter</text>
+<text x="709" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">relire</text>
 <rect x="4" y="78" width="752" height="30" rx="6" style="fill:var(--dg-box)"/>
 <text x="14" y="98" font-size="14" style="fill:var(--dg-ink)">Analyste</text>
 <text x="14" y="128" font-size="14" style="fill:var(--dg-ink)">Enquêteur</text>

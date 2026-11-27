@@ -171,3 +171,9 @@ configuration. Gardez-les à l'esprit lorsque vous concevez un schéma :
 - **Les décisions sont injectées dans l'artefact dont l'identifiant est
   `design`.** Nommez votre artefact de conception `design` si vous voulez que
   l'agent reçoive les décisions en vigueur au moment de le rédiger.
+
+## Pour aller plus loin
+
+- [Rôles](../roles.md)
+- [Configuration](../reference/configuration.md)
+- [Langue des artefacts](artifact-language.md)

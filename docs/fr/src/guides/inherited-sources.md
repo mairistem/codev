@@ -24,12 +24,12 @@ reçoit — sans rien copier.
 <text x="486" y="46" font-size="14" font-weight="600" style="fill:var(--dg-ink)">Projet acme-api</text>
 <rect x="486" y="58" width="250" height="48" rx="8" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
 <text x="498" y="77" class="mono" font-size="12" style="fill:var(--dg-ink)">_compagnon/compagnon.lock</text>
-<text x="498" y="96" class="mono" font-size="12" style="fill:var(--dg-muted)">commit = "12958274…"</text>
+<text x="498" y="96" font-size="12" style="fill:var(--dg-muted)">épinglé sur 12958274…</text>
 <rect x="470" y="144" width="282" height="100" rx="12" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
 <text x="486" y="170" font-size="14" font-weight="600" style="fill:var(--dg-ink)">Projet acme-web</text>
 <rect x="486" y="182" width="250" height="48" rx="8" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
 <text x="498" y="201" class="mono" font-size="12" style="fill:var(--dg-ink)">_compagnon/compagnon.lock</text>
-<text x="498" y="220" class="mono" font-size="12" style="fill:var(--dg-muted)">commit = "12958274…"</text>
+<text x="498" y="220" font-size="12" style="fill:var(--dg-muted)">épinglé sur 12958274…</text>
 <line x1="246" y1="104" x2="466" y2="70" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-inherited-sources-arrow)"/>
 <line x1="246" y1="152" x2="466" y2="194" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-inherited-sources-arrow)"/>
 <text x="356" y="76" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">lit</text>

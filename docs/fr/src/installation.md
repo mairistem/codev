@@ -1,12 +1,79 @@
 # Installation
 
-Cette page s'adresse à la personne qui installe l'outil ; si vous relisez
+Cette page s'adresse à la personne qui installe Compagnon ; si vous relisez
 seulement des plans, vous pouvez la passer.
 
-Compagnon est un programme unique, prêt à l'emploi. Des copies toutes prêtes
-(binaires précompilés) sont publiées sur
-[GitHub Releases](https://github.com/mairistem/compagnon/releases) pour les
-plateformes suivantes :
+Compagnon est un programme unique, prêt à l'emploi. Une ligne l'installe,
+sans aucun outil de développement. Il vous faut aussi
+[Claude Code](glossary.md#claude-code) pour utiliser les
+[compétences](glossary.md#compétence) ; la commande `compagnon` elle-même
+fonctionne sans.
+
+## macOS et Linux
+
+Dans un [terminal](glossary.md#terminal) :
+
+```bash
+curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
+```
+
+Le script télécharge la dernière version publiée pour votre ordinateur
+depuis [GitHub Releases](https://github.com/mairistem/compagnon/releases),
+vérifie son empreinte SHA-256, et installe le programme dans
+`~/.local/bin/compagnon`. Il refuse d'installer si l'empreinte ne
+correspond pas. Si `~/.local/bin` n'est pas dans votre `PATH`, il affiche
+la ligne à ajouter à `~/.zshrc` ou `~/.bashrc`. Il nécessite `curl`, `tar`,
+ainsi que `sha256sum` ou `shasum`.
+
+## Windows
+
+Dans PowerShell 5.1 ou ultérieur (PowerShell 7 compris) :
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
+```
+
+Le script vérifie le téléchargement de la même façon et copie
+`compagnon.exe` dans `%LOCALAPPDATA%\Programs\compagnon\`. Il ne modifie
+**pas** votre `PATH` : si le dossier en est absent, le script affiche la
+commande pour l'y ajouter. Ouvrez ensuite une nouvelle fenêtre PowerShell.
+Sous Windows, seule l'architecture x86_64 est précompilée ; sur ARM64,
+compilez depuis les sources (plus bas).
+
+## Vérifier l'installation
+
+```bash
+compagnon --version
+```
+
+Si la commande est introuvable, ouvrez un nouveau terminal. Si elle l'est
+toujours, le dossier d'installation n'est pas dans votre `PATH` :
+ajoutez-le comme l'installateur l'a indiqué. `command -v compagnon` (macOS,
+Linux) ou `Get-Command compagnon` (Windows) indique quel programme votre
+terminal exécute.
+
+## Et maintenant
+
+Dans le dossier de votre projet, lancez une fois `compagnon init`, puis
+demandez à Claude votre premier plan :
+[Votre première modification](quickstart.md) vous guide pas à pas.
+
+## Mise à jour
+
+`compagnon self-update` installe la dernière version publiée, vérifiée
+comme la première, puis rafraîchit les compétences du projet où vous êtes.
+Voir [`compagnon self-update`](reference/cli.md#compagnon-self-update) et
+[`compagnon update`](reference/cli.md#compagnon-update) pour les options.
+
+## Autres façons d'installer
+
+La plupart des gens n'en ont jamais besoin.
+
+<details>
+<summary>Sous le capot : plateformes, versions et PATH</summary>
+
+Des copies toutes prêtes (binaires précompilés) sont publiées pour ces
+plateformes :
 
 | Plateforme | Cible |
 |---|---|
@@ -15,72 +82,42 @@ plateformes suivantes :
 | Linux, x86_64 (lié statiquement) | `x86_64-unknown-linux-musl` |
 | Windows, x86_64 | `x86_64-pc-windows-msvc` |
 
-Il existe quatre façons de l'installer. Les deux premières sont les plus
-rapides et ne demandent aucun outil de développement.
-
-## macOS et Linux : install.sh
-
-```bash
-curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
-```
-
-Le script détecte votre système et votre type de processeur. Il télécharge
-l'archive correspondante et le fichier `SHA256SUMS` depuis la dernière
-version publiée sur GitHub. Il vérifie l'empreinte SHA-256 de l'archive avec
-ce fichier. Puis il installe le programme dans `~/.local/bin/compagnon`. Il
-refuse d'installer si l'empreinte ne correspond pas,
-et crée `~/.local/bin` si nécessaire.
-
-Si `~/.local/bin` n'est pas dans votre `PATH`, le script affiche la ligne
-exacte à ajouter à `~/.zshrc` ou `~/.bashrc` :
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-Pour installer une version précise, définissez `COMPAGNON_VERSION` :
+Pour installer une version précise, définissez `COMPAGNON_VERSION` :
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | COMPAGNON_VERSION=0.6.1 sh
 ```
-
-Le script nécessite `curl`, `tar`, ainsi que `sha256sum` ou `shasum`.
-
-## Windows : install.ps1
-
-Dans PowerShell 5.1 ou ultérieur (PowerShell 7 compris) :
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
-```
-
-Le script télécharge l'archive `.zip` et `SHA256SUMS`, vérifie l'archive avec
-`Get-FileHash` et copie `compagnon.exe` dans `%LOCALAPPDATA%\Programs\compagnon\`.
-
-Il ne modifie **pas** votre `PATH`. Si le dossier est absent du `PATH` de
-votre utilisateur, il affiche la commande pour l'y ajouter :
-
-```powershell
-[Environment]::SetEnvironmentVariable('PATH', [Environment]::GetEnvironmentVariable('PATH', 'User') + ";$env:LOCALAPPDATA\Programs\compagnon", 'User')
-```
-
-Cette commande ne modifie que le `PATH` *utilisateur*. Évitez
-`setx PATH "$env:PATH;..."` : cette commande tronque les valeurs de plus de
-1 024 caractères et recopie le `PATH` de la machine dans le `PATH`
-utilisateur. Ouvrez ensuite une nouvelle fenêtre PowerShell pour que la
-modification prenne effet.
-
-Pour installer une version précise :
 
 ```powershell
 $env:COMPAGNON_VERSION = '0.6.1'
 iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```
 
-Sous Windows, seule l'architecture x86_64 (`AMD64`) est disponible en binaire
-précompilé. Sur ARM64, compilez depuis les sources.
+La ligne que `install.sh` vous demande d'ajouter, si `~/.local/bin` n'est
+pas dans votre `PATH` :
 
-## Téléchargement manuel depuis GitHub Releases
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+La commande qu'affiche `install.ps1` sous Windows, qui ne modifie que le
+`PATH` *utilisateur* :
+
+```powershell
+[Environment]::SetEnvironmentVariable('PATH', [Environment]::GetEnvironmentVariable('PATH', 'User') + ";$env:LOCALAPPDATA\Programs\compagnon", 'User')
+```
+
+Évitez `setx PATH "$env:PATH;..."` : cette commande tronque les valeurs de
+plus de 1 024 caractères et recopie le `PATH` de la machine dans le `PATH`
+utilisateur.
+
+[git](glossary.md#git) n'est nécessaire que pour les
+[sources héritées](guides/inherited-sources.md) hébergées dans un dépôt git.
+
+</details>
+
+<details>
+<summary>Sous le capot : téléchargement manuel depuis GitHub Releases</summary>
 
 Si vous préférez ne pas exécuter un script directement dans votre shell,
 téléchargez vous-même les fichiers depuis la
@@ -90,7 +127,7 @@ Chaque version contient une archive par plateforme, nommée
 `SHA256SUMS`.
 
 **macOS et Linux.** Téléchargez votre archive et `SHA256SUMS` dans le même
-dossier, puis :
+dossier, puis :
 
 ```bash
 # Vérifier l'empreinte — sur macOS : shasum -a 256 -c SHA256SUMS --ignore-missing
@@ -103,7 +140,7 @@ chmod 755 ~/.local/bin/compagnon
 ```
 
 **Windows.** Téléchargez `compagnon-<version>-x86_64-pc-windows-msvc.zip` et
-`SHA256SUMS`, puis dans PowerShell :
+`SHA256SUMS`, puis dans PowerShell :
 
 ```powershell
 # Vérifier l'empreinte
@@ -122,11 +159,15 @@ Copy-Item compagnon-*\compagnon.exe $dst
 Ajoutez ensuite le dossier au `PATH` de votre utilisateur comme indiqué
 plus haut.
 
-## Depuis les sources : cargo install
+</details>
 
-Avec une chaîne d'outils Rust (1.89 ou ultérieure), vous pouvez compiler Compagnon
-à partir d'un clone du [dépôt](glossary.md#dépôt). C'est la voie à suivre pour les contributeurs et
-pour les plateformes sans binaire précompilé.
+<details>
+<summary>Sous le capot : compiler depuis les sources avec cargo</summary>
+
+Avec une chaîne d'outils Rust (1.89 ou ultérieure), vous pouvez compiler
+Compagnon à partir d'un clone du [dépôt](glossary.md#dépôt). C'est la voie
+à suivre pour les contributeurs et pour les plateformes sans binaire
+précompilé.
 
 ```bash
 git clone https://github.com/mairistem/compagnon.git
@@ -136,21 +177,13 @@ cargo install --path crates/compagnon-cli
 
 Le binaire est installé dans `~/.cargo/bin/compagnon`.
 
-## Vérifier l'installation
+</details>
 
-```bash
-compagnon --version
-```
-
-Sous macOS et Linux, `command -v compagnon` indique quel binaire votre shell
-exécute. Sous Windows, utilisez `Get-Command compagnon`. Si la commande est
-introuvable, le dossier d'installation n'est pas dans votre `PATH` ; reportez-vous
-aux instructions ci-dessus pour votre plateforme.
-
-## Complétion du shell
+<details id="complétion-du-shell">
+<summary>Sous le capot : complétion du shell</summary>
 
 `compagnon completions <SHELL>` écrit sur la sortie standard un script de
-complétion pour `bash`, `zsh`, `fish`, `powershell` ou `elvish` :
+complétion pour `bash`, `zsh`, `fish`, `powershell` ou `elvish` :
 
 ```bash
 # bash
@@ -168,16 +201,17 @@ compagnon completions fish > ~/.config/fish/completions/compagnon.fish
 compagnon completions powershell | Out-String | Invoke-Expression
 ```
 
-## Prérequis
+</details>
 
-- **Claude Code**, pour utiliser les compétences. La commande `compagnon`
-  elle-même fonctionne sans.
-- **[git](glossary.md#git)**, uniquement pour les [sources héritées](guides/inherited-sources.md)
-  hébergées dans un dépôt git.
+<details>
+<summary>Sous le capot : ce que remplace la mise à jour</summary>
 
-## Mise à jour
-
-Lancez `compagnon self-update` :
+`compagnon self-update` télécharge la version publiée la plus récente pour
+votre plateforme, vérifie son SHA-256 avec le `SHA256SUMS` de cette version,
+remplace le binaire sur place puis, dans un projet Compagnon, lance
+`compagnon update` avec le nouveau binaire. Elle a besoin de `curl` et de
+`tar`, fournis par macOS, la plupart des distributions Linux et Windows 10
+ou ultérieur.
 
 ```bash
 compagnon self-update                  # demande confirmation dans un terminal
@@ -185,40 +219,33 @@ compagnon self-update --check          # indique seulement la version installée
 compagnon self-update --version 0.5.0  # une version précise, rétrogradation comprise
 ```
 
-La commande télécharge la version publiée la plus récente pour votre plateforme,
-vérifie son SHA-256 avec le `SHA256SUMS` de cette version — comme le font les
-installateurs — et remplace le binaire sur place. Ensuite, dans un projet
-Compagnon, elle lance `compagnon update` avec le nouveau binaire. Elle a besoin de
-`curl` et de `tar`, fournis par macOS, la plupart des distributions Linux et
-Windows 10 ou ultérieur.
+Elle ne remplace qu'un binaire installé par `install.sh`, `install.ps1` ou
+à la main. Si Compagnon a été installé avec `cargo install`, compilé depuis
+un clone ou installé par un gestionnaire de paquets, elle affiche la
+commande qui le met à jour et ne modifie rien. Elle ne rétrograde jamais,
+sauf si vous passez `--version`. Sous Windows, l'ancien binaire est
+conservé sous le nom `compagnon.old.exe` à côté du nouveau, jusqu'à ce que
+la commande Compagnon suivante le supprime.
 
-`compagnon self-update` ne remplace qu'un binaire installé par `install.sh`,
-`install.ps1` ou à la main. Si Compagnon a été installé avec `cargo install`,
-compilé depuis un clone ou installé par un gestionnaire de paquets, elle
-affiche la commande qui le met à jour et ne modifie rien. Elle ne rétrograde
-jamais, sauf si vous passez `--version`. Sous Windows, l'ancien binaire est
-conservé sous le nom `compagnon.old.exe` à côté du nouveau, jusqu'à ce que la
-commande Compagnon suivante le supprime.
-
-`compagnon status` vous signale l'existence d'une version plus récente, au plus
-une fois par jour ; voir
-[Compagnon vérifie-t-il les mises à jour ?](faq.md#compagnon-vérifie-t-il-les-mises-à-jour-)
+`compagnon status` vous signale l'existence d'une version plus récente, au
+plus une fois par jour ; voir
+[Compagnon vérifie-t-il les mises à jour ?](faq.md#compagnon-vérifie-t-il-les-mises-à-jour-)
 pour le désactiver.
 
-Vous pouvez toujours relancer l'installateur ou télécharger une version plus
-récente. Ensuite, dans chaque projet, régénérez les compétences pour qu'elles
-correspondent à la nouvelle version :
-
-```bash
-compagnon update
-```
-
-`compagnon update` rafraîchit aussi trois fichiers, là où `compagnon init`
-les a écrits. Dans `CLAUDE.md`, il rafraîchit les sections gérées par
-Compagnon. Dans le modèle de [demande de fusion](glossary.md#demande-de-fusion),
-il rafraîchit aussi les sections gérées par Compagnon. Dans
-`.github/workflows/compagnon.yml`, il met à jour la version de Compagnon
-épinglée. Consultez
-[`compagnon update`](reference/cli.md#compagnon-update) pour savoir comment sont
-traitées les compétences modifiées à la main, et `compagnon doctor` pour vérifier le
+Vous pouvez aussi relancer l'installateur. Ensuite, dans chaque projet,
+lancez `compagnon update` : il régénère les compétences et rafraîchit, là
+où `compagnon init` les a écrits, les sections gérées par Compagnon dans
+`CLAUDE.md` et dans le modèle de
+[demande de fusion](glossary.md#demande-de-fusion), et la version épinglée
+dans `.github/workflows/compagnon.yml`. `compagnon doctor` vérifie le
 résultat.
+
+</details>
+
+## Pour aller plus loin
+
+- [Votre première modification](quickstart.md) : votre premier plan, en
+  dix minutes.
+- [Partir de rien](guides/start-from-nothing.md) : si vous ne codez pas.
+- [Interface en ligne de commande](reference/cli.md) : chaque commande et
+  option.
