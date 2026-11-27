@@ -3,7 +3,7 @@
 - Date: 2026-10-15
 - Model: Claude Code's default
 - Claude Code: 2.1.289 (Claude Code)
-- compagnon: compagnon 0.6.1
+- compagnon: compagnon 0.6.1 (`idea.explore`, `project.onboard`: compagnon 0.7.0, 2026-11-26)
 - Cases: 101
 - Repetitions: 5
 - Cost: 78.50 USD for one run of the suite (sum of the cases' medians), 395.05 USD in all

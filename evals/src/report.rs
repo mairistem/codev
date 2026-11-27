@@ -4,6 +4,7 @@
 
 use std::fmt::Write as _;
 
+use crate::observed::RunInfo;
 use crate::score::{Class, Measure, Measures, Outcome, SourceShare, Spread, SuiteScore, number};
 
 pub fn json(score: &SuiteScore) -> String {
@@ -78,6 +79,29 @@ fn checked_noun(step: crate::case::Step) -> &'static str {
     }
 }
 
+/// The run's Compagnon version as `run.json` records it, then, in
+/// parentheses, that of each set of steps a resumed run added with another
+/// Compagnon, with its date.
+fn compagnon_versions(run: &RunInfo) -> String {
+    let mut line = run
+        .compagnon_version
+        .as_deref()
+        .unwrap_or("unknown")
+        .to_string();
+    if !run.added.is_empty() {
+        let entries: Vec<String> = run
+            .added
+            .iter()
+            .map(|a| {
+                let steps: Vec<String> = a.steps.iter().map(|s| format!("`{s}`")).collect();
+                format!("{}: {}, {}", steps.join(", "), a.compagnon_version, a.date)
+            })
+            .collect();
+        line.push_str(&format!(" ({})", entries.join("; ")));
+    }
+    line
+}
+
 pub fn markdown(score: &SuiteScore) -> String {
     let mut out = String::new();
     let run = &score.run;
@@ -90,7 +114,7 @@ pub fn markdown(score: &SuiteScore) -> String {
         run.date,
         run.model.as_deref().unwrap_or("Claude Code's default"),
         run.claude_version.as_deref().unwrap_or("unknown"),
-        run.compagnon_version.as_deref().unwrap_or("unknown"),
+        compagnon_versions(run),
         distinct,
         score.repetitions,
         score.cost_usd,
@@ -583,6 +607,29 @@ mod tests {
         );
         assert!(md.contains("One run per case"), "{md}");
         assert!(md.contains("R-privacy-1"), "{md}");
+    }
+
+    #[test]
+    fn the_report_names_the_added_steps_version() {
+        let mut score = scores();
+        score.run.compagnon_version = Some("compagnon 0.6.1".into());
+        assert!(
+            markdown(&score).contains("- compagnon: compagnon 0.6.1\n"),
+            "{}",
+            markdown(&score)
+        );
+        score.run.added = vec![crate::observed::AddedSteps {
+            steps: vec!["idea.explore".into(), "project.onboard".into()],
+            compagnon_version: "compagnon 0.7.0".into(),
+            date: "2026-11-26".into(),
+        }];
+        let md = markdown(&score);
+        assert!(
+            md.contains(
+                "- compagnon: compagnon 0.6.1 (`idea.explore`, `project.onboard`: compagnon 0.7.0, 2026-11-26)\n"
+            ),
+            "{md}"
+        );
     }
 
     #[test]

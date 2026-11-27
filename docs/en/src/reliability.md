@@ -17,7 +17,7 @@ It is not a benchmark of models, and not a promise that a role finds every defec
 - Date: 2026-10-15
 - Model: Claude Code's default
 - Claude Code: 2.1.289
-- compagnon: 0.6.1
+- compagnon: 0.6.1 (`idea.explore`, `project.onboard`: 0.7.0, 2026-11-26)
 - Cases: 101 (25 seeded, 15 clean controls, 27 planning, 6 revision, 4 implementation, 4 sync, 6 archive, 5 configure, 3 explore, 6 onboard)
 - Repetitions of each case: 5
 - Cost: 395.05 USD for the 5 runs of each case (78.50 USD for one run of the suite)

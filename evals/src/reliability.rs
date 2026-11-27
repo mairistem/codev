@@ -424,6 +424,33 @@ fn version(raw: Option<&str>, name: &str) -> String {
         .to_string()
 }
 
+/// The run's Compagnon version, then, in parentheses, the version and date
+/// of each set of steps a resumed run added with another Compagnon:
+/// `0.6.1 (`idea.explore`, `project.onboard`: 0.7.0, 2026-11-26)`.
+fn compagnon_versions(run: &RunInfo, lang: Lang) -> String {
+    let mut line = version(run.compagnon_version.as_deref(), "compagnon");
+    if run.added.is_empty() {
+        return line;
+    }
+    let c = lang.colon();
+    let entries: Vec<String> = run
+        .added
+        .iter()
+        .map(|a| {
+            let steps: Vec<String> = a.steps.iter().map(|s| format!("`{s}`")).collect();
+            format!(
+                "{}{c}{}, {}",
+                steps.join(", "),
+                version(Some(&a.compagnon_version), "compagnon"),
+                a.date
+            )
+        })
+        .collect();
+    let separator = lang.pick("; ", "\u{a0}; ");
+    line.push_str(&format!(" ({})", entries.join(separator)));
+    line
+}
+
 /// A fraction of medians, or `—` when the denominator is zero.
 fn fraction(num: f64, den: f64) -> String {
     if den == 0.0 {
@@ -601,7 +628,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         b.run.date,
         lang.pick("Model", "Modèle"),
         version(b.run.claude_version.as_deref(), "Claude Code"),
-        version(b.run.compagnon_version.as_deref(), "compagnon"),
+        compagnon_versions(&b.run, lang),
         lang.pick("Cases", "Cas"),
         b.cases,
         seeded,
@@ -2250,6 +2277,58 @@ mod tests {
         let e = Baseline::parse(&report_json("2026-11-02", 1), RUN_JSON).unwrap_err();
         assert!(e.contains("report.json") && e.contains("run.json"), "{e}");
         assert!(e.contains("2026-11-02") && e.contains("2026-10-13"), "{e}");
+    }
+
+    #[test]
+    fn the_chapter_names_the_added_steps_version() {
+        let mut b = baseline(vec![role("ops", 4, 4, 1)]);
+        b.run.added = vec![crate::observed::AddedSteps {
+            steps: vec!["idea.explore".into(), "project.onboard".into()],
+            compagnon_version: "compagnon 0.7.0".into(),
+            date: "2026-11-26".into(),
+        }];
+        let en = page(&b, Lang::En);
+        assert!(
+            en.contains(
+                "- compagnon: 0.6.1 (`idea.explore`, `project.onboard`: 0.7.0, 2026-11-26)\n"
+            ),
+            "{en}"
+        );
+        let fr = page(&b, Lang::Fr);
+        assert!(
+            fr.contains(
+                "- compagnon\u{a0}: 0.6.1 (`idea.explore`, `project.onboard`\u{a0}: 0.7.0, 2026-11-26)\n"
+            ),
+            "{fr}"
+        );
+    }
+
+    #[test]
+    fn a_run_without_added_steps_gives_the_run_version_alone() {
+        let b = baseline(vec![role("ops", 4, 4, 1)]);
+        assert!(page(&b, Lang::En).contains("- compagnon: 0.6.1\n"));
+        assert!(page(&b, Lang::Fr).contains("- compagnon\u{a0}: 0.6.1\n"));
+    }
+
+    #[test]
+    fn the_chapter_separates_several_added_entries() {
+        let mut b = baseline(vec![role("ops", 4, 4, 1)]);
+        for (step, v, date) in [
+            ("idea.explore", "compagnon 0.7.0", "2026-11-26"),
+            ("code.review", "compagnon 0.7.1", "2026-12-02"),
+        ] {
+            b.run.added.push(crate::observed::AddedSteps {
+                steps: vec![step.into()],
+                compagnon_version: v.into(),
+                date: date.into(),
+            });
+        }
+        assert!(page(&b, Lang::En).contains(
+            "- compagnon: 0.6.1 (`idea.explore`: 0.7.0, 2026-11-26; `code.review`: 0.7.1, 2026-12-02)\n"
+        ));
+        assert!(page(&b, Lang::Fr).contains(
+            "(`idea.explore`\u{a0}: 0.7.0, 2026-11-26\u{a0}; `code.review`\u{a0}: 0.7.1, 2026-12-02)\n"
+        ));
     }
 
     #[test]

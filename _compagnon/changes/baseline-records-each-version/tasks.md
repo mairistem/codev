@@ -11,7 +11,7 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   that build a `RunInfo` (`score.rs`, `runner.rs`, `reliability.rs`);
   verified by unit tests in `observed.rs` named after "A run.json without
   added" (it parses as before) and a round trip with an entry.
-- [ ] 1.2 Write `runner::record_added` and call it from `evals/src/main.rs`
+- [x] 1.2 Write `runner::record_added` and call it from `evals/src/main.rs`
   after `pending`, rewriting `run.json` when it changed; verified by unit
   tests in `evals/src/runner.rs` named after "Steps added with another
   Compagnon", "Resuming with the same Compagnon", "A resume with nothing
@@ -20,11 +20,11 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 
 ## 2. The page, the report and the baseline
 
-- [ ] 2.1 In `evals/src/reliability.rs` and `evals/src/report.rs`, give the
+- [x] 2.1 In `evals/src/reliability.rs` and `evals/src/report.rs`, give the
   added steps' version and date after the run's; verified by a test named
   after "The chapter names the added steps' version", in both languages,
   and one on the markdown report.
-- [ ] 2.2 Add the `added` entry to `evals/baseline/run.json`, score the
+- [x] 2.2 Add the `added` entry to `evals/baseline/run.json`, score the
   baseline again (`cargo run -p compagnon-evals -- score evals/baseline`),
   regenerate the chapter (`cargo run -p compagnon-evals -- docs`);
   verified by `the_baseline_agrees_with_the_scoring`,

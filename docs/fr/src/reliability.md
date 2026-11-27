@@ -17,7 +17,7 @@ Ce n'est ni un banc d'essai de modèles, ni la promesse qu'un rôle trouve chaqu
 - Date : 2026-10-15
 - Modèle : celui de Claude Code par défaut
 - Claude Code : 2.1.289
-- compagnon : 0.6.1
+- compagnon : 0.6.1 (`idea.explore`, `project.onboard` : 0.7.0, 2026-11-26)
 - Cas : 101 (25 ensemencés, 15 témoins propres, 27 de planification, 6 de révision, 4 d'implémentation, 4 de synchronisation, 6 d'archivage, 5 de configuration, 3 d'exploration, 6 de prise en main)
 - Répétitions de chaque cas : 5
 - Coût : 395,05 USD pour les 5 exécutions de chaque cas (78,50 USD pour une exécution de la suite)
