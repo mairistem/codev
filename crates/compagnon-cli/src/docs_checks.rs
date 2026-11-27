@@ -2445,6 +2445,18 @@ mod chapter_tests {
     }
 
     #[test]
+    fn the_jira_guide_leads_with_what_it_changes() {
+        for (lang, title) in [(Lang::En, "Start from a Jira ticket"), (Lang::Fr, "Partir d'un ticket Jira")] {
+            let md = chapter(lang, "guides/mcp.md");
+            assert!(md.starts_with(&format!("# {title}\n")), "{}: title", lang.tag());
+            let everyday = &parts(summary(lang))[EVERYDAY_PART].1;
+            assert!(everyday.iter().any(|c| c == "guides/mcp.md"), "{}: part", lang.tag());
+            let problems = jira_guide_problems(md);
+            assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
+        }
+    }
+
+    #[test]
     fn every_diagram_theme_is_contrasted_enough() {
         let sheets = [
             (
