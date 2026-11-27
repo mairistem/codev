@@ -1,6 +1,6 @@
-# Mockup — status: waiting for approval
+# Mockup — status: approved (version 1, 2026-11-27)
 
-Published for review: https://claude.ai/artifact/7n3EqydtQfniLv3BRXtoZ2 (version 1).
+Approved by the user on 2026-11-27, with the request to widen the plan to a full refactor of the documentation. Published for review: https://claude.ai/artifact/7n3EqydtQfniLv3BRXtoZ2 (version 1).
 
 Built by `build.py` from `src.html` and the three `*-diagram.html` parts
 (run from the repository root). `index.html` is the assembled page; it has
