@@ -10,27 +10,9 @@ through commits to rediscover why a behavior exists. Compagnon reverses that: fo
 every significant change, you first write down what you want, review it, then
 implement it.
 
-What Compagnon gives you:
-
-- **An explicit cycle.** Every change goes through propose, apply, sync and
-  archive. Each step has an artifact and a dedicated Claude Code skill. See
-  [How it works](workflow.md).
-- **Spec deltas, merged precisely.** A change never rewrites a spec wholesale.
-  It declares `ADDED`, `MODIFIED`, `REMOVED` or `RENAMED` requirements, and
-  Compagnon merges them into the main specs when the change is archived, leaving
-  everything else in the file untouched. This is what makes Compagnon usable on
-  existing code, not only on greenfield projects.
-- **Immutable architecture decisions.** Accepted decisions (ADRs) are sealed
-  with a hash of their body. `compagnon validate` reports any silent rewrite. You
-  change a decision by superseding it, never by editing it.
-- **Shared conventions across repositories.** A project can inherit context,
-  rules and decisions from another repository, read-only, pinned to a git
-  commit. See [Inherited sources](guides/inherited-sources.md).
-- **Your team's language.** Artifacts are written in the language set in the
-  configuration, while their structure stays machine-readable. See
-  [Artifact language](guides/artifact-language.md).
-- **A single native binary.** No runtime to install. Prebuilt binaries for
-  macOS, Linux and Windows, verified by SHA-256 at install time.
+What that gives you day to day is told in
+[Compagnon in two minutes](introduction.md) and [How it works](workflow.md);
+what is new compared with the tools before it is below.
 
 ## Origins
 

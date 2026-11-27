@@ -23,12 +23,39 @@ respecter, sans interfaces de façade ni conteneur d'injection de dépendances.
 
 ## Le graphe des modules
 
-```text
-compagnon-cli ──▶ compagnon-agents ──▶ compagnon-engine ──▶ compagnon-core
-    │                               ▲                ▲
-    ├───────────────────────────────┘                │
-    └────────────────────────────────────────────────┘
-```
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 330" role="img" aria-label="Le graphe des modules, une flèche signifiant dépend de : compagnon-cli, la coquille, dépend de compagnon-agents, compagnon-engine et compagnon-core ; compagnon-agents, la cible Claude Code, dépend de compagnon-engine et compagnon-core ; compagnon-engine, le disque via des ports, dépend de compagnon-core ; compagnon-core, pur, ne dépend d'aucun autre module ; compagnon-evals, l'évaluation des rôles, membre de l'espace de travail hors du binaire, dépend de compagnon-core seulement.">
+<defs><marker id="dg-architecture-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
+<text x="8" y="22" font-size="13" style="fill:var(--dg-muted)">Une flèche signifie « dépend de »</text>
+<rect x="8" y="120" width="150" height="58" rx="10" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="83" y="144" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-cli</text>
+<text x="83" y="166" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">la coquille</text>
+<rect x="206" y="120" width="150" height="58" rx="10" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="281" y="144" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-agents</text>
+<text x="281" y="166" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">cible Claude Code</text>
+<rect x="404" y="120" width="150" height="58" rx="10" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="479" y="144" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-engine</text>
+<text x="479" y="166" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">disque, via des ports</text>
+<rect x="602" y="120" width="150" height="58" rx="10" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="677" y="144" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-core</text>
+<text x="677" y="166" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">pur, sans E/S</text>
+<line x1="160" y1="149" x2="204" y2="149" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<line x1="358" y1="149" x2="402" y2="149" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<line x1="556" y1="149" x2="600" y2="149" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<path d="M50,118 V44 H710 V116" fill="none" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<path d="M110,118 V80 H479 V116" fill="none" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<path d="M281,180 V216 H660 V182" fill="none" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<rect x="602" y="256" width="150" height="58" rx="10" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="677" y="280" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-evals</text>
+<text x="677" y="302" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">évaluation des rôles</text>
+<line x1="720" y1="254" x2="720" y2="182" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<text x="588" y="280" text-anchor="end" font-size="12" style="fill:var(--dg-muted)">Membre de l'espace de travail,</text>
+<text x="588" y="298" text-anchor="end" font-size="12" style="fill:var(--dg-muted)">jamais inclus dans le binaire</text>
+</svg>
+</div>
+<figcaption>Le graphe des modules : toutes les flèches vont vers compagnon-core, qui ne dépend d'aucun autre module, et Cargo refuse de compiler un cycle.</figcaption>
+</figure>
 
 | Module | Rôle | Entrées-sorties |
 |---|---|---|
@@ -37,8 +64,9 @@ compagnon-cli ──▶ compagnon-agents ──▶ compagnon-engine ──▶ co
 | `compagnon-agents` | L'interface (trait) `AgentTarget` et son implémentation pour Claude Code ; le catalogue des déroulés | Via des ports |
 | `compagnon-cli` | Analyse des arguments, rendu lisible, contrat JSON versionné, questions interactives, documentation embarquée | Oui — c'est la coquille |
 
-`compagnon-agents` dépend aussi de `compagnon-core`, et `compagnon-cli` de tous les
-modules.
+Le cinquième membre de l'espace de travail, `compagnon-evals`, note les rôles
+de relecture (voir [Fiabilité des rôles](reliability.md)). Il ne dépend que de
+`compagnon-core` et n'est jamais inclus dans le binaire publié.
 
 Du code ne devient un module à part entière que lorsqu'il l'a mérité — une frontière de
 test nette, ou un consommateur externe. Découper plus tôt ne produit que des
