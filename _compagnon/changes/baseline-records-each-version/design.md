@@ -30,6 +30,10 @@ The `idea.explore` and `project.onboard` observations were added to it on
 - Re-recording any case.
 - Recording the Claude Code version per step: a resumed run already
   refuses another Claude Code (`check_resume`).
+- Recording steps resumed under the same Compagnon version string: the
+  page names versions, and between 2026-10-19 and 2026-11-10 several steps
+  were added under "compagnon 0.6.1" from different builds; that history
+  has no record to restore, and the entry is about the version shown.
 
 ## Decisions
 
@@ -37,33 +41,42 @@ The `idea.explore` and `project.onboard` observations were added to it on
 
 `RunInfo` gains `added: Vec<AddedSteps>` (`serde(default, skip_serializing_if
 = "Vec::is_empty")`), each `{ steps: [..], compagnonVersion, date }`, the
-steps in the order `Step` lists them. On a resume whose `compagnon_version`
-differs from the recorded one, `main.rs` appends one entry with the steps
-the run selects — those of `--step`, or every step of the cases it runs —
-and rewrites `run.json` with the recorded fields unchanged. A resume with
-the same Compagnon appends nothing. The `format` of `run.json` stays 2:
+steps in the order `Step` lists them. `runner::record_added(recorded,
+version, steps, date)` returns the `RunInfo` to write: on a resume whose
+`compagnon_version` differs from the recorded one, it appends one entry
+with the steps of the jobs `pending` actually runs (so `--case`,
+`--role` and `--rerun` name only what ran), unless the last entry already
+names those steps and that version; with no job pending, or the same
+Compagnon, it changes nothing. `main.rs` calls it after `pending` and
+rewrites `run.json`, the recorded fields unchanged, when it changed. The `format` of `run.json` stays 2:
 the field is optional and read as empty when absent.
 
 **Alternatives considered**: a version in each `observed.json` — rejected,
 it would take a new observation format and re-reading every observation
 for one line of the page.
 
-### Decision: The page names the added steps after the run's version
+### Decision: The page and the report name the added steps after the run's version
 
 The run block's Compagnon line becomes, when `added` is not empty,
 "compagnon: 0.6.1 (`idea.explore`, `project.onboard`: 0.7.0, 2026-11-26)"
-in English and the same with « : » in French, each entry in order.
+in English and the same with « : » in French, each entry in order; the
+markdown report of `score` (`report.rs`) gives the same line. `report.json`
+embeds the run's `RunInfo`, and `docs` refuses a baseline whose two
+copies differ (`Baseline::parse`): the field is part of both.
 
 ### Decision: The committed baseline gets its entry by hand, once
 
 `evals/baseline/run.json` gains
 `added: [{steps: ["idea.explore", "project.onboard"], compagnonVersion:
 "compagnon 0.7.0", date: "2026-11-26"}]`, the values of the archived
-`explore-onboard-evaluation` evaluation report; the chapter is
+`explore-onboard-evaluation` evaluation report; then the baseline is
+scored again (`cargo run -p compagnon-evals -- score evals/baseline`), so
+that `report.json` embeds the same `run.json`, and the chapter is
 regenerated. `the_baseline_agrees_with_the_scoring` and
 `the_reliability_pages_follow_the_baseline` keep holding.
 
 ## Risks / Trade-offs
 
-- [A resumed run that selects steps already in `added` again] → a new
-  entry is appended with its date: the page shows both, the later last.
+- [A run resumed several times after usage-limit stops] → the entry is
+  kept when the last one already names the same steps and version, so the
+  page does not repeat it.

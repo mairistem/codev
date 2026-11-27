@@ -17,11 +17,12 @@ difference.
   Compagnon version differs from the one `run.json` records, the steps
   it ran, its Compagnon version and its date. The runner appends to it;
   the original fields stay as they were recorded.
-- The reliability chapter gives, beside the run's Compagnon version, the
-  version and date of each step added later.
+- The reliability chapter and the report (`report.md`) give, beside the
+  run's Compagnon version, the version and date of each step added later.
 - The committed baseline's `run.json` gets the entry for `idea.explore`
   and `project.onboard` (Compagnon 0.7.0, 2026-11-26), from the change
-  that recorded them; the chapter is regenerated. No paid run.
+  that recorded them; the baseline is scored again (its report embeds
+  `run.json`) and the chapter regenerated. No paid run.
 
 ## Capabilities
 
@@ -36,10 +37,12 @@ difference.
 ## Impact
 
 - `evals/src/observed.rs` (`RunInfo`), `evals/src/main.rs` and
-  `evals/src/runner.rs` (resume), `evals/src/reliability.rs` (the run
-  block), their tests.
-- `evals/baseline/run.json`, `docs/en/src/reliability.md`,
-  `docs/fr/src/reliability.md` (generated).
+  `evals/src/runner.rs` (resume), `evals/src/reliability.rs` and
+  `evals/src/report.rs` (the run block), the test fixtures that build a
+  `RunInfo` (`evals/src/score.rs`, `runner.rs`, `reliability.rs`).
+- `evals/baseline/run.json`, `report.json` and `report.md` (scored
+  again), `docs/en/src/reliability.md`, `docs/fr/src/reliability.md`
+  (generated).
 
 ## Domains
 

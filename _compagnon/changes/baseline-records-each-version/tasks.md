@@ -7,21 +7,25 @@ Every task's definition of done also includes `cargo fmt --all --check`,
 ## 1. The record
 
 - [ ] 1.1 Add `added` to `RunInfo` (`evals/src/observed.rs`) as the
-  design says, read as empty when absent; verified by a unit test that a
-  `run.json` without `added` parses as before and one with it
-  round-trips.
-- [ ] 1.2 In `evals/src/main.rs` and `evals/src/runner.rs`, append the
-  entry on a resume with another Compagnon and rewrite `run.json`, nothing
-  on a resume with the same one; verified by tests named after the
-  scenarios "Steps added with another Compagnon" and "Resuming with the
-  same Compagnon".
+  design says, read as empty when absent, and update the test fixtures
+  that build a `RunInfo` (`score.rs`, `runner.rs`, `reliability.rs`);
+  verified by unit tests in `observed.rs` named after "A run.json without
+  added" (it parses as before) and a round trip with an entry.
+- [ ] 1.2 Write `runner::record_added` and call it from `evals/src/main.rs`
+  after `pending`, rewriting `run.json` when it changed; verified by unit
+  tests in `evals/src/runner.rs` named after "Steps added with another
+  Compagnon", "Resuming with the same Compagnon", "A resume with nothing
+  left to run" and "A resume of a few cases", and one for a last entry
+  with the same steps and version kept as it is.
 
-## 2. The page and the baseline
+## 2. The page, the report and the baseline
 
-- [ ] 2.1 In `evals/src/reliability.rs`, give the added steps' version
-  and date after the run's; verified by a test named after "The chapter
-  names the added steps' version", in both languages.
-- [ ] 2.2 Add the `added` entry to `evals/baseline/run.json` and
+- [ ] 2.1 In `evals/src/reliability.rs` and `evals/src/report.rs`, give the
+  added steps' version and date after the run's; verified by a test named
+  after "The chapter names the added steps' version", in both languages,
+  and one on the markdown report.
+- [ ] 2.2 Add the `added` entry to `evals/baseline/run.json`, score the
+  baseline again (`cargo run -p compagnon-evals -- score evals/baseline`),
   regenerate the chapter (`cargo run -p compagnon-evals -- docs`);
   verified by `the_baseline_agrees_with_the_scoring`,
   `the_reliability_pages_follow_the_baseline` and both pages showing
