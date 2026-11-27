@@ -19,6 +19,7 @@ Detailed notes for each version are on the corresponding GitHub Release.
 
 - A **Read and approve a plan** guide for product owners and other non-developers.
 - Six pages each profile asked for — an annotated example plan, approving a plan on GitHub or GitLab, starting from nothing, adopting Compagnon on an existing project, deploying it for a team, and contributing — and "Reviewing a plan" explains how to read a modified rule.
+- Two chapters, "Decisions" and "Error codes and fixes", gather what was spread across Concepts and the FAQ.
 
 ### Changed
 
@@ -29,6 +30,9 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - The explore and onboard skills now suggest each next step in plain words — "say “plan this change”" — with the slash command as an optional shortcut.
 - Compagnon's skills now suggest each next step in plain words — "say “implement it”" — with the slash command as an optional shortcut, so you can go through a change without learning the commands.
 - The documentation asks one question — what will you do with Compagnon? — and gives each of four profiles a short path of at most three pages, including a new one for people who do not code but want Claude to build something for them. The site's home page now exists in French.
+- The documentation is rewritten for every profile: shorter everyday pages that end with "Go further", each topic explained once, thirteen diagrams of how Compagnon works, a new look and the "Compagnon by Mairistem" logo.
+- The Jira integration is put forward — from the home page, the README and the first pages, you learn that "Prepare a plan for PROJ-123" makes Claude read the ticket and cite it in the plan.
+- `compagnon docs --print` leaves out the diagrams' drawings and keeps their captions, so a terminal or an AI reads the caption instead of SVG markup.
 
 ### Removed
 
