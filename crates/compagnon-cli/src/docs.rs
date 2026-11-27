@@ -914,6 +914,16 @@ mod tests {
     }
 
     #[test]
+    fn offline_manual_styles_diagrams_in_both_schemes() {
+        let html = render_html("# Compagnon\n\nText.\n", Lang::En, "0.7.0");
+        let themes = crate::docs_checks::diagram_themes(&html);
+        assert_eq!(themes.len(), 2, "a light and a dark diagram theme");
+        let dark = html.rfind("@media (prefers-color-scheme: dark)").unwrap();
+        let last_ink = html.rfind("--dg-ink:").unwrap();
+        assert!(dark < last_ink, "the dark theme sits in the dark scheme");
+    }
+
+    #[test]
     fn offline_manual_inlines_the_mark_without_external_images() {
         let html = render_html("# Compagnon\n\nText.\n", Lang::En, "0.7.0");
         assert!(html.contains("<svg class=\"mark\""), "{html}");

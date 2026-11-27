@@ -979,20 +979,236 @@ fn is_identifier_heading(heading: &str) -> bool {
     file || key || text.starts_with("compagnon ")
 }
 
-/// `md` without its `<svg>` blocks: an image, whose text alternative is
-/// elsewhere on the page.
+/// `md` with each `<svg>` block replaced by what it says in words (its
+/// `aria-label` and its `<text>`), each as its own paragraph: a French
+/// diagram speaks French too.
 fn without_svg(md: &str) -> String {
     let mut out = String::with_capacity(md.len());
-    let mut rest = md;
-    while let Some(start) = rest.find("<svg") {
-        out.push_str(&rest[..start]);
-        match rest[start..].find("</svg>") {
-            Some(end) => rest = &rest[start + end + "</svg>".len()..],
-            None => return out,
+    let mut from = 0;
+    for (start, svg) in svg_elements(md) {
+        out.push_str(&md[from..start]);
+        out.push_str("\n\n");
+        out.push_str(&svg_words(svg));
+        out.push_str("\n\n");
+        from = start + svg.len();
+    }
+    out.push_str(&md[from..]);
+    out
+}
+
+/// The `<svg …>…</svg>` elements of `text`, each with its byte offset.
+/// An unclosed one runs to the end.
+fn svg_elements(text: &str) -> Vec<(usize, &str)> {
+    let mut out = Vec::new();
+    let mut from = 0;
+    while let Some(start) = text[from..].find("<svg").map(|i| from + i) {
+        let end = text[start..]
+            .find("</svg>")
+            .map_or(text.len(), |i| start + i + "</svg>".len());
+        out.push((start, &text[start..end]));
+        from = end;
+    }
+    out
+}
+
+/// The value of attribute `name` in the opening tag `tag`.
+fn attribute<'a>(tag: &'a str, name: &str) -> Option<&'a str> {
+    let key = format!(" {name}=\"");
+    let start = tag.find(&key)? + key.len();
+    let len = tag[start..].find('"')?;
+    Some(&tag[start..start + len])
+}
+
+/// What a diagram says in words: its `aria-label` and the contents of its
+/// `<text>` elements, one per line.
+fn svg_words(svg: &str) -> String {
+    let open = &svg[..svg.find('>').unwrap_or(svg.len())];
+    let mut out: Vec<String> = attribute(open, "aria-label")
+        .map(|l| l.to_string())
+        .into_iter()
+        .collect();
+    let mut rest = svg;
+    while let Some(i) = rest.find("<text") {
+        let after = &rest[i..];
+        let Some(gt) = after.find('>') else { break };
+        let body = &after[gt + 1..];
+        let end = body.find("</text>").unwrap_or(body.len());
+        let inner = &body[..end];
+        // Strip nested tags such as <tspan>.
+        let mut plain = String::new();
+        let mut in_tag = false;
+        for c in inner.chars() {
+            match c {
+                '<' => in_tag = true,
+                '>' => in_tag = false,
+                _ if !in_tag => plain.push(c),
+                _ => {}
+            }
+        }
+        // A label that is an identifier — a token source, a command — is
+        // not prose, as an identifier heading is not.
+        if !is_identifier_heading(&plain) {
+            out.push(plain);
+        }
+        rest = &body[end..];
+    }
+    out.join("\n\n")
+}
+
+/// The problems of the diagrams of a page — a chapter's markdown or a
+/// home page's HTML. A diagram is any `<svg>` that is neither hidden from
+/// assistive technology (`aria-hidden="true"`, the sprites and the marks
+/// beside a visible name) nor a logo (`class="logo"`). Each must sit in a
+/// `<figure>`, carry `role="img"` and a name (`aria-label`, or
+/// `aria-labelledby` pointing at its `<title>`), be followed by a
+/// `<figcaption>` before its figure closes, point at no other file, and
+/// hold no blank line — a blank line ends a markdown HTML block, and the
+/// rest of the drawing would be printed as text.
+pub fn diagram_problems(text: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for (n, (start, svg)) in svg_elements(text).into_iter().enumerate() {
+        let open = &svg[..svg.find('>').map_or(svg.len(), |i| i + 1)];
+        if attribute(open, "aria-hidden") == Some("true")
+            || attribute(open, "class").is_some_and(|c| c.split(' ').any(|c| c == "logo"))
+        {
+            continue;
+        }
+        let name = attribute(open, "aria-label")
+            .filter(|l| !l.trim().is_empty())
+            .or_else(|| attribute(open, "aria-labelledby"));
+        let label = name.map_or_else(|| format!("diagram {}", n + 1), |l| {
+            let short: String = l.chars().take(40).collect();
+            format!("diagram \"{short}\"")
+        });
+        let before = &text[..start];
+        let in_figure = before
+            .rfind("<figure")
+            .is_some_and(|f| before.rfind("</figure>").is_none_or(|c| c < f));
+        if !in_figure {
+            problems.push(format!("{label} is not inside a <figure>"));
+        }
+        if attribute(open, "role") != Some("img") {
+            problems.push(format!("{label} lacks role=\"img\""));
+        }
+        if name.is_none() {
+            problems.push(format!("{label} has no aria-label"));
+        }
+        let after = &text[start + svg.len()..];
+        let closes = after.find("</figure>").unwrap_or(after.len());
+        if in_figure && !after[..closes].contains("<figcaption") {
+            problems.push(format!("{label} is not followed by a <figcaption>"));
+        }
+        for attr in ["href=\"", "src=\""] {
+            let mut rest = svg;
+            while let Some(i) = rest.find(attr) {
+                let value = &rest[i + attr.len()..];
+                if !value.starts_with('#') {
+                    problems.push(format!("{label} points at another file"));
+                    break;
+                }
+                rest = value;
+            }
+        }
+        if svg.contains("\n\n") || svg.contains("\n\r\n") || svg.lines().any(|l| l.trim().is_empty()) {
+            problems.push(format!("{label} holds a blank line"));
         }
     }
-    out.push_str(rest);
+    problems
+}
+
+/// The relative luminance of a `#rrggbb` color (WCAG 2.2).
+fn luminance(hex: &str) -> Option<f64> {
+    let hex = hex.strip_prefix('#')?;
+    if hex.len() != 6 {
+        return None;
+    }
+    let channel = |i: usize| -> Option<f64> {
+        let v = f64::from(u8::from_str_radix(&hex[i..i + 2], 16).ok()?) / 255.0;
+        Some(if v <= 0.040_45 { v / 12.92 } else { ((v + 0.055) / 1.055).powf(2.4) })
+    };
+    Some(0.2126 * channel(0)? + 0.7152 * channel(2)? + 0.0722 * channel(4)?)
+}
+
+/// The contrast ratio of two `#rrggbb` colors, from 1 to 21.
+pub fn contrast(a: &str, b: &str) -> Option<f64> {
+    let (la, lb) = (luminance(a)?, luminance(b)?);
+    let (hi, lo) = if la > lb { (la, lb) } else { (lb, la) };
+    Some((hi + 0.05) / (lo + 0.05))
+}
+
+/// The diagram themes of a style sheet: each rule block that declares
+/// `--dg-ink`, as its selector and its `--dg-*` declarations.
+pub fn diagram_themes(css: &str) -> Vec<(String, Vec<(String, String)>)> {
+    let mut out = Vec::new();
+    let mut from = 0;
+    while let Some(open) = css[from..].find('{').map(|i| from + i) {
+        let close = css[open..].find('}').map_or(css.len(), |i| open + i);
+        let body = &css[open + 1..close];
+        if body.contains("--dg-ink:") && !body.contains('{') {
+            let head = &css[from..open];
+            let selector = head
+                .rsplit(['}', ';', '{'])
+                .next()
+                .unwrap_or(head)
+                .lines()
+                .filter(|l| !l.trim().starts_with("/*") && !l.trim().starts_with('*'))
+                .collect::<Vec<_>>()
+                .join(" ");
+            let tokens = body
+                .split(';')
+                .filter_map(|d| {
+                    let (k, v) = d.split_once(':')?;
+                    let k = k.trim();
+                    k.starts_with("--dg-").then(|| (k.to_string(), v.trim().to_string()))
+                })
+                .collect();
+            out.push((selector.split_whitespace().collect::<Vec<_>>().join(" "), tokens));
+        }
+        from = open + 1;
+    }
     out
+}
+
+/// The diagram color pairs of one theme that miss their contrast: text
+/// (ink, muted, the digits on a step's dot) at least 4.5:1 on what it is
+/// drawn on, lines, borders and dots at least 3:1 against the page and the
+/// boxes.
+pub fn contrast_problems(theme: &str, tokens: &[(String, String)]) -> Vec<String> {
+    const TEXT: [(&str, &str); 8] = [
+        ("--dg-ink", "--dg-box"),
+        ("--dg-muted", "--dg-box"),
+        ("--dg-ink", "--dg-file"),
+        ("--dg-muted", "--dg-file"),
+        ("--dg-ink", "--dg-bg"),
+        ("--dg-muted", "--dg-bg"),
+        ("--dg-on-you", "--dg-you"),
+        ("--dg-box", "--dg-claude"),
+    ];
+    const LINES: [(&str, &str); 6] = [
+        ("--dg-line", "--dg-bg"),
+        ("--dg-you", "--dg-bg"),
+        ("--dg-claude", "--dg-bg"),
+        ("--dg-line", "--dg-box"),
+        ("--dg-you", "--dg-box"),
+        ("--dg-claude", "--dg-box"),
+    ];
+    let value = |k: &str| tokens.iter().find(|(n, _)| n == k).map(|(_, v)| v.as_str());
+    let mut problems = Vec::new();
+    for (pairs, min) in [(&TEXT[..], 4.5), (&LINES[..], 3.0)] {
+        for (fg, bg) in pairs {
+            match (value(fg), value(bg)) {
+                (Some(a), Some(b)) => match contrast(a, b) {
+                    Some(r) if r >= min => {}
+                    Some(r) => problems.push(format!(
+                        "{theme}: {fg} {a} on {bg} {b} is {r:.2}:1, under {min}:1"
+                    )),
+                    None => problems.push(format!("{theme}: {fg} or {bg} is not a #rrggbb color")),
+                },
+                _ => problems.push(format!("{theme}: {fg} or {bg} is missing")),
+            }
+        }
+    }
+    problems
 }
 
 /// `text` without what stands between parentheses.
@@ -1349,6 +1565,80 @@ mod tests {
         let md = "## review\n\n## design.md\n\n### compagnon review\n\n\
                   <svg><title>skill</title></svg>\n\nLa relecture.\n";
         assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
+    }
+
+    const GOOD_DIAGRAM: &str = "<figure class=\"diagram\">\n\
+        <svg viewBox=\"0 0 10 10\" role=\"img\" aria-label=\"Two steps: you ask, Claude plans\">\n\
+        <defs><marker id=\"a\"/></defs><line marker-end=\"url(#a)\"/><use href=\"#a\"/>\n\
+        <text x=\"1\">Ask</text>\n\
+        </svg>\n<figcaption>The workflow.</figcaption>\n</figure>\n";
+
+    #[test]
+    fn a_complete_diagram_passes() {
+        assert!(diagram_problems(GOOD_DIAGRAM).is_empty(), "{:?}", diagram_problems(GOOD_DIAGRAM));
+        let hidden = "<svg aria-hidden=\"true\"><use href=\"#cp-mark\"/></svg>\n\
+                      <svg class=\"logo\" role=\"img\" aria-label=\"Mairistem\"></svg>";
+        assert!(diagram_problems(hidden).is_empty(), "{:?}", diagram_problems(hidden));
+    }
+
+    #[test]
+    fn a_diagram_without_label_is_caught() {
+        let md = GOOD_DIAGRAM.replace(" aria-label=\"Two steps: you ask, Claude plans\"", "");
+        let problems = diagram_problems(&md);
+        assert!(problems.iter().any(|p| p.contains("no aria-label")), "{problems:?}");
+    }
+
+    #[test]
+    fn a_diagram_split_by_a_blank_line_is_caught() {
+        let md = GOOD_DIAGRAM.replace("<text x", "\n<text x");
+        let problems = diagram_problems(&md);
+        assert!(problems.iter().any(|p| p.contains("blank line")), "{problems:?}");
+    }
+
+    #[test]
+    fn a_diagram_outside_a_figure_or_pointing_out_is_caught() {
+        let bare = "<svg role=\"img\" aria-label=\"x\"><image href=\"chart.png\"/></svg>";
+        let problems = diagram_problems(bare);
+        assert!(problems.iter().any(|p| p.contains("<figure>")), "{problems:?}");
+        assert!(problems.iter().any(|p| p.contains("another file")), "{problems:?}");
+        let no_caption = GOOD_DIAGRAM.replace("<figcaption>The workflow.</figcaption>\n", "");
+        assert!(diagram_problems(&no_caption).iter().any(|p| p.contains("figcaption")));
+    }
+
+    #[test]
+    fn contrast_follows_wcag() {
+        let r = contrast("#ffffff", "#000000").unwrap();
+        assert!((r - 21.0).abs() < 0.01, "{r}");
+        let coral = contrast("#ffffff", "#ff5331").unwrap();
+        assert!((3.0..3.4).contains(&coral), "{coral}");
+    }
+
+    #[test]
+    fn a_diagram_pair_under_its_threshold_is_caught() {
+        let css = ".light {\n  --dg-bg: #ffffff;\n  --dg-box: #f4f8f9;\n  --dg-file: #ffffff;\n\
+                   --dg-ink: #00263a;\n  --dg-muted: #b0b0b0;\n  --dg-line: #6b8590;\n\
+                   --dg-you: #e0421f;\n  --dg-on-you: #1a0a05;\n  --dg-claude: #004c66;\n}\n";
+        let themes = diagram_themes(css);
+        assert_eq!(themes.len(), 1);
+        assert_eq!(themes[0].0, ".light");
+        let problems = contrast_problems(&themes[0].0, &themes[0].1);
+        assert!(
+            problems.iter().any(|p| p.contains(".light") && p.contains("--dg-muted #b0b0b0")),
+            "{problems:?}"
+        );
+    }
+
+    #[test]
+    fn a_french_diagram_speaks_french() {
+        let fr = GOOD_DIAGRAM.replace("The workflow.", "Le déroulé.");
+        let md = fr
+            .replace("Two steps: you ask, Claude plans", "Le workflow en deux étapes")
+            .replace(">Ask<", ">Demander<");
+        assert_eq!(anglicisms(&md), ["workflow"]);
+        let text = fr
+            .replace("Two steps: you ask, Claude plans", "Deux étapes")
+            .replace(">Ask<", ">La review<");
+        assert_eq!(anglicisms(&text), ["review"]);
     }
 }
 
@@ -1832,6 +2122,44 @@ mod chapter_tests {
                 if !problems.is_empty() {
                     found.push(format!("{} {path}: {problems:?}", lang.tag()));
                 }
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn every_diagram_theme_is_contrasted_enough() {
+        let sheets = [
+            ("docs/theme/mairistem.css", include_str!("../../../docs/theme/mairistem.css")),
+            ("assets/docs.css", include_str!("../assets/docs.css")),
+        ];
+        let mut found = Vec::new();
+        for (file, css) in sheets {
+            let themes = diagram_themes(css);
+            assert_eq!(themes.len(), 2, "{file} should define a light and a dark diagram theme");
+            for (selector, tokens) in themes {
+                found.extend(contrast_problems(&format!("{file} {selector}"), &tokens));
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn every_diagram_has_a_text_alternative() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            for (path, md) in lang.chapters() {
+                for p in diagram_problems(md) {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+            }
+        }
+        for (page, html) in [
+            ("docs/site/index.html", include_str!("../../../docs/site/index.html")),
+            ("docs/site/fr.html", include_str!("../../../docs/site/fr.html")),
+        ] {
+            for p in diagram_problems(html) {
+                found.push(format!("{page}: {p}"));
             }
         }
         assert!(found.is_empty(), "{found:#?}");
