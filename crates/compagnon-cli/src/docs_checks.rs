@@ -274,6 +274,9 @@ pub const CONTRIBUTING: (&str, &str, &[&str]) = (
 /// Every day. Their chapters are capped and show an example.
 pub const BEGINNER_STEPS: usize = 3;
 
+/// The index of Every day in [`TUNNEL`].
+pub const EVERY_DAY_STEP: usize = 2;
+
 /// The steps of [`TUNNEL`] whose chapters each draw a diagram: all but
 /// For your team.
 pub const DIAGRAM_STEPS: usize = 4;
@@ -2462,7 +2465,7 @@ mod chapter_tests {
                 "{}: title",
                 lang.tag()
             );
-            let (_, _, everyday) = TUNNEL[2];
+            let (_, _, everyday) = TUNNEL[EVERY_DAY_STEP];
             assert!(everyday.contains(&"guides/mcp.md"), "{}: part", lang.tag());
             let problems = jira_guide_problems(md);
             assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
