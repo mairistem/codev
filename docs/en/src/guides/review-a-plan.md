@@ -2,20 +2,64 @@
 
 This guide is for you if you do not write code but are asked to read and
 approve what Claude plans to build: product owner, manager, domain expert.
-You need no [terminal](../glossary.md#terminal): a plan is four short text files, which you can read
+You need no [terminal](../glossary.md#terminal): a
+[plan](../glossary.md#plan) is four short text files, which you can read
 in your code host (GitHub, GitLab), in an editor, or by asking Claude to
 show them to you.
 
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 200" role="img" aria-label="Inside a plan, four files in reading order: proposal.md says why and what changes, for everyone; specs/ say what the product will do, with its scenarios, for testers; design.md says how, its choices and risks, for developers; tasks.md lists the tasks, each with its test, for Claude. Most people stop after the first.">
+<defs><marker id="dg-review-a-plan-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
+<rect x="4" y="20" width="168" height="130" rx="12" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="3"/>
+<rect x="4" y="20" width="168" height="6" rx="3" style="fill:var(--dg-you)"/>
+<text x="20" y="56" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">proposal.md</text>
+<text x="20" y="84" font-size="15" font-weight="600" style="fill:var(--dg-ink)">Why</text>
+<text x="20" y="106" font-size="13" style="fill:var(--dg-muted)">and what changes</text>
+<text x="20" y="134" class="mono" font-size="11" style="fill:var(--dg-muted)">for everyone</text>
+<line x1="174" y1="85" x2="190" y2="85" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-a-plan-arrow)"/>
+<rect x="194" y="20" width="168" height="130" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<rect x="194" y="20" width="168" height="6" rx="3" style="fill:var(--dg-line)"/>
+<text x="210" y="56" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">specs/</text>
+<text x="210" y="84" font-size="15" font-weight="600" style="fill:var(--dg-ink)">What it does</text>
+<text x="210" y="106" font-size="13" style="fill:var(--dg-muted)">rules and scenarios</text>
+<text x="210" y="134" class="mono" font-size="11" style="fill:var(--dg-muted)">for testers</text>
+<line x1="364" y1="85" x2="380" y2="85" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-a-plan-arrow)"/>
+<rect x="384" y="20" width="168" height="130" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<rect x="384" y="20" width="168" height="6" rx="3" style="fill:var(--dg-line)"/>
+<text x="400" y="56" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">design.md</text>
+<text x="400" y="84" font-size="15" font-weight="600" style="fill:var(--dg-ink)">How</text>
+<text x="400" y="106" font-size="13" style="fill:var(--dg-muted)">choices and risks</text>
+<text x="400" y="134" class="mono" font-size="11" style="fill:var(--dg-muted)">for developers</text>
+<line x1="554" y1="85" x2="570" y2="85" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-a-plan-arrow)"/>
+<rect x="574" y="20" width="182" height="130" rx="12" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<rect x="574" y="20" width="182" height="6" rx="3" style="fill:var(--dg-claude)"/>
+<text x="590" y="56" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">tasks.md</text>
+<text x="590" y="84" font-size="15" font-weight="600" style="fill:var(--dg-ink)">The tasks</text>
+<text x="590" y="106" font-size="13" style="fill:var(--dg-muted)">each with its test</text>
+<text x="590" y="134" class="mono" font-size="11" style="fill:var(--dg-muted)">for Claude</text>
+<text x="380" y="186" text-anchor="middle" font-size="13" style="fill:var(--dg-muted)">Read them left to right — most people stop after the first.</text>
+</svg>
+</div>
+<figcaption>Inside a plan: four short files, from the why to the tasks. The first is for everyone; the further right, the more technical.</figcaption>
+</figure>
+
 Your job is not to check the code. It is to check that the plan **solves
-the right problem, in the right way for the people who will use it**.
-Claude and the reviewing [roles](../glossary.md#role) take care of the technical side.
+the right problem, in the right way for the people who will use it**: the
+proposal and the specs are where you say so. Claude and the reviewing
+[roles](../glossary.md#role) take care of the technical side.
 
 ## Where the plan is
 
-Each change has its own folder, `_compagnon/changes/<name>/`. You can also
-simply ask:
+Each change has its own folder, `_compagnon/changes/<name>/`, holding the
+four files above. You can also simply ask:
 
 > Show me the plan for the dark mode, in plain words.
+
+Before you read it, Claude's reviewers have already challenged the plan:
+their points, and the answer to each, are in `review.md`, in the same
+folder. The [Review record](review-record.md) chapter explains how to read
+it.
 
 ## The proposal: why
 
@@ -25,6 +69,10 @@ affects. Check that:
 - the problem described is the real one, as users or customers experience it;
 - nothing you expected is missing, and nothing unwanted was added;
 - what is explicitly left out is acceptable for now.
+
+In the proposal, a "## Domains" section lists the sensitive
+[domains](../glossary.md#domain) the change touches, such as security or
+personal data.
 
 ## The specs: what will be true afterwards
 
@@ -43,9 +91,7 @@ Scenario: No theme chosen yet
 
 The plan files may show a few English keywords, whatever their language:
 SHALL or MUST means "must"; GIVEN / WHEN / THEN mean "given", "when",
-"then". In the proposal, a "## Domains" section lists the sensitive
-[domains](../glossary.md#domain) the change touches, such as security or
-personal data.
+"then".
 
 This is the part that matters most to you. Check that:
 
@@ -59,8 +105,8 @@ Every scenario becomes a [test](../glossary.md#test): if it is written here, it 
 ### Reading a modified rule
 
 A plan does not rewrite all of the project's rules: it lists only the ones
-that change, sorted under four kinds of section. These are the titles you
-will see:
+that change — its [delta](../glossary.md#delta) — sorted under four kinds
+of section. These are the titles you will see:
 
 - **`ADDED Requirements`**: new rules, which did not exist before.
 - **`MODIFIED Requirements`**: rules that exist already and change.
@@ -115,3 +161,10 @@ then builds exactly what the plan says, and nothing else. If your team
 reviews work on GitHub or GitLab, the plan comes as a
 [pull request](../glossary.md#pull-request) (a request to add it to the
 project). Approve it there: your approval is recorded.
+
+## Go further
+
+- [An annotated example plan](example-plan.md)
+- [Approving a plan on GitHub or GitLab](approve-a-plan.md)
+- [Start from a Jira ticket](mcp.md)
+- [Review record](review-record.md)

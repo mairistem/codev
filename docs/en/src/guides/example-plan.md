@@ -1,6 +1,6 @@
 # An annotated example plan
 
-This page shows one complete plan, as Claude writes it with Compagnon: the
+This page shows one complete [plan](../glossary.md#plan), as Claude writes it with Compagnon: the
 dark mode of the [quickstart](../quickstart.md), the change named
 `add-dark-mode`. The application already exists and always shows a light
 theme; the plan makes it follow the computer's setting, and lets a user
@@ -203,3 +203,9 @@ that proves it done.
 - Each scenario of the specs appears in a task, so each will be tested.
 - Something users see without a test? Here, every visible step names its
   check.
+
+## Go further
+
+- [Reviewing a plan](review-a-plan.md)
+- [Approving a plan on GitHub or GitLab](approve-a-plan.md)
+- [Start from a Jira ticket](mcp.md)

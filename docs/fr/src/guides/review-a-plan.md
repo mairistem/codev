@@ -3,21 +3,66 @@
 Ce guide s'adresse à vous si vous n'écrivez pas de code mais devez relire
 et valider ce que Claude prévoit de construire : responsable produit
 (product owner), manager, expert métier. Aucun
-[terminal](../glossary.md#terminal) n'est nécessaire : un plan tient en quatre
-fichiers texte courts, que vous pouvez lire sur votre hébergeur de code
-(GitHub, GitLab), dans un éditeur, ou en demandant à Claude de vous les
-montrer.
+[terminal](../glossary.md#terminal) n'est nécessaire : un
+[plan](../glossary.md#plan) tient en quatre fichiers texte courts, que vous
+pouvez lire sur votre hébergeur de code (GitHub, GitLab), dans un éditeur,
+ou en demandant à Claude de vous les montrer.
+
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 200" role="img" aria-label="Dans un plan, quatre fichiers dans l'ordre de lecture : la proposition (proposal.md) dit pourquoi et ce qui change, pour tous ; les spécifications (dossier specs/) disent ce que fera le produit, avec ses scénarios, pour les testeurs ; la conception (design.md) dit comment, avec ses choix et ses risques, pour les développeurs ; les tâches (tasks.md) listent le travail, chacune avec son test, pour Claude. La plupart des lecteurs s'arrêtent après le premier.">
+<defs><marker id="dg-review-a-plan-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
+<rect x="4" y="20" width="168" height="130" rx="12" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="3"/>
+<rect x="4" y="20" width="168" height="6" rx="3" style="fill:var(--dg-you)"/>
+<text x="18" y="56" font-size="15" font-weight="600" style="fill:var(--dg-ink)">La proposition</text>
+<text x="18" y="80" font-size="13" style="fill:var(--dg-ink)">le pourquoi et le quoi</text>
+<text x="18" y="106" class="mono" font-size="12" style="fill:var(--dg-muted)">(proposal.md)</text>
+<text x="18" y="134" class="mono" font-size="11" style="fill:var(--dg-muted)">pour tous</text>
+<line x1="174" y1="85" x2="190" y2="85" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-a-plan-arrow)"/>
+<rect x="194" y="20" width="168" height="130" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<rect x="194" y="20" width="168" height="6" rx="3" style="fill:var(--dg-line)"/>
+<text x="208" y="56" font-size="15" font-weight="600" style="fill:var(--dg-ink)">Les spécifications</text>
+<text x="208" y="80" font-size="13" style="fill:var(--dg-ink)">ce que fera le produit</text>
+<text x="208" y="106" class="mono" font-size="12" style="fill:var(--dg-muted)">(dossier specs/)</text>
+<text x="208" y="134" class="mono" font-size="11" style="fill:var(--dg-muted)">pour les testeurs</text>
+<line x1="364" y1="85" x2="380" y2="85" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-a-plan-arrow)"/>
+<rect x="384" y="20" width="168" height="130" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<rect x="384" y="20" width="168" height="6" rx="3" style="fill:var(--dg-line)"/>
+<text x="398" y="56" font-size="15" font-weight="600" style="fill:var(--dg-ink)">La conception</text>
+<text x="398" y="80" font-size="13" style="fill:var(--dg-ink)">le comment, les risques</text>
+<text x="398" y="106" class="mono" font-size="12" style="fill:var(--dg-muted)">(design.md)</text>
+<text x="398" y="134" class="mono" font-size="11" style="fill:var(--dg-muted)">pour les développeurs</text>
+<line x1="554" y1="85" x2="570" y2="85" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-a-plan-arrow)"/>
+<rect x="574" y="20" width="182" height="130" rx="12" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<rect x="574" y="20" width="182" height="6" rx="3" style="fill:var(--dg-claude)"/>
+<text x="588" y="56" font-size="15" font-weight="600" style="fill:var(--dg-ink)">Les tâches</text>
+<text x="588" y="80" font-size="13" style="fill:var(--dg-ink)">chacune avec son test</text>
+<text x="588" y="106" class="mono" font-size="12" style="fill:var(--dg-muted)">(tasks.md)</text>
+<text x="588" y="134" class="mono" font-size="11" style="fill:var(--dg-muted)">pour Claude</text>
+<text x="380" y="186" text-anchor="middle" font-size="13" style="fill:var(--dg-muted)">Lisez-les de gauche à droite — la plupart s'arrêtent après le premier.</text>
+</svg>
+</div>
+<figcaption>Dans un plan : quatre fichiers courts, du pourquoi aux tâches. Le premier est pour tous ; plus on va à droite, plus c'est technique.</figcaption>
+</figure>
 
 Votre rôle n'est pas de vérifier le code. Il est de vérifier que le plan
-**résout le bon problème, de la bonne façon pour ceux qui l'utiliseront**.
-Claude et les [rôles](../glossary.md#rôle) de relecture s'occupent du côté technique.
+**résout le bon problème, de la bonne façon pour ceux qui l'utiliseront** :
+la proposition et les spécifications sont l'endroit où vous le dites.
+Claude et les [rôles](../glossary.md#rôle) de relecture s'occupent du côté
+technique.
 
 ## Où se trouve le plan
 
-Chaque modification a son propre dossier, `_compagnon/changes/<nom>/`. Vous
-pouvez aussi simplement demander :
+Chaque modification a son propre dossier, `_compagnon/changes/<nom>/`, qui
+contient les quatre fichiers ci-dessus. Vous pouvez aussi simplement
+demander :
 
 > Montre-moi le plan du mode sombre, en mots simples.
+
+Avant que vous le lisiez, les relecteurs de Claude ont déjà mis le plan à
+l'épreuve : leurs remarques, et la réponse donnée à chacune, sont dans
+`review.md`, dans le même dossier. Le chapitre
+[Compte rendu de relecture](review-record.md) explique comment le lire.
 
 ## La proposition : pourquoi
 
@@ -29,6 +74,10 @@ changer et ce qu'elle touche. Vérifiez que :
 - rien de ce que vous attendiez ne manque, et rien d'indésirable n'a été
   ajouté ;
 - ce qui est explicitement laissé de côté est acceptable pour l'instant.
+
+Dans la proposition, une section « ## Domaines » (ou « ## Domains »)
+liste les [domaines](../glossary.md#domaine) sensibles que la modification
+touche, comme la sécurité ou les données personnelles.
 
 ## Les spécifications : ce qui sera vrai ensuite
 
@@ -47,10 +96,7 @@ Scénario : Aucun thème encore choisi
 
 Les fichiers du plan peuvent montrer quelques mots-clés en anglais, quelle
 que soit leur langue : SHALL ou MUST veut dire « doit » ; GIVEN / WHEN /
-THEN veulent dire « étant donné », « quand », « alors ». Dans la
-proposition, une section « ## Domaines » (ou « ## Domains ») liste les
-[domaines](../glossary.md#domaine) sensibles que la modification touche,
-comme la sécurité ou les données personnelles.
+THEN veulent dire « étant donné », « quand », « alors ».
 
 C'est la partie qui compte le plus pour vous. Vérifiez que :
 
@@ -65,8 +111,8 @@ Chaque scénario devient un [test](../glossary.md#test) : s'il est écrit ici, i
 ### Lire une règle modifiée
 
 Un plan ne réécrit pas toutes les règles du projet : il ne liste que celles
-qui changent, rangées sous quatre sortes de sections. Voici les titres que
-vous verrez :
+qui changent — son [delta](../glossary.md#delta) — rangées sous quatre
+sortes de sections. Voici les titres que vous verrez :
 
 - **`Exigences AJOUTÉES`** (`ADDED Requirements`) : des règles nouvelles,
   qui n'existaient pas avant.
@@ -132,3 +178,10 @@ votre équipe relit le travail sur GitHub ou GitLab, le plan arrive sous
 forme de [demande de fusion](../glossary.md#demande-de-fusion) (pull
 request) : une demande pour l'ajouter au projet. Approuvez-la à cet
 endroit : votre accord y est consigné.
+
+## Pour aller plus loin
+
+- [Un exemple de plan commenté](example-plan.md)
+- [Approuver un plan sur GitHub ou GitLab](approve-a-plan.md)
+- [Partir d'un ticket Jira](mcp.md)
+- [Compte rendu de relecture](review-record.md)

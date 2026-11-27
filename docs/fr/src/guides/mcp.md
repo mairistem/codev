@@ -1,47 +1,70 @@
 # Partir d'un ticket Jira
 
-Les compétences de Compagnon peuvent puiser du contexte dans des systèmes externes via
-les serveurs MCP connectés à votre session Claude Code. La CLI elle-même ne
-communique jamais avec eux : ce sont les compétences qui détectent dans votre
-demande ce dont elles ont besoin et qui appellent directement l'outil MCP.
+Votre équipe décrit déjà le travail dans Jira. Nommez le ticket dans votre
+demande et Claude part de lui pour écrire le [plan](../glossary.md#plan) :
+pas de copier-coller, et le plan dit d'où il vient.
 
-Une intégration est disponible aujourd'hui : `/compagnon-propose` lit un ticket
-Jira.
+1. **Vous dites** : « Prépare un plan pour PROJ-123 ».
+2. **Claude lit le ticket** — son titre, sa description, son statut et son
+   type — une seule fois, sans rien changer dans Jira.
+3. **Vous obtenez un plan qui le cite** dès sa première ligne : un
+   relecteur voit à quel ticket il répond.
 
-## Jira
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 210" role="img" aria-label="D'un ticket Jira à un plan : vous nommez le ticket PROJ-123 dans votre demande ; Claude lit le ticket une seule fois, en lecture seule ; Claude écrit proposal.md, dont la première ligne cite le ticket.">
+<defs><marker id="dg-mcp-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
+<rect x="8" y="36" width="210" height="138" rx="12" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="2"/>
+<text x="26" y="64" class="mono" font-size="13" style="fill:var(--dg-muted)">Ticket Jira</text>
+<text x="26" y="92" class="mono" font-size="18" font-weight="600" style="fill:var(--dg-ink)">PROJ-123</text>
+<text x="26" y="118" font-size="15" style="fill:var(--dg-ink)">Mode sombre pour le</text>
+<text x="26" y="138" font-size="15" style="fill:var(--dg-ink)">tableau de bord</text>
+<circle cx="32" cy="158" r="5" style="fill:var(--dg-you)"/>
+<text x="44" y="163" font-size="13" style="fill:var(--dg-muted)">En cours</text>
+<line x1="222" y1="105" x2="282" y2="105" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-mcp-arrow)"/>
+<text x="252" y="92" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">nommé</text>
+<rect x="288" y="56" width="180" height="98" rx="49" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<circle cx="318" cy="88" r="5" fill="#ff5331"/><circle cx="332" cy="88" r="5" fill="#ffab03"/><circle cx="346" cy="88" r="5" fill="#00c39b"/>
+<text x="378" y="94" font-size="17" font-weight="600" style="fill:var(--dg-ink)">Claude</text>
+<text x="378" y="118" text-anchor="middle" font-size="14" style="fill:var(--dg-ink)">le lit une fois</text>
+<text x="378" y="138" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">en lecture seule</text>
+<line x1="472" y1="105" x2="532" y2="105" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-mcp-arrow)"/>
+<text x="502" y="92" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">écrit</text>
+<rect x="538" y="24" width="214" height="162" rx="12" style="fill:var(--dg-file);stroke:var(--dg-claude)" stroke-width="2"/>
+<rect x="538" y="24" width="214" height="30" rx="12" style="fill:var(--dg-box)"/>
+<text x="554" y="44" class="mono" font-size="13" style="fill:var(--dg-ink)">proposal.md</text>
+<text x="554" y="80" class="mono" font-size="12" font-weight="600" style="fill:var(--dg-ink)"># Proposition : Mode sombre</text>
+<rect x="550" y="94" width="190" height="44" rx="6" style="fill:var(--dg-box)"/>
+<rect x="550" y="94" width="4" height="44" style="fill:var(--dg-you)"/>
+<text x="562" y="112" class="mono" font-size="12" style="fill:var(--dg-ink)">Source : ticket PROJ-123</text>
+<text x="562" y="129" class="mono" font-size="12" style="fill:var(--dg-muted)">« Mode sombre pour… »</text>
+<text x="554" y="162" class="mono" font-size="13" font-weight="600" style="fill:var(--dg-ink)">## Pourquoi</text>
+</svg>
+</div>
+<figcaption>D'un ticket Jira à un plan : vous nommez le ticket, Claude le lit une fois sans le modifier, et le plan le cite dès sa première ligne.</figcaption>
+</figure>
 
-Lorsque votre demande à `/compagnon-propose` contient un identifiant de ticket —
-toute chaîne correspondant à `[A-Z]{2,}-\d+`, comme `PROJ-123` — et qu'un
-outil MCP Jira est configuré, la compétence :
+Le haut de la [proposition](../glossary.md#proposition) se lit alors ainsi :
 
-1. appelle une seule fois l'outil configuré, pour le premier identifiant
-   trouvé ;
-2. utilise le titre, la description, le statut et le type du ticket comme
-   contexte pour le plan ;
-3. cite le ticket en tête de la proposition :
+```markdown
+# Proposal: Ajouter un mode sombre
 
-   ```markdown
-   # Proposal: Ajouter un mode sombre
+> Source: ticket **PROJ-123** — "Mode sombre pour le tableau de bord" (In Progress)
 
-   > Source: ticket **PROJ-123** — "Mode sombre pour le tableau de bord" (In Progress)
+## Why
+```
 
-   ## Why
-   ```
+Toute demande à `/compagnon-propose` convient, pourvu qu'elle nomme un
+ticket : « Planifie PROJ-123, et garde l'ancien thème en option » ajoute
+vos propres mots à ceux du ticket.
 
-L'intégration est strictement en lecture seule : un appel à l'unique outil
-configuré, jamais de recherche, de commentaire ni de transition. Si la demande
-mentionne plusieurs tickets, seul le premier est récupéré ; les autres sont
-listés sous la citation, pour la traçabilité.
+## Mettre en place
 
-Si un ticket est mentionné mais que le serveur MCP n'est pas disponible dans la
-session, la compétence le signale, rédige la proposition à partir de votre seule
-demande et cite le ticket avec la mention « contenu non récupéré ».
-
-## Configurer l'intégration
-
-Le nom de l'outil Jira dépend de la façon dont le serveur MCP est enregistré
-dans votre installation de Claude Code ; il se configure donc projet par
-projet :
+Jira parvient à Claude Code par un serveur [MCP](../glossary.md#mcp) — un
+connecteur vers un autre outil. La commande `compagnon` elle-même ne parle
+jamais à Jira : c'est Claude qui appelle l'outil pendant votre session.
+Compagnon a seulement besoin du nom de l'outil qui lit les tickets, dans la
+configuration du projet :
 
 ```yaml
 # _compagnon/config.yaml
@@ -51,7 +74,7 @@ mcp:
 
 `compagnon init` le renseigne pour vous lorsqu'il trouve, dans `.mcp.json`,
 `.claude/settings.json` ou `~/.claude.json`, un serveur dont le nom, la
-commande ou l'URL mentionne Jira ou Atlassian :
+commande ou l'URL mentionne Jira ou Atlassian :
 
 ```text
   ✓ Jira MCP detected: mcp__atlassian__getJiraIssue
@@ -67,38 +90,71 @@ le nom exact dans la liste des outils d'une session Claude Code et
 renseignez-le à la main.
 
 À l'installation, Compagnon ajoute l'outil aux `allowed-tools` de
-`compagnon-propose` : la compétence peut ainsi l'appeler, et rien d'autre sur ce
-serveur. Après avoir modifié `mcp:`, régénérez les compétences :
+`compagnon-propose` : la compétence peut ainsi l'appeler, et rien d'autre sur ce
+serveur. Après avoir modifié `mcp:`, régénérez les compétences :
 
 ```bash
 compagnon update --force
 ```
 
-Sans `mcp.jira_tool`, la détection de tickets reste inactive : la compétence se
-comporte exactement comme dans un projet sans intégration MCP.
+Sans `mcp.jira_tool`, un nom de ticket dans votre demande reste du texte
+ordinaire : la compétence se comporte exactement comme dans un projet sans
+intégration MCP.
 
 > **Remarque**
-> `mcp:` n'est jamais repris d'une [source héritée](inherited-sources.md) :
+> `mcp:` n'est jamais repris d'une [source héritée](inherited-sources.md) :
 > les noms d'outils dépendent de l'installation de Claude Code de chacun, et
 > non d'un dépôt partagé.
 
-## Ajouter une autre intégration MCP
+## Ce que Claude peut faire avec Jira
 
-Les intégrations MCP font partie de Compagnon lui-même : chacune consiste en une
-clé de configuration et un emplacement réservé dans un [déroulé](../glossary.md#déroulé). En ajouter une
-— par exemple pour une page Confluence ou un outil de conception graphique — relève donc de
-la contribution à Compagnon, et non du paramétrage. Le principe est le même que
-pour Jira :
+Un ticket, c'est toute chaîne correspondant à `[A-Z]{2,}-\d+`, comme
+`PROJ-123`. Quand votre demande en nomme un et que l'outil est configuré,
+`/compagnon-propose` s'en tient à ces règles :
+
+- **Un seul appel**, à l'unique outil configuré, pour le premier ticket
+  nommé.
+- **Lecture seule** : jamais de recherche, de commentaire ni de changement
+  de statut.
+- **Le premier ticket seulement** : les autres tickets nommés sont listés
+  sous la citation, pour que vous les consultiez.
+- **Pas de connexion, pas de supposition** : si le serveur MCP n'est pas
+  disponible dans la session, Claude le dit, rédige la proposition à
+  partir de votre seule demande et cite le ticket avec la mention
+  « contenu non récupéré ».
+
+## Autres serveurs MCP
+
+Jira est aujourd'hui la seule intégration. Lire une page Confluence ou un
+outil de conception graphique n'est pas un réglage que vous pouvez
+ajouter : chaque intégration fait partie de Compagnon lui-même, et en
+ajouter une relève de la contribution. Consultez
+[CONTRIBUTING.fr.md](https://github.com/mairistem/compagnon/blob/main/CONTRIBUTING.fr.md)
+pour en proposer une.
+
+<details>
+<summary>Sous le capot : ajouter une autre intégration MCP</summary>
+
+Chaque intégration consiste en une clé de configuration et un emplacement
+réservé dans un [déroulé](../glossary.md#déroulé). Le principe est le même
+que pour Jira :
 
 1. Ajoutez une clé sous `mcp:` dans la configuration du projet
    (`crates/compagnon-engine/src/config.rs`).
-2. Transmettez-la au contexte de rendu des compétences et substituez un emplacement
-   réservé comme `{{JIRA_MCP_TOOL}}` à la fois dans les `allowed-tools` et dans
-   le corps du déroulé qui l'utilise (`crates/compagnon-agents/src/claude.rs`).
+2. Transmettez-la au contexte de rendu des compétences et substituez un
+   emplacement réservé comme `{{JIRA_MCP_TOOL}}` à la fois dans les
+   `allowed-tools` et dans le corps du déroulé qui l'utilise
+   (`crates/compagnon-agents/src/claude.rs`).
 3. Décrivez la détection et l'appel dans le fichier du déroulé sous
    `assets/workflows/`, avec un repli propre lorsque la clé est absente.
 
-On enrichit la compétence existante plutôt que de la dupliquer : il n'existe qu'une
-seule `/compagnon-propose`, quelle que soit l'origine de la demande. Consultez
-[CONTRIBUTING.fr.md](https://github.com/mairistem/compagnon/blob/main/CONTRIBUTING.fr.md)
-pour en proposer une.
+On enrichit la compétence existante plutôt que de la dupliquer : il n'existe
+qu'une seule `/compagnon-propose`, quelle que soit l'origine de la demande.
+
+</details>
+
+## Pour aller plus loin
+
+- [Relire un plan](review-a-plan.md)
+- [Configuration](../reference/configuration.md#mcp)
+- [Sources héritées](inherited-sources.md)
