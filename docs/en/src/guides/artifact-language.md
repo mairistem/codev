@@ -167,3 +167,7 @@ headings; write the body in your team's language.
 - [File formats](../reference/file-formats.md)
 - [Configuration](../reference/configuration.md)
 - [Custom schemas](custom-schemas.md)
+
+## Next step
+
+[Release notes and CHANGELOG](release-notes.md)

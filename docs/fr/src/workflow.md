@@ -1,5 +1,11 @@
 # Comment ça marche
 
+<div class="skip-step">
+
+[Vous utilisez seulement Compagnon ? Passez à Adopter Compagnon sur un projet existant](guides/existing-project.md)
+
+</div>
+
 Dans un projet Compagnon, chaque modification passe par les cinq mêmes
 étapes, dans le même ordre : le [déroulé](glossary.md#déroulé) de
 Compagnon. Vous décidez à deux d'entre elles ; Claude travaille aux autres
@@ -253,3 +259,7 @@ Leurs postures sont décrites dans [Rôles](roles.md).
   constat.
 - [Interface en ligne de commande](reference/cli.md) : chaque commande et
   chaque option.
+
+## Étape suivante
+
+[Concepts](concepts.md)

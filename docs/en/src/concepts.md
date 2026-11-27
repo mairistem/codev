@@ -198,3 +198,7 @@ a design is explained in [Decisions](guides/decisions.md).
 - [Inherited sources](guides/inherited-sources.md): rules and decisions
   shared between repositories.
 - [Glossary](glossary.md): every term in a few words.
+
+## Next step
+
+[Decisions](guides/decisions.md)

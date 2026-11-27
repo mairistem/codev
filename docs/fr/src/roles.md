@@ -1,5 +1,11 @@
 # Rôles
 
+<div class="skip-step">
+
+[Aucune relecture à configurer ? Passez à Compte rendu de relecture](guides/review-record.md)
+
+</div>
+
 Une compétence Compagnon est un seul agent, mais il n'aborde pas chaque étape dans le
 même état d'esprit. Chaque étape reçoit un rôle : une question dont il a la
 charge, et des critères de fin (« Done when ») que l'agent vérifie avant de passer à
@@ -756,3 +762,7 @@ L'agent s'arrête et vous passe la main à ces moments :
 - [Configuration](reference/configuration.md)
 - [Schémas personnalisés](guides/custom-schemas.md)
 - [Fiabilité des rôles](reliability.md)
+
+## Étape suivante
+
+[Compte rendu de relecture](guides/review-record.md)

@@ -175,3 +175,7 @@ dans la langue de votre équipe.
 - [Formats de fichiers](../reference/file-formats.md)
 - [Configuration](../reference/configuration.md)
 - [Schémas personnalisés](custom-schemas.md)
+
+## Étape suivante
+
+[Notes de version et CHANGELOG](release-notes.md)

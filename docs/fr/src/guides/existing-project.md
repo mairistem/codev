@@ -113,3 +113,7 @@ aucune.
 - [Décisions](decisions.md)
 - [Configuration](../reference/configuration.md)
 - [Concepts](../concepts.md)
+
+## Étape suivante
+
+[Déployer Compagnon pour une équipe](team-rollout.md)

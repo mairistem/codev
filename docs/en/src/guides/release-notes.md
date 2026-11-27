@@ -151,3 +151,7 @@ emptied. See [Configuration](../reference/configuration.md#changelog).
 - [File formats](../reference/file-formats.md)
 - [Command-line interface](../reference/cli.md)
 - [Deploying Compagnon for a team](team-rollout.md)
+
+## Next step
+
+[Custom schemas](custom-schemas.md)

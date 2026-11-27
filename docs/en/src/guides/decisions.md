@@ -215,3 +215,7 @@ The first argument is the change's name, the second the title of the
   `compagnon decision` command and its options.
 - [Error codes and fixes](../reference/errors.md): what to do when a
   decision is reported.
+
+## Next step
+
+[Roles](../roles.md)

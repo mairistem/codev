@@ -261,3 +261,7 @@ departure is visible, but it is no longer in effect for your project. See
 - [Decisions](decisions.md)
 - [Configuration](../reference/configuration.md)
 - [Command-line interface](../reference/cli.md)
+
+## Next step
+
+[Artifact language](artifact-language.md)

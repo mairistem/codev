@@ -177,3 +177,7 @@ configuration. Gardez-les à l'esprit lorsque vous concevez un schéma :
 - [Rôles](../roles.md)
 - [Configuration](../reference/configuration.md)
 - [Langue des artefacts](artifact-language.md)
+
+## Étape suivante
+
+[Interface en ligne de commande](../reference/cli.md)

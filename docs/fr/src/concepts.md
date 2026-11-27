@@ -207,3 +207,7 @@ promue depuis une conception : voir [Décisions](guides/decisions.md).
 - [Sources héritées](guides/inherited-sources.md) : des règles et des
   décisions partagées entre dépôts.
 - [Glossaire](glossary.md) : chaque terme en quelques mots.
+
+## Étape suivante
+
+[Décisions](guides/decisions.md)

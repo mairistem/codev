@@ -157,3 +157,7 @@ peut être vidée. Voir [Configuration](../reference/configuration.md#changelog)
 - [Formats de fichiers](../reference/file-formats.md)
 - [Interface en ligne de commande](../reference/cli.md)
 - [Déployer Compagnon pour une équipe](team-rollout.md)
+
+## Étape suivante
+
+[Schémas personnalisés](custom-schemas.md)

@@ -1,5 +1,11 @@
 # How it works
 
+<div class="skip-step">
+
+[You only use Compagnon? Skip to Adopting Compagnon on an existing project](guides/existing-project.md)
+
+</div>
+
 Every change in a Compagnon project goes through the same five steps, in
 the same order: the Compagnon [workflow](glossary.md#workflow). You decide
 at two of them; Claude works at the others and stops whenever it needs you.
@@ -234,3 +240,7 @@ Their stances are in [Roles](roles.md).
 - [Roles](roles.md): the criteria of each role, at each step.
 - [Review record](guides/review-record.md): the life of a finding.
 - [Command-line interface](reference/cli.md): every command and option.
+
+## Next step
+
+[Concepts](concepts.md)

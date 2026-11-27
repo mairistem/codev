@@ -310,3 +310,7 @@ identifiants et des codes stables — voir [Sortie JSON](../reference/json-outpu
 - [Configuration](../reference/configuration.md)
 - [Sources héritées](inherited-sources.md)
 - [Approuver un plan sur GitHub](approve-a-plan.md)
+
+## Étape suivante
+
+[Sources héritées](inherited-sources.md)

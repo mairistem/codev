@@ -289,3 +289,7 @@ with stable check ids and codes — see [JSON output](../reference/json-output.m
 - [Configuration](../reference/configuration.md)
 - [Inherited sources](inherited-sources.md)
 - [Approving a plan on GitHub](approve-a-plan.md)
+
+## Next step
+
+[Inherited sources](inherited-sources.md)

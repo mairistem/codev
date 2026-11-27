@@ -167,3 +167,7 @@ mind when you design a schema:
 - [Roles](../roles.md)
 - [Configuration](../reference/configuration.md)
 - [Artifact language](artifact-language.md)
+
+## Next step
+
+[Command-line interface](../reference/cli.md)

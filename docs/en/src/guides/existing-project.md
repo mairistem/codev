@@ -103,3 +103,7 @@ that matter; `compagnon doctor` only warns when there are none.
 - [Decisions](decisions.md)
 - [Configuration](../reference/configuration.md)
 - [Concepts](../concepts.md)
+
+## Next step
+
+[Deploying Compagnon for a team](team-rollout.md)
