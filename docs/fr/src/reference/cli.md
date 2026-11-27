@@ -67,7 +67,16 @@ qui ne lisent pas le projet :
   qui indique la correction.
 - **Choix de la modification.** Les commandes qui acceptent `--change <CHANGE>` la
   déduisent lorsque le projet compte exactement une modification active, et échouent
-  avec `ambiguous_change` lorsqu'il y en a plusieurs.
+  avec `ambiguous_change` lorsqu'il y en a plusieurs, en les nommant :
+
+  ```text
+  error: several active changes: add-audit-log, rework — specify which one
+  help: `--change add-audit-log`
+  ```
+
+  Les noms des modifications s'écrivent en
+  [kebab-case](../glossary.md#kebab-case) : lettres minuscules, chiffres et
+  tirets, par exemple `add-user-auth`.
 
 ## Projet
 
@@ -897,6 +906,27 @@ elles ne vérifient et n'écrivent rien, et échouent avec
 `compagnon_version_unsatisfied`, en nommant l'exigence, la version en cours et
 la correction que donne `compagnon doctor`. Relevez un épinglage de CI
 (`COMPAGNON_VERSION=`) en même temps que `compagnon_version`.
+
+Ce qu'elle vérifie :
+
+- la forme des spécifications et des deltas : chaque exigence emploie
+  `SHALL` ou `MUST` (ou `DOIT` ou `DOIVENT`) et comporte au moins un
+  `#### Scenario:` ;
+- qu'un delta ne se contredit pas : aucune exigence à la fois ajoutée et
+  modifiée, aucun renommage en conflit avec un ajout ;
+- la règle du delta vide : une modification sans aucun delta doit déclarer
+  `skip_specs: true` dans son `change.yaml` — un nettoyage, une mise à
+  niveau ou de la documentation, qui ne change aucun comportement ;
+- que les décisions scellées n'ont pas été altérées.
+
+Utilisez `--strict` en
+[intégration continue](../glossary.md#intégration-continue) (CI), les
+vérifications lancées à chaque envoi de code, pour que les avertissements
+fassent aussi échouer la construction :
+
+```bash
+compagnon validate --strict
+```
 
 Code de sortie :
 

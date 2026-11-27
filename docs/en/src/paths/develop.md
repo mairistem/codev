@@ -12,6 +12,8 @@ it codes. Three pages, then a first change in about ten minutes.
 - [Adopting Compagnon on an existing project](../guides/existing-project.md):
   when your project is not empty.
 - [Concepts](../concepts.md): how plans, specs and decisions fit together.
+- [Start from a Jira ticket](../guides/mcp.md): "Prepare a plan for
+  PROJ-123", and the plan cites the ticket.
 - [FAQ](../faq.md), when something goes wrong.
 
 Not your case? [Choose another path](../choose-your-path.md).

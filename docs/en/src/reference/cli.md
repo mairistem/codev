@@ -64,7 +64,15 @@ not read the project:
   by a `help: …` line with the fix.
 - **Choosing a change.** Commands that take `--change <CHANGE>` infer it when
   the project has exactly one active change, and fail with `ambiguous_change`
-  when there are several.
+  when there are several, naming them:
+
+  ```text
+  error: several active changes: add-audit-log, rework — specify which one
+  help: `--change add-audit-log`
+  ```
+
+  Change names are in [kebab-case](../glossary.md#kebab-case): lowercase
+  letters, digits and hyphens, such as `add-user-auth`.
 
 ## Project
 
@@ -858,6 +866,24 @@ When the running Compagnon does not satisfy the project's
 and fail with `compagnon_version_unsatisfied`, naming the requirement, the
 running version and the fix `compagnon doctor` gives. Raise a CI pin
 (`COMPAGNON_VERSION=`) together with `compagnon_version`.
+
+What it checks:
+
+- the shape of specs and deltas: every requirement uses `SHALL` or `MUST`
+  (or `DOIT` or `DOIVENT`) and has at least one `#### Scenario:`;
+- that a delta does not contradict itself: no requirement both added and
+  modified, no renaming that clashes with an addition;
+- the zero-delta rule: a change with no deltas at all must declare
+  `skip_specs: true` in its `change.yaml` — a cleanup, an upgrade or a
+  documentation change that alters no behavior;
+- that sealed decisions have not been altered.
+
+Use `--strict` in continuous integration ([CI](../glossary.md#ci)), the
+checks that run on every push, so that warnings fail the build too:
+
+```bash
+compagnon validate --strict
+```
 
 Exit status:
 

@@ -213,7 +213,7 @@ The deviation takes effect only once accepted. Until then, the inherited
 decision stays in effect and is still injected into the `design` instructions.
 Once the deviation is accepted, the inherited decision stays listed, so the
 departure is visible, but it is no longer in effect for your project. See
-[Deviation](../concepts.md#deviation).
+[Deviated from](decisions.md#deviated-from).
 
 ## What is not inherited
 

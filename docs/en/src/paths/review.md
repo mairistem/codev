@@ -13,6 +13,8 @@ Three pages, about twenty minutes. You never need a terminal.
   with what to check in each part.
 - [Approving a plan on GitHub or GitLab](../guides/approve-a-plan.md):
   commenting, asking for changes and approving where your team works.
+- [Start from a Jira ticket](../guides/mcp.md): a plan made from a ticket
+  cites it on its first line.
 - [FAQ](../faq.md), for the questions that come up.
 
 Not your case? [Choose another path](../choose-your-path.md).

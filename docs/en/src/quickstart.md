@@ -1,12 +1,12 @@
 # Your first change
 
 This page takes you from an empty
-[repository](glossary.md#repository) to your first finished change,
-in about ten minutes. You talk to Claude in plain words: each step shows
-the sentence to say, then the shortcut command, which does the same thing.
+[repository](glossary.md#repository) to your first finished change, in
+about ten minutes. Each step shows what to say to Claude, then the shortcut
+command.
 
-You need [Claude Code](glossary.md#claude-code) and a repository to work
-in. The example adds a dark mode to an application; use your own idea.
+You need [Claude Code](glossary.md#claude-code). The example adds a dark
+mode to an application; use your own idea.
 
 ## 1. Install Compagnon
 
@@ -33,9 +33,9 @@ your project's main folder, type once:
 compagnon init
 ```
 
-It may ask which [skills](glossary.md#skill) to install, and for a few words
-about your project. Then it adds a `_compagnon/` folder and gives Claude Code
-the skills. Restart Claude Code so it sees them.
+It may ask a few questions, then adds a `_compagnon/` folder and gives
+Claude Code the [skills](glossary.md#skill). Restart Claude Code so it sees
+them.
 
 <details>
 <summary>Under the hood: what init writes</summary>
@@ -78,6 +78,13 @@ Claude writes a plan and stops: it changes no code yet. The shortcut does
 the same: `/compagnon-propose add a dark mode that follows the system
 setting`.
 
+**You have a Jira ticket?** Name it:
+
+> Prepare a plan for PROJ-123.
+
+Claude reads it, without changing it, and cites it at the top of the plan
+([Start from a Jira ticket](guides/mcp.md)).
+
 <details>
 <summary>Under the hood: how the plan is written</summary>
 
@@ -101,13 +108,10 @@ Language: en — prose and structural keywords in en
 
 The plan sits in `_compagnon/changes/add-dark-mode/`, in four short files:
 the **proposal** (why), the **specs** (what will be true afterwards), the
-**design** (how) and the **tasks** (the steps). Read them as you would a
-colleague's proposal. To change something, just say so:
+**design** (how) and the **tasks** (the steps). To change something, just
+say so:
 
 > In the plan, keep the user's choice when they pick a theme by hand.
-
-[Reviewing a plan](guides/review-a-plan.md) tells you what to look for in
-each file, without the terminal.
 
 <details>
 <summary>Under the hood: checking the plan</summary>
@@ -130,8 +134,7 @@ Once the plan suits you:
 
 Claude works through the tasks one by one, checks each with its
 [test](glossary.md#test) (a small program that proves the task works), and
-stops to ask you if something is unclear. Shortcut:
-`/compagnon-apply add-dark-mode`.
+asks you if something is unclear. Shortcut: `/compagnon-apply add-dark-mode`.
 
 ## 6. File it away (`/compagnon-archive`)
 
@@ -139,10 +142,29 @@ Check the result, then:
 
 > The change is done, archive it.
 
-Claude merges the plan's specs into the project's specs and moves the
-change to the archive: the project now remembers why dark mode exists.
-Shortcut: `/compagnon-archive add-dark-mode`. Then save the result in the
-project's history ([commit](glossary.md#commit) it), or ask Claude to do it.
+Claude adds the plan's specs to the project's specs and moves the change
+to the archive: the project now remembers why dark mode exists. Shortcut:
+`/compagnon-archive add-dark-mode`. Then save the result in the project's
+history ([commit](glossary.md#commit) it), or ask Claude to.
+
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 220" role="img" aria-label="A change's folder: _compagnon/changes/&lt;name&gt;/ holds proposal.md, specs/, design.md and tasks.md; archiving moves it to _compagnon/changes/archive/&lt;date&gt;-&lt;name&gt;/ and updates the project's specs.">
+<g stroke-width="2" style="fill:var(--dg-file)">
+<rect x="8" y="20" width="300" height="180" rx="12" style="stroke:var(--dg-claude)"/><rect x="420" y="20" width="332" height="80" rx="12" style="stroke:var(--dg-line)" stroke-dasharray="5 4"/><rect x="420" y="120" width="332" height="80" rx="12" style="stroke:var(--dg-line)"/>
+</g>
+<path d="M312,110h40M352,110V60h62m-6,-5l6,5l-6,5M352,110V160h62m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="13" style="fill:var(--dg-ink)">
+<text x="24" y="48" font-weight="600">_compagnon/changes/&lt;name&gt;/</text><text x="40" y="84">proposal.md</text><text x="40" y="112">specs/</text><text x="40" y="140">design.md</text><text x="40" y="168">tasks.md</text>
+<text x="436" y="48" font-weight="600">_compagnon/changes/archive/</text><text x="436" y="70">&lt;date&gt;-&lt;name&gt;/</text><text x="436" y="148" font-weight="600">_compagnon/specs/</text>
+</g>
+<g font-size="13" style="fill:var(--dg-muted)">
+<text x="320" y="100">archive</text><text x="436" y="90">kept as written</text><text x="436" y="176">updated by the plan</text>
+</g>
+</svg>
+</div>
+<figcaption>From start to archive: the plan is kept, and the project's specs say what it changed.</figcaption>
+</figure>
 
 <details>
 <summary>Under the hood: what archiving does</summary>
@@ -162,9 +184,9 @@ Moved to: /home/you/acme-app/_compagnon/changes/archive/2026-09-30-add-dark-mode
 
 </details>
 
-## What's next
+## Go further
 
-- [How it works](workflow.md) details each step.
-- [Asking Claude](skills.md#how-to-ask) lists, for every skill, ways
-  to ask for it.
-- Say "show me around Compagnon" for a guided tour of your project.
+- [How it works](workflow.md): each step in detail.
+- [Asking Claude](skills.md#how-to-ask): other ways to ask.
+- [Start from a Jira ticket](guides/mcp.md)
+- [Reviewing a plan](guides/review-a-plan.md): what to check in a plan.

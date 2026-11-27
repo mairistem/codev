@@ -220,7 +220,7 @@ L'écart n'entre en vigueur qu'une fois accepté. D'ici là, la décision hérit
 reste en vigueur et figure toujours dans les instructions de l'artefact
 `design`. Une fois l'écart accepté, la décision héritée reste listée, ce qui
 rend l'écart visible, mais elle n'est plus en vigueur pour votre projet. Voir
-[Écart](../concepts.md#écart).
+[Contournée par un écart](decisions.md#contournée-par-un-écart).
 
 ## Ce qui n'est pas hérité
 

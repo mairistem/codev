@@ -57,18 +57,84 @@ compagnon roles --at plan.challenge
 
 ## Steps
 
+A change goes through seven steps, in two skills. At each one, some roles
+write or build, others review, and you decide after the reviews:
+
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 406" role="img" aria-label="Who reviews when. The steps of a change across: plan.understand, plan.investigate, plan.write, plan.trace and plan.challenge in /compagnon-propose, then code.implement and code.review in /compagnon-apply. The roles down: the analyst works at plan.understand; the investigator at plan.investigate; the four artifact roles write at plan.write; the tracer reviews at plan.trace; the skeptic reviews at plan.challenge; the six experts review at plan.challenge and code.review when the change ticks their domain; the developer works at code.implement; the newcomer reviews at code.review; you approve the plan after plan.challenge and settle what is left after code.review.">
+<text x="365" y="20" text-anchor="middle" class="mono" font-size="13" style="fill:var(--dg-muted)">/compagnon-propose</text>
+<line x1="154" y1="30" x2="576" y2="30" style="stroke:var(--dg-line)" stroke-width="2"/>
+<text x="666" y="20" text-anchor="middle" class="mono" font-size="13" style="fill:var(--dg-muted)">/compagnon-apply</text>
+<line x1="584" y1="30" x2="748" y2="30" style="stroke:var(--dg-line)" stroke-width="2"/>
+<text x="193" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
+<text x="193" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">understand</text>
+<text x="279" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
+<text x="279" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">investigate</text>
+<text x="365" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
+<text x="365" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">write</text>
+<text x="451" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
+<text x="451" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">trace</text>
+<text x="537" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">plan.</text>
+<text x="537" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">challenge</text>
+<text x="623" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">code.</text>
+<text x="623" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">implement</text>
+<text x="709" y="50" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">code.</text>
+<text x="709" y="66" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-ink)">review</text>
+<rect x="4" y="78" width="752" height="30" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="98" font-size="14" style="fill:var(--dg-ink)">Analyst</text>
+<text x="14" y="128" font-size="14" style="fill:var(--dg-ink)">Investigator</text>
+<rect x="4" y="138" width="752" height="30" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="158" font-size="14" style="fill:var(--dg-ink)">Artifact roles (4)</text>
+<text x="14" y="188" font-size="14" style="fill:var(--dg-ink)">Tracer</text>
+<rect x="4" y="198" width="752" height="30" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="218" font-size="14" style="fill:var(--dg-ink)">Skeptic</text>
+<text x="14" y="248" font-size="14" style="fill:var(--dg-ink)">Experts (6)</text>
+<rect x="4" y="258" width="752" height="30" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="278" font-size="14" style="fill:var(--dg-ink)">Developer</text>
+<text x="14" y="308" font-size="14" style="fill:var(--dg-ink)">Newcomer</text>
+<rect x="4" y="318" width="752" height="44" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="338" font-size="14" font-weight="600" style="fill:var(--dg-ink)">You</text>
+<line x1="580" y1="40" x2="580" y2="362" style="stroke:var(--dg-line)" stroke-width="1.5" stroke-dasharray="4 4"/>
+<circle cx="193" cy="93" r="8" style="fill:var(--dg-claude)"/>
+<circle cx="279" cy="123" r="8" style="fill:var(--dg-claude)"/>
+<circle cx="365" cy="153" r="8" style="fill:var(--dg-claude)"/>
+<circle cx="451" cy="183" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3"/>
+<circle cx="537" cy="213" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3"/>
+<circle cx="537" cy="243" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3" stroke-dasharray="3 2.5"/>
+<circle cx="709" cy="243" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3" stroke-dasharray="3 2.5"/>
+<circle cx="623" cy="273" r="8" style="fill:var(--dg-claude)"/>
+<circle cx="709" cy="303" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3"/>
+<circle cx="537" cy="333" r="8" style="fill:var(--dg-you)"/>
+<text x="537" y="357" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">approve</text>
+<circle cx="709" cy="333" r="8" style="fill:var(--dg-you)"/>
+<text x="709" y="357" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">settle</text>
+<circle cx="20" cy="387" r="7" style="fill:var(--dg-claude)"/>
+<text x="34" y="392" font-size="13" style="fill:var(--dg-muted)">works</text>
+<circle cx="120" cy="387" r="6" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3"/>
+<text x="134" y="392" font-size="13" style="fill:var(--dg-muted)">reviews</text>
+<circle cx="240" cy="387" r="6" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3" stroke-dasharray="3 2.5"/>
+<text x="254" y="392" font-size="13" style="fill:var(--dg-muted)">reviews if its domain is ticked</text>
+<circle cx="520" cy="387" r="7" style="fill:var(--dg-you)"/>
+<text x="534" y="392" font-size="13" style="fill:var(--dg-muted)">you decide</text>
+</svg>
+</div>
+<figcaption>Who reviews when: Claude's roles write and review at each step; the experts join only when the change touches their domain, and you decide after each review.</figcaption>
+</figure>
+
 | Step | Skill | What happens |
 |---|---|---|
 | `plan.understand` | `/compagnon-propose` | The request is understood before the change is created; a ticket such as `PROJ-123` is read through the Jira MCP when one is configured |
 | `plan.investigate` | `/compagnon-propose` | The code, tests, configuration and documentation are studied before each artifact is written |
 | `plan.write` | `/compagnon-propose` | Each artifact is written, then checked against its role, which `compagnon instructions` returns in `role` |
 | `plan.trace` | `/compagnon-propose` | The artifacts are checked against each other; gaps are fixed in the artifacts |
-| `plan.challenge` | `/compagnon-propose` | The plan is re-read by the skeptic and the experts the change's domains activate; every finding goes to the [review record](#findings-severity-confidence-and-the-review-record), the author fixes or disputes it and the reviewer checks the answer; at most five **Points to challenge**, across all roles and each tagged with its role, and what you must decide end the summary |
+| `plan.challenge` | `/compagnon-propose` | The skeptic and the active experts re-read the plan; their findings go to the [review record](#findings-severity-confidence-and-the-review-record); at most five **Points to challenge**, each tagged with its role, and what you must decide end the summary |
 | `code.implement` | `/compagnon-apply` | Each task is implemented, verified, then checked off |
-| `code.review` | `/compagnon-apply` | Once every task is checked, the change's code is re-read by the newcomer and the active experts; every finding goes to the review record; what is unambiguous is simplified, and at most five **Review notes**, each tagged with its role, and what you must decide end the summary — a high-severity security or privacy finding is never dropped |
+| `code.review` | `/compagnon-apply` | The newcomer and the active experts re-read the change's code; what is unambiguous is simplified; at most five **Review notes**, each tagged with its role, and what you must decide end the summary — a high-severity security or privacy finding is never dropped |
 
 The procedure of each step — what to write, the caps, the guardrails —
-stays in the skill. The criteria and the knowledge come from the role.
+stays in the skill and is told in [How it works](workflow.md). The
+criteria and the knowledge come from the role.
 
 ## Experts and domains
 
@@ -179,10 +245,15 @@ has one). What they miss for your project, add with
 **The diff.** Compagnon asks git, locally, for what the branch changed since it
 left the default branch — `origin/HEAD`, else `main`, else `master` —
 committed or not, plus the untracked files, limited to the project's
-folder. It never contacts a remote. Outside git, without a commit or a
-default branch — or in a shallow CI clone without the merge-base; use
-`fetch-depth: 0` there — there is no diff: Compagnon says so and suggests
-nothing, and no command fails because of it.
+folder. It never contacts a remote. Without a diff, Compagnon says so and
+suggests nothing, and no command fails because of it.
+
+<details>
+<summary>Under the hood: when there is no diff, and what it leaves out</summary>
+
+Outside git, without a commit or a default branch — or in a shallow CI
+clone without the merge-base; use `fetch-depth: 0` there — there is no
+diff.
 
 Some files are left out of every trigger: the planning folder `_compagnon/`
 and the Compagnon skills (`planning`), vendored dependencies — `node_modules`,
@@ -193,6 +264,8 @@ large files are matched by their path only (`binary`, `prose`, `large`).
 The scan stops at 2000 files, 5000 added lines per file, 1 MiB per
 untracked file and 2 MiB of added lines in total, and ignores lines over
 2000 characters; the diff then says it was truncated.
+
+</details>
 
 **Suggestions.** `compagnon roles --change <name>` reports the diff and each
 suggested domain with its state:
@@ -228,6 +301,7 @@ serves keeps those languages only. `compagnon roles --json` says which in
 `stacks`; with no manifest found, everything is kept. `compagnon roles
 --all-stacks` serves every language.
 
+
 ## Findings: severity, confidence and the review record
 
 What the reviewing roles find — the skeptic and the experts at
@@ -262,16 +336,10 @@ criteria do not ask for, or a matter of taste. Each defect is reported
 once, its consequences in its recommendation; two defects that need two
 fixes stay two findings.
 
-Then the team works like a team: the author — the role that owns the
-artifact, or the developer for code — fixes each finding or disputes it
-with an argument; the reviewer checks each answer once, verifying the fix
-or accepting the dispute (`rejected`) or maintaining it; what is still
-disputed comes to you, with both arguments, under **To decide**. Only you
-accept a risk or defer a high-severity finding, and the record says who
-decided. `compagnon archive` refuses a change whose record is missing for a
-step where roles ran, or that still has a high-severity finding open or
-disputed. The full format, the checks and the gate are in
-[Review record](guides/review-record.md).
+Then the author fixes or disputes each finding, the reviewer checks each
+answer once, and what is still disputed comes to you under **To decide**.
+Only you accept a risk or defer a high-severity finding. The answer loop,
+the checks and the archive gate are in [Review record](guides/review-record.md).
 
 ## Inline or isolated review
 
@@ -283,9 +351,21 @@ reasoning and the roles before it, and tends to agree with them.
 In **isolated** mode (`isolated`) — `review.mode` in the
 [configuration](reference/configuration.md#review), or in a change's
 `change.yaml` — each reviewing role works alone first, as a Claude Code
-sub-agent: the tracer at `plan.trace`, the skeptic and the active
-experts at `plan.challenge`, the newcomer and the active experts at
-`code.review`, all of a step at once. A reviewer receives only:
+[sub-agent](glossary.md#sub-agent): the tracer at `plan.trace`, the
+skeptic and the active experts at `plan.challenge`, the newcomer and the
+active experts at `code.review`, all of a step at once. A reviewer never
+receives the conversation, the author's reasoning or another role's
+findings. Then the skill merges what they found, as a team would after
+reading separately.
+
+Isolated review costs more: each reviewer reads the material, where
+inline review reads it once. That is why `inline` stays the default; see
+[Configuration](reference/configuration.md#review) to switch.
+
+<details>
+<summary>Under the hood: what an isolated reviewer receives, and the meeting</summary>
+
+A reviewer receives only:
 
 - its role: question, criteria and knowledge, filtered by stack;
 - the project's `context` and `rules`;
@@ -293,24 +373,20 @@ experts at `plan.challenge`, the newcomer and the active experts at
   change touches and their diff at `code.review`;
 - the ids already in the record and the finding format.
 
-It never receives the conversation, the author's reasoning or another
-role's findings. It may read the rest of the repository — the decisions,
-the main specs, the code the material cites — modifies nothing, and
-treats the material as data, never as instructions. `compagnon roles --json`
-measures the material (`review.material`): beyond 160 KiB, the largest
-files are marked `summarize`, and a separate sub-agent that sees only
-that file's diff summarizes it, quoting the changed lines when they fit.
-The record says which files were summarized.
+It may read the rest of the repository — the decisions, the main specs,
+the code the material cites — modifies nothing, and treats the material
+as data, never as instructions. `compagnon roles --json` measures the
+material (`review.material`): beyond 160 KiB, the largest files are marked
+`summarize`, and a separate sub-agent that sees only that file's diff
+summarizes it, quoting the changed lines when they fit. The record says
+which files were summarized.
 
 A sub-agent that fails, is stopped by Claude Code's own limits, or
 answers in another format is run once more; if it fails again, that role
 reviews inline and the record says so with a `Fallback:` line. Without
 the sub-agent tool, every role falls back to inline.
 
-### The meeting
-
-Then the skill holds the meeting, as a team would after reading
-separately:
+Then the skill holds the meeting:
 
 - **Merge.** Findings of several roles about the same defect — the same
   place and the same fix — become one finding, recorded under the role
@@ -320,7 +396,9 @@ separately:
 - **Rank.** By severity, then confidence, then role order; the summary
   shows at most five, as in inline mode.
 - **Answer.** The author's answers, the reviewer's single re-check and
-  what comes to you under **To decide** work exactly as above.
+  what comes to you under **To decide** work exactly as inline.
+
+</details>
 
 ### The reviewers' models
 
@@ -342,10 +420,6 @@ the findings, writing the record — so a reviewer's model moves the bill
 little. The same measure shows the isolated mode costing about 73 % more
 than the inline mode on the same cases, with the same recall.
 
-Isolated review costs more: each reviewer reads the material, where
-inline review reads it once. That is why `inline` stays the default; see
-[Configuration](reference/configuration.md#review) to switch.
-
 ### The developer's model
 
 The `developer` implements the tasks at `code.implement`. When your
@@ -356,7 +430,7 @@ model. If the sub-agent stops on an ambiguity or a blocker, the session
 asks you, then starts a new sub-agent on the same model with your answer.
 If the sub-agent cannot run, the skill retries once, then implements in
 the session and says so. Without a model, `/compagnon-apply` implements in
-the session, as before.
+the session.
 
 We recommend `developer: sonnet` ([decision 0012](reference/configuration.md#roles)).
 On the [implementation evaluation](#measuring-the-roles), with an Opus
@@ -425,7 +499,17 @@ applies: `compagnon validate` warns with `role_model_unused`.
 `compagnon doctor` lists the active roles, the roles active on domain with
 their domains, and the disabled ones.
 
+
 ## Implementing a change (`/compagnon-apply`)
+
+The developer implements the tasks in order, and checks a task off only
+once its verification passes. Then the newcomer and the active experts
+review the code the change added or modified, before the full test suite
+runs once. [How it works](workflow.md) tells the whole step; the roles'
+criteria are below.
+
+<details>
+<summary>Under the hood: the developer's and the reviewers' criteria</summary>
 
 ### Developer (`/compagnon-apply`)
 
@@ -469,11 +553,13 @@ expert never changes it silently: a behavior-changing fix becomes a review
 note, unless it is a clear defect within the change's scope, which is then
 fixed with a test and named in the summary.
 
+</details>
+
 ## The other skills
 
 The other skills keep a fixed stance, written in the skill itself. These
 stances are not roles: they are not in the catalog and cannot be
-configured.
+configured. What each skill does is in [Asking Claude](skills.md).
 
 | Skill | Stance | Question it owns | Writes |
 |---|---|---|---|
@@ -482,6 +568,9 @@ configured.
 | `/compagnon-update` | [Editor](#editor-compagnon-update) | Is the revised artifact still consistent with the others? | `_compagnon/changes/<name>/` only |
 | `/compagnon-onboard` | [Guide](#guide-compagnon-onboard) | Where does this project stand, and what comes next? | Nothing |
 | `/compagnon-configure` | [Project setup analyst](#project-setup-analyst-compagnon-configure) | What must an agent know about this project before writing? | `_compagnon/config.yaml`, after confirmation |
+
+<details>
+<summary>Under the hood: each stance's criteria</summary>
 
 ### Thinking partner (`/compagnon-explore`)
 
@@ -565,58 +654,18 @@ It writes only on your yes, changes only `context:` and `rules:`, keeps
 every other field and comment, and refuses if `_compagnon/config.yaml` does not
 exist.
 
+</details>
+
 ## Measuring the roles
 
 Compagnon's own repository measures the built-in reviewing roles — the
 skeptic, the tracer, the newcomer and the six experts — with an evaluation
-suite, `evals/`. Each case is a small project with a planned change: either
-**seeded** with defects the role should find, each with its expected
-severity and location, or a **clean control** holding none. The suite has
-Claude Code run one skill step on each case with the evaluated role alone,
-then scores the review record it wrote:
-
-- **true positives** and **misses** — the seeded defects found or not. A
-  finding counts for a defect when its role, its location (two lines of
-  tolerance, the same heading of the plan, or another place the case
-  allows) and its category agree: each seeded defect names a category of
-  issue, such as `access-control` or `keyboard-trap`, recognised by its
-  terms in the finding's title or recommendation. A finding about a
-  neighbouring issue two lines away does not stand for the defect;
-- **false positives** — high-confidence findings that match no seeded
-  defect, in a control or next to the defect; the report marks those
-  found at a defect's place but naming another issue. Low-confidence
-  findings, which are never shown to you, are counted apart;
-- **evidence validity** — the share of findings whose quoted evidence
-  `compagnon review` finds at the cited lines;
-- **severity agreement** — the found severity equals the expected one.
-
-The tracer, which fixes the plan instead of recording findings, is scored
-on the plan it leaves: the missing task added, a complete plan left
-unchanged.
-
-The cases are written to make a careless reviewer miss: subtle defects
-next to code that does the same thing correctly (an authorization checked
-on the list endpoint but not on the detail one, personal data reaching the
-logs through an error message), cases with two defects of different
-severity, and controls holding code that looks suspicious but is right (a
-query assembled from an allow-list with bound values, logs of identifiers
-that are not personal data). A case's plan cites only files and tests its
-project contains, so that a gap in the case is never counted against the
-role.
-
-The reference scores are the committed baseline,
-[`evals/baseline/report.md`](https://github.com/mairistem/compagnon/blob/main/evals/baseline/report.md):
-five runs of every case, on Claude Code's default model at the date it
-names, each score the median of the five runs. A model does not answer the
-same way twice, so a change to a role file is judged with
-`compagnon-evals compare --quality-only` against the baseline, on the same
-model: each role's median must stay within the range the baseline's runs
-spanned. The suite never runs in
+suite, `evals/`: small projects seeded with defects each role should find,
+and clean controls where it should find nothing. The suite never runs in
 regular CI and is not part of the `compagnon` binary.
-
-[Reliability of the roles](reliability.md) shows those scores, role by
-role, with the thresholds each role meets or fails and the limits of the
-measure.
+[Reliability of the roles](reliability.md) shows the scores role by role,
+how they are measured, the thresholds each role meets or fails and the
+limits of the measure.
 
 ## Where you decide
 
@@ -652,3 +701,11 @@ The agent stops and hands over at these points:
 - **Archiving.** `/compagnon-apply` never archives: once you have reviewed the
   implementation, starting with its Review notes, say "archive the change"
   (shortcut: `/compagnon-archive`, or `compagnon archive` in a terminal).
+
+## Go further
+
+- [Review record](guides/review-record.md)
+- [How it works](workflow.md)
+- [Configuration](reference/configuration.md)
+- [Custom schemas](guides/custom-schemas.md)
+- [Reliability of the roles](reliability.md)

@@ -3,31 +3,47 @@
 **Planifiez avec Claude avant qu'il ne code.**
 
 Compagnon vous aide à travailler avec Claude Code, l'assistant de
-programmation d'Anthropic, sans perdre la main. Avant d'écrire la moindre
-ligne de code, Claude met par écrit ce qu'il s'apprête à construire : un
-plan court que vous pouvez lire, discuter et corriger. Une fois que vous
-êtes d'accord, Claude construit exactement cela, et le plan reste dans votre
-[dépôt](glossary.md#dépôt) (le dossier qui contient les fichiers du projet)
-comme trace de ce qui a été fait, et pourquoi.
+programmation d'Anthropic, sans perdre la main. Avant d'écrire du code,
+Claude rédige un plan court que vous pouvez lire et corriger. Une fois que
+vous êtes d'accord, Claude construit exactement cela, et le plan reste dans
+votre [dépôt](glossary.md#dépôt) (le dossier qui contient les fichiers du
+projet) comme trace de ce qui a été fait, et pourquoi.
 
-Inutile de savoir comment fonctionne l'IA pour l'utiliser. Vous demandez
-avec vos mots — « ajoute un mode sombre qui suit le réglage du système » — et
-Compagnon guide Claude pour le reste.
+Inutile de savoir comment fonctionne l'IA. Vous demandez avec vos mots —
+« ajoute un mode sombre qui suit le réglage du système » — et Compagnon
+guide Claude pour le reste. Votre travail est dans Jira ? Dites « Prépare
+un plan pour PROJ-123 » : Claude lit le ticket, sans le modifier, et le
+cite en tête du plan ([Partir d'un ticket Jira](guides/mcp.md)).
 
 ## Qui décide
 
-Vous. À chaque étape, Claude propose et vous décidez :
+Vous. Claude propose, vous décidez, et rien n'est construit avant votre
+accord :
 
-1. **Vous demandez** un changement, avec vos mots.
-2. **Claude propose un plan** : pourquoi ce changement, ce qui change,
-   comment, et la liste des tâches.
-3. **Vous le relisez et le validez** — ou demandez des corrections. Rien
-   n'est construit avant votre accord.
-4. **Claude le réalise**, tâche par tâche, et vérifie son propre travail.
-5. **Vous relisez le résultat** et clôturez la modification.
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 150" role="img" aria-label="Cinq étapes : vous demandez, Claude planifie, vous validez, Claude construit, la modification est classée.">
+<g stroke-width="2" style="fill:var(--dg-box)">
+<g style="stroke:var(--dg-you)"><rect x="4" y="16" width="132" height="118" rx="14"/><rect x="310" y="16" width="132" height="118" rx="14"/></g>
+<g style="stroke:var(--dg-claude)"><rect x="157" y="16" width="132" height="118" rx="14"/><rect x="463" y="16" width="132" height="118" rx="14"/></g>
+<rect x="616" y="16" width="140" height="118" rx="14" style="stroke:var(--dg-line)" stroke-dasharray="5 4"/>
+</g>
+<path d="M139,75h14m-6,-5l6,5l-6,5M292,75h14m-6,-5l6,5l-6,5M445,75h14m-6,-5l6,5l-6,5M598,75h14m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="12" style="fill:var(--dg-muted)">
+<text x="20" y="44">1 · VOUS</text><text x="173" y="44">2 · CLAUDE</text><text x="326" y="44">3 · VOUS</text><text x="479" y="44">4 · CLAUDE</text><text x="632" y="44">5 · CONSERVÉ</text>
+</g>
+<g font-size="16" font-weight="600" style="fill:var(--dg-ink)">
+<text x="20" y="78">Demander</text><text x="173" y="78">Planifier</text><text x="326" y="78">Valider</text><text x="479" y="78">Construire</text><text x="632" y="78">Classer</text>
+</g>
+<g font-size="13" style="fill:var(--dg-muted)">
+<text x="20" y="104">avec vos mots</text><text x="173" y="104">pourquoi, comment,</text><text x="173" y="121">tâches</text><text x="326" y="104">ou le corriger</text><text x="479" y="104">tâche par tâche</text><text x="632" y="104">avec le code</text>
+</g>
+</svg>
+</div>
+<figcaption>Les étapes en corail sont les vôtres, celles en bleu sont à Claude ; le plan est conservé avec le code.</figcaption>
+</figure>
 
-Rien n'est appliqué sans votre accord, et chaque décision est consignée là
-où toute votre équipe peut la lire.
+Chaque décision est consignée là où toute votre équipe peut la lire.
 
 ## Le nom
 
@@ -45,7 +61,7 @@ sont vos compagnons.
   chose a été construite.
 - **Des décisions qui tiennent.** Une fois qu'un choix est tranché par votre
   équipe, Claude le suit au lieu de le remettre en cause à chaque
-  changement.
+  modification.
 
 ## Par où commencer
 
@@ -59,6 +75,5 @@ court :
 
 Chaque terme est expliqué, en mots simples, dans le [Glossaire](glossary.md).
 
-Jusqu'à la 0.6, Compagnon s'appelait codev : [Migrer depuis codev](guides/moving-from-codev.md)
-explique comment convertir un projet créé à cette époque. D'où vient
-Compagnon, et pourquoi, est raconté dans [Origines](origins.md).
+Vous venez de codev ? Lisez [Migrer depuis codev](guides/moving-from-codev.md).
+D'où vient Compagnon, et pourquoi : [Origines](origins.md).

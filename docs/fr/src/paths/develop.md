@@ -14,6 +14,8 @@ une dizaine de minutes.
   quand votre projet n'est pas vide.
 - [Concepts](../concepts.md) : comment s'articulent plans, spécifications et
   décisions.
+- [Partir d'un ticket Jira](../guides/mcp.md) : « Prépare un plan pour
+  PROJ-123 », et le plan cite le ticket.
 - [FAQ](../faq.md), quand quelque chose ne va pas.
 
 Ce n'est pas votre cas ? [Choisissez un autre parcours](../choose-your-path.md).

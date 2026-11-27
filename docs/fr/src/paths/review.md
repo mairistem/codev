@@ -15,6 +15,8 @@ besoin d'un terminal.
 - [Approuver un plan sur GitHub ou GitLab](../guides/approve-a-plan.md) :
   commenter, demander des corrections et approuver là où votre équipe
   travaille.
+- [Partir d'un ticket Jira](../guides/mcp.md) : un plan tiré d'un ticket
+  le cite dès sa première ligne.
 - [FAQ](../faq.md), pour les questions qui reviennent.
 
 Ce n'est pas votre cas ? [Choisissez un autre parcours](../choose-your-path.md).
