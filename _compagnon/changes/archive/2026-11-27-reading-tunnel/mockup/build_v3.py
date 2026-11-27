@@ -12,7 +12,7 @@ import pathlib
 import re
 
 HERE = pathlib.Path(__file__).resolve().parent
-ROOT = HERE.parents[3]
+ROOT = HERE.parents[4]
 e = html.escape
 
 

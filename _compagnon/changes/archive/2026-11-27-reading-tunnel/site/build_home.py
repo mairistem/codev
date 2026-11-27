@@ -2,7 +2,7 @@
 (reading-tunnel, version 3: the Mairistem design system).
 
 Run from the repository root:
-    python3 _compagnon/changes/reading-tunnel/site/build_home.py
+    python3 _compagnon/changes/archive/2026-11-27-reading-tunnel/site/build_home.py
 
 It keeps from the current pages what is theirs (the head up to the styles,
 the sprites, the copy script) and takes the diagrams from the chapters that
@@ -14,7 +14,7 @@ import re
 import html
 
 HERE = pathlib.Path(__file__).resolve().parent
-ROOT = HERE.parents[3]
+ROOT = HERE.parents[4]
 SITE = ROOT / "docs/site"
 e = html.escape
 
