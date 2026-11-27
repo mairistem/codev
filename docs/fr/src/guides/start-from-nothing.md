@@ -28,8 +28,9 @@ où l'on tape des commandes), il peut faire cette partie pour vous.
 
 **1. Installer Compagnon.** Ouvrez un terminal : sur macOS, l'application
 Terminal (appuyez sur Cmd + Espace, tapez « Terminal », puis Entrée) ; sur
-Windows, PowerShell (touche Windows, tapez « PowerShell », puis Entrée). Copiez la ligne qui correspond à votre
-ordinateur, collez-la, puis appuyez sur Entrée.
+Windows, PowerShell (touche Windows, tapez « PowerShell », puis Entrée).
+Copiez la ligne qui correspond à votre ordinateur, collez-la, puis appuyez
+sur Entrée.
 
 Sur macOS ou Linux :
 
@@ -59,11 +60,11 @@ compagnon init
 ```
 
 Il peut vous demander quelles [compétences](../glossary.md#compétence)
-donner à Claude, et quelques mots sur votre projet : le choix proposé
-convient ; pour les mots, tapez toujours une phrase sur votre idée : une
+donner à Claude : le choix proposé convient. Il demande ensuite quelques
+mots sur votre projet : tapez toujours une phrase sur votre idée, car une
 réponse vide ouvre un éditeur de texte peu commode (si cela arrive,
-appelez la personne qui vous aide). Il ajoute un dossier
-`_compagnon/`, où vos plans seront rangés. Vous pouvez fermer le terminal.
+appelez la personne qui vous aide). Il ajoute un dossier `_compagnon/`, où
+vos plans seront rangés. Vous pouvez fermer le terminal.
 
 ## Votre première demande
 
@@ -113,3 +114,12 @@ quand quelque chose n'est pas clair. Pour voir le résultat, demandez-le :
 Compagnon aide Claude à planifier et à construire ; mettre le résultat en
 ligne, pour que d'autres utilisent votre formulaire, sort du cadre de
 Compagnon. Demandez à un développeur, ou demandez à Claude comment faire.
+
+## Pour aller plus loin
+
+- [Relire un plan](review-a-plan.md) : quoi vérifier avant que Claude
+  construise.
+- [Un exemple de plan commenté](example-plan.md) : un plan entier, expliqué.
+- [Partir d'un ticket Jira](mcp.md) : si votre idée est déjà un ticket
+  Jira.
+- [Glossaire](../glossary.md) : chaque mot, en mots simples.

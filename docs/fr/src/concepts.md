@@ -11,7 +11,7 @@ Compagnon conserve trois types d'enregistrements dans le
 
 <figure class="diagram">
 <div class="scroll">
-<svg viewBox="0 0 760 300" role="img" aria-label="Ce que garde le projet : les spécifications, dans _compagnon/specs/, disent ce que fait le système ; les décisions, dans _compagnon/decisions/, disent pourquoi il est construit ainsi ; les modifications, dans _compagnon/changes/, sont le travail en cours. Une modification contient un delta, avec des exigences ADDED (ajoutées), MODIFIED (modifiées) et REMOVED (supprimées), qui est fusionné dans les spécifications quand la modification est synchronisée ou archivée.">
+<svg viewBox="0 0 760 300" role="img" aria-label="Ce que garde le projet : les spécifications disent ce que fait le système ; les décisions disent pourquoi il est construit ainsi ; les modifications sont le travail en cours. Une modification contient un delta, avec des exigences ADDED (ajoutées), MODIFIED (modifiées) et REMOVED (supprimées), qui est fusionné dans les spécifications quand la modification est synchronisée ou archivée.">
 <defs><marker id="dg-concepts-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
 <rect x="8" y="20" width="228" height="112" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
 <circle cx="30" cy="44" r="5" fill="#00c39b"/>

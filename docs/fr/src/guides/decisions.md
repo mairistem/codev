@@ -15,7 +15,7 @@ lieu de les remettre en débat.
 
 <figure class="diagram">
 <div class="scroll">
-<svg viewBox="0 0 760 280" role="img" aria-label="La vie d'une décision : elle est proposée, et vous pouvez la reprendre librement ; l'accepter la scelle et la met en vigueur ; quand une remplaçante est acceptée, elle est remplacée et gardée pour l'histoire. Branches latérales : un choix rédigé dans design.md est promu en décision proposée ; une fois un écart local accepté, une décision héritée est contournée et ne s'applique plus dans ce projet.">
+<svg viewBox="0 0 760 280" role="img" aria-label="La vie d'une décision : elle est proposée, et vous pouvez la reprendre librement ; l'accepter la scelle et la met en vigueur ; quand une remplaçante est acceptée, elle est remplacée et gardée pour l'histoire. Branches latérales : un choix rédigé dans une conception est promu en décision proposée ; une fois un écart local accepté, une décision héritée est contournée et ne s'applique plus dans ce projet.">
 <defs><marker id="dg-decisions-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
 <rect x="8" y="40" width="200" height="80" rx="14" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
 <text x="108" y="74" text-anchor="middle" font-size="17" font-weight="600" style="fill:var(--dg-ink)">Proposée</text>
@@ -33,7 +33,7 @@ lieu de les remettre en débat.
 <text x="652" y="98" text-anchor="middle" font-size="13" style="fill:var(--dg-muted)">gardée pour l'histoire</text>
 <rect x="8" y="190" width="200" height="72" rx="12" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="2"/>
 <text x="108" y="220" text-anchor="middle" font-size="15" font-weight="600" style="fill:var(--dg-ink)">Promue</text>
-<text x="108" y="244" text-anchor="middle" class="mono" font-size="12" style="fill:var(--dg-muted)">depuis design.md</text>
+<text x="108" y="244" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">depuis une conception</text>
 <line x1="108" y1="188" x2="108" y2="124" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-decisions-arrow)"/>
 <text x="118" y="160" class="mono" font-size="12" style="fill:var(--dg-muted)">promote</text>
 <path d="M380 122 V226 H548" fill="none" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-decisions-arrow)"/>

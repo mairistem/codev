@@ -106,6 +106,54 @@ liste d'identifiants de rôles distincts commençant par le rôle du constat
 
 ## La boucle de réponse
 
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 326" role="img" aria-label="La vie d'un constat de relecture : le relecteur le soulève, open ; il devient ensuite fixed, quand l'auteur le corrige et que le relecteur vérifie ; disputed, quand l'auteur le conteste ; rejected, quand le relecteur accepte la contestation ; accepted-risk, décidé seulement par une personne avec une justification ; ou deferred, vers une autre modification ou un ticket. Chaque constat passe ensuite le verrou d'archivage : compagnon archive refuse tant qu'un constat high reste open ou disputed.">
+<defs><marker id="dg-review-record-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
+<rect x="8" y="112" width="150" height="84" rx="12" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<text x="83" y="142" text-anchor="middle" class="mono" font-size="17" font-weight="600" style="fill:var(--dg-ink)">open</text>
+<text x="83" y="164" text-anchor="middle" font-size="13" style="fill:var(--dg-muted)">le relecteur</text>
+<text x="83" y="182" text-anchor="middle" font-size="13" style="fill:var(--dg-muted)">le soulève</text>
+<rect x="214" y="14" width="262" height="46" rx="10" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<text x="228" y="33" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">fixed</text>
+<text x="228" y="51" font-size="12" style="fill:var(--dg-muted)">l'auteur corrige, le relecteur vérifie</text>
+<line x1="160" y1="154" x2="210" y2="37" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<line x1="478" y1="37" x2="556" y2="154" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<rect x="214" y="70" width="262" height="46" rx="10" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<text x="228" y="89" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">disputed</text>
+<text x="228" y="107" font-size="12" style="fill:var(--dg-muted)">l'auteur conteste, arguments à l'appui</text>
+<line x1="160" y1="154" x2="210" y2="93" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<line x1="478" y1="93" x2="556" y2="154" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<rect x="214" y="126" width="262" height="46" rx="10" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<text x="228" y="145" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">rejected</text>
+<text x="228" y="163" font-size="12" style="fill:var(--dg-muted)">le relecteur accepte la contestation</text>
+<line x1="160" y1="154" x2="210" y2="149" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<line x1="478" y1="149" x2="556" y2="154" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<rect x="214" y="182" width="262" height="46" rx="10" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="2"/>
+<text x="228" y="201" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">accepted-risk</text>
+<text x="228" y="219" font-size="12" style="fill:var(--dg-muted)">vous seul, avec une justification</text>
+<line x1="160" y1="154" x2="210" y2="205" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<line x1="478" y1="205" x2="556" y2="154" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<rect x="214" y="238" width="262" height="46" rx="10" style="fill:var(--dg-box);stroke:var(--dg-you)" stroke-width="2"/>
+<text x="228" y="257" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">deferred</text>
+<text x="228" y="275" font-size="12" style="fill:var(--dg-muted)">vers une autre modification, un ticket</text>
+<line x1="160" y1="154" x2="210" y2="261" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<line x1="478" y1="261" x2="556" y2="154" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-review-record-arrow)"/>
+<rect x="560" y="88" width="192" height="132" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="576" y="116" font-size="15" font-weight="600" style="fill:var(--dg-ink)">Verrou d'archivage</text>
+<text x="576" y="138" class="mono" font-size="12" style="fill:var(--dg-muted)">compagnon archive</text>
+<text x="576" y="162" font-size="13" style="fill:var(--dg-muted)">refuse tant qu'un constat</text>
+<text x="576" y="180" font-size="13" style="fill:var(--dg-muted)">high reste open</text>
+<text x="576" y="198" font-size="13" style="fill:var(--dg-muted)">ou disputed</text>
+<circle cx="20" cy="307" r="6" style="fill:var(--dg-claude)"/>
+<text x="32" y="312" font-size="13" style="fill:var(--dg-muted)">les rôles de Claude répondent</text>
+<circle cx="290" cy="307" r="6" style="fill:var(--dg-you)"/>
+<text x="302" y="312" font-size="13" style="fill:var(--dg-muted)">seule une personne décide</text>
+</svg>
+</div>
+<figcaption>La vie d'un constat de relecture : les rôles de Claude répondent à la plupart ; vous seul acceptez un risque, et l'archivage attend qu'aucun constat <code>high</code> ne reste ouvert ou contesté.</figcaption>
+</figure>
+
 Un constat commence à l'état `open`. Ensuite :
 
 1. **L'auteur répond.** Le rôle qui possède l'artefact cité à
@@ -230,3 +278,9 @@ quand même.
   `\r\n` sont ignorées dans le compte rendu comme dans les fichiers cités.
 - **Dépôts multiprojets (monorepos)** : les chemins sont relatifs à la racine du projet Compagnon ;
   un fichier hors de cette racine ne peut pas être cité.
+
+## Pour aller plus loin
+
+- [Rôles](../roles.md)
+- [Formats de fichiers](../reference/file-formats.md)
+- [Interface en ligne de commande](../reference/cli.md)
