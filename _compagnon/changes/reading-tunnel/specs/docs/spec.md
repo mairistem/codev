@@ -151,6 +151,37 @@ the owner has approved it. The approved mockup stays in the change folder.
 - **THEN** it is published again and the rewrite still waits for the
   owner's approval
 
+### Requirement: The documentation's look follows the Mairistem design system
+
+The books' theme (`docs/theme/mairistem.css`, `mairistem.js`), the offline
+manual's stylesheet (`crates/compagnon-cli/assets/docs.css`) and the home
+pages (`docs/site/index.html`, `docs/site/fr.html`) SHALL follow the
+Mairistem design system as the approved mockup shows it: the four brand
+colors (coral, deep blue, green, yellow) with black, white and the
+system's greys; no gradient and no blur; IBM Plex Sans as the only text
+font, a monospace font only for code. Each tunnel chapter of the books
+SHALL show, above its title, an eyebrow naming its place — "Step <n> of
+5 · <step>" (« Étape <n> sur 5 · <étape> ») — and a five-segment progress
+bar; its "Next step" section SHALL be drawn as a dark card; its "Under the
+hood" blocks as accordions marked + and −; its example block as a capture
+of a Claude Code session in a white frame with a 1 px border. The home
+pages SHALL open with the design system's header and product hero, and
+show the five steps as cards with a colored top rule.
+
+#### Scenario: The styles hold no gradient, blur or other font
+
+- **GIVEN** `mairistem.css`, `docs.css` and both home pages
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** none holds `gradient(`, `blur(` or `backdrop-filter`
+- **AND** every `font-family` names IBM Plex Sans, a monospace font, or
+  inherits
+
+#### Scenario: A gradient is caught
+
+- **GIVEN** a stylesheet whose hero uses `linear-gradient(…)`
+- **WHEN** the check runs on it
+- **THEN** it fails naming the file and the gradient
+
 ## MODIFIED Requirements
 
 ### Requirement: The first steps stay short and plain
@@ -527,7 +558,9 @@ one diagram (a `<figure class="diagram">`), and every chapter of the first
 three steps at least one concrete example: a `<div class="example">`
 block, titled "Example" (« Exemple »), showing a real request and what
 comes of it — Claude's answer, a plan's excerpt, a pull request — with
-real names and values, never placeholders alone.
+real names and values, never placeholders alone. The request and Claude's
+answer are written as a Claude Code session: a `text` block whose request
+line starts with `>` and whose answer lines start with `⏺`.
 
 #### Scenario: Each page draws and shows
 

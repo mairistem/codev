@@ -1,4 +1,7 @@
-# Tunnel mockup — status: version 3 (strict Mairistem design system) awaiting approval
+# Tunnel mockup — status: version 3 approved by the owner (2026-11-27)
+
+Approved version: version 3 (`build_v3.py`, `index.html`), strict Mairistem
+design system, approved by the owner on 2026-11-27 ("ok on y va").
 
 Version 1 (2026-11-27): the owner approves the principle — the five steps,
 the pages, the two layers, the skip buttons, the next steps — but rejects

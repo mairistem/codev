@@ -176,9 +176,52 @@ guide.
 profile cards become five step cards (same card style, the five step
 colors taken from the Mairistem palette and the grey of the line token),
 each linking the first chapter of its step; the question becomes
-"Read the documentation in five steps". The Jira band, workflow, inside a
+"Read the documentation in five steps"; the page's look follows the
+design system (decision below). The Jira band, workflow, inside a
 plan, install and features stay. The READMEs drop the profile list and
 link the introduction.
+
+### Decision: The look follows the Mairistem design system strictly
+
+The owner approved version 3 of the mockup (`mockup/build_v3.py`), built
+on the Mairistem design system; the books, the offline manual and the
+home pages take its look:
+
+- **Palette and type**: coral `#FF5331` (text links `#C4361B`), deep blue
+  `#004C66`, green `#00C39B`, yellow `#FFAB03`, black, white and the
+  system's greys; IBM Plex Sans only (already served from
+  `docs/theme/fonts`), monospace for code. No gradient, no blur: the home
+  page's dark gradient hero becomes the system's product hero on the soft
+  surface `#F4F8F9` with the symbol watermark at 30 % opacity.
+- **Home pages**: the adapted `build_home.py` writes the system's header
+  (44 px dark top band "An open project by Mairistem · Groupe JVS" with
+  the GitHub link, 86 px white band with the logo, the five steps as menu
+  and a primary "Install" button), the product hero with the Claude Code
+  capture, and the five steps as persona cards with a 5 px top rule in
+  coral, green, yellow, deep blue and grey.
+- **Chapter chrome** (`mairistem.js`, theme only): the script finds the
+  current chapter's part among the five step titles in the sidebar and
+  inserts above the title the eyebrow "Step <n> of 5 · <step>" and five
+  progress segments (done, current, to come); it wraps the "Next step"
+  section into a dark card (`#00394D`, radius 12) with a yellow arrow link.
+  Without script, the chapter reads the same, without the eyebrow and bar.
+- **Under the hood** `<details>` are drawn as accordions (top and bottom
+  rule, + closed, − open) by CSS alone.
+- **The example** is a Claude Code capture: `.example` is a white frame
+  with a 1 px `#E3EAEC` border and radius 12, its "Example" eyebrow in
+  green; its `text` block (request `>`, answer `⏺`) is drawn as the
+  terminal's lines, the request in the prompt color.
+- **Dark theme**: the system defines none; the books' navy theme uses its
+  dark surfaces (page `#00394D`, cards `#004C66`, links yellow).
+
+`design_system_problems` checks the stylesheets and home pages for
+`gradient(`, `blur(`, `backdrop-filter` and any `font-family` other than
+IBM Plex Sans, a monospace stack or `inherit`.
+
+**Alternatives considered**: the Ligne 360 system (rejected by the owner
+for the documentation: an application system, indigo-led); keeping the
+gradient hero of the previous refactor (rejected: the system forbids
+gradients).
 
 ### Decision: The checks follow the tunnel
 
@@ -200,6 +243,8 @@ In `docs_checks.rs`:
   first three steps;
 - `show_and_tell_problems`: a diagram in each page of the first four
   steps, an example block in each page of the first three;
+- `design_system_problems`: the stylesheets and home pages (decision
+  above);
 - `gitlab_mentions`: every chapter but the command-line and JSON-output
   references, the READMEs and the home pages;
 - removed: the profile and path functions and tests, `EVERYDAY` (replaced

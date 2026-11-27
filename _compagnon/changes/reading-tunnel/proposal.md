@@ -58,6 +58,12 @@ no trace of codev, and GitHub only.
   the READMEs and the home pages name GitHub alone; the command-line
   reference keeps describing what `compagnon init` prints while the
   command prints it.
+- **The Mairistem design system, strictly**, as the approved mockup shows
+  it: brand colors only, no gradient or blur, IBM Plex Sans; each chapter
+  shows its step and a progress bar above its title, its "Next step" as a
+  dark card, "Under the hood" as accordions, its example as a Claude Code
+  capture; the home pages take the system's header, product hero and
+  step cards.
 - **A clickable mockup of the tunnel first** — the table of contents, each
   page's purpose, its skip button and its "Next step" — approved by the
   owner before any chapter is rewritten.
@@ -81,8 +87,10 @@ no trace of codev, and GitHub only.
   `quickstart.md`, `workflow.md`, `guides/approve-a-plan.md`,
   `guides/team-rollout.md` reshaped; every tunnel page gains its "Next
   step"; links to removed pages rewritten; GitLab removed everywhere.
-- `docs/theme/mairistem.css` and `crates/compagnon-cli/assets/docs.css`
-  (the skip button), `docs/site/index.html`, `docs/site/fr.html` (five
+- `docs/theme/mairistem.css`, `docs/theme/mairistem.js` and
+  `crates/compagnon-cli/assets/docs.css` (the skip button, the example
+  capture, the accordions, the step eyebrow and progress bar, the next-step
+  card; the design system), `docs/site/index.html`, `docs/site/fr.html` (five
   step cards), `README.md`, `README.fr.md`, `CHANGELOG.md` (its codev note
   links the command-line reference instead of the removed guide).
 - In the change folder: `mockup/` and an adapted copy of `build_home.py`.
@@ -111,3 +119,4 @@ no trace of codev, and GitHub only.
 - Changed: The documentation reads as one guided path in five steps — discover, get started, every day, understand, for your team — each page ending with the next step and, where some readers can skip it, a button saying where to go; the reference, the glossary and the FAQ move to appendices.
 - Removed: **BREAKING** Seven pages and their addresses, with no redirect: "Choose your path" and the four profile pages (the home page now shows the five steps), "Starting from nothing" (now a section of Installation), "Repository integration" (now in Deploying Compagnon for a team) and "Moving from codev" (the documentation no longer covers moving from codev); How it works' Apply, Sync and Archive sections move to the new "Building and filing away".
 - Changed: The documentation names GitHub only.
+- Changed: The documentation and its home page follow the Mairistem design system: each page shows its step and progress, its examples look like a Claude Code session.
