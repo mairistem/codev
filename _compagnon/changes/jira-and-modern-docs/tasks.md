@@ -1,6 +1,6 @@
 ## 1. Mockup, for the user's approval
 
-- [ ] 1.1 Build the mockup in `_compagnon/changes/jira-and-modern-docs/mockup/`: the English home page (dark hero with the static terminal card, the four profiles, the "Start from a Jira ticket" band with its diagram, the "Compagnon by Mairistem" logo in the header) and the Jira guide as a book chapter, each with a light/dark preview switch, along the design's direction; verified by opening both files with Playwright at 320 px and 1280 px, light and dark: no horizontal scroll, no console error, visible focus on every link
+- [x] 1.1 Build the mockup in `_compagnon/changes/jira-and-modern-docs/mockup/`: the English home page (dark hero with the static terminal card, the four profiles, the "Start from a Jira ticket" band with its diagram, the "Compagnon by Mairistem" logo in the header) and the Jira guide as a book chapter, each with a light/dark preview switch, along the design's direction; verified by opening both files with Playwright at 320 px and 1280 px, light and dark: no horizontal scroll, no console error, visible focus on every link
 - [ ] 1.2 Publish the mockup as a private page and stop until the user approves it or asks for changes; record the approved version (or the changes asked) at the top of `mockup/README.md`; verified by the user's explicit approval in the conversation (a person's judgement, which no test can give)
 
 ## 2. Jira content, with its checks, in both languages
