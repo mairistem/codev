@@ -1785,31 +1785,53 @@ html:not(.js) {
 }
 
 /* "Under the hood" blocks: the native disclosure element, closed by
-   default. The marker stays the browser's own and takes the summary's
-   colour (above 4.5:1 in both schemes); the global :focus-visible outline
-   applies to the summary. */
+   default, drawn as the design system's accordion — hairlines above and
+   below, the question in bold, a + when closed and a − when open. The
+   global :focus-visible outline applies to the summary. */
 .content details {
   margin: 1.25em 0;
-  padding: 0 1em;
-  border: 1px solid var(--mx-border-card);
-  border-radius: var(--mx-radius-sm);
-  background: var(--mx-surface-soft);
+  padding: 0;
+  border-top: 1px solid var(--mx-hairline);
+  border-bottom: 1px solid var(--mx-hairline);
+}
+
+.content details + details {
+  margin-top: -1.25em;
+  border-top: 0;
 }
 
 .content details > summary {
-  padding: .6em 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  padding: .85em 0;
   color: var(--mx-strong);
   font-weight: 600;
   cursor: pointer;
 }
 
-.content details > summary::marker {
-  color: currentColor;
+.content details > summary::-webkit-details-marker {
+  display: none;
 }
 
-.content details[open] > summary {
-  border-bottom: 1px solid var(--mx-hairline);
-  margin-bottom: .75em;
+.content details > summary::after {
+  content: "+";
+  flex: none;
+  font-size: 1.4em;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--mx-muted);
+}
+
+.content details[open] > summary::after {
+  content: "\2212";
+  color: var(--tn-minus);
+}
+
+.content details[open] {
+  padding-bottom: .75em;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1989,4 +2011,243 @@ figure.diagram .mono {
     transform: translateY(-2px);
     border-color: var(--links);
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* The reading tunnel                                                 */
+/* ------------------------------------------------------------------ */
+
+/* Tunnel tokens (checked by the contrast test in docs_checks.rs): the skip
+ * link's text and focus color against the page, the step eyebrow, the
+ * progress segments, the next-step card. */
+.light,
+html:not(.js) {
+  --tn-page: #ffffff;
+  --tn-skip: #004c66;
+  --tn-focus: #ff5331;
+  --tn-focus-bg: #f4f8f9;
+  --tn-minus: #c4361b;
+  --tn-eyebrow: #c63a1c;
+  --tn-seg: #e7edef;
+  --tn-card: #00394d;
+  --tn-card-border: transparent;
+}
+
+.navy {
+  --tn-page: #00394d;
+  --tn-skip: #ffffff;
+  --tn-focus: #ffab03;
+  --tn-focus-bg: #004c66;
+  --tn-minus: #ffab03;
+  --tn-eyebrow: #ffab03;
+  --tn-seg: rgba(255, 255, 255, .14);
+  --tn-card: #004c66;
+  --tn-card-border: rgba(255, 255, 255, .14);
+}
+
+/* The skip button: a deep blue arrow link, the arrow a CSS shape (no
+ * text, so the link's name stays its words); focus adds a filled
+ * background to the outline. */
+.content .skip-step {
+  margin: .25em 0 1.5em;
+}
+
+.content .skip-step p {
+  margin: 0;
+}
+
+.content .skip-step a {
+  display: inline-flex;
+  align-items: center;
+  gap: .55em;
+  margin-left: -.5em;
+  padding: .35em .5em;
+  border-radius: var(--mx-radius-sm);
+  color: var(--tn-skip);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.content .skip-step a::after {
+  content: "";
+  width: .45em;
+  height: .45em;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.content .skip-step a:hover {
+  color: var(--links);
+}
+
+.content .skip-step a:focus-visible {
+  outline: 3px solid var(--tn-focus);
+  outline-offset: 2px;
+  background: var(--tn-focus-bg);
+}
+
+/* The example: a Claude Code capture, shown as it is in a white frame
+ * with a 1px border, radius 12, under a green "Example" eyebrow. */
+.content .example {
+  margin: 1.75em 0;
+  padding: 8px;
+  border: 1px solid #e3eaec;
+  border-radius: var(--mx-radius-md);
+  background: #ffffff;
+  color: #40565e;
+}
+
+.content .example .example-title {
+  margin: 6px 8px 12px;
+  font: 600 13.5px/1 var(--mx-font);
+  letter-spacing: .675px;
+  text-transform: uppercase;
+  color: #00806a;
+}
+
+.content .example > p:not(.example-title) {
+  margin: 12px 8px 6px;
+  color: #40565e;
+}
+
+.content .example a {
+  color: #c4361b;
+}
+
+.content .example pre {
+  margin: 0;
+  border-radius: var(--mx-radius-sm);
+  background: #1e1e1e;
+}
+
+.content .example pre > code,
+.content .example pre > code.hljs {
+  background: #1e1e1e;
+  color: #e6e6e6;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.content .example .cc-user {
+  display: block;
+  margin: 0 -8px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: #2b2b2b;
+  color: #b0b0b0;
+}
+
+.content .example .cc-dot {
+  color: #4eba65;
+}
+
+.content .example .cc-res {
+  color: #a8a8a8;
+}
+
+/* Above a chapter's title: its step and five progress segments
+ * (mairistem.js). */
+.tn-head {
+  display: grid;
+  gap: 10px;
+  margin: 1.5em 0 -.5em;
+}
+
+.tn-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font: 600 13px/1 var(--mx-font);
+  letter-spacing: 1.04px;
+  text-transform: uppercase;
+  color: var(--tn-eyebrow);
+}
+
+.tn-eyebrow::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: #ff5331;
+  flex: none;
+}
+
+.tn-progress {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  max-width: 420px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tn-progress li {
+  height: 5px;
+  border-radius: 2px;
+  background: var(--tn-seg);
+}
+
+.tn-progress li.done,
+.tn-progress li.current {
+  background: var(--seg);
+}
+
+.tn-progress li.current {
+  box-shadow: 0 0 0 2px var(--tn-page), 0 0 0 3px var(--seg);
+}
+
+/* "Next step", drawn as the design system's dark card. */
+.content .tn-next {
+  margin: 2.5em 0 1em;
+  padding: 28px 32px;
+  border: 1px solid var(--tn-card-border);
+  border-radius: var(--mx-radius-md);
+  background: var(--tn-card);
+  color: #b9cdd3;
+}
+
+.content .tn-next h2 {
+  margin: 0 0 .5em;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.04px;
+  text-transform: uppercase;
+  color: #b9cdd3;
+}
+
+.content .tn-next h2 a.header {
+  color: inherit;
+}
+
+.content .tn-next p {
+  margin: .5em 0 0;
+}
+
+.content .tn-next p:first-of-type a {
+  display: inline-flex;
+  align-items: center;
+  gap: .5em;
+  font-size: 1.25em;
+  font-weight: 600;
+  color: #ffab03;
+  text-decoration: none;
+}
+
+.content .tn-next p:first-of-type a::after {
+  content: "";
+  width: .45em;
+  height: .45em;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.content .tn-next a:focus-visible {
+  outline: 3px solid #ffab03;
+  outline-offset: 2px;
 }

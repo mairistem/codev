@@ -1365,12 +1365,18 @@ pub fn contrast(a: &str, b: &str) -> Option<f64> {
 /// The diagram themes of a style sheet: each rule block that declares
 /// `--dg-ink`, as its selector and its `--dg-*` declarations.
 pub fn diagram_themes(css: &str) -> Vec<(String, Vec<(String, String)>)> {
+    token_themes(css, "--dg-ink:", "--dg-")
+}
+
+/// The rules of a stylesheet that define `marker`, each with its selector
+/// and its custom properties starting with `prefix`.
+pub fn token_themes(css: &str, marker: &str, prefix: &str) -> Vec<(String, Vec<(String, String)>)> {
     let mut out = Vec::new();
     let mut from = 0;
     while let Some(open) = css[from..].find('{').map(|i| from + i) {
         let close = css[open..].find('}').map_or(css.len(), |i| open + i);
         let body = &css[open + 1..close];
-        if body.contains("--dg-ink:") && !body.contains('{') {
+        if body.contains(marker) && !body.contains('{') {
             let head = &css[from..open];
             let selector = selector_before(head);
             let tokens = body
@@ -1378,7 +1384,7 @@ pub fn diagram_themes(css: &str) -> Vec<(String, Vec<(String, String)>)> {
                 .filter_map(|d| {
                     let (k, v) = d.split_once(':')?;
                     let k = k.trim();
-                    k.starts_with("--dg-")
+                    k.starts_with(prefix)
                         .then(|| (k.to_string(), v.trim().to_string()))
                 })
                 .collect();
@@ -1387,6 +1393,59 @@ pub fn diagram_themes(css: &str) -> Vec<(String, Vec<(String, String)>)> {
         from = open + 1;
     }
     out
+}
+
+/// How a stylesheet or home page departs from the Mairistem design
+/// system: a gradient, a blur, or a `font-family` other than IBM Plex
+/// Sans, a monospace stack, a variable or `inherit`.
+pub fn design_system_problems(css: &str) -> Vec<String> {
+    let mut problems: Vec<String> = ["gradient(", "blur(", "backdrop-filter"]
+        .into_iter()
+        .filter(|banned| css.contains(banned))
+        .map(|banned| format!("uses `{banned}`"))
+        .collect();
+    for (i, _) in css.match_indices("font-family:") {
+        let rest = &css[i + "font-family:".len()..];
+        let value = rest[..rest.find([';', '}']).unwrap_or(rest.len())].trim();
+        let allowed = value == "inherit"
+            || value.starts_with("var(")
+            || value.contains("IBM Plex Sans")
+            || value.ends_with("monospace");
+        if !allowed {
+            problems.push(format!("uses the font `{value}`"));
+        }
+    }
+    problems
+}
+
+/// The tunnel's color pairs of one theme that miss their contrast: the
+/// skip link's text on the page and on its focus background (4.5:1), its
+/// focus outline against the page (3:1).
+pub fn tunnel_contrast_problems(theme: &str, tokens: &[(String, String)]) -> Vec<String> {
+    let get = |name: &str| {
+        tokens
+            .iter()
+            .find(|(k, _)| k == name)
+            .map(|(_, v)| v.as_str())
+    };
+    let mut problems = Vec::new();
+    for (fg, bg, min) in [
+        ("--tn-skip", "--tn-page", 4.5),
+        ("--tn-skip", "--tn-focus-bg", 4.5),
+        ("--tn-focus", "--tn-page", 3.0),
+    ] {
+        match (get(fg), get(bg)) {
+            (Some(a), Some(b)) => match contrast(a, b) {
+                Some(c) if c >= min => {}
+                Some(c) => {
+                    problems.push(format!("{theme}: {fg} on {bg} is {c:.2}:1, under {min}:1"))
+                }
+                None => problems.push(format!("{theme}: {fg} or {bg} is not a color")),
+            },
+            _ => problems.push(format!("{theme}: {fg} or {bg} is missing")),
+        }
+    }
+    problems
 }
 
 /// The diagram color pairs of one theme that miss their contrast: text
@@ -1657,6 +1716,35 @@ mod tests {
     fn a_long_every_day_chapter_is_caught() {
         let md = format!("# Asking Claude\n\n{}\n", "word ".repeat(1300));
         assert!(prose_words(&without_figures(&md)) > 1200);
+    }
+
+    #[test]
+    fn a_gradient_or_another_font_is_caught() {
+        let css = ".hero { background: linear-gradient(160deg, #00263a, #004c66); }\n\
+                   body { font-family: \"IBM Plex Sans\", sans-serif; }\n\
+                   pre { font-family: ui-monospace, Menlo, monospace; }\n\
+                   h1 { font-family: Georgia, serif; }\n";
+        assert_eq!(
+            design_system_problems(css),
+            ["uses `gradient(`", "uses the font `Georgia, serif`"]
+        );
+    }
+
+    #[test]
+    fn a_skip_link_under_its_contrast_is_caught() {
+        let tokens = |skip: &str| {
+            vec![
+                ("--tn-page".to_string(), "#ffffff".to_string()),
+                ("--tn-skip".to_string(), skip.to_string()),
+                ("--tn-focus".to_string(), "#ff5331".to_string()),
+                ("--tn-focus-bg".to_string(), "#f4f8f9".to_string()),
+            ]
+        };
+        assert!(tunnel_contrast_problems("light", &tokens("#004c66")).is_empty());
+        assert_eq!(
+            tunnel_contrast_problems("light", &tokens("#b9cdd3")).len(),
+            2
+        );
     }
 
     #[test]
@@ -2598,6 +2686,47 @@ mod chapter_tests {
                 lang.tag()
             );
         }
+    }
+
+    #[test]
+    fn the_look_follows_the_mairistem_design_system() {
+        let mut found = Vec::new();
+        for (file, css) in [
+            (
+                "docs/theme/mairistem.css",
+                include_str!("../../../docs/theme/mairistem.css"),
+            ),
+            ("assets/docs.css", include_str!("../assets/docs.css")),
+            (
+                "docs/site/index.html",
+                include_str!("../../../docs/site/index.html"),
+            ),
+            (
+                "docs/site/fr.html",
+                include_str!("../../../docs/site/fr.html"),
+            ),
+        ] {
+            for p in design_system_problems(css) {
+                found.push(format!("{file}: {p}"));
+            }
+        }
+        for (file, css) in [
+            (
+                "docs/theme/mairistem.css",
+                include_str!("../../../docs/theme/mairistem.css"),
+            ),
+            ("assets/docs.css", include_str!("../assets/docs.css")),
+        ] {
+            let themes = token_themes(css, "--tn-skip:", "--tn-");
+            assert_eq!(themes.len(), 2, "{file}: a light and a dark tunnel theme");
+            for (selector, tokens) in themes {
+                found.extend(tunnel_contrast_problems(
+                    &format!("{file} {selector}"),
+                    &tokens,
+                ));
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
     }
 
     #[test]

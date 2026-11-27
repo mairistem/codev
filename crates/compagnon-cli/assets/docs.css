@@ -33,11 +33,19 @@
   --rel-series: #076c92;
   --rel-track: #dbebf3;
   --rel-over: #a46e0b;
+  --tn-page: #ffffff;
+  --tn-skip: #004c66;
+  --tn-focus: #ff5331;
+  --tn-focus-bg: #f4f8f9;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --tn-page: #00394d;
+    --tn-skip: #ffffff;
+    --tn-focus: #ffab03;
+    --tn-focus-bg: #004c66;
     --heading: #ffffff;
     --strong: #ffffff;
     --fg: #dce5e8;
@@ -692,3 +700,56 @@ figure.diagram .mono {
     break-inside: avoid;
   }
 }
+
+/* The reading tunnel: the skip button (an arrow link, the arrow a CSS
+ * shape), the example (a Claude Code capture in a white frame) and the
+ * "Under the hood" accordions' + and −. */
+.skip-step { margin: .25em 0 1.5em; }
+.skip-step p { margin: 0; }
+.skip-step a {
+  display: inline-flex;
+  align-items: center;
+  gap: .55em;
+  margin-left: -.5em;
+  padding: .35em .5em;
+  border-radius: 6px;
+  color: var(--tn-skip);
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-step a::after {
+  content: "";
+  width: .45em;
+  height: .45em;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+.skip-step a:focus-visible {
+  outline: 3px solid var(--tn-focus);
+  outline-offset: 2px;
+  background: var(--tn-focus-bg);
+}
+.example {
+  margin: 1.75em 0;
+  padding: 8px;
+  border: 1px solid #e3eaec;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #40565e;
+}
+.example .example-title {
+  margin: 6px 8px 12px;
+  font: 600 13.5px/1 var(--font);
+  letter-spacing: .675px;
+  text-transform: uppercase;
+  color: #00806a;
+}
+.example > p:not(.example-title) { margin: 12px 8px 6px; color: #40565e; }
+.example a { color: #c4361b; }
+.example pre { margin: 0; border: 0; border-radius: 6px; background: #1e1e1e; color: #e6e6e6; }
+.example pre code { background: none; color: inherit; }
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: " +"; font-weight: 400; color: var(--muted); }
+details[open] > summary::after { content: " \2212"; }
