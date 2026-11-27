@@ -116,6 +116,8 @@ html:not(.js) {
 
   --mx-logo-ink: #000000;
   --cp-mark-ink: #004c66;
+  --cp-logo-ink: #000000;
+  --cp-logo-c: #004c66;
   --mx-logo-corail: #ff5331;
   --mx-logo-jaune: #ffab03;
   --mx-logo-bleu: #004c66;
@@ -204,6 +206,8 @@ html:not(.js) {
 
   --mx-logo-ink: #ffffff;
   --cp-mark-ink: #ffffff;
+  --cp-logo-ink: #ffffff;
+  --cp-logo-c: #ffffff;
   --mx-logo-corail: #ffffff;
   --mx-logo-jaune: #ffffff;
   --mx-logo-bleu: #ffffff;
@@ -829,6 +833,19 @@ html.sidebar-visible .mx-menu-book {
   height: 26px;
   width: auto;
   aspect-ratio: 1113 / 249;
+}
+
+/* The "Compagnon by Mairistem" logo, brand of the sidebar and the menu bar. */
+.cp-logo {
+  display: block;
+  height: 30px;
+  width: auto;
+  aspect-ratio: 1188 / 250;
+  max-width: 100%;
+}
+
+.mx-sidebar-brand .cp-logo {
+  height: 36px;
 }
 
 .mx-brand-logo {
@@ -1897,5 +1914,17 @@ figure.diagram .mono {
 
   figure.diagram .st:hover {
     transform: translateY(-3px);
+  }
+}
+
+/* On a phone the logo names the product; the menu title would be cut. */
+@media (max-width: 480px) {
+  .mx-bar-brand .cp-logo {
+    height: 28px;
+    min-width: 133px;
+  }
+
+  #mdbook-menu-bar .menu-title {
+    display: none;
   }
 }
