@@ -308,43 +308,6 @@ fn inline_marks_are_named_or_decorative() {
 }
 
 #[test]
-fn both_editions_list_the_migration_guide() {
-    let guide = format!("guides/moving-from-{}.md", legacy::BINARY_STEM);
-    for lang in ["en", "fr"] {
-        let summary = read(&format!("docs/{lang}/src/SUMMARY.md"));
-        assert!(
-            summary.contains(&format!("]({guide})")),
-            "docs/{lang} does not list {guide}"
-        );
-    }
-}
-
-#[test]
-fn migration_guides_name_compagnon_migrate_dry_run() {
-    for lang in ["en", "fr"] {
-        let path = format!(
-            "docs/{lang}/src/guides/moving-from-{}.md",
-            legacy::BINARY_STEM
-        );
-        let guide = read(&path);
-        for needle in [
-            "compagnon migrate --dry-run",
-            "compagnon sources update",
-            "compagnon self-update --version 0.6.1",
-            "migration_version_unsatisfied",
-            "legacy_source",
-        ] {
-            assert!(guide.contains(needle), "{path} must mention `{needle}`");
-        }
-        let reference = read(&format!("docs/{lang}/src/reference/cli.md"));
-        assert!(
-            reference.contains("### compagnon migrate"),
-            "docs/{lang} CLI reference lacks migrate"
-        );
-    }
-}
-
-#[test]
 fn site_and_introductions_name_compagnon() {
     for file in ["docs/site/index.html", "docs/site/fr.html"] {
         let site = read(file);

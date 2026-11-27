@@ -36,7 +36,6 @@
 - [Sources héritées](guides/inherited-sources.md)
 - [Langue des artefacts](guides/artifact-language.md)
 - [Schémas personnalisés](guides/custom-schemas.md)
-- [Migrer depuis codev](guides/moving-from-codev.md)
 
 # Référence
 

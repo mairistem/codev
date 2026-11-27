@@ -63,9 +63,7 @@ Rust et fait ses propres choix par-dessus.
 
 **Le nom.** Compagnon vient du compagnonnage : un maître mène l'ouvrage, les
 compagnons le réalisent, et chacun suit des plans arrêtés à l'avance. Ici,
-vous êtes le maître et les agents Claude sont vos compagnons. Jusqu'à la 0.6,
-le produit s'appelait codev ; [Migrer depuis codev](guides/moving-from-codev.md)
-explique comment convertir un projet créé à cette époque.
+vous êtes le maître et les agents Claude sont vos compagnons.
 
 ## Développé avec Compagnon
 

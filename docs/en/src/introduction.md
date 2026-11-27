@@ -67,5 +67,4 @@ What will you do with Compagnon? Each answer opens a short path:
 
 Every term is explained in the [Glossary](glossary.md).
 
-Coming from codev? Read [Moving from codev](guides/moving-from-codev.md).
 Compagnon's story is in [Origins](origins.md).

@@ -36,7 +36,6 @@
 - [Inherited sources](guides/inherited-sources.md)
 - [Artifact language](guides/artifact-language.md)
 - [Custom schemas](guides/custom-schemas.md)
-- [Moving from codev](guides/moving-from-codev.md)
 
 # Reference
 

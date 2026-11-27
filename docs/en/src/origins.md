@@ -60,9 +60,7 @@ own choices on top.
 **The name.** Compagnon comes from *compagnonnage*, the French tradition of
 craft guilds: a master leads the work, the *compagnons* carry it out, and
 everyone follows plans agreed beforehand. Here you are the master and the
-Claude agents are your compagnons. Until 0.6 the product was named codev;
-[Moving from codev](guides/moving-from-codev.md) explains how to convert a
-project set up then.
+Claude agents are your compagnons.
 
 ## Built with Compagnon
 

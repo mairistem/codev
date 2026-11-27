@@ -478,7 +478,6 @@ pub const PARTS_AFTER_START: [&[&str]; 4] = [
         "guides/inherited-sources.md",
         "guides/artifact-language.md",
         "guides/custom-schemas.md",
-        "guides/moving-from-codev.md",
     ],
     &[
         "reference/cli.md",
@@ -568,6 +567,15 @@ pub fn without_figures(md: &str) -> String {
     }
     out.push_str(rest);
     out
+}
+
+/// The lines naming codev, the product's former name, in any case: the
+/// documentation keeps no trace of it.
+pub fn codev_mentions(text: &str) -> Vec<String> {
+    text.lines()
+        .filter(|line| line.to_lowercase().contains("codev"))
+        .map(|line| line.trim().to_string())
+        .collect()
 }
 
 /// What keeps an entry point from putting Jira forward: it must name Jira
@@ -1900,6 +1908,16 @@ mod tests {
     }
 
     #[test]
+    fn a_chapter_naming_codev_is_caught() {
+        let md = "# Origins\n\nCompagnon, formerly codev, plans first.\n";
+        assert_eq!(
+            codev_mentions(md),
+            ["Compagnon, formerly codev, plans first."]
+        );
+        assert!(codev_mentions("# Origins\n\nCompagnon plans first.\n").is_empty());
+    }
+
+    #[test]
     fn an_entry_point_without_jira_is_caught() {
         assert!(
             jira_problems(
@@ -2108,7 +2126,6 @@ mod chapter_tests {
             "roles.md",
             "reliability.md",
             "concepts.md",
-            "guides/moving-from-codev.md",
             "guides/inherited-sources.md",
             "guides/repository-integration.md",
             "guides/release-notes.md",
@@ -2593,6 +2610,35 @@ mod chapter_tests {
     fn summary_title(lang: Lang, path: &str) -> Option<String> {
         summary_entries(summary(lang))
             .find_map(|(title, target)| (target == path).then(|| title.to_string()))
+    }
+
+    #[test]
+    fn the_documentation_holds_no_trace_of_codev() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            for (path, md) in lang.chapters() {
+                for line in codev_mentions(md) {
+                    found.push(format!("{}/{path}: {line}", lang.tag()));
+                }
+            }
+        }
+        for (name, text) in [
+            ("README.md", include_str!("../../../README.md")),
+            ("README.fr.md", include_str!("../../../README.fr.md")),
+            (
+                "docs/site/index.html",
+                include_str!("../../../docs/site/index.html"),
+            ),
+            (
+                "docs/site/fr.html",
+                include_str!("../../../docs/site/fr.html"),
+            ),
+        ] {
+            for line in codev_mentions(text) {
+                found.push(format!("{name}: {line}"));
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
     }
 
     #[test]

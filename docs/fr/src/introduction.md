@@ -75,5 +75,4 @@ court :
 
 Chaque terme est expliqué, en mots simples, dans le [Glossaire](glossary.md).
 
-Vous venez de codev ? Lisez [Migrer depuis codev](guides/moving-from-codev.md).
 D'où vient Compagnon, et pourquoi : [Origines](origins.md).
