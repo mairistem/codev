@@ -6,6 +6,30 @@ l'autre prépare le dossier de votre projet. Ensuite, vous parlez seulement
 [terminal](glossary.md#terminal) (la fenêtre où l'on tape des commandes),
 il peut faire cette partie pour vous.
 
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 140" role="img" aria-label="L'installation en quatre étapes : 1, vous installez Compagnon avec une ligne, une fois, dans un terminal ; 2, vous préparez votre dossier avec compagnon init ; 3, vous demandez à Claude avec vos mots, dans Claude Code ; 4, Claude écrit un plan et attend votre accord.">
+<g stroke-width="2" style="fill:var(--dg-box)">
+<rect x="4" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="198" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="392" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="586" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-claude)"/>
+</g>
+<path d="M175,75h18m-6,-5l6,5l-6,5M369,75h18m-6,-5l6,5l-6,5M563,75h18m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="12" style="fill:var(--dg-muted)">
+<text x="20" y="44">1 · VOUS</text><text x="214" y="44">2 · VOUS</text><text x="408" y="44">3 · VOUS</text><text x="602" y="44">4 · CLAUDE</text>
+</g>
+<g font-size="16" font-weight="600" style="fill:var(--dg-ink)">
+<text x="20" y="78">Installer</text><text x="214" y="78">Préparer</text><text x="408" y="78">Demander</text><text x="602" y="78">Planifie</text>
+</g>
+<g font-size="13" style="fill:var(--dg-muted)">
+<text x="20" y="102">une ligne, une fois</text><text x="20" y="120">dans un terminal</text><text x="214" y="102">compagnon init</text><text x="214" y="120">dans votre dossier</text><text x="408" y="102">avec vos mots</text><text x="408" y="120">dans Claude Code</text><text x="602" y="102">et attend</text><text x="602" y="120">votre accord</text>
+</g>
+</svg>
+</div>
+<figcaption>Deux commandes, une seule fois ; ensuite, vous parlez seulement à Claude.</figcaption>
+</figure>
+
 ## Partir de rien
 
 Deux choses, avant toute commande :
@@ -109,6 +133,58 @@ compétences. Ce que `compagnon init` écrit en plus de `_compagnon/` est
 décrit dans [Déployer Compagnon pour une équipe](guides/team-rollout.md).
 
 </details>
+
+<details>
+<summary>Sous le capot : ce qu'écrit init</summary>
+
+```bash
+compagnon init --yes --language fr
+```
+
+```text
+compagnon initialized in /home/you/acme-app
+
+  Structure   _compagnon/ — specs, decisions, changes, schemas
+  Skills      compagnon-propose, compagnon-explore, compagnon-onboard, compagnon-apply, compagnon-sync, compagnon-archive, compagnon-update, compagnon-configure → .claude/skills/
+
+  Repository integration
+    + CLAUDE.md                          created
+    + .github/workflows/compagnon.yml        created
+    + .github/PULL_REQUEST_TEMPLATE.md   created
+
+  17 file(s) created, 0 updated
+
+→ Recommended next step: in Claude Code, ask
+  "configure Compagnon for this project" (shortcut: /compagnon-configure).
+```
+
+La détection, les questions et chaque fichier écrit sont décrits dans
+[Ce que fait `compagnon init`](reference/cli.md#ce-que-fait-compagnon-init).
+`compagnon doctor` liste ensuite ce qui manque encore à l'installation, avec
+la correction de chaque point.
+
+</details>
+
+## Votre première demande
+
+Ouvrez Claude Code sur le dossier de votre projet, par exemple depuis
+l'application Claude pour ordinateur, en choisissant ce dossier. Dites
+ensuite, avec vos mots, ce que vous voulez, en demandant d'abord un plan :
+
+<div class="example">
+<p class="example-title">Exemple</p>
+
+```text
+> Prépare un plan pour un formulaire d'inscription à un événement
+⏺ J'écris le plan dans _compagnon/changes/inscription-evenement/ : pourquoi,
+  ce qui change, comment, et les tâches.
+⏺ Le plan est prêt. Lisez d'abord proposal.md ; rien n'est construit avant
+  votre accord.
+```
+
+Claude rédige un plan et s'arrête : il ne construit encore rien. La page suivante le lit avec vous.
+
+</div>
 
 ## Mise à jour
 
@@ -294,3 +370,6 @@ résultat.
 
 </details>
 
+## Étape suivante
+
+[Votre première modification](quickstart.md)

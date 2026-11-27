@@ -5,6 +5,30 @@ prepares your project's folder. After that, you only talk to Claude. If
 someone in your team is used to a [terminal](glossary.md#terminal) (the
 window where you type commands), they can do this part for you.
 
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 140" role="img" aria-label="Installing in four steps: 1, you install Compagnon with one line, once, in a terminal; 2, you set up your folder with compagnon init; 3, you ask Claude in your own words, in Claude Code; 4, Claude writes a plan and waits for your approval.">
+<g stroke-width="2" style="fill:var(--dg-box)">
+<rect x="4" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="198" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="392" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="586" y="16" width="168" height="118" rx="14" style="stroke:var(--dg-claude)"/>
+</g>
+<path d="M175,75h18m-6,-5l6,5l-6,5M369,75h18m-6,-5l6,5l-6,5M563,75h18m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="12" style="fill:var(--dg-muted)">
+<text x="20" y="44">1 · YOU</text><text x="214" y="44">2 · YOU</text><text x="408" y="44">3 · YOU</text><text x="602" y="44">4 · CLAUDE</text>
+</g>
+<g font-size="16" font-weight="600" style="fill:var(--dg-ink)">
+<text x="20" y="78">Install</text><text x="214" y="78">Set up</text><text x="408" y="78">Ask Claude</text><text x="602" y="78">Plans</text>
+</g>
+<g font-size="13" style="fill:var(--dg-muted)">
+<text x="20" y="102">one line, once</text><text x="20" y="120">in a terminal</text><text x="214" y="102">compagnon init</text><text x="214" y="120">in your folder</text><text x="408" y="102">in your own words</text><text x="408" y="120">in Claude Code</text><text x="602" y="102">and waits for</text><text x="602" y="120">your approval</text>
+</g>
+</svg>
+</div>
+<figcaption>Two commands, once; after that, you only talk to Claude.</figcaption>
+</figure>
+
 ## Starting from nothing
 
 Two things, before any command:
@@ -99,6 +123,58 @@ What `compagnon init` writes besides `_compagnon/` is described in
 [Deploying Compagnon for a team](guides/team-rollout.md).
 
 </details>
+
+<details>
+<summary>Under the hood: what init writes</summary>
+
+```bash
+compagnon init --yes --language en
+```
+
+```text
+compagnon initialized in /home/you/acme-app
+
+  Structure   _compagnon/ — specs, decisions, changes, schemas
+  Skills      compagnon-propose, compagnon-explore, compagnon-onboard, compagnon-apply, compagnon-sync, compagnon-archive, compagnon-update, compagnon-configure → .claude/skills/
+
+  Repository integration
+    + CLAUDE.md                          created
+    + .github/workflows/compagnon.yml        created
+    + .github/PULL_REQUEST_TEMPLATE.md   created
+
+  17 file(s) created, 0 updated
+
+→ Recommended next step: in Claude Code, ask
+  "configure Compagnon for this project" (shortcut: /compagnon-configure).
+```
+
+The probe, the questions and every file written are described in
+[What `compagnon init` does](reference/cli.md#what-compagnon-init-does).
+`compagnon doctor` then lists what the setup still lacks, with the fix for
+each item.
+
+</details>
+
+## Your first request
+
+Open Claude Code on your project folder, for example from the Claude
+desktop app, choosing that folder. Then say, in your own words, what you
+want, and ask for a plan first:
+
+<div class="example">
+<p class="example-title">Example</p>
+
+```text
+> Prepare a plan for a sign-up form for an event
+⏺ I will write the plan in _compagnon/changes/event-signup/: why, what
+  changes, how, and the tasks.
+⏺ The plan is ready. Read proposal.md first; nothing is built before
+  you approve it.
+```
+
+Claude writes a plan and stops: it builds nothing yet. The next page reads it with you.
+
+</div>
 
 ## Upgrading
 
@@ -276,3 +352,6 @@ checks the result.
 
 </details>
 
+## Next step
+
+[Your first change](quickstart.md)

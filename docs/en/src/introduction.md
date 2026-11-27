@@ -14,6 +14,22 @@ the rest. Your work is in Jira? Say "Prepare a plan for PROJ-123": Claude
 reads the ticket, without changing it, and cites it at the top of the plan
 ([Start from a Jira ticket](guides/mcp.md)).
 
+<div class="example">
+<p class="example-title">Example</p>
+
+```text
+> Add a dark mode that follows the system setting
+⏺ I will write a plan first: why, what changes, how, and the tasks.
+⏺ The plan is ready in _compagnon/changes/dark-mode/. Read proposal.md
+  first; nothing is built before you approve it.
+> The plan is good, implement it
+⏺ 7 tasks out of 7 done, each one tested.
+```
+
+You asked in your own words; Claude planned, waited, then built.
+
+</div>
+
 ## Who decides
 
 You do. Claude proposes, you decide, and nothing is built before you agree:
@@ -58,11 +74,52 @@ are your compagnons.
 
 ## Where to start
 
-The documentation reads as a path in five steps — discover, get started,
-every day, understand, for your team. Start with
-[Installation](installation.md), then follow "Next step" at the end of
-each page.
+The documentation reads as a path in five steps. Steps 1 to 3 are enough
+to work every day; steps 4 and 5 are for those who want to go further.
+Each page ends with "Next step"; a page some readers do not need opens
+with a button that says who can skip it.
+
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 190" role="img" aria-label="The reading tunnel in five steps: 1, Discover, one page; 2, Get started, two pages; 3, Every day, five pages; 4, Understand, five pages; 5, For your team, six pages. Steps 1 to 3 are for everyone, steps 4 and 5 for experts when they want. The appendices are read when needed.">
+<g stroke-width="2" style="fill:var(--dg-box)">
+<rect x="4" y="40" width="136" height="96" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="158" y="40" width="136" height="96" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="312" y="40" width="136" height="96" rx="14" style="stroke:var(--dg-you)"/>
+<rect x="466" y="40" width="136" height="96" rx="14" style="stroke:var(--dg-claude)"/>
+<rect x="620" y="40" width="136" height="96" rx="14" style="stroke:var(--dg-claude)"/>
+</g>
+<path d="M142,88h12m-6,-5l6,5l-6,5M296,88h12m-6,-5l6,5l-6,5M450,88h12m-6,-5l6,5l-6,5M604,88h12m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="12" style="fill:var(--dg-muted)">
+<text x="4" y="24">EVERYONE</text><text x="466" y="24">EXPERTS, WHEN THEY WANT</text>
+</g>
+<path d="M4,30H446M466,30H756" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<circle cx="30" cy="66" r="12" style="fill:var(--dg-you)"/><text x="30" y="71" text-anchor="middle" font-size="13" font-weight="600" style="fill:var(--dg-on-you)">1</text>
+<text x="18" y="104" font-size="15" font-weight="600" style="fill:var(--dg-ink)">Discover</text>
+<text x="18" y="124" font-size="13" style="fill:var(--dg-muted)">1 page</text>
+<circle cx="184" cy="66" r="12" style="fill:var(--dg-you)"/><text x="184" y="71" text-anchor="middle" font-size="13" font-weight="600" style="fill:var(--dg-on-you)">2</text>
+<text x="172" y="104" font-size="15" font-weight="600" style="fill:var(--dg-ink)">Get started</text>
+<text x="172" y="124" font-size="13" style="fill:var(--dg-muted)">2 pages</text>
+<circle cx="338" cy="66" r="12" style="fill:var(--dg-you)"/><text x="338" y="71" text-anchor="middle" font-size="13" font-weight="600" style="fill:var(--dg-on-you)">3</text>
+<text x="326" y="104" font-size="15" font-weight="600" style="fill:var(--dg-ink)">Every day</text>
+<text x="326" y="124" font-size="13" style="fill:var(--dg-muted)">5 pages</text>
+<circle cx="492" cy="66" r="12" style="fill:var(--dg-claude)"/><text x="492" y="71" text-anchor="middle" font-size="13" font-weight="600" style="fill:var(--dg-box)">4</text>
+<text x="480" y="104" font-size="15" font-weight="600" style="fill:var(--dg-ink)">Understand</text>
+<text x="480" y="124" font-size="13" style="fill:var(--dg-muted)">5 pages</text>
+<circle cx="646" cy="66" r="12" style="fill:var(--dg-claude)"/><text x="646" y="71" text-anchor="middle" font-size="13" font-weight="600" style="fill:var(--dg-box)">5</text>
+<text x="634" y="104" font-size="15" font-weight="600" style="fill:var(--dg-ink)">For your team</text>
+<text x="634" y="124" font-size="13" style="fill:var(--dg-muted)">6 pages</text>
+<rect x="4" y="150" width="752" height="34" rx="10" fill="none" stroke-width="1.5" stroke-dasharray="5 4" style="stroke:var(--dg-line)"/>
+<text x="20" y="172" font-size="13" style="fill:var(--dg-muted)">Appendices: reference, glossary, FAQ, an example plan — open them when you need them.</text>
+</svg>
+</div>
+<figcaption>Read the steps in order; steps 1 to 3 are enough to work every day, steps 4 and 5 go further.</figcaption>
+</figure>
 
 Every term is explained in the [Glossary](glossary.md).
 
 Compagnon's story is in [Origins](origins.md).
+
+## Next step
+
+[Installation](installation.md)
