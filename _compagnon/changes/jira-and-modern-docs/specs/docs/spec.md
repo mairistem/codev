@@ -242,6 +242,65 @@ linking it.
 
 ## MODIFIED Requirements
 
+### Requirement: The Start here path stays short and plain
+
+Not counting fenced code blocks, "Under the hood" blocks (`<details>`)
+nor figures (`<figure>`, a diagram and its caption),
+the introduction SHALL hold at most 450 words in English and 560 in
+French, Choose your path at most 200 and 250, each path page at most 250
+and 310, and the quickstart at most 500 and 625. The introduction MUST
+hold a section titled "Who decides" ("Qui décide") saying, in plain words,
+that the reader decides, that Claude proposes and carries out, and that
+nothing is applied without the reader's approval. The quickstart MUST walk
+through the Claude Code path, with one section per step in this order:
+`/compagnon-propose`, reading the plan, `/compagnon-apply`,
+`/compagnon-archive`. A fenced shell block (`bash`, `sh`, `shell`,
+`console`, `powershell`, `pwsh`) outside an "Under the hood" block MAY only
+install Compagnon or run `compagnon init`.
+
+#### Scenario: The path stays under its word caps
+
+- **GIVEN** the Start here chapters of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** it fails naming the chapter, the edition and the count when the
+  introduction, Choose your path, a path page or the quickstart exceeds its
+  cap
+
+#### Scenario: Under the hood blocks, code and figures are not counted
+
+- **GIVEN** a chapter of 480 words of prose, a 400-word `<details>` block,
+  a 100-word fenced code block and a 200-word `<figure>`
+- **WHEN** its words are counted
+- **THEN** the count is 480
+
+#### Scenario: The introduction says who decides
+
+- **GIVEN** the introduction of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each holds the "Who decides" / "Qui décide" section
+
+#### Scenario: The quickstart walks the four skills in order
+
+- **GIVEN** the quickstart of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** `/compagnon-propose`, `/compagnon-apply` and `/compagnon-archive`
+  first appear in that order, each in a section heading of its own
+
+#### Scenario: A terminal command outside an Under the hood block is caught
+
+- **GIVEN** a chapter with a fenced `bash` block running
+  `compagnon validate` outside any `<details>` block
+- **WHEN** the check runs on it
+- **THEN** it fails naming `compagnon validate`
+
+#### Scenario: Installing and initializing are allowed outside the blocks
+
+- **GIVEN** a chapter whose only fenced shell blocks outside `<details>`
+  install Compagnon and run `compagnon init`
+- **WHEN** the check runs on it
+- **THEN** it passes
+
+
 ### Requirement: Compagnon's mark identifies the product in every documentation surface
 
 The repository SHALL hold the Compagnon mark as SVG files under

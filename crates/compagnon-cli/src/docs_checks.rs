@@ -487,7 +487,12 @@ pub const PARTS_AFTER_START: [&[&str]; 4] = [
         "reference/json-output.md",
         "reference/errors.md",
     ],
-    &["origins.md", "contributing.md", "architecture.md", "reliability.md"],
+    &[
+        "origins.md",
+        "contributing.md",
+        "architecture.md",
+        "reliability.md",
+    ],
 ];
 
 /// How a `SUMMARY.md`'s parts after "Start here" depart from
@@ -511,7 +516,12 @@ pub fn toc_problems(summary: &str) -> Vec<String> {
                 problems.push(format!("{c} is missing from \"{title}\""));
             }
         }
-        if problems.is_empty() && listed.iter().map(String::as_str).ne(expected.iter().copied()) {
+        if problems.is_empty()
+            && listed
+                .iter()
+                .map(String::as_str)
+                .ne(expected.iter().copied())
+        {
             problems.push(format!("\"{title}\" is out of order: {listed:?}"));
         }
     }
@@ -524,8 +534,12 @@ pub fn title_problems(summary: &str, heading_of: impl Fn(&str) -> Option<String>
     let mut problems = Vec::new();
     for line in summary.lines() {
         let line = line.trim_start();
-        let Some(rest) = line.strip_prefix("- [") else { continue };
-        let Some((title, target)) = rest.split_once("](") else { continue };
+        let Some(rest) = line.strip_prefix("- [") else {
+            continue;
+        };
+        let Some((title, target)) = rest.split_once("](") else {
+            continue;
+        };
         let path = target.trim_end_matches(')');
         match heading_of(path) {
             Some(h) if h == title => {}
@@ -595,7 +609,9 @@ pub fn jira_guide_problems(md: &str) -> Vec<String> {
 pub fn faq_code_problems(faq: &str, errors: &str, codes: &[&str]) -> Vec<String> {
     let mut problems = Vec::new();
     for line in faq.lines() {
-        let Some(title) = line.strip_prefix("### ") else { continue };
+        let Some(title) = line.strip_prefix("### ") else {
+            continue;
+        };
         let title = title.trim();
         if title.starts_with('`') && title.ends_with('`') && !title.contains(' ') {
             problems.push(format!("the FAQ still explains {title}"));
@@ -647,7 +663,9 @@ pub fn everyday_problems(
                 match title_of(&target) {
                     Some(t) if t == text => {}
                     Some(t) => problems.push(format!("\"{text}\" links {target}, titled \"{t}\"")),
-                    None => problems.push(format!("\"{text}\" links {target}, which is no chapter")),
+                    None => {
+                        problems.push(format!("\"{text}\" links {target}, which is no chapter"))
+                    }
                 }
             }
             if chapters == 0 {
@@ -1447,6 +1465,16 @@ mod tests {
         );
         let code = format!("```bash\n{}\n```\n", "code ".repeat(100));
         assert_eq!(prose_words(&format!("{prose}\n{folded}{code}")), 480);
+        let figure = format!(
+            "<figure class=\"diagram\">\n{}</figure>\n",
+            "drawn ".repeat(200)
+        );
+        assert_eq!(
+            prose_words(&without_figures(&format!(
+                "{prose}\n{folded}{code}{figure}"
+            ))),
+            480
+        );
     }
 
     const SUMMARY: &str = "# Summary\n\n# Start here\n\n- [A](introduction.md)\n- [B](choose-your-path.md)\n  - [R](paths/review.md)\n  - [U](paths/build.md)\n  - [V](paths/develop.md)\n  - [T](paths/team.md)\n- [D](glossary.md)\n\n# Everyday use\n\n- [E](concepts.md)\n";
@@ -1864,9 +1892,17 @@ mod tests {
 
     #[test]
     fn an_entry_point_without_jira_is_caught() {
-        assert!(jira_problems("Say \"Prepare a plan for PROJ-123\": [Start from a Jira ticket](guides/mcp.md).").is_empty());
+        assert!(
+            jira_problems(
+                "Say \"Prepare a plan for PROJ-123\": [Start from a Jira ticket](guides/mcp.md)."
+            )
+            .is_empty()
+        );
         let problems = jira_problems("# Compagnon in two minutes\n\nPlan with Claude.\n");
-        assert_eq!(problems, ["never names Jira", "does not link the Jira guide"]);
+        assert_eq!(
+            problems,
+            ["never names Jira", "does not link the Jira guide"]
+        );
     }
 
     #[test]
@@ -1902,11 +1938,21 @@ mod tests {
     fn a_long_chapter_or_one_without_go_further_is_caught() {
         let title = |t: &str| (t == "roles.md").then(|| "Roles".to_string());
         let good = "# FAQ\n\nShort.\n\n<figure>many many words</figure>\n\n## Go further\n\n- [Roles](roles.md)\n";
-        assert!(everyday_problems(good, 5, Lang::En, title).is_empty(), "{:?}", everyday_problems(good, 5, Lang::En, title));
-        let long = format!("# FAQ\n\n{}\n\n## Go further\n\n- [Roles](roles.md)\n", "word ".repeat(1300));
+        assert!(
+            everyday_problems(good, 5, Lang::En, title).is_empty(),
+            "{:?}",
+            everyday_problems(good, 5, Lang::En, title)
+        );
+        let long = format!(
+            "# FAQ\n\n{}\n\n## Go further\n\n- [Roles](roles.md)\n",
+            "word ".repeat(1300)
+        );
         assert!(everyday_problems(&long, 1200, Lang::En, title)[0].contains("over 1200"));
         let ends = "# Concepts\n\n## Seal\n\nText.\n";
-        assert_eq!(everyday_problems(ends, 1200, Lang::En, title), ["ends with \"Seal\", not \"Go further\""]);
+        assert_eq!(
+            everyday_problems(ends, 1200, Lang::En, title),
+            ["ends with \"Seal\", not \"Go further\""]
+        );
         let wrong = "# FAQ\n\n## Go further\n\n- [The roles](roles.md)\n";
         assert_eq!(everyday_problems(wrong, 1200, Lang::En, title).len(), 1);
     }
@@ -2026,9 +2072,17 @@ mod chapter_tests {
     fn a_chapter_out_of_its_part_is_caught() {
         let moved = summary(Lang::En)
             .replace("- [Roles](roles.md)\n", "")
-            .replace("- [FAQ](faq.md)\n", "- [FAQ](faq.md)\n- [Roles](roles.md)\n");
+            .replace(
+                "- [FAQ](faq.md)\n",
+                "- [FAQ](faq.md)\n- [Roles](roles.md)\n",
+            );
         let problems = toc_problems(&moved);
-        assert!(problems.iter().any(|p| p.contains("roles.md does not belong")), "{problems:?}");
+        assert!(
+            problems
+                .iter()
+                .any(|p| p.contains("roles.md does not belong")),
+            "{problems:?}"
+        );
         let renamed = summary(Lang::En).replace("[FAQ](faq.md)", "[Questions](faq.md)");
         let titles = title_problems(&renamed, |_| Some("FAQ".into()));
         assert!(titles.iter().any(|p| p.contains("faq.md")), "{titles:?}");
@@ -2082,7 +2136,7 @@ mod chapter_tests {
                 (PATHS[3], (250, 310)),
                 ("quickstart.md", (500, 625)),
             ] {
-                let words = prose_words(chapter(lang, path));
+                let words = prose_words(&without_figures(chapter(lang, path)));
                 let cap = cap(lang, caps);
                 assert!(
                     words <= cap,
@@ -2446,11 +2500,22 @@ mod chapter_tests {
 
     #[test]
     fn the_jira_guide_leads_with_what_it_changes() {
-        for (lang, title) in [(Lang::En, "Start from a Jira ticket"), (Lang::Fr, "Partir d'un ticket Jira")] {
+        for (lang, title) in [
+            (Lang::En, "Start from a Jira ticket"),
+            (Lang::Fr, "Partir d'un ticket Jira"),
+        ] {
             let md = chapter(lang, "guides/mcp.md");
-            assert!(md.starts_with(&format!("# {title}\n")), "{}: title", lang.tag());
+            assert!(
+                md.starts_with(&format!("# {title}\n")),
+                "{}: title",
+                lang.tag()
+            );
             let everyday = &parts(summary(lang))[EVERYDAY_PART].1;
-            assert!(everyday.iter().any(|c| c == "guides/mcp.md"), "{}: part", lang.tag());
+            assert!(
+                everyday.iter().any(|c| c == "guides/mcp.md"),
+                "{}: part",
+                lang.tag()
+            );
             let problems = jira_guide_problems(md);
             assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
         }
@@ -2489,8 +2554,83 @@ mod chapter_tests {
             let faq = chapter(lang, "faq.md");
             let problems = faq_code_problems(faq, chapter(lang, "reference/errors.md"), &FAQ_CODES);
             assert!(problems.is_empty(), "{}: {problems:#?}", lang.tag());
-            assert!(faq.contains("reference/errors.md"), "{}: the FAQ links the errors chapter", lang.tag());
+            assert!(
+                faq.contains("reference/errors.md"),
+                "{}: the FAQ links the errors chapter",
+                lang.tag()
+            );
         }
+    }
+
+    /// `target`, a link written in chapter `from`, as a chapter path of the
+    /// book (`../roles.md#x` from `guides/mcp.md` is `roles.md`).
+    fn resolve(from: &str, target: &str) -> String {
+        let target = target.split('#').next().unwrap_or_default();
+        let mut parts: Vec<&str> = from.split('/').collect();
+        parts.pop();
+        for segment in target.split('/') {
+            match segment {
+                ".." => {
+                    parts.pop();
+                }
+                "." | "" => {}
+                s => parts.push(s),
+            }
+        }
+        parts.join("/")
+    }
+
+    /// The title `SUMMARY.md` gives a chapter.
+    fn summary_title(lang: Lang, path: &str) -> Option<String> {
+        summary(lang).lines().find_map(|l| {
+            let rest = l.trim_start().strip_prefix("- [")?;
+            let (title, target) = rest.split_once("](")?;
+            (target.trim_end_matches(')') == path).then(|| title.to_string())
+        })
+    }
+
+    #[test]
+    fn every_entry_point_puts_jira_forward() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            for path in ["introduction.md", "quickstart.md"]
+                .into_iter()
+                .chain(PATHS)
+            {
+                for p in jira_problems(chapter(lang, path)) {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+            }
+        }
+        for (name, readme) in [
+            ("README.md", include_str!("../../../README.md")),
+            ("README.fr.md", include_str!("../../../README.fr.md")),
+        ] {
+            for p in jira_problems(readme) {
+                found.push(format!("{name}: {p}"));
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn everyday_chapters_are_short_and_end_with_go_further() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            let everyday = &parts(summary(lang))[EVERYDAY_PART].1;
+            for path in everyday.iter().filter(|p| *p != "guides/example-plan.md") {
+                let problems = everyday_problems(
+                    chapter(lang, path),
+                    cap(lang, (1200, 1500)),
+                    lang,
+                    |target| summary_title(lang, &resolve(path, target)),
+                );
+                for p in problems {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
     }
 
     #[test]
