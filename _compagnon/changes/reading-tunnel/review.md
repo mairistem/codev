@@ -181,6 +181,9 @@ history:
     ref: 'spec: new requirement "The command-line reference says how to move from codev" with its scenarios; Migration note reworded; task 2.1 moves the content before the guide is deleted'
   - status: fixed
     by: migration
+  - status: accepted-risk
+    by: human
+    note: 'The owner wants no trace of codev in the documentation: the codev steps are dropped, not moved. Projects still on codev must rely on compagnon migrate and its --help.'
 ```
 
 #### R-migration-2 The BREAKING release note did not say where each removed page went

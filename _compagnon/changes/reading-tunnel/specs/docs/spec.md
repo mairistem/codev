@@ -404,11 +404,14 @@ and the section on other MCP servers follow.
 
 ### Requirement: The documentation's diagrams are accessible in every rendering
 
-The documentation SHALL hold these thirteen diagrams, in both editions:
+The documentation SHALL hold these sixteen diagrams, in both editions:
 
 | Diagram | Where |
 |---|---|
 | The workflow (ask, plan, approve, build, file away) | `introduction.md`, `workflow.md`, home pages |
+| Installing: install, set up the project, first request | `installation.md` |
+| Asking Claude: your words, the skill Claude picks, what it does | `skills.md` |
+| Building and filing away: tasks done one by one, review, archive | `guides/build-and-file.md` |
 | From a Jira ticket to a plan | `guides/mcp.md`, home pages |
 | The reading tunnel (its five steps) | `introduction.md` |
 | Inside a plan (proposal, specs, design, tasks) | `guides/review-a-plan.md`, home pages |
@@ -470,31 +473,75 @@ French.
 - **AND** its styles define the diagram colors for the light scheme and
   for `prefers-color-scheme: dark`
 
-### Requirement: The command-line reference says how to move from codev
+### Requirement: The documentation holds no trace of codev
 
-In both editions, the `compagnon migrate` section of `reference/cli.md`
-SHALL hold, besides what the command does, the steps it does not take:
-renaming the `CODEV_*` environment variables to `COMPAGNON_*`, the JSON
-codes, scripts and CI jobs; widening a `codev_version` requirement; for an
-inherited source, migrating the source first and then running
-`compagnon sources update` in each project that inherits it, failing
-which those projects stop with `legacy_source`; hand-edited skills
-installed by codev 0.6; going back with
-`compagnon self-update --version 0.6.1`.
+No chapter of either edition, README or home page SHALL name codev
+(in any case): the command-line reference has no `compagnon migrate`
+section, no error code or chapter describes the former layout, and the
+introduction and the origins tell Compagnon's story without its former
+name. The CHANGELOG keeps its dated history but no note pointing readers
+to a codev migration.
 
-#### Scenario: Both references keep the codev steps
+#### Scenario: codev is not named
 
-- **GIVEN** both editions of `reference/cli.md`
+- **GIVEN** every chapter of both editions, both READMEs and both home
+  pages
 - **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each `compagnon migrate` section names `COMPAGNON_VERSION`,
-  `compagnon sources update`, `legacy_source` and
-  `compagnon self-update --version 0.6.1`
+- **THEN** none holds "codev", whatever its case
 
-#### Scenario: A reference that lost the source steps is caught
+#### Scenario: A chapter naming codev is caught
 
-- **GIVEN** a `compagnon migrate` section that never names `legacy_source`
+- **GIVEN** an origins chapter saying "formerly codev"
 - **WHEN** the check runs on it
-- **THEN** it fails naming `legacy_source`
+- **THEN** it fails naming the chapter
+
+### Requirement: Beginners read a simple path, experts open the detail
+
+In the chapters of the first three steps of the tunnel, the text shown
+by default SHALL be written for a beginner: outside "Under the hood"
+blocks (`<details>`, whose summary starts "Under the hood:" / « Sous le
+capot : »), a fenced block MAY only be a shell block that installs
+Compagnon or runs `compagnon init`, or a `markdown` or `text` block
+quoting a request, an answer or an excerpt of a plan; configuration,
+options and internals live in "Under the hood" blocks or in the
+Understand and For your team steps and the appendices.
+
+#### Scenario: The first steps show only what a beginner needs
+
+- **GIVEN** the chapters of the first three steps of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** no fenced block outside "Under the hood" blocks is in another
+  language than a shell install or init, `markdown` or `text`
+
+#### Scenario: Configuration shown to a beginner is caught
+
+- **GIVEN** a Jira guide showing a `yaml` block outside any "Under the
+  hood" block
+- **WHEN** the check runs on it
+- **THEN** it fails naming the guide and the `yaml` block
+
+### Requirement: Every tunnel page shows a diagram and a concrete example
+
+Every chapter of the first four steps of the tunnel SHALL hold at least
+one diagram (a `<figure class="diagram">`), and every chapter of the first
+three steps at least one concrete example: a `<div class="example">`
+block, titled "Example" (« Exemple »), showing a real request and what
+comes of it — Claude's answer, a plan's excerpt, a pull request — with
+real names and values, never placeholders alone.
+
+#### Scenario: Each page draws and shows
+
+- **GIVEN** the tunnel chapters of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each chapter of the first four steps holds a diagram
+- **AND** each chapter of the first three steps holds an example block
+
+#### Scenario: A page without diagram or example is caught
+
+- **GIVEN** an Asking Claude chapter with no figure, and an installation
+  chapter with no example block
+- **WHEN** the check runs on them
+- **THEN** each fails naming the chapter and what it lacks
 
 ## REMOVED Requirements
 
@@ -542,9 +589,8 @@ word caps.
 
 **Reason**: The owner wants no page kept for the past in the refactored
 documentation.
-**Migration**: What a codev project still needs moves to the
-`compagnon migrate` section of the command-line reference — see "The
-command-line reference says how to move from codev".
+**Migration**: None: on the owner's decision, the documentation keeps no
+trace of codev ("The documentation holds no trace of codev").
 
 ## RENAMED Requirements
 

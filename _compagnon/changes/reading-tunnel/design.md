@@ -73,7 +73,7 @@ judges, and it is cheap to change before the text exists).
 | `guides/repository-integration.md` | `guides/team-rollout.md`, sections on what `compagnon init` writes and `compagnon doctor` |
 | inherited sources, artifact language, release notes, custom schemas | For your team |
 | reference chapters, glossary, FAQ, example plan | Appendices |
-| `guides/moving-from-codev.md` | removed as a page; the steps `compagnon migrate` does not take move to its section of `reference/cli.md` |
+| `guides/moving-from-codev.md` | removed, with the `compagnon migrate` section of `reference/cli.md` and every mention of codev (introduction, origins, CHANGELOG's top note) |
 
 Skip buttons, where a reader may not need the page, each ending with the
 title of the chapter it opens: Your first change ("You do not code? Skip
@@ -83,6 +83,38 @@ Compagnon? Skip to Adopting Compagnon on an existing project"); Roles
 ("No review to configure? Skip to Review record"). Installation's
 "Starting from nothing" is a section, not a skip. The mockup fixes the
 final list.
+
+### Decision: Two layers on every page of the first steps
+
+A page of Discover, Get started or Every day reads in two layers. The
+**beginner layer**, shown by default: what you do and what you get, in
+short sentences, with the page's diagram and its example. The **expert
+layer**, folded: "Under the hood: …" blocks for configuration, options,
+internals and edge cases, closed by default, placed after the part they
+deepen — never before the beginner's next action. A page never asks a
+beginner to read a folded block to continue. The Understand and For your
+team steps are the expert path itself, reached through "Next step" or the
+skip buttons.
+
+The check walks the fenced blocks outside `<details>` of those pages and
+accepts only shell install or init blocks and `markdown`/`text` excerpts;
+the Jira guide's configuration, for example, moves under "Under the hood:
+set it up".
+
+### Decision: A diagram and an example on every page
+
+Each page of the first four steps holds at least one
+`<figure class="diagram">`, drawn as the sixteen of the spec's table (the
+three new ones follow the approved style: installing — install, set up
+the project, first request; asking Claude — your words, the skill Claude
+picks, what it does; building and filing away — tasks one by one, review,
+archive). Each page of the first three steps holds an
+`<div class="example">` block titled "Example" (« Exemple »): a real
+request in a quote and what comes of it, with the names of a real-looking
+project (the shop app of the home page's terminal, ticket PROJ-123), never
+placeholders alone. The theme and the offline manual draw `.example` as a
+card with a small "Example" label. The mockup shows, for each page, the
+diagram and the example it will hold.
 
 ### Decision: "Next step" is a markdown section; the skip button a wrapped markdown link
 
@@ -114,7 +146,11 @@ is not a control).
 
 ### Decision: Nothing kept for the past
 
-Removed files are deleted, links to them rewritten to the page that now
+Every mention of codev goes: the guide, the `compagnon migrate` section
+of the command-line reference (the command itself stays in the binary, out
+of this change's scope), the former name in the introduction and the
+origins, the CHANGELOG's top note pointing to the guide (its dated history
+stays). Removed files are deleted, links to them rewritten to the page that now
 holds the content, and no `[output.html.redirect]` is added, as the owner
 asked. Tests and constants that exist only for removed pages are deleted,
 not kept "just in case". The CHANGELOG keeps its history (it is a record,
@@ -159,6 +195,11 @@ In `docs_checks.rs`:
 - `removed_pages_problems`: no removed file in the chapter list, no link
   to one in chapters, READMEs, home pages or the CHANGELOG, no redirect in
   `book.toml`;
+- `codev_mentions`: every chapter, README and home page, any case;
+- `beginner_block_problems`: fenced blocks outside `<details>` in the
+  first three steps;
+- `show_and_tell_problems`: a diagram in each page of the first four
+  steps, an example block in each page of the first three;
 - `gitlab_mentions`: every chapter but the command-line and JSON-output
   references, the READMEs and the home pages;
 - removed: the profile and path functions and tests, `EVERYDAY` (replaced

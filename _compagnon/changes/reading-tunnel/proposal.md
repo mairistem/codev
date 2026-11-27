@@ -11,7 +11,9 @@ useful; each profile page then sends to chapters spread over three parts.
 The profile system scatters readers instead of guiding them, and it
 weighs on the specification (six requirements exist only for it). The
 owner asks for a complete refactor: a guided "tunnel" read from start to
-end, no profiles, nothing kept for the past, and GitHub only.
+end, very simple for beginners while experts can open the detail without
+cluttering it; diagrams and concrete examples on every page; no profiles,
+no trace of codev, and GitHub only.
 
 ## What Changes
 
@@ -28,6 +30,14 @@ end, no profiles, nothing kept for the past, and GitHub only.
      Deploying Compagnon for a team (which now holds repository
      integration and `compagnon doctor`), Inherited sources, Artifact
      language, Release notes and CHANGELOG, Custom schemas.
+- **Simple for beginners, deeper for experts**: in the first three steps,
+  what is shown by default is written for a beginner — no configuration,
+  option or internals; those fold into "Under the hood" blocks or live in
+  the Understand and For your team steps and the appendices.
+- **A diagram and a concrete example on every page**: each page of the
+  first four steps draws what it explains, and each page of the first
+  three shows a real example — a request and what comes of it; three new
+  diagrams (installing, asking Claude, building and filing away).
 - **Each tunnel page ends with "Next step"** linking the next page by its
   title, so mdBook's "next" and the page's own link tell the same story.
 - **No profiles; skip buttons instead**: a page some readers do not need
@@ -41,8 +51,9 @@ end, no profiles, nothing kept for the past, and GitHub only.
 - **Removed, with nothing kept for the past**: Choose your path, the four
   path pages, Starting from nothing and Repository integration as pages
   (their content moves into the tunnel), and Moving from codev as a page
-  (the steps `compagnon migrate` does not take move to its section of the
-  command-line reference). No redirect: the old addresses simply disappear.
+  ; the documentation keeps no trace of codev at all: no page, no
+  `compagnon migrate` section in the reference, no mention in the
+  introduction or the origins. No redirect: the old addresses simply disappear.
 - **GitHub only**: the tunnel, the glossary, the FAQ, the example plan,
   the READMEs and the home pages name GitHub alone; the command-line
   reference keeps describing what `compagnon init` prints while the
@@ -98,5 +109,5 @@ end, no profiles, nothing kept for the past, and GitHub only.
 ## Release note
 
 - Changed: The documentation reads as one guided path in five steps — discover, get started, every day, understand, for your team — each page ending with the next step and, where some readers can skip it, a button saying where to go; the reference, the glossary and the FAQ move to appendices.
-- Removed: **BREAKING** Seven pages and their addresses, with no redirect: "Choose your path" and the four profile pages (the home page now shows the five steps), "Starting from nothing" (now a section of Installation), "Repository integration" (now in Deploying Compagnon for a team) and "Moving from codev" (now in the command-line reference, under `compagnon migrate`); How it works' Apply, Sync and Archive sections move to the new "Building and filing away".
+- Removed: **BREAKING** Seven pages and their addresses, with no redirect: "Choose your path" and the four profile pages (the home page now shows the five steps), "Starting from nothing" (now a section of Installation), "Repository integration" (now in Deploying Compagnon for a team) and "Moving from codev" (the documentation no longer covers moving from codev); How it works' Apply, Sync and Archive sections move to the new "Building and filing away".
 - Changed: The documentation names GitHub only.
