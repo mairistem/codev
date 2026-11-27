@@ -418,6 +418,9 @@ history:
   - status: fixed
     by: developer
     ref: '12e8f60 — TUNNEL[EVERY_DAY_STEP], with EVERY_DAY_STEP documented next to BEGINNER_STEPS'
+  - status: fixed
+    by: newcomer
+    note: 'No bare TUNNEL[n] index is left.'
 ```
 
 #### R-newcomer-4 skip_problems takes six parameters and uses an iterator comparison to find the title
