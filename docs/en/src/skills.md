@@ -1,4 +1,4 @@
-# Claude Code skills
+# Asking Claude
 
 A skill is a set of instructions that Claude Code follows for one kind of
 task. Compagnon gives you eight, one for each step of its
@@ -277,7 +277,7 @@ Start your own review there.
 letters, a hyphen and a number, such as PROJ-123) and Jira is connected
 (through an [MCP](glossary.md#mcp) server), the skill
 reads the first ticket: read-only, in a single call. It then quotes it at
-the top of the proposal. See [Jira and other MCP servers](guides/mcp.md).
+the top of the proposal. See [Start from a Jira ticket](guides/mcp.md).
 
 Roles: analyst, investigator, product owner, QA analyst, architect, tech
 lead, tracer and skeptic — see [Built-in roles](roles.md#built-in-roles).

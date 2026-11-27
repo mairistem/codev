@@ -12,7 +12,7 @@ code. Trois pages, une heure environ.
 
 - [Rôles](../roles.md) : qui relit les plans et le code, à quelle étape.
 - [Configuration](../reference/configuration.md) : chaque réglage.
-- [Jira et autres serveurs MCP](../guides/mcp.md) : lire les tickets.
+- [Partir d'un ticket Jira](../guides/mcp.md) : lire les tickets.
 - [Sources héritées](../guides/inherited-sources.md) : partager des règles
   entre projets.
 

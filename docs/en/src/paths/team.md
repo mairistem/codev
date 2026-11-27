@@ -12,7 +12,7 @@ an hour.
 
 - [Roles](../roles.md): who reviews plans and code, at which step.
 - [Configuration](../reference/configuration.md): every setting.
-- [Jira and other MCP servers](../guides/mcp.md): reading tickets.
+- [Start from a Jira ticket](../guides/mcp.md): reading tickets.
 - [Inherited sources](../guides/inherited-sources.md): sharing rules across
   projects.
 

@@ -169,8 +169,8 @@ Moved to: /home/you/acme-app/_compagnon/changes/archive/2026-09-30-add-dark-mode
 
 ## Et ensuite
 
-- [Le déroulé](workflow.md) détaille chaque étape.
-- [Les compétences Claude Code](skills.md#comment-demander) donne, pour
+- [Comment ça marche](workflow.md) détaille chaque étape.
+- [Parler à Claude](skills.md#comment-demander) donne, pour
   chaque compétence, des façons de la demander.
 - Dites « fais-moi visiter Compagnon » pour une visite guidée de votre
   projet.

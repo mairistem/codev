@@ -11,7 +11,7 @@
 
 ## 3. The new table of contents
 
-- [ ] 3.1 Reorder both `SUMMARY.md` as the spec says, create `guides/decisions.md` and `reference/errors.md` in both editions (title and a first paragraph), retitle `workflow.md` "How it works" / « Comment ça marche », `skills.md` "Asking Claude" / « Parler à Claude » and `guides/mcp.md` "Start from a Jira ticket" / « Partir d'un ticket Jira » (headings and every link text naming the old titles); add `toc_problems`, add the two files to `no_chapter_is_removed`, update `EVERYDAY` and `PROFILE_GUIDES`; verified by unit tests with `roles.md` under Everyday use (fails naming it), `cargo test -p compagnon-cli`, `mdbook build docs/en` and `mdbook build docs/fr`
+- [x] 3.1 Reorder both `SUMMARY.md` as the spec says, create `guides/decisions.md` and `reference/errors.md` in both editions (title and a first paragraph), retitle `workflow.md` "How it works" / « Comment ça marche », `skills.md` "Asking Claude" / « Parler à Claude » and `guides/mcp.md` "Start from a Jira ticket" / « Partir d'un ticket Jira » (headings and every link text naming the old titles); add `toc_problems`, add the two files to `no_chapter_is_removed`, update `EVERYDAY` and `PROFILE_GUIDES`; verified by unit tests with `roles.md` under Everyday use (fails naming it), `cargo test -p compagnon-cli`, `mdbook build docs/en` and `mdbook build docs/fr`
 
 ## 4. Chapters, in both editions (each task mirrors EN and FR)
 

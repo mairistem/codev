@@ -1,4 +1,4 @@
-# FAQ et dépannage
+# FAQ
 
 ## Questions générales
 
@@ -325,7 +325,7 @@ Il y a deux causes probables.
    compétence vous le signale, et rédige la proposition à partir de votre
    seule demande.
 
-Voir [Jira et autres serveurs MCP](guides/mcp.md).
+Voir [Partir d'un ticket Jira](guides/mcp.md).
 
 ### `compagnon init` signale `inherit_pin_failed`
 

@@ -1,4 +1,4 @@
-# Jira and other MCP servers
+# Start from a Jira ticket
 
 Compagnon's skills can pull context from external systems through the MCP servers
 connected to your Claude Code session. The CLI itself never talks to them: the
@@ -80,7 +80,7 @@ as it does in a project without any MCP integration.
 ## Adding another MCP integration
 
 MCP integrations are part of Compagnon itself: each one is a configuration key and
-a placeholder in a workflow, so adding one — for example a Confluence page or
+a placeholder in a [workflow](../glossary.md#workflow), so adding one — for example a Confluence page or
 a design tool — is a contribution to Compagnon rather than a setting. The pattern
 is the same as for Jira:
 

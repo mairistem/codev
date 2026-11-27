@@ -1,4 +1,4 @@
-# Le déroulé
+# Comment ça marche
 
 Dans un projet Compagnon, chaque modification passe par les cinq mêmes
 étapes, dans le même ordre. Cette suite d'étapes est le
@@ -87,7 +87,7 @@ Dans Claude Code, `/compagnon-propose` rédige tout le plan d'une traite :
 
 1. Si votre demande cite un numéro de ticket comme `PROJ-123`, et qu'une
    connexion à Jira (un serveur MCP) est configurée, Claude lit d'abord le
-   ticket. Voir [Jira et autres serveurs MCP](guides/mcp.md).
+   ticket. Voir [Partir d'un ticket Jira](guides/mcp.md).
 2. Il crée le dossier de la modification.
 3. Pour chaque fichier prêt à être rédigé, il récupère les instructions de
    ce fichier, étudie le code concerné et rédige le fichier à partir de son

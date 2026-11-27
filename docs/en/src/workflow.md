@@ -1,4 +1,4 @@
-# The workflow
+# How it works
 
 In a Compagnon project, every change goes through the same five steps, in
 the same order. This fixed sequence is the Compagnon
@@ -36,7 +36,7 @@ underlying work. Building the change has no command: that is the
 
 Two more skills help along the way. `/compagnon-explore` lets you think an
 idea through before you propose anything. `/compagnon-update` revises a plan
-that is already written. See [Claude Code skills](skills.md).
+that is already written. See [Asking Claude](skills.md).
 
 At each step, Claude works in a set [role](glossary.md#role): product owner, quality (QA) analyst,
 architect, tech lead, skeptical reviewer or developer. Each role has
@@ -76,7 +76,7 @@ In Claude Code, `/compagnon-propose` does the whole plan in one go:
 
 1. If your request mentions a ticket number such as `PROJ-123`, and a Jira
    connection (an MCP server) is set up, Claude reads the ticket first. See
-   [Jira and other MCP servers](guides/mcp.md).
+   [Start from a Jira ticket](guides/mcp.md).
 2. It creates the folder for the change.
 3. For each file that is ready to write, it gets the instructions for that
    file, studies the code concerned, and writes the file from its template.

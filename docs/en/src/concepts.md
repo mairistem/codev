@@ -99,7 +99,7 @@ parts of its plan. The [schema](glossary.md#schema) sets which parts the
 plan holds: see [Custom schemas](guides/custom-schemas.md). The default
 schema is called `spec-driven`. It also sets the steps a change goes
 through, the [workflow](glossary.md#workflow), described in
-[The workflow](workflow.md).
+[How it works](workflow.md).
 
 A change is **active** while its folder is in `_compagnon/changes/<name>/`.
 Archiving moves the folder to

@@ -15,6 +15,6 @@ besoin d'un terminal.
 - [Approuver un plan sur GitHub ou GitLab](../guides/approve-a-plan.md) :
   commenter, demander des corrections et approuver là où votre équipe
   travaille.
-- [FAQ et dépannage](../faq.md), pour les questions qui reviennent.
+- [FAQ](../faq.md), pour les questions qui reviennent.
 
 Ce n'est pas votre cas ? [Choisissez un autre parcours](../choose-your-path.md).

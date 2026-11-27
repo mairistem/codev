@@ -1,4 +1,4 @@
-# Les compétences Claude Code
+# Parler à Claude
 
 Une compétence (skill) est un ensemble d'instructions que Claude Code suit
 pour un type de tâche. Compagnon vous en fournit huit, une pour chaque
@@ -293,7 +293,7 @@ Commencez votre propre relecture par là.
 lettres capitales ou plus, un tiret et un nombre, comme PROJ-123) et que
 Jira est connecté (par un serveur [MCP](glossary.md#mcp)), la compétence lit le premier ticket : en lecture seule, en un
 seul appel. Elle le cite ensuite en tête de la proposition. Voir
-[Jira et autres serveurs MCP](guides/mcp.md).
+[Partir d'un ticket Jira](guides/mcp.md).
 
 Rôles : analyste, enquêteur, responsable produit (product owner), analyste
 qualité (QA), architecte, référent technique (tech lead), contrôleur de

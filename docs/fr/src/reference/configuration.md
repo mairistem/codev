@@ -95,7 +95,7 @@ Les déroulés à installer comme compétences (skills) Claude Code, désignés 
 identifiant : `propose`, `explore`, `onboard`, `configure`, `apply`, `sync`,
 `archive`, `update`. En l'absence de la clé, les huit sont installés. Un
 identifiant inconnu produit l'avertissement `unknown_workflow` et est ignoré.
-Voir [Les compétences Claude Code](../skills.md).
+Voir [Parler à Claude](../skills.md).
 
 ## context
 
@@ -192,7 +192,7 @@ chaque installation de Claude Code et ne sont donc jamais hérités.
 |---|---|
 | `jira_tool` | Outil qui récupère un ticket Jira, utilisé par `/compagnon-propose` lorsqu'un identifiant de ticket est mentionné |
 
-Voir [Jira et autres serveurs MCP](../guides/mcp.md).
+Voir [Partir d'un ticket Jira](../guides/mcp.md).
 
 ## changelog
 

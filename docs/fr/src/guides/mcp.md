@@ -1,4 +1,4 @@
-# Jira et autres serveurs MCP
+# Partir d'un ticket Jira
 
 Les compétences de Compagnon peuvent puiser du contexte dans des systèmes externes via
 les serveurs MCP connectés à votre session Claude Code. La CLI elle-même ne
@@ -85,7 +85,7 @@ comporte exactement comme dans un projet sans intégration MCP.
 ## Ajouter une autre intégration MCP
 
 Les intégrations MCP font partie de Compagnon lui-même : chacune consiste en une
-clé de configuration et un emplacement réservé dans un déroulé. En ajouter une
+clé de configuration et un emplacement réservé dans un [déroulé](../glossary.md#déroulé). En ajouter une
 — par exemple pour une page Confluence ou un outil de conception graphique — relève donc de
 la contribution à Compagnon, et non du paramétrage. Le principe est le même que
 pour Jira :

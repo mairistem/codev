@@ -1,4 +1,4 @@
-# FAQ and troubleshooting
+# FAQ
 
 ## General
 
@@ -309,7 +309,7 @@ There are two likely causes.
    session: wrong name, server not connected, or expired login. The skill
    tells you, and writes the proposal from your request alone.
 
-See [Jira and other MCP servers](guides/mcp.md).
+See [Start from a Jira ticket](guides/mcp.md).
 
 ### `compagnon init` warns `inherit_pin_failed`
 

@@ -451,6 +451,91 @@ pub fn start_here_problems(summary: &str) -> Vec<String> {
     problems
 }
 
+/// The chapters of the parts after "Start here", in order: Everyday use,
+/// Going further, Reference, Contributing.
+pub const PARTS_AFTER_START: [&[&str]; 4] = [
+    &[
+        "quickstart.md",
+        "guides/start-from-nothing.md",
+        "installation.md",
+        "workflow.md",
+        "skills.md",
+        "guides/mcp.md",
+        "guides/review-a-plan.md",
+        "guides/example-plan.md",
+        "guides/approve-a-plan.md",
+        "concepts.md",
+        "faq.md",
+    ],
+    &[
+        "guides/decisions.md",
+        "guides/review-record.md",
+        "roles.md",
+        "guides/existing-project.md",
+        "guides/team-rollout.md",
+        "guides/repository-integration.md",
+        "guides/release-notes.md",
+        "guides/inherited-sources.md",
+        "guides/artifact-language.md",
+        "guides/custom-schemas.md",
+        "guides/moving-from-codev.md",
+    ],
+    &[
+        "reference/cli.md",
+        "reference/configuration.md",
+        "reference/file-formats.md",
+        "reference/json-output.md",
+        "reference/errors.md",
+    ],
+    &["origins.md", "contributing.md", "architecture.md", "reliability.md"],
+];
+
+/// How a `SUMMARY.md`'s parts after "Start here" depart from
+/// [`PARTS_AFTER_START`]: a chapter in the wrong part, a missing one, or
+/// a part out of order, each named.
+pub fn toc_problems(summary: &str) -> Vec<String> {
+    let parts = parts(summary);
+    let mut problems = Vec::new();
+    for (i, expected) in PARTS_AFTER_START.iter().enumerate() {
+        let Some((title, listed)) = parts.get(i + 1) else {
+            problems.push(format!("part {} is missing", i + 2));
+            continue;
+        };
+        for c in listed {
+            if !expected.contains(&c.as_str()) {
+                problems.push(format!("{c} does not belong in \"{title}\""));
+            }
+        }
+        for c in *expected {
+            if !listed.iter().any(|l| l == c) {
+                problems.push(format!("{c} is missing from \"{title}\""));
+            }
+        }
+        if problems.is_empty() && listed.iter().map(String::as_str).ne(expected.iter().copied()) {
+            problems.push(format!("\"{title}\" is out of order: {listed:?}"));
+        }
+    }
+    problems
+}
+
+/// The entries of a `SUMMARY.md` whose title is not the `# ` heading of
+/// their chapter, as `path: entry ≠ heading`.
+pub fn title_problems(summary: &str, heading_of: impl Fn(&str) -> Option<String>) -> Vec<String> {
+    let mut problems = Vec::new();
+    for line in summary.lines() {
+        let line = line.trim_start();
+        let Some(rest) = line.strip_prefix("- [") else { continue };
+        let Some((title, target)) = rest.split_once("](") else { continue };
+        let path = target.trim_end_matches(')');
+        match heading_of(path) {
+            Some(h) if h == title => {}
+            Some(h) => problems.push(format!("{path}: entry \"{title}\" ≠ heading \"{h}\"")),
+            None => problems.push(format!("{path}: no `# ` heading")),
+        }
+    }
+    problems
+}
+
 /// The commands of shell blocks outside `<details>` that neither install
 /// Compagnon nor run `compagnon init`.
 pub fn stray_commands(md: &str) -> Vec<String> {
@@ -1749,6 +1834,34 @@ mod chapter_tests {
     }
 
     #[test]
+    fn both_editions_follow_the_refactored_order() {
+        for lang in LANGS {
+            let problems = toc_problems(summary(lang));
+            assert!(problems.is_empty(), "{}: {problems:#?}", lang.tag());
+            let titles = title_problems(summary(lang), |path| {
+                lang.chapters()
+                    .iter()
+                    .find(|(p, _)| *p == path)
+                    .and_then(|(_, md)| md.lines().find_map(|l| l.strip_prefix("# ")))
+                    .map(str::to_string)
+            });
+            assert!(titles.is_empty(), "{}: {titles:#?}", lang.tag());
+        }
+    }
+
+    #[test]
+    fn a_chapter_out_of_its_part_is_caught() {
+        let moved = summary(Lang::En)
+            .replace("- [Roles](roles.md)\n", "")
+            .replace("- [FAQ](faq.md)\n", "- [FAQ](faq.md)\n- [Roles](roles.md)\n");
+        let problems = toc_problems(&moved);
+        assert!(problems.iter().any(|p| p.contains("roles.md does not belong")), "{problems:?}");
+        let renamed = summary(Lang::En).replace("[FAQ](faq.md)", "[Questions](faq.md)");
+        let titles = title_problems(&renamed, |_| Some("FAQ".into()));
+        assert!(titles.iter().any(|p| p.contains("faq.md")), "{titles:?}");
+    }
+
+    #[test]
     fn no_chapter_is_removed() {
         let before = [
             "introduction.md",
@@ -1773,6 +1886,8 @@ mod chapter_tests {
             "reference/json-output.md",
             "faq.md",
             "architecture.md",
+            "guides/decisions.md",
+            "reference/errors.md",
         ];
         for lang in LANGS {
             let now = paths(lang);
@@ -2108,7 +2223,7 @@ mod chapter_tests {
     /// The chapters of the "Start here" and "Everyday use" parts, as both
     /// `SUMMARY.md` list them: `the_everyday_list_follows_the_summary`
     /// fails if a chapter is added to those parts and not here.
-    const EVERYDAY: [&str; 17] = [
+    const EVERYDAY: [&str; 18] = [
         "introduction.md",
         "choose-your-path.md",
         "paths/review.md",
@@ -2117,13 +2232,14 @@ mod chapter_tests {
         "paths/team.md",
         "glossary.md",
         "quickstart.md",
+        "guides/start-from-nothing.md",
         "installation.md",
         "workflow.md",
         "skills.md",
+        "guides/mcp.md",
         "guides/review-a-plan.md",
         "guides/example-plan.md",
         "guides/approve-a-plan.md",
-        "guides/start-from-nothing.md",
         "concepts.md",
         "faq.md",
     ];

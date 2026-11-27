@@ -14,7 +14,7 @@ Ce que Compagnon vous apporte :
 
 - **Un cycle explicite.** Chaque modification passe par quatre étapes : proposer,
   réaliser, synchroniser et archiver. Chaque étape a son artefact et sa compétence Claude
-  Code dédiée. Voir [Le déroulé](workflow.md).
+  Code dédiée. Voir [Comment ça marche](workflow.md).
 - **Des deltas de spécifications, fusionnés avec précision.** Une
   modification ne réécrit jamais une spécification en entier. Elle déclare des exigences `ADDED`, `MODIFIED`,
   `REMOVED` ou `RENAMED`, que Compagnon fusionne dans les spécifications

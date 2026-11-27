@@ -13,29 +13,30 @@
 # Everyday use
 
 - [Your first change](quickstart.md)
+- [Starting from nothing](guides/start-from-nothing.md)
 - [Installation](installation.md)
-- [The workflow](workflow.md)
-- [Claude Code skills](skills.md)
+- [How it works](workflow.md)
+- [Asking Claude](skills.md)
+- [Start from a Jira ticket](guides/mcp.md)
 - [Reviewing a plan](guides/review-a-plan.md)
 - [An annotated example plan](guides/example-plan.md)
 - [Approving a plan on GitHub or GitLab](guides/approve-a-plan.md)
-- [Starting from nothing](guides/start-from-nothing.md)
 - [Concepts](concepts.md)
-- [FAQ and troubleshooting](faq.md)
+- [FAQ](faq.md)
 
 # Going further
 
+- [Decisions](guides/decisions.md)
+- [Review record](guides/review-record.md)
 - [Roles](roles.md)
-- [Moving from codev](guides/moving-from-codev.md)
-- [Inherited sources](guides/inherited-sources.md)
-- [Repository integration and compagnon doctor](guides/repository-integration.md)
 - [Adopting Compagnon on an existing project](guides/existing-project.md)
 - [Deploying Compagnon for a team](guides/team-rollout.md)
+- [Repository integration and compagnon doctor](guides/repository-integration.md)
 - [Release notes and CHANGELOG](guides/release-notes.md)
-- [Review record](guides/review-record.md)
-- [Jira and other MCP servers](guides/mcp.md)
+- [Inherited sources](guides/inherited-sources.md)
 - [Artifact language](guides/artifact-language.md)
 - [Custom schemas](guides/custom-schemas.md)
+- [Moving from codev](guides/moving-from-codev.md)
 
 # Reference
 
@@ -43,6 +44,7 @@
 - [Configuration](reference/configuration.md)
 - [File formats](reference/file-formats.md)
 - [JSON output](reference/json-output.md)
+- [Error codes and fixes](reference/errors.md)
 
 # Contributing
 

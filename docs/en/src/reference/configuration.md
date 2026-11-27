@@ -91,7 +91,7 @@ this setting. See [Artifact language](../guides/artifact-language.md).
 The workflows to install as Claude Code skills, by id: `propose`, `explore`,
 `onboard`, `configure`, `apply`, `sync`, `archive`, `update`. When the key is
 absent, all eight are installed. An unknown id produces an `unknown_workflow`
-warning and is ignored. See [Claude Code skills](../skills.md).
+warning and is ignored. See [Asking Claude](../skills.md).
 
 ## context
 
@@ -184,7 +184,7 @@ Code setup, so they are never inherited.
 |---|---|
 | `jira_tool` | Tool that fetches a Jira issue, used by `/compagnon-propose` when a ticket id is mentioned |
 
-See [Jira and other MCP servers](../guides/mcp.md).
+See [Start from a Jira ticket](../guides/mcp.md).
 
 ## changelog
 

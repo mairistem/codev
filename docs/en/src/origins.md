@@ -14,7 +14,7 @@ What Compagnon gives you:
 
 - **An explicit cycle.** Every change goes through propose, apply, sync and
   archive. Each step has an artifact and a dedicated Claude Code skill. See
-  [The workflow](workflow.md).
+  [How it works](workflow.md).
 - **Spec deltas, merged precisely.** A change never rewrites a spec wholesale.
   It declares `ADDED`, `MODIFIED`, `REMOVED` or `RENAMED` requirements, and
   Compagnon merges them into the main specs when the change is archived, leaving

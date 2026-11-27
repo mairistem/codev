@@ -5,8 +5,8 @@ planifie avant de coder. Trois pages, puis une première modification en
 une dizaine de minutes.
 
 1. [Votre première modification](../quickstart.md)
-2. [Les compétences Claude Code](../skills.md)
-3. [Le déroulé](../workflow.md)
+2. [Parler à Claude](../skills.md)
+3. [Comment ça marche](../workflow.md)
 
 ## Ensuite, si besoin
 
@@ -14,6 +14,6 @@ une dizaine de minutes.
   quand votre projet n'est pas vide.
 - [Concepts](../concepts.md) : comment s'articulent plans, spécifications et
   décisions.
-- [FAQ et dépannage](../faq.md), quand quelque chose ne va pas.
+- [FAQ](../faq.md), quand quelque chose ne va pas.
 
 Ce n'est pas votre cas ? [Choisissez un autre parcours](../choose-your-path.md).
