@@ -1928,3 +1928,63 @@ figure.diagram .mono {
     display: none;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* The approved look (change jira-and-modern-docs)                     */
+/* ------------------------------------------------------------------ */
+
+/* Monospace accents: part titles read as labels, as on the home page. */
+.chapter li.part-title {
+  font-family: var(--mono-font);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+
+/* Sections separated by a hairline, so a long page reads in blocks. */
+.content h2 {
+  padding-top: 20px;
+  border-top: 1px solid var(--mx-hairline, rgba(107, 133, 144, .25));
+}
+
+.content h1 + h2,
+.content h1 + p + h2 {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.content h1 {
+  letter-spacing: -.02em;
+}
+
+/* A "Go further" section ends every everyday chapter: its links as
+   cards that invite a click. */
+.content h2[id="go-further"] + ul,
+.content h2[id="pour-aller-plus-loin"] + ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.content h2[id="go-further"] + ul > li,
+.content h2[id="pour-aller-plus-loin"] + ul > li {
+  border: 1px solid var(--mx-hairline, rgba(107, 133, 144, .25));
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .content h2[id="go-further"] + ul > li,
+  .content h2[id="pour-aller-plus-loin"] + ul > li {
+    transition: transform .2s ease, border-color .2s ease;
+  }
+
+  .content h2[id="go-further"] + ul > li:hover,
+  .content h2[id="pour-aller-plus-loin"] + ul > li:hover {
+    transform: translateY(-2px);
+    border-color: var(--links);
+  }
+}
