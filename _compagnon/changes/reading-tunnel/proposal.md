@@ -1,0 +1,96 @@
+# Proposal: One reading tunnel instead of reader profiles
+
+## Why
+
+The owner read the published documentation after the refactor
+(`2026-11-27-jira-and-modern-docs`): the home page is right, but the books
+have no reading logic. A reader who clicks "next" from the introduction
+goes through Choose your path, four profile pages that mostly do not
+concern them, then the glossary — a dictionary — before reaching anything
+useful; each profile page then sends to chapters spread over three parts.
+The profile system scatters readers instead of guiding them, and it
+weighs on the specification (six requirements exist only for it). The
+owner asks for a complete refactor: a guided "tunnel" read from start to
+end, no profiles, nothing kept for the past, and GitHub only.
+
+## What Changes
+
+- **One tunnel in five steps**, both editions, in this order:
+  1. **Discover** — Compagnon in two minutes;
+  2. **Get started** — Installation (which now holds "starting from
+     nothing"), Your first change;
+  3. **Every day** — Asking Claude, Start from a Jira ticket, Reviewing a
+     plan, Approving a plan on GitHub, Building and filing away (new:
+     apply, sync and archive, taken out of How it works);
+  4. **Understand** — How it works, Concepts, Decisions, Roles, Review
+     record;
+  5. **For your team** — Adopting Compagnon on an existing project,
+     Deploying Compagnon for a team (which now holds repository
+     integration and `compagnon doctor`), Inherited sources, Artifact
+     language, Release notes and CHANGELOG, Custom schemas.
+- **Each tunnel page ends with "Next step"** linking the next page by its
+  title, so mdBook's "next" and the page's own link tell the same story.
+- **No profiles; skip buttons instead**: a page some readers do not need
+  opens with a button in plain words — "Not for you? Skip to …" — that
+  jumps ahead in the tunnel. The home page's four profile cards become the
+  five steps of the tunnel; the READMEs link the start of the tunnel.
+- **Appendices, outside the tunnel**: the reference chapters (command
+  line, configuration, file formats, JSON output, error codes), the
+  glossary, the FAQ, the annotated example plan. Contributing is
+  unchanged.
+- **Removed, with nothing kept for the past**: Choose your path, the four
+  path pages, Starting from nothing and Repository integration as pages
+  (their content moves into the tunnel), and Moving from codev with its
+  requirement. No redirect: the old addresses simply disappear.
+- **GitHub only**: the documentation and the home pages name GitHub alone;
+  every GitLab mention goes.
+- **A clickable mockup of the tunnel first** — the table of contents, each
+  page's purpose, its skip button and its "Next step" — approved by the
+  owner before any chapter is rewritten.
+
+## Capabilities
+
+### New Capabilities
+
+### Modified Capabilities
+
+- `docs`
+
+### Removed Capabilities
+
+## Impact
+
+- `docs/en/src`, `docs/fr/src`: `SUMMARY.md`; removed `choose-your-path.md`,
+  `paths/*.md`, `guides/start-from-nothing.md`,
+  `guides/repository-integration.md`, `guides/moving-from-codev.md`; new
+  `guides/build-and-file.md`; `introduction.md`, `installation.md`,
+  `quickstart.md`, `workflow.md`, `guides/approve-a-plan.md`,
+  `guides/team-rollout.md` reshaped; every tunnel page gains its "Next
+  step"; links to removed pages rewritten; GitLab removed everywhere.
+- `docs/theme/mairistem.css` (the skip button), `docs/site/index.html`,
+  `docs/site/fr.html` (five step cards), `README.md`, `README.fr.md`.
+- `crates/compagnon-cli/src/docs_checks.rs`, `docs.rs`, `tests/repository.rs`:
+  checks of the Start here path, profiles, parts and the codev guide
+  replaced by checks of the tunnel; the offline manual follows the new
+  order.
+- Out of scope: `compagnon init` still prints a GitLab CI job when it skips
+  the GitHub one (`crates/compagnon-cli/src/render.rs`) — a behavior of the
+  command, not of the documentation, left for its own change if wanted.
+- No change to the commands, the skills or the configuration.
+
+## Domains
+
+<!-- No code diff yet (only this plan): domains ticked by judgement. -->
+
+- [ ] security — documentation only; no input, secret or dependency
+- [ ] personal-data — no personal data handled
+- [x] user-interface
+- [ ] performance — static pages
+- [ ] operations — the existing Pages workflow publishes unchanged
+- [ ] migration — no configuration or data change; removed pages are documentation addresses only, dropped on the owner's request
+
+## Release note
+
+- Changed: The documentation reads as one guided path in five steps — discover, get started, every day, understand, for your team — each page ending with the next step and, where some readers can skip it, a button saying where to go; the reference, the glossary and the FAQ move to appendices.
+- Removed: **BREAKING** The "Choose your path" page, the four profile pages, "Starting from nothing", "Repository integration" and "Moving from codev" as separate pages; their old addresses no longer exist, and their useful content is now in the tunnel.
+- Changed: The documentation names GitHub only.

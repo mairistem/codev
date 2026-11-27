@@ -1,0 +1,27 @@
+## 1. Mockup of the tunnel, for the owner's approval
+
+- [ ] 1.1 Build `mockup/` in the change folder: the tunnel's table of contents (five steps, appendices and Contributing greyed) and one card per chapter with its title, one-line purpose, skip button if any and "Next step", each link moving to its card, light and dark, in English with the French part titles beside; verified by Playwright at 320 px and 1280 px, light and dark: no horizontal scroll, no console error, every "Next step" and skip button moves to an existing card
+- [ ] 1.2 Publish the mockup as a private page and stop until the owner approves it or asks for changes (made to the mockup first); record the approved version at the top of `mockup/README.md`; verified by the owner's explicit approval in the conversation (a person's judgement, which no test can give)
+
+## 2. The structure
+
+- [ ] 2.1 Rewrite both `SUMMARY.md` as the approved tunnel; create `guides/build-and-file.md` (title and first paragraph) in both editions; delete `choose-your-path.md`, `paths/*.md`, `guides/start-from-nothing.md`, `guides/repository-integration.md`, `guides/moving-from-codev.md` after moving their content (start-from-nothing into `installation.md`, repository integration into `guides/team-rollout.md`); replace `START_HERE`, `PATHS`, `PARTS_AFTER_START`, `EVERYDAY`, `PROFILE_GUIDES` and the profile, path and codev-guide checks and tests by `TUNNEL`, `APPENDICES`, `CONTRIBUTING` and the new `toc_problems`; verified by unit tests with `glossary.md` under Discover (fails naming it), `cargo test -p compagnon-cli`, `mdbook build docs/en`, `mdbook build docs/fr`
+- [ ] 2.2 Add `removed_pages_problems` (no removed file listed or linked from chapters, READMEs, home pages; no redirect in `book.toml`) and rewrite every link to a removed page to the page that now holds its content; verified by a unit test with a chapter linking `paths/review.md` (fails naming it) and `cargo test -p compagnon-cli`
+- [ ] 2.3 Remove GitLab from every chapter, README and home page (the approval guide becomes "Approving a plan on GitHub" / « Approuver un plan sur GitHub »); add `gitlab_mentions`; verified by a unit test with a chapter naming GitLab (fails naming it) and `cargo test -p compagnon-cli`
+
+## 3. The tunnel, in both editions (each task mirrors EN and FR)
+
+- [ ] 3.1 Discover and Get started: introduction without profile labels, with the reading-tunnel diagram; installation opening with "Starting from nothing"; quickstart; each with its skip button where the mockup has one and its "Next step"; verified by the first-steps caps and checks, the diagram and contrast checks, and `cargo test -p compagnon-cli`
+- [ ] 3.2 Every day: Asking Claude, Start from a Jira ticket, Reviewing a plan, Approving a plan on GitHub, Building and filing away (Apply, Sync, Archive moved from `workflow.md`, links to the moved anchors rewritten); verified by the skills, Jira guide, review and approval checks, the offline manual's links test, and `cargo test -p compagnon-cli`
+- [ ] 3.3 Understand: How it works (without Apply, Sync, Archive), Concepts, Decisions, Roles, Review record, in that order with their skip buttons and "Next step"; verified by the roles and review-record tests and `cargo test -p compagnon-cli`
+- [ ] 3.4 For your team: Adopting on an existing project, Deploying for a team (with what `compagnon init` writes and `compagnon doctor`), Inherited sources, Artifact language, Release notes, Custom schemas; the last leads to the command-line reference; verified by the artifact-language tests and `cargo test -p compagnon-cli`
+- [ ] 3.5 Appendices: glossary, FAQ and example plan read as appendices (no "Next step"; links to removed pages gone); add `next_step_problems` and `skip_problems` over the tunnel, and move the caps to the first three steps; verified by unit tests with a Concepts chapter leading to Roles and a skip button leading backwards (each fails naming it), and `cargo test -p compagnon-cli`
+
+## 4. The look
+
+- [ ] 4.1 Draw `.skip-step a` as a button in `mairistem.css` (light and navy) and in the offline manual's `docs.css`, with a visible focus; verified by the contrast check extended to the button's text and border, and Playwright by hand on a page with a skip button in light and navy at 320 px and 1280 px (manual: needs a browser)
+- [ ] 4.2 Copy `build_home.py` into this change's folder and adapt it: five step cards instead of the four profiles, each linking the first chapter of its step; regenerate both home pages; READMEs link the introduction instead of the profiles; update the home page and README checks in `tests/repository.rs` (five steps, before the install command, Jira after them; README links the introduction); verified by unit tests with a home page whose first step comes after the install command and a README without the introduction (each fails), `cargo test -p compagnon-cli --test repository`, and Playwright by hand at 320 px and 1280 px, light and dark (manual: needs a browser)
+
+## 5. Final check
+
+- [ ] 5.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `mdbook build docs/en`, `mdbook build docs/fr`, `compagnon validate --strict`; walk the tunnel with mdBook's "next" button from the introduction to the command-line reference in both editions and check each page's "Next step" agrees; verified by all commands passing and the walk reaching the reference
