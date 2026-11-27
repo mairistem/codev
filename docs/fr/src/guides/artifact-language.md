@@ -169,3 +169,9 @@ langues, et les mots-clés suivent la langue dans laquelle ce modèle est
 ([Schémas personnalisés](custom-schemas.md)). Le modèle d'ADR utilisé par les commandes
 `compagnon decision` a des titres de sections en anglais ; rédigez-en le contenu
 dans la langue de votre équipe.
+
+## Pour aller plus loin
+
+- [Formats de fichiers](../reference/file-formats.md)
+- [Configuration](../reference/configuration.md)
+- [Schémas personnalisés](custom-schemas.md)

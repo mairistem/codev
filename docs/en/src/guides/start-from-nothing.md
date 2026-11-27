@@ -24,9 +24,8 @@ These two commands are the only ones you type. If someone in your team is
 used to a [terminal](../glossary.md#terminal) (the window where you type
 commands), they can do this part for you.
 
-**1. Install Compagnon.** Open a terminal: on macOS, the Terminal app (press Cmd + Space, type
-"Terminal", then Enter); on
-Windows, PowerShell. Copy the line for your computer, paste it, then press
+**1. Install Compagnon.** Open a terminal: on macOS, the Terminal app
+(press Cmd + Space, type "Terminal", then Enter); on Windows, PowerShell. Copy the line for your computer, paste it, then press
 Enter.
 
 On macOS or Linux:
@@ -48,18 +47,19 @@ you.
 
 **2. Prepare your folder.** Open a terminal in your project folder: on
 macOS, right-click the folder in the Finder, then Services and "New
-Terminal at Folder"; on Windows,
-right-click inside the folder in File Explorer, then "Open in Terminal". Then type:
+Terminal at Folder"; on Windows, right-click inside the folder in File
+Explorer, then "Open in Terminal". Then type:
 
 ```bash
 compagnon init
 ```
 
-It may ask which [skills](../glossary.md#skill) to give Claude, and for a
-few words about your project: the proposed choice is fine; for the
-words, always type one sentence about your idea: an empty answer opens
-an awkward text editor (if that happens, call the person helping you). It adds a `_compagnon/` folder, where your plans will be
-kept. You can close the terminal now.
+It may ask which [skills](../glossary.md#skill) to give Claude: the
+proposed choice is fine. It then asks for a few words about your project:
+always type one sentence about your idea, because an empty answer opens an
+awkward text editor (if that happens, call the person helping you). It adds
+a `_compagnon/` folder, where your plans will be kept. You can close the
+terminal now.
 
 ## Your first request
 
@@ -107,3 +107,11 @@ something is unclear. To see the result, ask:
 Compagnon helps Claude plan and build; putting the result online, so that
 others can use your form, is outside Compagnon. Ask a developer, or ask
 Claude how to do it.
+
+## Go further
+
+- [Reviewing a plan](review-a-plan.md): what to check before Claude builds.
+- [An annotated example plan](example-plan.md): a whole plan, explained.
+- [Start from a Jira ticket](mcp.md): if your idea is already a Jira
+  ticket.
+- [Glossary](../glossary.md): every word, in plain words.

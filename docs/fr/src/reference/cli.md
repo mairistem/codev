@@ -67,7 +67,16 @@ qui ne lisent pas le projet :
   qui indique la correction.
 - **Choix de la modification.** Les commandes qui acceptent `--change <CHANGE>` la
   déduisent lorsque le projet compte exactement une modification active, et échouent
-  avec `ambiguous_change` lorsqu'il y en a plusieurs.
+  avec `ambiguous_change` lorsqu'il y en a plusieurs, en les nommant :
+
+  ```text
+  error: several active changes: add-audit-log, rework — specify which one
+  help: `--change add-audit-log`
+  ```
+
+  Les noms des modifications s'écrivent en
+  [kebab-case](../glossary.md#kebab-case) : lettres minuscules, chiffres et
+  tirets, par exemple `add-user-auth`.
 
 ## Projet
 
@@ -447,13 +456,13 @@ Open the compagnon documentation in the browser
 
 Three forms:
 
-- default: writes `compagnon-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM).
+- default: writes `compagnon-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM), the diagrams' drawings left out and their captions kept.
 
 Usage: compagnon docs [OPTIONS]
 
 Options:
       --print
-          Print the markdown source to stdout (does not open anything)
+          Print the markdown source to stdout, without the diagrams' drawings (does not open anything)
 
       --write <PATH>
           Write the HTML to the given path (does not open anything)
@@ -475,7 +484,8 @@ Produit cette documentation sous la forme d'une page HTML autonome — CSS
 intégré, aucun accès réseau — et l'ouvre dans votre navigateur. La page est
 écrite dans `compagnon-docs-<version>.html`, dans le dossier temporaire du
 système. `--write` l'écrit ailleurs sans l'ouvrir, pour la partager ;
-`--print` affiche la source Markdown. `--lang` choisit l'édition anglaise
+`--print` affiche la source Markdown, la légende de chaque schéma tenant
+lieu de son dessin. `--lang` choisit l'édition anglaise
 (`en`, par défaut) ou française (`fr`). `compagnon docs` fonctionne partout, y
 compris en dehors d'un projet Compagnon.
 
@@ -896,6 +906,27 @@ elles ne vérifient et n'écrivent rien, et échouent avec
 `compagnon_version_unsatisfied`, en nommant l'exigence, la version en cours et
 la correction que donne `compagnon doctor`. Relevez un épinglage de CI
 (`COMPAGNON_VERSION=`) en même temps que `compagnon_version`.
+
+Ce qu'elle vérifie :
+
+- la forme des spécifications et des deltas : chaque exigence emploie
+  `SHALL` ou `MUST` (ou `DOIT` ou `DOIVENT`) et comporte au moins un
+  `#### Scenario:` ;
+- qu'un delta ne se contredit pas : aucune exigence à la fois ajoutée et
+  modifiée, aucun renommage en conflit avec un ajout ;
+- la règle du delta vide : une modification sans aucun delta doit déclarer
+  `skip_specs: true` dans son `change.yaml` — un nettoyage, une mise à
+  niveau ou de la documentation, qui ne change aucun comportement ;
+- que les décisions scellées n'ont pas été altérées.
+
+Utilisez `--strict` en
+[intégration continue](../glossary.md#intégration-continue) (CI), les
+vérifications lancées à chaque envoi de code, pour que les avertissements
+fassent aussi échouer la construction :
+
+```bash
+compagnon validate --strict
+```
 
 Code de sortie :
 

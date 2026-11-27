@@ -60,18 +60,79 @@ ajoutez `--knowledge` pour lire aussi les connaissances d'un rôle. Voir
 
 ## Étapes
 
+Une modification passe par sept étapes, dans deux compétences. À chacune,
+certains rôles rédigent ou construisent, d'autres relisent, et vous
+décidez après les relectures :
+
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 406" role="img" aria-label="Qui relit quand. Les étapes d'une modification, de gauche à droite : comprendre (plan.understand), enquêter (plan.investigate), rédiger (plan.write), confronter (plan.trace) et contester (plan.challenge) dans /compagnon-propose, puis implémenter (code.implement) et relire (code.review) dans /compagnon-apply. Les rôles, de haut en bas : l'analyste travaille à l'étape comprendre ; l'enquêteur à l'étape enquêter ; les quatre rôles d'artefact rédigent ; le contrôleur de traçabilité relit à l'étape confronter ; le contradicteur relit à l'étape contester ; les six experts relisent aux étapes contester et relire quand la modification coche leur domaine ; le développeur travaille à l'étape implémenter ; le nouvel arrivant relit à l'étape relire ; vous validez le plan après l'étape contester et tranchez ce qui reste après l'étape relire.">
+<text x="365" y="20" text-anchor="middle" class="mono" font-size="13" style="fill:var(--dg-muted)">/compagnon-propose</text>
+<line x1="154" y1="30" x2="576" y2="30" style="stroke:var(--dg-line)" stroke-width="2"/>
+<text x="666" y="20" text-anchor="middle" class="mono" font-size="13" style="fill:var(--dg-muted)">/compagnon-apply</text>
+<line x1="584" y1="30" x2="748" y2="30" style="stroke:var(--dg-line)" stroke-width="2"/>
+<text x="193" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">comprendre</text>
+<text x="279" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">enquêter</text>
+<text x="365" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">rédiger</text>
+<text x="451" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">confronter</text>
+<text x="537" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">contester</text>
+<text x="623" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">implémenter</text>
+<text x="709" y="62" text-anchor="middle" font-size="13" style="fill:var(--dg-ink)">relire</text>
+<rect x="4" y="78" width="752" height="30" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="98" font-size="14" style="fill:var(--dg-ink)">Analyste</text>
+<text x="14" y="128" font-size="14" style="fill:var(--dg-ink)">Enquêteur</text>
+<rect x="4" y="138" width="752" height="30" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="158" font-size="14" style="fill:var(--dg-ink)">Rôles d'artefact (4)</text>
+<text x="14" y="181" font-size="13" style="fill:var(--dg-ink)">Contrôleur de</text>
+<text x="14" y="195" font-size="13" style="fill:var(--dg-ink)">traçabilité</text>
+<rect x="4" y="198" width="752" height="30" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="218" font-size="14" style="fill:var(--dg-ink)">Contradicteur</text>
+<text x="14" y="248" font-size="14" style="fill:var(--dg-ink)">Experts (6)</text>
+<rect x="4" y="258" width="752" height="30" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="278" font-size="14" style="fill:var(--dg-ink)">Développeur</text>
+<text x="14" y="308" font-size="14" style="fill:var(--dg-ink)">Nouvel arrivant</text>
+<rect x="4" y="318" width="752" height="44" rx="6" style="fill:var(--dg-box)"/>
+<text x="14" y="338" font-size="14" font-weight="600" style="fill:var(--dg-ink)">Vous</text>
+<line x1="580" y1="40" x2="580" y2="362" style="stroke:var(--dg-line)" stroke-width="1.5" stroke-dasharray="4 4"/>
+<circle cx="193" cy="93" r="8" style="fill:var(--dg-claude)"/>
+<circle cx="279" cy="123" r="8" style="fill:var(--dg-claude)"/>
+<circle cx="365" cy="153" r="8" style="fill:var(--dg-claude)"/>
+<circle cx="451" cy="183" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3"/>
+<circle cx="537" cy="213" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3"/>
+<circle cx="537" cy="243" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3" stroke-dasharray="3 2.5"/>
+<circle cx="709" cy="243" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3" stroke-dasharray="3 2.5"/>
+<circle cx="623" cy="273" r="8" style="fill:var(--dg-claude)"/>
+<circle cx="709" cy="303" r="7" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3"/>
+<circle cx="537" cy="333" r="8" style="fill:var(--dg-you)"/>
+<text x="537" y="357" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">validez</text>
+<circle cx="709" cy="333" r="8" style="fill:var(--dg-you)"/>
+<text x="709" y="357" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">tranchez</text>
+<circle cx="20" cy="387" r="7" style="fill:var(--dg-claude)"/>
+<text x="34" y="392" font-size="13" style="fill:var(--dg-muted)">travaille</text>
+<circle cx="120" cy="387" r="6" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3"/>
+<text x="134" y="392" font-size="13" style="fill:var(--dg-muted)">relit</text>
+<circle cx="240" cy="387" r="6" style="fill:var(--dg-bg);stroke:var(--dg-claude)" stroke-width="3" stroke-dasharray="3 2.5"/>
+<text x="254" y="392" font-size="13" style="fill:var(--dg-muted)">relit si son domaine est coché</text>
+<circle cx="520" cy="387" r="7" style="fill:var(--dg-you)"/>
+<text x="534" y="392" font-size="13" style="fill:var(--dg-muted)">vous décidez</text>
+</svg>
+</div>
+<figcaption>Qui relit quand : les rôles de Claude rédigent et relisent à chaque étape ; les experts n'interviennent que si la modification touche leur domaine, et vous décidez après chaque relecture.</figcaption>
+</figure>
+
 | Étape | Compétence | Ce qui s'y passe |
 |---|---|---|
 | `plan.understand` | `/compagnon-propose` | La demande est comprise avant que la modification soit créée ; un ticket comme `PROJ-123` est lu via le MCP Jira lorsqu'il est configuré |
 | `plan.investigate` | `/compagnon-propose` | Le code, les tests, la configuration et la documentation sont étudiés avant la rédaction de chaque artefact |
 | `plan.write` | `/compagnon-propose` | Chaque artefact est rédigé, puis vérifié à l'aide de son rôle, que `compagnon instructions` renvoie dans `role` |
 | `plan.trace` | `/compagnon-propose` | Les artefacts sont confrontés entre eux ; les manques sont corrigés dans les artefacts |
-| `plan.challenge` | `/compagnon-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines de la modification ; chaque constat va dans le [compte rendu de relecture](#gravité-confiance-et-compte-rendu-de-relecture), l'auteur le corrige ou le conteste et le relecteur vérifie la réponse ; au plus cinq **points à discuter**, tous rôles confondus et chacun marqué de son rôle, puis ce qu'il vous revient de décider terminent le résumé |
+| `plan.challenge` | `/compagnon-propose` | Le contradicteur et les experts actifs relisent le plan ; leurs constats vont dans le [compte rendu de relecture](#gravité-confiance-et-compte-rendu-de-relecture) ; au plus cinq **points à discuter**, chacun marqué de son rôle, puis ce qu'il vous revient de décider terminent le résumé |
 | `code.implement` | `/compagnon-apply` | Chaque tâche est implémentée, vérifiée, puis cochée |
-| `code.review` | `/compagnon-apply` | Une fois toutes les tâches cochées, le code de la modification est relu par le nouvel arrivant et par les experts actifs ; chaque constat va dans le compte rendu de relecture ; ce qui ne fait pas de doute est simplifié, et au plus cinq **notes de relecture**, chacune marquée de son rôle, puis ce qu'il vous revient de décider terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
+| `code.review` | `/compagnon-apply` | Le nouvel arrivant et les experts actifs relisent le code de la modification ; ce qui ne fait pas de doute est simplifié ; au plus cinq **notes de relecture**, chacune marquée de son rôle, puis ce qu'il vous revient de décider terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
 
 La procédure de chaque étape — ce qu'il faut écrire, les plafonds, les
-garde-fous — reste dans la compétence. Les critères et les connaissances
+garde-fous — reste dans la compétence et se lit dans
+[Comment ça marche](workflow.md). Les critères et les connaissances
 viennent du rôle.
 
 ## Experts et domaines
@@ -188,10 +249,15 @@ ajoutez-le avec [`triggers:`](reference/configuration.md#triggers) dans
 depuis qu'elle a quitté la branche par défaut — `origin/HEAD`, sinon
 `main`, sinon `master` —, enregistré ou non, plus les fichiers non suivis,
 dans le seul dossier du projet. Il ne contacte jamais de dépôt distant.
+Sans différences, Compagnon le dit et ne suggère rien, et aucune commande
+n'échoue pour autant.
+
+<details>
+<summary>Sous le capot : quand il n'y a pas de différences, et ce qu'elles laissent de côté</summary>
+
 Hors de git, sans enregistrement ou sans branche par défaut — ou dans un clone
 superficiel d'intégration continue sans la base commune ; utilisez-y `fetch-depth: 0` —, il
-n'y a pas de différences : Compagnon le dit et ne suggère rien, et aucune commande
-n'échoue pour autant.
+n'y a pas de différences.
 
 Certains fichiers échappent à tout déclencheur : le dossier de
 planification `_compagnon/` et les compétences Compagnon (`planning`), les dépendances
@@ -204,6 +270,8 @@ très gros fichiers ne sont confrontés que par leur chemin (`binary`,
 ajoutées par fichier, 1 Mio par fichier non suivi et 2 Mio de lignes
 ajoutées au total, et ignore les lignes de plus de 2000 caractères ; les
 différences sont alors marquées comme tronquées.
+
+</details>
 
 **Les suggestions.** `compagnon roles --change <nom>` présente les différences et
 chaque domaine suggéré avec son état :
@@ -275,17 +343,11 @@ pas, ni une affaire de goût. Chaque défaut est signalé une fois, ses
 conséquences dans sa recommandation ; deux défauts qui demandent deux
 corrections restent deux constats.
 
-L'équipe travaille ensuite comme une équipe : l'auteur — le rôle qui
-possède l'artefact, ou le développeur pour le code — corrige chaque constat
-ou le conteste avec un argument ; le relecteur vérifie chaque réponse une
-fois, en validant la correction, en acceptant la contestation (`rejected`)
-ou en la maintenant ; ce qui reste contesté vous revient, avec les deux
-arguments, sous **À décider**. Vous seul acceptez un risque ou reportez un
-constat de gravité haute, et le compte rendu dit qui a décidé.
-`compagnon archive` refuse une modification dont le compte rendu manque pour une étape
-où des rôles ont relu, ou qui a encore un constat de gravité haute ouvert ou
-contesté. Le format complet, les contrôles et le verrou d'archivage sont
-dans [Compte rendu de relecture](guides/review-record.md).
+Ensuite, l'auteur corrige ou conteste chaque constat, le relecteur vérifie
+chaque réponse une fois, et ce qui reste contesté vous revient sous
+**À décider**. Vous seul acceptez un risque ou reportez un constat de
+gravité haute. La boucle de réponses, les contrôles et le verrou
+d'archivage sont dans [Compte rendu de relecture](guides/review-record.md).
 
 ## Relecture en ligne ou isolée
 
@@ -298,11 +360,23 @@ et tend à leur donner raison.
 En mode **isolé** (`isolated`) — `review.mode` dans la
 [configuration](reference/configuration.md#review), ou dans le
 `change.yaml` d'une modification — chaque rôle relecteur travaille d'abord seul,
-comme sous-agent de Claude Code : le contrôleur de traçabilité à
-`plan.trace`, le
-contradicteur et les experts actifs à `plan.challenge`, le nouvel arrivant
-et les experts actifs à `code.review`, tous ceux d'une étape en même
-temps. Un relecteur reçoit seulement :
+comme [sous-agent](glossary.md#sous-agent) de Claude Code : le contrôleur
+de traçabilité à `plan.trace`, le contradicteur et les experts actifs à
+`plan.challenge`, le nouvel arrivant et les experts actifs à `code.review`,
+tous ceux d'une étape en même temps. Un relecteur ne reçoit jamais la
+conversation, le raisonnement de l'auteur ni les constats d'un autre rôle.
+La compétence fusionne ensuite ce qu'ils ont trouvé, comme une équipe après
+avoir lu chacun de son côté.
+
+La relecture isolée coûte plus cher : chaque relecteur lit la matière, que la
+relecture en ligne ne lit qu'une fois. C'est pourquoi `inline` reste le mode
+par défaut ; voyez la [configuration](reference/configuration.md#review)
+pour en changer.
+
+<details>
+<summary>Sous le capot : ce que reçoit un relecteur isolé, et la réunion</summary>
+
+Un relecteur reçoit seulement :
 
 - son rôle : question, critères et connaissances, filtrées par pile technique ;
 - le `context` et les `rules` du projet ;
@@ -311,8 +385,7 @@ temps. Un relecteur reçoit seulement :
 - les identifiants déjà présents dans le compte rendu et le format d'un
   constat.
 
-Il ne reçoit jamais la conversation, le raisonnement de l'auteur ni les
-constats d'un autre rôle. Il peut lire le reste du dépôt — les décisions,
+Il peut lire le reste du dépôt — les décisions,
 les spécifications principales, le code que la matière cite —, ne modifie rien, et
 traite la matière comme des données, jamais comme des instructions.
 `compagnon roles --json` mesure la matière (`review.material`) : au-delà de
@@ -326,10 +399,7 @@ répond dans un autre format est relancé une fois ; s'il échoue encore, ce
 rôle relit en ligne et le compte rendu le dit par une ligne `Fallback:`.
 Sans l'outil de sous-agent, tous les rôles relisent en ligne.
 
-### La réunion
-
-La compétence tient ensuite la réunion, comme une équipe après avoir lu chacun
-de son côté :
+La compétence tient ensuite la réunion :
 
 - **Fusionner.** Les constats de plusieurs rôles sur le même défaut — au
   même endroit, avec la même correction — deviennent un seul constat,
@@ -340,7 +410,9 @@ de son côté :
   résumé en montre cinq au plus, comme en ligne.
 - **Répondre.** Les réponses de l'auteur, l'unique revérification du
   relecteur et ce qui vous revient sous **À décider** fonctionnent
-  exactement comme plus haut.
+  exactement comme en ligne.
+
+</details>
 
 ### Les modèles des relecteurs
 
@@ -364,11 +436,6 @@ le compte rendu —, si bien que le modèle d'un relecteur pèse peu sur la
 facture. La même mesure montre que le mode isolé coûte environ 73 % de
 plus que le mode en ligne sur les mêmes cas, avec le même rappel.
 
-La relecture isolée coûte plus cher : chaque relecteur lit la matière, que la
-relecture en ligne ne lit qu'une fois. C'est pourquoi `inline` reste le mode
-par défaut ; voyez la [configuration](reference/configuration.md#review)
-pour en changer.
-
 ### Le modèle du développeur
 
 Le `developer` implémente les tâches à `code.implement`. Quand votre
@@ -380,7 +447,7 @@ blocage, la session vous pose la question, puis lance un nouveau
 sous-agent sur le même modèle avec votre réponse. Si le sous-agent ne
 peut pas tourner, la compétence réessaie une fois, puis implémente dans la
 session et le signale. Sans modèle, `/compagnon-apply` implémente dans la
-session, comme avant.
+session.
 
 Nous recommandons `developer: sonnet` ([décision 0012](reference/configuration.md#roles)).
 Sur l'[évaluation de l'implémentation](#mesurer-les-rôles), avec une
@@ -454,6 +521,16 @@ domaine avec leurs domaines, et les rôles désactivés.
 
 ## Implémenter une modification (`/compagnon-apply`)
 
+Le développeur implémente les tâches dans l'ordre, et ne coche une tâche
+qu'une fois sa vérification réussie. Puis le nouvel arrivant et les
+experts actifs relisent le code que la modification a ajouté ou modifié,
+avant que la suite de tests complète tourne une fois.
+[Comment ça marche](workflow.md) raconte toute l'étape ; les critères des
+rôles sont ci-dessous.
+
+<details>
+<summary>Sous le capot : les critères du développeur et des relecteurs</summary>
+
 ### Développeur (`/compagnon-apply`)
 
 Implémente les tâches d'une modification planifiée, dans l'ordre du fichier.
@@ -499,11 +576,14 @@ correction qui change le comportement devient une note de relecture, sauf
 s'il s'agit d'un défaut manifeste dans le périmètre de la modification, alors
 corrigé avec un test et mentionné dans le résumé.
 
+</details>
+
 ## Les autres compétences
 
 Les autres compétences gardent une posture fixe, écrite dans la compétence elle-même.
 Ces postures ne sont pas des rôles : elles ne figurent pas au catalogue et
-ne se configurent pas.
+ne se configurent pas. Ce que fait chaque compétence est dans
+[Parler à Claude](skills.md).
 
 | Compétence | Posture | Sa question | Ce qu'elle écrit |
 |---|---|---|---|
@@ -512,6 +592,9 @@ ne se configurent pas.
 | `/compagnon-update` | [Éditeur](#éditeur-compagnon-update) | L'artefact révisé reste-t-il cohérent avec les autres ? | `_compagnon/changes/<name>/` uniquement |
 | `/compagnon-onboard` | [Guide](#guide-compagnon-onboard) | Où en est ce projet, et que faire ensuite ? | Rien |
 | `/compagnon-configure` | [Analyste de configuration](#analyste-de-configuration-compagnon-configure) | Que doit savoir un agent sur ce projet avant d'écrire ? | `_compagnon/config.yaml`, après confirmation |
+
+<details>
+<summary>Sous le capot : les critères de chaque posture</summary>
 
 ### Partenaire de réflexion (`/compagnon-explore`)
 
@@ -599,62 +682,33 @@ Elle n'écrit qu'après votre oui, ne modifie que `context:` et `rules:`,
 préserve tous les autres champs et commentaires, et refuse d'agir si
 `_compagnon/config.yaml` n'existe pas.
 
+</details>
+
 ## Mesurer les rôles
 
-Le dépôt de Compagnon mesure ses rôles de relecture intégrés — le contradicteur, le
-contrôleur de traçabilité, le nouvel arrivant et les six experts — avec une suite
-d'évaluation, `evals/`. Chaque cas est un petit projet avec une modification
-planifiée : soit **ensemencé** de défauts que le rôle devrait trouver,
-chacun avec sa gravité et son emplacement attendus, soit **témoin propre**,
-sans aucun défaut. La suite fait exécuter à Claude Code une étape de compétence
-sur chaque cas, avec le rôle évalué seul, puis note le compte rendu de
-relecture qu'il a écrit :
+Le dépôt de Compagnon mesure ses rôles de relecture intégrés — le
+contradicteur, le contrôleur de traçabilité, le nouvel arrivant et les six
+experts — avec une suite d'évaluation, `evals/` : de petits projets
+ensemencés de défauts que chaque rôle devrait trouver, et des témoins
+propres où il ne devrait rien trouver. La suite ne tourne jamais dans
+l'intégration continue habituelle et ne fait pas partie du binaire
+`compagnon`. [Fiabilité des rôles](reliability.md) présente les scores rôle
+par rôle, la façon de les mesurer, les seuils que chaque rôle respecte ou
+dépasse et les limites de la mesure.
 
-- **vrais positifs** et **manqués** — les défauts ensemencés trouvés ou
-  non. Un constat compte pour un défaut quand son rôle, son emplacement
-  (deux lignes de tolérance, le même titre du plan, ou un autre endroit
-  que le cas admet) et sa catégorie concordent : chaque défaut ensemencé
-  nomme une catégorie de problème, comme `access-control` ou
-  `keyboard-trap`, reconnue à ses termes dans le titre ou la
-  recommandation du constat. Un constat sur un problème voisin, deux
-  lignes plus loin, ne tient pas lieu du défaut ;
-- **faux positifs** — les constats de confiance haute qui ne correspondent
-  à aucun défaut ensemencé, dans un témoin ou à côté du défaut ; le
-  rapport signale ceux qui se trouvent à l'endroit d'un défaut mais
-  nomment un autre problème. Les constats de confiance basse, qui ne vous
-  sont jamais présentés, sont comptés à part ;
-- **validité des preuves** — la part des constats dont la citation est
-  retrouvée par `compagnon review` aux lignes indiquées ;
-- **accord de gravité** — la gravité trouvée est celle attendue.
-
-Le contrôleur de traçabilité, qui corrige le plan au lieu d'enregistrer des constats, est
-noté sur le plan qu'il laisse : la tâche manquante ajoutée, un plan
-complet laissé intact.
-
-Les cas sont écrits pour qu'un relecteur inattentif passe à côté : des
-défauts subtils à côté d'un code qui fait la même chose correctement (une
-autorisation vérifiée sur la liste mais pas sur le détail, des données
-personnelles qui atteignent les journaux par un message d'erreur), des
-cas à deux défauts de gravités différentes, et des témoins dont le code
-paraît suspect mais est juste (une requête assemblée à partir d'une liste
-autorisée, aux valeurs liées ; des journaux d'identifiants qui ne sont pas
-des données personnelles). Le plan d'un cas ne cite que des fichiers et
-des tests que son projet contient, pour qu'une lacune du cas ne soit
-jamais comptée contre le rôle.
+<details>
+<summary>Sous le capot : la ligne de base et le jugement d'une modification de rôle</summary>
 
 Les scores de référence sont la ligne de base versionnée,
-[`evals/baseline/report.md`](https://github.com/mairistem/compagnon/blob/main/evals/baseline/report.md) :
+[`evals/baseline/report.md`](https://github.com/mairistem/compagnon/blob/main/evals/baseline/report.md) :
 cinq exécutions de chaque cas, avec le modèle par défaut de Claude Code à
 la date qu'elle indique, chaque score étant la médiane des cinq. Un modèle
-ne répond pas deux fois de la même façon : une modification d'un fichier
+ne répond pas deux fois de la même façon : une modification d'un fichier
 de rôle se juge donc avec `compagnon-evals compare --quality-only` face à la
-ligne de base, avec le même modèle ; la médiane de chaque rôle doit rester
-dans l'écart couvert par les exécutions de la ligne de base. La suite ne tourne jamais dans l'intégration continue habituelle et ne
-fait pas partie du binaire `compagnon`.
+ligne de base, avec le même modèle ; la médiane de chaque rôle doit rester
+dans l'écart couvert par les exécutions de la ligne de base.
 
-[Fiabilité des rôles](reliability.md) présente ces scores, rôle par rôle,
-avec les seuils que chaque rôle respecte ou dépasse et les limites de la
-mesure.
+</details>
 
 ## Là où vous décidez
 
@@ -694,3 +748,11 @@ L'agent s'arrête et vous passe la main à ces moments :
 - **Archiver.** `/compagnon-apply` n'archive jamais : une fois l'implémentation
   relue, en commençant par ses notes de relecture, dites « archive la modification »
   (raccourci : `/compagnon-archive`, ou `compagnon archive` dans un terminal).
+
+## Pour aller plus loin
+
+- [Compte rendu de relecture](guides/review-record.md)
+- [Comment ça marche](workflow.md)
+- [Configuration](reference/configuration.md)
+- [Schémas personnalisés](guides/custom-schemas.md)
+- [Fiabilité des rôles](reliability.md)

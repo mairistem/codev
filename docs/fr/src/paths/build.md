@@ -15,6 +15,8 @@ Trois pages, une demi-heure environ, puis votre premier essai.
 
 - [Un exemple de plan commenté](../guides/example-plan.md) : à quoi
   ressemble un plan entier.
+- [Partir d'un ticket Jira](../guides/mcp.md) : si votre idée est déjà un
+  ticket Jira, nommez-le dans votre demande.
 - [Glossaire](../glossary.md), pour chaque mot que vous rencontrez.
 
 Ce n'est pas votre cas ? [Choisissez un autre parcours](../choose-your-path.md).

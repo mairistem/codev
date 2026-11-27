@@ -116,6 +116,8 @@ html:not(.js) {
 
   --mx-logo-ink: #000000;
   --cp-mark-ink: #004c66;
+  --cp-logo-ink: #000000;
+  --cp-logo-c: #004c66;
   --mx-logo-corail: #ff5331;
   --mx-logo-jaune: #ffab03;
   --mx-logo-bleu: #004c66;
@@ -204,6 +206,8 @@ html:not(.js) {
 
   --mx-logo-ink: #ffffff;
   --cp-mark-ink: #ffffff;
+  --cp-logo-ink: #ffffff;
+  --cp-logo-c: #ffffff;
   --mx-logo-corail: #ffffff;
   --mx-logo-jaune: #ffffff;
   --mx-logo-bleu: #ffffff;
@@ -829,6 +833,19 @@ html.sidebar-visible .mx-menu-book {
   height: 26px;
   width: auto;
   aspect-ratio: 1113 / 249;
+}
+
+/* The "Compagnon by Mairistem" logo, brand of the sidebar and the menu bar. */
+.cp-logo {
+  display: block;
+  height: 30px;
+  width: auto;
+  aspect-ratio: 1188 / 250;
+  max-width: 100%;
+}
+
+.mx-sidebar-brand .cp-logo {
+  height: 36px;
 }
 
 .mx-brand-logo {
@@ -1793,4 +1810,183 @@ html:not(.js) {
 .content details[open] > summary {
   border-bottom: 1px solid var(--mx-hairline);
   margin-bottom: .75em;
+}
+
+/* ------------------------------------------------------------------ */
+/* Diagrams                                                           */
+/* ------------------------------------------------------------------ */
+
+/* Diagram tokens. Text is ink on a tint, never on a Mairistem color; the
+ * colors mark borders, dots and arrows: coral where you decide, blue where
+ * Claude works. Every text/fill and line/background pair is checked by
+ * `contrast_problems` in crates/compagnon-cli/src/docs_checks.rs. */
+.light,
+html:not(.js) {
+  --dg-bg: #ffffff;
+  --dg-box: #f4f8f9;
+  --dg-file: #ffffff;
+  --dg-ink: #00263a;
+  --dg-muted: #4f6670;
+  --dg-line: #567079;
+  --dg-you: #e0421f;
+  --dg-you-text: #c4361b;
+  --dg-on-you: #1a0a05;
+  --dg-claude: #004c66;
+}
+
+.navy {
+  --dg-bg: #00394d;
+  --dg-box: #0b4a61;
+  --dg-file: #00394d;
+  --dg-ink: #f2f7f8;
+  --dg-muted: #b4c8cf;
+  --dg-line: #a7c6d1;
+  --dg-you: #ff8a70;
+  --dg-you-text: #ffa390;
+  --dg-on-you: #1a0a05;
+  --dg-claude: #7cc8e2;
+}
+
+figure.diagram {
+  margin: 1.5em 0;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+figure.diagram > .scroll {
+  overflow-x: auto;
+  border: 1px solid var(--dg-line-soft, rgba(107, 133, 144, .35));
+  border-radius: 14px;
+  background: var(--dg-bg);
+  padding: 12px;
+}
+
+figure.diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 560px;
+}
+
+figure.diagram figcaption {
+  font-size: .92em;
+  color: var(--dg-muted);
+}
+
+figure.diagram text {
+  font-family: inherit;
+}
+
+figure.diagram .mono {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* The steps of a diagram that open to a short explanation. */
+.diagram-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 0 0 1.5em;
+}
+
+.diagram-steps details {
+  border: 1px solid var(--dg-line-soft, rgba(107, 133, 144, .35));
+  border-radius: 12px;
+  padding: 8px 12px;
+  min-width: 0;
+}
+
+.diagram-steps details[open] {
+  grid-column: 1 / -1;
+  border-color: var(--dg-ink);
+}
+
+.diagram-steps summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  figure.diagram .st {
+    transition: transform .2s ease;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  figure.diagram .st:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* On a phone the logo names the product; the menu title would be cut. */
+@media (max-width: 480px) {
+  .mx-bar-brand .cp-logo {
+    height: 28px;
+    min-width: 133px;
+  }
+
+  #mdbook-menu-bar .menu-title {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* The approved look (change jira-and-modern-docs)                     */
+/* ------------------------------------------------------------------ */
+
+/* Monospace accents: part titles read as labels, as on the home page. */
+.chapter li.part-title {
+  font-family: var(--mono-font);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+
+/* Sections separated by a hairline, so a long page reads in blocks. */
+.content h2 {
+  padding-top: 20px;
+  border-top: 1px solid var(--mx-hairline, rgba(107, 133, 144, .25));
+}
+
+.content h1 + h2,
+.content h1 + p + h2 {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.content h1 {
+  letter-spacing: -.02em;
+}
+
+/* A "Go further" section ends every everyday chapter: its links as
+   cards that invite a click. */
+.content h2[id="go-further"] + ul,
+.content h2[id="pour-aller-plus-loin"] + ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.content h2[id="go-further"] + ul > li,
+.content h2[id="pour-aller-plus-loin"] + ul > li {
+  border: 1px solid var(--mx-hairline, rgba(107, 133, 144, .25));
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .content h2[id="go-further"] + ul > li,
+  .content h2[id="pour-aller-plus-loin"] + ul > li {
+    transition: transform .2s ease, border-color .2s ease;
+  }
+
+  .content h2[id="go-further"] + ul > li:hover,
+  .content h2[id="pour-aller-plus-loin"] + ul > li:hover {
+    transform: translateY(-2px);
+    border-color: var(--links);
+  }
 }

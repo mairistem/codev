@@ -1,0 +1,22 @@
+no compagnon project found
+skills_review_mode
+zero_delta_without_marker
+decision_seal_mismatch
+predecessor_not_accepted
+decision_missing_frontmatter
+validation_failed
+rename_source_missing
+delta_unexpected_heading
+inherit_pin_failed
+managed_section_malformed
+unlocked
+needs_update
+invalid
+unknown_config_key
+change_unknown_key
+schema_unknown_key
+decision_unknown_field
+compagnon_version_unsatisfied
+update_checksum_mismatch
+update_not_writable
+compagnon: command not found

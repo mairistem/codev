@@ -13,30 +13,21 @@ Lancez-le à la racine de votre [dépôt](../glossary.md#dépôt) :
 compagnon init
 ```
 
-Il regarde ce qui existe déjà (les manifestes du projet comme `Cargo.toml`
-ou `package.json`, la licence, `.github/workflows/`, votre langue, les
-serveurs MCP déclarés), pose au plus deux questions — quelles compétences
-installer, et une courte description du projet — puis ajoute :
+Il regarde ce qui existe déjà — les manifestes du projet comme
+`Cargo.toml` ou `package.json`, la licence, l'intégration continue, votre
+langue, les serveurs MCP déclarés — et pose au plus deux questions :
+quelles compétences installer, et une courte description du projet. Puis
+il ajoute le dossier de Compagnon `_compagnon/`, les compétences Claude
+Code, une courte section dans `CLAUDE.md` qui demande à Claude de
+planifier avant de changer un comportement et, sur GitHub, une
+vérification d'[intégration continue](../glossary.md#intégration-continue)
+et une section dans le modèle de
+[demande de fusion](../glossary.md#demande-de-fusion).
 
-| Quoi | Où |
-|---|---|
-| Le dossier de Compagnon : spécifications, décisions, modifications, archive, schémas, et la configuration | `_compagnon/`, `_compagnon/config.yaml` |
-| Les compétences Claude Code | `.claude/skills/compagnon-<nom>/SKILL.md` |
-| Une section qui demande à Claude de planifier avant de changer un comportement | `CLAUDE.md`, créé s'il manque |
-| Sur GitHub, une tâche d'[intégration continue](../glossary.md#intégration-continue) qui lance `compagnon validate --strict` à chaque envoi de modifications vers le dépôt partagé et à chaque [demande de fusion](../glossary.md#demande-de-fusion) | `.github/workflows/compagnon.yml` |
-| Sur GitHub, une section Compagnon dans le modèle de demande de fusion | votre modèle existant, ou `.github/PULL_REQUEST_TEMPLATE.md` |
-
-Votre propre texte n'est jamais remplacé. Les sections de Compagnon dans
-`CLAUDE.md` et dans le modèle de demande de fusion se placent entre les
-marqueurs `<!-- compagnon:begin -->` et `<!-- compagnon:end -->`, ajoutées à
-la fin de votre fichier ; tout ce qui est en dehors reste à vous. Si l'un de
-vos fichiers d'intégration continue lance déjà `compagnon validate`, ou si
-`.github/workflows/compagnon.yml` est un fichier que vous avez écrit,
-Compagnon n'y touche pas. Sur GitLab, il ne modifie jamais `.gitlab-ci.yml` :
-il affiche une tâche à y coller. Pour sauter l'un de ces fichiers, passez
-`--no-claude-md`, `--no-ci`, `--no-pr-template` ou `--no-integration`.
-Le détail : [Ce que fait `compagnon init`](../reference/cli.md#ce-que-fait-compagnon-init)
-et [Intégration au dépôt et compagnon doctor](repository-integration.md).
+Votre propre texte n'est jamais remplacé, et Compagnon ne modifie jamais
+`.gitlab-ci.yml`. Chaque fichier qu'il écrit, et les options qui permettent
+de sauter chacun, sont dans
+[Intégration au dépôt et compagnon doctor](repository-integration.md).
 
 Si `_compagnon/config.yaml` existe déjà, `compagnon init` le laisse tel
 quel : il installe ou met à jour seulement les compétences et ces sections.
@@ -100,7 +91,7 @@ n'écrit rien avant votre confirmation. Voir
 
 Votre projet repose déjà sur des choix : une base de données, un cadre de développement (framework),
 la façon dont les modules dépendent les uns des autres. Consignez ceux que
-Claude doit respecter sous forme de [décisions](../concepts.md#décision) :
+Claude doit respecter sous forme de [décisions](decisions.md) :
 
 ```bash
 compagnon decision new "Utiliser PostgreSQL pour la persistance"
@@ -116,11 +107,10 @@ explicitement de la remplacer. Commencez par deux ou trois décisions qui
 comptent ; `compagnon doctor` n'émet qu'un avertissement quand il n'y en a
 aucune.
 
-## Pour continuer
+## Pour aller plus loin
 
-- [Votre première modification](../quickstart.md) : les quatre étapes, de
-  la demande à l'archive.
-- [Configuration](../reference/configuration.md) : chaque réglage de
-  `_compagnon/config.yaml`.
-- [Concepts](../concepts.md) : spécifications, modifications, deltas et
-  décisions.
+- [Votre première modification](../quickstart.md)
+- [Intégration au dépôt et compagnon doctor](repository-integration.md)
+- [Décisions](decisions.md)
+- [Configuration](../reference/configuration.md)
+- [Concepts](../concepts.md)

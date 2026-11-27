@@ -161,3 +161,9 @@ in — a schema written in English keeps English keywords
 ([Custom schemas](custom-schemas.md)).
 The ADR template used by `compagnon decision` commands has English section
 headings; write the body in your team's language.
+
+## Go further
+
+- [File formats](../reference/file-formats.md)
+- [Configuration](../reference/configuration.md)
+- [Custom schemas](custom-schemas.md)

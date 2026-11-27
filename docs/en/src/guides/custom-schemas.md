@@ -161,3 +161,9 @@ mind when you design a schema:
 - **Decisions are injected into the artifact whose id is `design`.** Name your
   design artifact `design` if you want the agent to receive the decisions in
   effect while writing it.
+
+## Go further
+
+- [Roles](../roles.md)
+- [Configuration](../reference/configuration.md)
+- [Artifact language](artifact-language.md)

@@ -93,3 +93,9 @@ projet. Après, annulez l'enregistrement. Pour réinstaller codev lui-même :
 ```sh
 compagnon self-update --version 0.6.1
 ```
+
+## Pour aller plus loin
+
+- [Installation](../installation.md)
+- [Sources héritées](inherited-sources.md)
+- [Codes d'erreur et solutions](../reference/errors.md)

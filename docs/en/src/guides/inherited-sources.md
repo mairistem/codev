@@ -5,6 +5,40 @@ services log, which database to use, how APIs are versioned. With inherited
 sources, those conventions live in one Compagnon repository, and every project
 that inherits from it receives them — without copying anything.
 
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 270" role="img" aria-label="Inherited sources: a shared repository or folder, acme-standards, holds context, rules and decisions, and is read-only. Two projects, acme-api and acme-web, each read it at the commit pinned in their own _compagnon/compagnon.lock. Only compagnon sources update moves a pin.">
+<defs><marker id="dg-inherited-sources-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
+<rect x="8" y="40" width="236" height="176" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="24" y="68" font-size="14" font-weight="600" style="fill:var(--dg-ink)">Shared repository or folder</text>
+<text x="24" y="90" class="mono" font-size="13" style="fill:var(--dg-muted)">acme-standards</text>
+<rect x="24" y="102" width="204" height="24" rx="6" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="36" y="119" class="mono" font-size="13" style="fill:var(--dg-ink)">context:</text>
+<rect x="24" y="132" width="204" height="24" rx="6" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="36" y="149" class="mono" font-size="13" style="fill:var(--dg-ink)">rules:</text>
+<rect x="24" y="162" width="204" height="24" rx="6" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="36" y="179" class="mono" font-size="13" style="fill:var(--dg-ink)">decisions/</text>
+<text x="24" y="204" font-size="12" style="fill:var(--dg-muted)">read-only</text>
+<rect x="470" y="20" width="282" height="100" rx="12" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<text x="486" y="46" font-size="14" font-weight="600" style="fill:var(--dg-ink)">Project acme-api</text>
+<rect x="486" y="58" width="250" height="48" rx="8" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="498" y="77" class="mono" font-size="12" style="fill:var(--dg-ink)">_compagnon/compagnon.lock</text>
+<text x="498" y="96" class="mono" font-size="12" style="fill:var(--dg-muted)">commit = "12958274…"</text>
+<rect x="470" y="144" width="282" height="100" rx="12" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<text x="486" y="170" font-size="14" font-weight="600" style="fill:var(--dg-ink)">Project acme-web</text>
+<rect x="486" y="182" width="250" height="48" rx="8" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="498" y="201" class="mono" font-size="12" style="fill:var(--dg-ink)">_compagnon/compagnon.lock</text>
+<text x="498" y="220" class="mono" font-size="12" style="fill:var(--dg-muted)">commit = "12958274…"</text>
+<line x1="246" y1="104" x2="466" y2="70" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-inherited-sources-arrow)"/>
+<line x1="246" y1="152" x2="466" y2="194" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-inherited-sources-arrow)"/>
+<text x="356" y="76" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">reads</text>
+<text x="356" y="196" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">at the pinned commit</text>
+<text x="8" y="258" font-size="13" style="fill:var(--dg-muted)">compagnon sources update is the only command that moves a pin</text>
+</svg>
+</div>
+<figcaption>Inherited sources: each project reads the shared conventions at the commit its <code>compagnon.lock</code> pins, and nothing is copied.</figcaption>
+</figure>
+
 ## What a source provides
 
 An inherited source is another Compagnon project, one that has its own
@@ -213,7 +247,7 @@ The deviation takes effect only once accepted. Until then, the inherited
 decision stays in effect and is still injected into the `design` instructions.
 Once the deviation is accepted, the inherited decision stays listed, so the
 departure is visible, but it is no longer in effect for your project. See
-[Deviation](../concepts.md#deviation).
+[Deviated from](decisions.md#deviated-from).
 
 ## What is not inherited
 
@@ -221,3 +255,9 @@ departure is visible, but it is no longer in effect for your project. See
 - **`schema`, `language`, `workflows` and `mcp`.** These belong to the project
   and to the people working in it.
 - **The source's own sources**, as explained above.
+
+## Go further
+
+- [Decisions](decisions.md)
+- [Configuration](../reference/configuration.md)
+- [Command-line interface](../reference/cli.md)

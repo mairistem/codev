@@ -1,6 +1,6 @@
 # Un exemple de plan commenté
 
-Cette page montre un plan complet, tel que Claude l'écrit avec Compagnon :
+Cette page montre un [plan](../glossary.md#plan) complet, tel que Claude l'écrit avec Compagnon :
 le mode sombre du [démarrage rapide](../quickstart.md), la modification
 nommée `add-dark-mode`. L'application existe déjà et affiche toujours un
 thème clair ; le plan lui fait suivre le réglage de l'ordinateur, et laisse
@@ -220,3 +220,9 @@ qui prouve qu'elle est faite.
   donc testé.
 - Quelque chose que les utilisateurs voient reste-t-il sans test ? Ici,
   chaque étape visible nomme sa vérification.
+
+## Pour aller plus loin
+
+- [Relire un plan](review-a-plan.md)
+- [Approuver un plan sur GitHub ou GitLab](approve-a-plan.md)
+- [Partir d'un ticket Jira](mcp.md)

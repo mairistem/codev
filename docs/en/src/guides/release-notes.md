@@ -145,3 +145,9 @@ changelog:
 
 Once the next version is tagged, they are out of range and the list can be
 emptied. See [Configuration](../reference/configuration.md#changelog).
+
+## Go further
+
+- [File formats](../reference/file-formats.md)
+- [Command-line interface](../reference/cli.md)
+- [Repository integration and compagnon doctor](repository-integration.md)

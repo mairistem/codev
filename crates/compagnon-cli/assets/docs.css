@@ -542,6 +542,115 @@ details[open] > summary {
   margin-bottom: .75em;
 }
 
+/* ------------------------------------------------------------------ */
+/* Diagrams                                                           */
+/* ------------------------------------------------------------------ */
+
+/* Diagram tokens. Text is ink on a tint, never on a Mairistem color; the
+ * colors mark borders, dots and arrows: coral where you decide, blue where
+ * Claude works. Every text/fill and line/background pair is checked by
+ * `contrast_problems` in crates/compagnon-cli/src/docs_checks.rs. */
+:root {
+  --dg-bg: #ffffff;
+  --dg-box: #f4f8f9;
+  --dg-file: #ffffff;
+  --dg-ink: #00263a;
+  --dg-muted: #4f6670;
+  --dg-line: #567079;
+  --dg-you: #e0421f;
+  --dg-you-text: #c4361b;
+  --dg-on-you: #1a0a05;
+  --dg-claude: #004c66;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dg-bg: #00394d;
+    --dg-box: #0b4a61;
+    --dg-file: #00394d;
+    --dg-ink: #f2f7f8;
+    --dg-muted: #b4c8cf;
+    --dg-line: #a7c6d1;
+    --dg-you: #ff8a70;
+    --dg-you-text: #ffa390;
+    --dg-on-you: #1a0a05;
+    --dg-claude: #7cc8e2;
+  }
+}
+
+figure.diagram {
+  margin: 1.5em 0;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+figure.diagram > .scroll {
+  overflow-x: auto;
+  border: 1px solid var(--dg-line-soft, rgba(107, 133, 144, .35));
+  border-radius: 14px;
+  background: var(--dg-bg);
+  padding: 12px;
+}
+
+figure.diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 560px;
+}
+
+figure.diagram figcaption {
+  font-size: .92em;
+  color: var(--dg-muted);
+}
+
+figure.diagram text {
+  font-family: inherit;
+}
+
+figure.diagram .mono {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* The steps of a diagram that open to a short explanation. */
+.diagram-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 0 0 1.5em;
+}
+
+.diagram-steps details {
+  border: 1px solid var(--dg-line-soft, rgba(107, 133, 144, .35));
+  border-radius: 12px;
+  padding: 8px 12px;
+  min-width: 0;
+}
+
+.diagram-steps details[open] {
+  grid-column: 1 / -1;
+  border-color: var(--dg-ink);
+}
+
+.diagram-steps summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  figure.diagram .st {
+    transition: transform .2s ease;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  figure.diagram .st:hover {
+    transform: translateY(-3px);
+  }
+}
+
+
 @media print {
   :root {
     --heading: #004c66;

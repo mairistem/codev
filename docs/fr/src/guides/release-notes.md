@@ -151,3 +151,9 @@ changelog:
 
 Une fois la version suivante taguée, elles sortent de l'intervalle et la liste
 peut être vidée. Voir [Configuration](../reference/configuration.md#changelog).
+
+## Pour aller plus loin
+
+- [Formats de fichiers](../reference/file-formats.md)
+- [Interface en ligne de commande](../reference/cli.md)
+- [Intégration au dépôt et compagnon doctor](repository-integration.md)

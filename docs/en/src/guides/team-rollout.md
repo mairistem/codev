@@ -9,22 +9,9 @@ everyone knows who approves what.
 ## Install it on every workstation
 
 Every developer who has Claude write code needs the `compagnon` command and
-Claude Code. The installers need no developer tools:
-
-```bash
-# macOS and Linux
-curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
-```
-
-```powershell
-# Windows, in PowerShell
-iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
-```
-
-`COMPAGNON_VERSION=0.6.1` before `sh` installs a given version (on
-Windows, first type `$env:COMPAGNON_VERSION = '0.6.1'`); a manual
-download and `cargo install` are the other two ways. See
-[Installation](../installation.md).
+Claude Code. [Installation](../installation.md) gives the one-line
+installers for macOS, Linux and Windows, and how to install a given
+version (`COMPAGNON_VERSION=0.6.1`).
 
 People who only review plans install nothing: they read and approve the
 plan in the pull request, on GitHub or GitLab — see
@@ -38,26 +25,17 @@ Set the versions the team accepts in `_compagnon/config.yaml`:
 compagnon_version: ">=0.6, <0.8"
 ```
 
-To require one exact version, write `"=0.6.1"`.
-
-Quote it: YAML reads `>` specially. With a version outside that range:
-
-- the skills that act on the project (`/compagnon-propose`,
-  `/compagnon-apply`, `/compagnon-update`, `/compagnon-sync`,
-  `/compagnon-archive`) say so before starting and offer **Update now** or
-  **Later**; **Later** silences nothing when the team requires the version;
-- `compagnon validate`, `compagnon sync` and `compagnon archive` refuse to
-  run, with `compagnon_version_unsatisfied` and the fix: `compagnon
-  self-update`, or `compagnon self-update --version <X.Y.Z>` when the
-  installed version is too new;
-- `compagnon doctor` reports the `compagnon_version` check as missing.
+To require one exact version, write `"=0.6.1"`. Quote it: YAML reads `>`
+specially. With a version outside that range, the skills offer to update
+before they start, and `compagnon validate`, `compagnon sync` and
+`compagnon archive` refuse to run until the developer updates — see
+[`compagnon_version`](../reference/configuration.md#compagnon_version).
 
 The [CI](../glossary.md#ci) job that `compagnon init` writes installs a
 pinned version (`COMPAGNON_VERSION=` in `.github/workflows/compagnon.yml`).
 When you raise `compagnon_version` above it, raise the pin in the same
 [commit](../glossary.md#commit). Compagnon 0.5 and earlier do not know the
 key and reject the file: add it once everyone runs a newer version. See
-[`compagnon_version`](../reference/configuration.md#compagnon_version) and
 [Update notice](../skills.md#update-notice).
 
 ## What to commit
@@ -79,12 +57,10 @@ history?](../faq.md#should-i-save-_compagnon-and-claudeskills-in-the-projects-hi
 
 ## The check that blocks a pull request
 
-On GitHub, `.github/workflows/compagnon.yml` runs
-`compagnon validate --strict` on every push and pull request: an invalid
-spec, an invalid change or an edited accepted decision fails it. On
-GitLab, paste into `.gitlab-ci.yml` the job `compagnon init` prints; Compagnon
-never edits that file. Elsewhere, add `compagnon validate --strict` to your
-pipeline.
+The check `compagnon init` sets up fails a push or a pull request whose
+spec or change is invalid, or which edits an accepted decision; on
+GitLab, you paste the job `compagnon init` prints. See
+[Repository integration and compagnon doctor](repository-integration.md).
 
 A failing check only blocks merging once you make it required, in your
 site's settings:
@@ -99,7 +75,6 @@ You can also run `compagnon doctor --strict` in CI: it fails when a check of
 the setup is missing — a skill out of date, the `CLAUDE.md` section
 removed — and never on a warning. A new project starts with no spec, which
 `doctor` reports as missing: add this step once `compagnon doctor` is clean.
-See [Repository integration and compagnon doctor](repository-integration.md).
 
 ## Who approves what
 
@@ -121,29 +96,15 @@ Compagnon hands over.
 
 ## The review roles
 
-Before a person reads the plan or the code, Compagnon's reviewing
-[roles](../roles.md) have challenged it: product, QA, architecture, and
-experts in security, personal data, accessibility, performance, operations
-and migration, who step in when a change's proposal ticks their domain.
-Their findings and the answers are in the change's `review.md`.
+Before a person reads the plan or the code, Compagnon's reviewing roles
+have challenged it, and their findings are in the change's `review.md`.
+Which roles run, with which criteria and in which mode, is set for the
+whole team in `_compagnon/config.yaml` — see [Roles](../roles.md).
 
-Two settings in `_compagnon/config.yaml` decide how they run, for the whole
-team:
+## Go further
 
-- `roles:` turns a role on or off, or adds your own criteria to it — for
-  instance `security: always` to have every change reviewed for security,
-  or `accessibility: never` without a user interface. See
-  [Configuring roles](../roles.md#configuring-roles).
-- `review: { mode: isolated }` runs each reviewing role alone, without
-  seeing the conversation; `inline`, the default, runs them one after the
-  other in the same conversation. See
-  [`review`](../reference/configuration.md#review).
-
-## Next steps
-
-- [Repository integration and compagnon doctor](repository-integration.md):
-  every file `compagnon init` writes, and every check of `compagnon doctor`.
-- [Roles](../roles.md): each role's criteria, at each step.
-- [Configuration](../reference/configuration.md): every setting.
-- [Inherited sources](inherited-sources.md): sharing rules and decisions
-  across your team's projects.
+- [Repository integration and compagnon doctor](repository-integration.md)
+- [Roles](../roles.md)
+- [Configuration](../reference/configuration.md)
+- [Inherited sources](inherited-sources.md)
+- [Approving a plan on GitHub or GitLab](approve-a-plan.md)

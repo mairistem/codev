@@ -6,6 +6,40 @@ utiliser, le versionnement des API. Grâce aux sources héritées, ces
 conventions vivent dans un seul dépôt Compagnon, et chaque projet qui en hérite les
 reçoit — sans rien copier.
 
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 270" role="img" aria-label="Sources héritées : un dépôt ou un dossier partagé, acme-standards, contient un contexte, des règles et des décisions, en lecture seule. Deux projets, acme-api et acme-web, le lisent chacun à la version épinglée dans leur propre _compagnon/compagnon.lock. Seul compagnon sources update déplace un épinglage.">
+<defs><marker id="dg-inherited-sources-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
+<rect x="8" y="40" width="236" height="176" rx="12" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="24" y="68" font-size="14" font-weight="600" style="fill:var(--dg-ink)">Dépôt ou dossier partagé</text>
+<text x="24" y="90" class="mono" font-size="13" style="fill:var(--dg-muted)">acme-standards</text>
+<rect x="24" y="102" width="204" height="24" rx="6" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="36" y="119" class="mono" font-size="13" style="fill:var(--dg-ink)">context:</text>
+<rect x="24" y="132" width="204" height="24" rx="6" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="36" y="149" class="mono" font-size="13" style="fill:var(--dg-ink)">rules:</text>
+<rect x="24" y="162" width="204" height="24" rx="6" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="36" y="179" class="mono" font-size="13" style="fill:var(--dg-ink)">decisions/</text>
+<text x="24" y="204" font-size="12" style="fill:var(--dg-muted)">en lecture seule</text>
+<rect x="470" y="20" width="282" height="100" rx="12" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<text x="486" y="46" font-size="14" font-weight="600" style="fill:var(--dg-ink)">Projet acme-api</text>
+<rect x="486" y="58" width="250" height="48" rx="8" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="498" y="77" class="mono" font-size="12" style="fill:var(--dg-ink)">_compagnon/compagnon.lock</text>
+<text x="498" y="96" font-size="12" style="fill:var(--dg-muted)">épinglé sur 12958274…</text>
+<rect x="470" y="144" width="282" height="100" rx="12" style="fill:var(--dg-box);stroke:var(--dg-claude)" stroke-width="2"/>
+<text x="486" y="170" font-size="14" font-weight="600" style="fill:var(--dg-ink)">Projet acme-web</text>
+<rect x="486" y="182" width="250" height="48" rx="8" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="1"/>
+<text x="498" y="201" class="mono" font-size="12" style="fill:var(--dg-ink)">_compagnon/compagnon.lock</text>
+<text x="498" y="220" font-size="12" style="fill:var(--dg-muted)">épinglé sur 12958274…</text>
+<line x1="246" y1="104" x2="466" y2="70" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-inherited-sources-arrow)"/>
+<line x1="246" y1="152" x2="466" y2="194" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-inherited-sources-arrow)"/>
+<text x="356" y="76" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">lit</text>
+<text x="356" y="196" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">à la version épinglée</text>
+<text x="8" y="258" font-size="13" style="fill:var(--dg-muted)">seul compagnon sources update déplace un épinglage</text>
+</svg>
+</div>
+<figcaption>Sources héritées : chaque projet lit les conventions partagées à la version que fixe son <code>compagnon.lock</code>, sans rien copier.</figcaption>
+</figure>
+
 ## Ce qu'apporte une source
 
 Une source héritée est un autre projet Compagnon, doté de son propre
@@ -220,7 +254,7 @@ L'écart n'entre en vigueur qu'une fois accepté. D'ici là, la décision hérit
 reste en vigueur et figure toujours dans les instructions de l'artefact
 `design`. Une fois l'écart accepté, la décision héritée reste listée, ce qui
 rend l'écart visible, mais elle n'est plus en vigueur pour votre projet. Voir
-[Écart](../concepts.md#écart).
+[Contournée par un écart](decisions.md#contournée-par-un-écart).
 
 ## Ce qui n'est pas hérité
 
@@ -229,3 +263,9 @@ rend l'écart visible, mais elle n'est plus en vigueur pour votre projet. Voir
 - **`schema`, `language`, `workflows` et `mcp`.** Ces clés relèvent du projet
   et des personnes qui y travaillent.
 - **Les sources de la source**, comme expliqué plus haut.
+
+## Pour aller plus loin
+
+- [Décisions](decisions.md)
+- [Configuration](../reference/configuration.md)
+- [Interface en ligne de commande](../reference/cli.md)

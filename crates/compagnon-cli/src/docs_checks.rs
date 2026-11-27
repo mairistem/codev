@@ -451,6 +451,237 @@ pub fn start_here_problems(summary: &str) -> Vec<String> {
     problems
 }
 
+/// The chapters of the parts after "Start here", in order: Everyday use,
+/// Going further, Reference, Contributing.
+pub const PARTS_AFTER_START: [&[&str]; 4] = [
+    &[
+        "quickstart.md",
+        "guides/start-from-nothing.md",
+        "installation.md",
+        "workflow.md",
+        "skills.md",
+        "guides/mcp.md",
+        "guides/review-a-plan.md",
+        "guides/example-plan.md",
+        "guides/approve-a-plan.md",
+        "concepts.md",
+        "faq.md",
+    ],
+    &[
+        "guides/decisions.md",
+        "guides/review-record.md",
+        "roles.md",
+        "guides/existing-project.md",
+        "guides/team-rollout.md",
+        "guides/repository-integration.md",
+        "guides/release-notes.md",
+        "guides/inherited-sources.md",
+        "guides/artifact-language.md",
+        "guides/custom-schemas.md",
+        "guides/moving-from-codev.md",
+    ],
+    &[
+        "reference/cli.md",
+        "reference/configuration.md",
+        "reference/file-formats.md",
+        "reference/json-output.md",
+        "reference/errors.md",
+    ],
+    &[
+        "origins.md",
+        "contributing.md",
+        "architecture.md",
+        "reliability.md",
+    ],
+];
+
+/// How a `SUMMARY.md`'s parts after "Start here" depart from
+/// [`PARTS_AFTER_START`]: a chapter in the wrong part, a missing one, or
+/// a part out of order, each named.
+pub fn toc_problems(summary: &str) -> Vec<String> {
+    let parts = parts(summary);
+    let mut problems = Vec::new();
+    for (i, expected) in PARTS_AFTER_START.iter().enumerate() {
+        let before = problems.len();
+        let Some((title, listed)) = parts.get(i + 1) else {
+            problems.push(format!("part {} is missing", i + 2));
+            continue;
+        };
+        for c in listed {
+            if !expected.contains(&c.as_str()) {
+                problems.push(format!("{c} does not belong in \"{title}\""));
+            }
+        }
+        for c in *expected {
+            if !listed.iter().any(|l| l == c) {
+                problems.push(format!("{c} is missing from \"{title}\""));
+            }
+        }
+        // Each part's order is checked once its own chapters are right,
+        // whatever the other parts hold.
+        if problems.len() == before
+            && listed
+                .iter()
+                .map(String::as_str)
+                .ne(expected.iter().copied())
+        {
+            problems.push(format!("\"{title}\" is out of order: {listed:?}"));
+        }
+    }
+    problems
+}
+
+/// The entries of a `SUMMARY.md`, as `(title, target)`, in order.
+pub fn summary_entries(summary: &str) -> impl Iterator<Item = (&str, &str)> {
+    summary.lines().filter_map(|line| {
+        let rest = line.trim_start().strip_prefix("- [")?;
+        let (title, target) = rest.split_once("](")?;
+        Some((title, target.trim_end_matches(')')))
+    })
+}
+
+/// The entries of a `SUMMARY.md` whose title is not the `# ` heading of
+/// their chapter, as `path: entry ≠ heading`.
+pub fn title_problems(summary: &str, heading_of: impl Fn(&str) -> Option<String>) -> Vec<String> {
+    let mut problems = Vec::new();
+    for (title, path) in summary_entries(summary) {
+        match heading_of(path) {
+            Some(h) if h == title => {}
+            Some(h) => problems.push(format!("{path}: entry \"{title}\" ≠ heading \"{h}\"")),
+            None => problems.push(format!("{path}: no `# ` heading")),
+        }
+    }
+    problems
+}
+
+/// `md` without its `<figure>…</figure>` blocks: a diagram's words are
+/// not the chapter's prose.
+pub fn without_figures(md: &str) -> String {
+    let mut out = String::with_capacity(md.len());
+    let mut rest = md;
+    while let Some(start) = rest.find("<figure") {
+        out.push_str(&rest[..start]);
+        match rest[start..].find("</figure>") {
+            Some(end) => rest = &rest[start + end + "</figure>".len()..],
+            None => return out,
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// What keeps an entry point from putting Jira forward: it must name Jira
+/// and link the Jira guide (`guides/mcp.md`, or `guides/mcp.html` once
+/// published).
+pub fn jira_problems(text: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if !text.contains("Jira") {
+        problems.push("never names Jira".to_string());
+    }
+    if !text.contains("guides/mcp.md") && !text.contains("guides/mcp.html") {
+        problems.push("does not link the Jira guide".to_string());
+    }
+    problems
+}
+
+/// Whether a home page names Jira only after the last of its four profile
+/// labels, so that the question still comes first.
+pub fn jira_after_profiles(page: &str, labels: &[&str; 4]) -> bool {
+    let last = labels.iter().filter_map(|l| page.find(l)).max();
+    match (last, page.find("Jira")) {
+        (Some(last), Some(jira)) => jira > last,
+        _ => false,
+    }
+}
+
+/// What is wrong with the Jira guide's shape: its diagram must come before
+/// its first `## ` heading — what the reader gets before how to set it up.
+pub fn jira_guide_problems(md: &str) -> Vec<String> {
+    let figure = md.find("<figure class=\"diagram\"");
+    let heading = md.find("\n## ");
+    match (figure, heading) {
+        (None, _) => vec!["has no diagram".to_string()],
+        (Some(f), Some(h)) if h < f => {
+            vec!["shows its first `## ` section before its diagram".to_string()]
+        }
+        _ => Vec::new(),
+    }
+}
+
+/// The error codes still headed in the FAQ, and those `codes` the errors
+/// chapter does not head with `### \`code\``.
+pub fn faq_code_problems(faq: &str, errors: &str, codes: &[&str]) -> Vec<String> {
+    let mut problems = Vec::new();
+    for line in faq.lines() {
+        let Some(title) = line.strip_prefix("### ") else {
+            continue;
+        };
+        let title = title.trim();
+        if title.starts_with('`') && title.ends_with('`') && !title.contains(' ') {
+            problems.push(format!("the FAQ still explains {title}"));
+        }
+    }
+    for code in codes {
+        let heading = format!("### `{code}`");
+        if !errors.lines().any(|l| l.trim() == heading) {
+            problems.push(format!("the errors chapter has no {heading}"));
+        }
+    }
+    problems
+}
+
+/// The title of an everyday chapter's last section.
+pub fn go_further_heading(lang: Lang) -> &'static str {
+    match lang {
+        Lang::En => "Go further",
+        Lang::Fr => "Pour aller plus loin",
+    }
+}
+
+/// What keeps an everyday chapter short and open: its prose (code,
+/// `<details>` and `<figure>` blocks not counted) over `cap` words, or a
+/// last `## ` section other than "Go further", or one that links no
+/// chapter by its title. `title_of` gives a chapter's title from a link
+/// target relative to the chapter (`../roles.md#x`).
+pub fn everyday_problems(
+    md: &str,
+    cap: usize,
+    lang: Lang,
+    title_of: impl Fn(&str) -> Option<String>,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    let words = prose_words(&without_figures(md));
+    if words > cap {
+        problems.push(format!("{words} words, over {cap}"));
+    }
+    let heading = go_further_heading(lang);
+    let last = sections(md, "## ").into_iter().last();
+    match last {
+        Some((title, body)) if title == heading => {
+            let mut chapters = 0;
+            for (text, target) in link_pairs(&body) {
+                if target.starts_with("http") || !chapter_of(&target).ends_with(".md") {
+                    continue;
+                }
+                chapters += 1;
+                match title_of(&target) {
+                    Some(t) if t == text => {}
+                    Some(t) => problems.push(format!("\"{text}\" links {target}, titled \"{t}\"")),
+                    None => {
+                        problems.push(format!("\"{text}\" links {target}, which is no chapter"))
+                    }
+                }
+            }
+            if chapters == 0 {
+                problems.push(format!("\"{heading}\" links no chapter"));
+            }
+        }
+        Some((title, _)) => problems.push(format!("ends with \"{title}\", not \"{heading}\"")),
+        None => problems.push(format!("has no \"{heading}\" section")),
+    }
+    problems
+}
+
 /// The commands of shell blocks outside `<details>` that neither install
 /// Compagnon nor run `compagnon init`.
 pub fn stray_commands(md: &str) -> Vec<String> {
@@ -899,7 +1130,7 @@ pub fn anglicisms(md: &str) -> Vec<String> {
         }
     };
     // Headings count: a French heading must be French too.
-    for paragraph in prose_paragraphs(&without_svg(md), Headings::Keep) {
+    for paragraph in prose_paragraphs(&with_diagrams_as_words(md), Headings::Keep) {
         let heading = paragraph.trim_start().starts_with('#');
         if heading && is_identifier_heading(&paragraph) {
             continue;
@@ -979,20 +1210,239 @@ fn is_identifier_heading(heading: &str) -> bool {
     file || key || text.starts_with("compagnon ")
 }
 
-/// `md` without its `<svg>` blocks: an image, whose text alternative is
-/// elsewhere on the page.
-fn without_svg(md: &str) -> String {
+/// `md` with each `<svg>` block replaced by what it says in words (its
+/// `aria-label` and its `<text>`), each as its own paragraph: a French
+/// diagram speaks French too.
+fn with_diagrams_as_words(md: &str) -> String {
     let mut out = String::with_capacity(md.len());
-    let mut rest = md;
-    while let Some(start) = rest.find("<svg") {
-        out.push_str(&rest[..start]);
-        match rest[start..].find("</svg>") {
-            Some(end) => rest = &rest[start + end + "</svg>".len()..],
-            None => return out,
+    let mut from = 0;
+    for (start, svg) in crate::docs::svg_elements(md) {
+        out.push_str(&md[from..start]);
+        out.push_str("\n\n");
+        out.push_str(&svg_words(svg));
+        out.push_str("\n\n");
+        from = start + svg.len();
+    }
+    out.push_str(&md[from..]);
+    out
+}
+
+/// The value of attribute `name` in the opening tag `tag`.
+fn attribute<'a>(tag: &'a str, name: &str) -> Option<&'a str> {
+    let key = format!(" {name}=\"");
+    let start = tag.find(&key)? + key.len();
+    let len = tag[start..].find('"')?;
+    Some(&tag[start..start + len])
+}
+
+/// What a diagram says in words: its `aria-label` and the contents of its
+/// `<text>` elements, one per line.
+fn svg_words(svg: &str) -> String {
+    let open = &svg[..svg.find('>').unwrap_or(svg.len())];
+    let mut out: Vec<String> = attribute(open, "aria-label")
+        .map(|l| l.to_string())
+        .into_iter()
+        .collect();
+    let mut rest = svg;
+    while let Some(i) = rest.find("<text") {
+        let after = &rest[i..];
+        let Some(gt) = after.find('>') else { break };
+        let body = &after[gt + 1..];
+        let end = body.find("</text>").unwrap_or(body.len());
+        let inner = &body[..end];
+        // Strip nested tags such as <tspan>.
+        let mut plain = String::new();
+        let mut in_tag = false;
+        for c in inner.chars() {
+            match c {
+                '<' => in_tag = true,
+                '>' => in_tag = false,
+                _ if !in_tag => plain.push(c),
+                _ => {}
+            }
+        }
+        // A label that is an identifier — a token source, a command — is
+        // not prose, as an identifier heading is not.
+        if !is_identifier_heading(&plain) {
+            out.push(plain);
+        }
+        rest = &body[end..];
+    }
+    out.join("\n\n")
+}
+
+/// The problems of the diagrams of a page — a chapter's markdown or a
+/// home page's HTML. A diagram is any `<svg>` that is neither hidden from
+/// assistive technology (`aria-hidden="true"`, the sprites and the marks
+/// beside a visible name) nor a logo (`class="logo"`). Each must sit in a
+/// `<figure>`, carry `role="img"` and a name (`aria-label`, or
+/// `aria-labelledby` pointing at its `<title>`), be followed by a
+/// `<figcaption>` before its figure closes, point at no other file, and
+/// hold no blank line — a blank line ends a markdown HTML block, and the
+/// rest of the drawing would be printed as text.
+pub fn diagram_problems(text: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for (n, (start, svg)) in crate::docs::svg_elements(text).into_iter().enumerate() {
+        let open = &svg[..svg.find('>').map_or(svg.len(), |i| i + 1)];
+        if attribute(open, "aria-hidden") == Some("true")
+            || attribute(open, "class").is_some_and(|c| c.split(' ').any(|c| c == "logo"))
+        {
+            continue;
+        }
+        let name = attribute(open, "aria-label")
+            .filter(|l| !l.trim().is_empty())
+            .or_else(|| attribute(open, "aria-labelledby"));
+        let label = name.map_or_else(
+            || format!("diagram {}", n + 1),
+            |l| {
+                let short: String = l.chars().take(40).collect();
+                format!("diagram \"{short}\"")
+            },
+        );
+        let before = &text[..start];
+        let in_figure = before
+            .rfind("<figure")
+            .is_some_and(|f| before.rfind("</figure>").is_none_or(|c| c < f));
+        if !in_figure {
+            problems.push(format!("{label} is not inside a <figure>"));
+        }
+        if attribute(open, "role") != Some("img") {
+            problems.push(format!("{label} lacks role=\"img\""));
+        }
+        if name.is_none() {
+            problems.push(format!("{label} has no aria-label"));
+        }
+        let after = &text[start + svg.len()..];
+        let closes = after.find("</figure>").unwrap_or(after.len());
+        if in_figure && !after[..closes].contains("<figcaption") {
+            problems.push(format!("{label} is not followed by a <figcaption>"));
+        }
+        if points_outside(svg) {
+            problems.push(format!("{label} points at another file"));
+        }
+        if svg.lines().any(|l| l.trim().is_empty()) {
+            problems.push(format!("{label} holds a blank line"));
         }
     }
-    out.push_str(rest);
+    problems
+}
+
+/// Whether a drawing points at another file: an `href` or `src` that is
+/// not an in-page reference (`#marker`).
+fn points_outside(svg: &str) -> bool {
+    ["href=\"", "src=\""].iter().any(|attr| {
+        svg.match_indices(attr)
+            .any(|(i, _)| !svg[i + attr.len()..].starts_with('#'))
+    })
+}
+
+/// The selector of the rule whose `{` ends `head`: the text since the
+/// previous rule or declaration, comment lines left out, on one line.
+fn selector_before(head: &str) -> String {
+    head.rsplit(['}', ';', '{'])
+        .next()
+        .unwrap_or(head)
+        .lines()
+        .filter(|l| !l.trim().starts_with("/*") && !l.trim().starts_with('*'))
+        .flat_map(str::split_whitespace)
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// The relative luminance of a `#rrggbb` color (WCAG 2.2).
+fn luminance(hex: &str) -> Option<f64> {
+    let hex = hex.strip_prefix('#')?;
+    if hex.len() != 6 {
+        return None;
+    }
+    let channel = |i: usize| -> Option<f64> {
+        let v = f64::from(u8::from_str_radix(&hex[i..i + 2], 16).ok()?) / 255.0;
+        Some(if v <= 0.040_45 {
+            v / 12.92
+        } else {
+            ((v + 0.055) / 1.055).powf(2.4)
+        })
+    };
+    Some(0.2126 * channel(0)? + 0.7152 * channel(2)? + 0.0722 * channel(4)?)
+}
+
+/// The contrast ratio of two `#rrggbb` colors, from 1 to 21.
+pub fn contrast(a: &str, b: &str) -> Option<f64> {
+    let (la, lb) = (luminance(a)?, luminance(b)?);
+    let (hi, lo) = if la > lb { (la, lb) } else { (lb, la) };
+    Some((hi + 0.05) / (lo + 0.05))
+}
+
+/// The diagram themes of a style sheet: each rule block that declares
+/// `--dg-ink`, as its selector and its `--dg-*` declarations.
+pub fn diagram_themes(css: &str) -> Vec<(String, Vec<(String, String)>)> {
+    let mut out = Vec::new();
+    let mut from = 0;
+    while let Some(open) = css[from..].find('{').map(|i| from + i) {
+        let close = css[open..].find('}').map_or(css.len(), |i| open + i);
+        let body = &css[open + 1..close];
+        if body.contains("--dg-ink:") && !body.contains('{') {
+            let head = &css[from..open];
+            let selector = selector_before(head);
+            let tokens = body
+                .split(';')
+                .filter_map(|d| {
+                    let (k, v) = d.split_once(':')?;
+                    let k = k.trim();
+                    k.starts_with("--dg-")
+                        .then(|| (k.to_string(), v.trim().to_string()))
+                })
+                .collect();
+            out.push((selector, tokens));
+        }
+        from = open + 1;
+    }
     out
+}
+
+/// The diagram color pairs of one theme that miss their contrast: text
+/// (ink, muted, the digits on a step's dot) at least 4.5:1 on what it is
+/// drawn on, lines, borders and dots at least 3:1 against the page and the
+/// boxes.
+pub fn contrast_problems(theme: &str, tokens: &[(String, String)]) -> Vec<String> {
+    const TEXT: [(&str, &str); 11] = [
+        ("--dg-you-text", "--dg-bg"),
+        ("--dg-you-text", "--dg-box"),
+        ("--dg-box", "--dg-line"),
+        ("--dg-ink", "--dg-box"),
+        ("--dg-muted", "--dg-box"),
+        ("--dg-ink", "--dg-file"),
+        ("--dg-muted", "--dg-file"),
+        ("--dg-ink", "--dg-bg"),
+        ("--dg-muted", "--dg-bg"),
+        ("--dg-on-you", "--dg-you"),
+        ("--dg-box", "--dg-claude"),
+    ];
+    const LINES: [(&str, &str); 6] = [
+        ("--dg-line", "--dg-bg"),
+        ("--dg-you", "--dg-bg"),
+        ("--dg-claude", "--dg-bg"),
+        ("--dg-line", "--dg-box"),
+        ("--dg-you", "--dg-box"),
+        ("--dg-claude", "--dg-box"),
+    ];
+    let value = |k: &str| tokens.iter().find(|(n, _)| n == k).map(|(_, v)| v.as_str());
+    let mut problems = Vec::new();
+    for (pairs, min) in [(&TEXT[..], 4.5), (&LINES[..], 3.0)] {
+        for (fg, bg) in pairs {
+            match (value(fg), value(bg)) {
+                (Some(a), Some(b)) => match contrast(a, b) {
+                    Some(r) if r >= min => {}
+                    Some(r) => problems.push(format!(
+                        "{theme}: {fg} {a} on {bg} {b} is {r:.2}:1, under {min}:1"
+                    )),
+                    None => problems.push(format!("{theme}: {fg} or {bg} is not a #rrggbb color")),
+                },
+                _ => problems.push(format!("{theme}: {fg} or {bg} is missing")),
+            }
+        }
+    }
+    problems
 }
 
 /// `text` without what stands between parentheses.
@@ -1023,6 +1473,16 @@ mod tests {
         );
         let code = format!("```bash\n{}\n```\n", "code ".repeat(100));
         assert_eq!(prose_words(&format!("{prose}\n{folded}{code}")), 480);
+        let figure = format!(
+            "<figure class=\"diagram\">\n{}</figure>\n",
+            "drawn ".repeat(200)
+        );
+        assert_eq!(
+            prose_words(&without_figures(&format!(
+                "{prose}\n{folded}{code}{figure}"
+            ))),
+            480
+        );
     }
 
     const SUMMARY: &str = "# Summary\n\n# Start here\n\n- [A](introduction.md)\n- [B](choose-your-path.md)\n  - [R](paths/review.md)\n  - [U](paths/build.md)\n  - [V](paths/develop.md)\n  - [T](paths/team.md)\n- [D](glossary.md)\n\n# Everyday use\n\n- [E](concepts.md)\n";
@@ -1350,6 +1810,177 @@ mod tests {
                   <svg><title>skill</title></svg>\n\nLa relecture.\n";
         assert!(anglicisms(md).is_empty(), "{:?}", anglicisms(md));
     }
+
+    const GOOD_DIAGRAM: &str = "<figure class=\"diagram\">\n\
+        <svg viewBox=\"0 0 10 10\" role=\"img\" aria-label=\"Two steps: you ask, Claude plans\">\n\
+        <defs><marker id=\"a\"/></defs><line marker-end=\"url(#a)\"/><use href=\"#a\"/>\n\
+        <text x=\"1\">Ask</text>\n\
+        </svg>\n<figcaption>The workflow.</figcaption>\n</figure>\n";
+
+    #[test]
+    fn a_complete_diagram_passes() {
+        assert!(
+            diagram_problems(GOOD_DIAGRAM).is_empty(),
+            "{:?}",
+            diagram_problems(GOOD_DIAGRAM)
+        );
+        let hidden = "<svg aria-hidden=\"true\"><use href=\"#cp-mark\"/></svg>\n\
+                      <svg class=\"logo\" role=\"img\" aria-label=\"Mairistem\"></svg>";
+        assert!(
+            diagram_problems(hidden).is_empty(),
+            "{:?}",
+            diagram_problems(hidden)
+        );
+    }
+
+    #[test]
+    fn a_diagram_without_label_is_caught() {
+        let md = GOOD_DIAGRAM.replace(" aria-label=\"Two steps: you ask, Claude plans\"", "");
+        let problems = diagram_problems(&md);
+        assert!(
+            problems.iter().any(|p| p.contains("no aria-label")),
+            "{problems:?}"
+        );
+    }
+
+    #[test]
+    fn a_diagram_split_by_a_blank_line_is_caught() {
+        let md = GOOD_DIAGRAM.replace("<text x", "\n<text x");
+        let problems = diagram_problems(&md);
+        assert!(
+            problems.iter().any(|p| p.contains("blank line")),
+            "{problems:?}"
+        );
+    }
+
+    #[test]
+    fn a_diagram_outside_a_figure_or_pointing_out_is_caught() {
+        let bare = "<svg role=\"img\" aria-label=\"x\"><image href=\"chart.png\"/></svg>";
+        let problems = diagram_problems(bare);
+        assert!(
+            problems.iter().any(|p| p.contains("<figure>")),
+            "{problems:?}"
+        );
+        assert!(
+            problems.iter().any(|p| p.contains("another file")),
+            "{problems:?}"
+        );
+        let no_caption = GOOD_DIAGRAM.replace("<figcaption>The workflow.</figcaption>\n", "");
+        assert!(
+            diagram_problems(&no_caption)
+                .iter()
+                .any(|p| p.contains("figcaption"))
+        );
+    }
+
+    #[test]
+    fn contrast_follows_wcag() {
+        let r = contrast("#ffffff", "#000000").unwrap();
+        assert!((r - 21.0).abs() < 0.01, "{r}");
+        let coral = contrast("#ffffff", "#ff5331").unwrap();
+        assert!((3.0..3.4).contains(&coral), "{coral}");
+    }
+
+    #[test]
+    fn a_diagram_pair_under_its_threshold_is_caught() {
+        let css = ".light {\n  --dg-bg: #ffffff;\n  --dg-box: #f4f8f9;\n  --dg-file: #ffffff;\n\
+                   --dg-ink: #00263a;\n  --dg-muted: #b0b0b0;\n  --dg-line: #567079;\n\
+                   --dg-you: #e0421f;\n  --dg-you-text: #c4361b;\n  --dg-on-you: #1a0a05;\n\
+                   --dg-claude: #004c66;\n}\n";
+        let themes = diagram_themes(css);
+        assert_eq!(themes.len(), 1);
+        assert_eq!(themes[0].0, ".light");
+        let problems = contrast_problems(&themes[0].0, &themes[0].1);
+        assert!(
+            problems
+                .iter()
+                .any(|p| p.contains(".light") && p.contains("--dg-muted #b0b0b0")),
+            "{problems:?}"
+        );
+    }
+
+    #[test]
+    fn an_entry_point_without_jira_is_caught() {
+        assert!(
+            jira_problems(
+                "Say \"Prepare a plan for PROJ-123\": [Start from a Jira ticket](guides/mcp.md)."
+            )
+            .is_empty()
+        );
+        let problems = jira_problems("# Compagnon in two minutes\n\nPlan with Claude.\n");
+        assert_eq!(
+            problems,
+            ["never names Jira", "does not link the Jira guide"]
+        );
+    }
+
+    #[test]
+    fn jira_between_two_profiles_is_caught() {
+        let labels = ["A", "B", "C", "D"];
+        assert!(jira_after_profiles("A B C D … Jira", &labels));
+        assert!(!jira_after_profiles("A B Jira C D", &labels));
+    }
+
+    #[test]
+    fn a_guide_that_configures_before_it_shows_is_caught() {
+        let good = "# Start\n\nSay it.\n\n<figure class=\"diagram\">…</figure>\n\n## Set it up\n";
+        assert!(jira_guide_problems(good).is_empty());
+        let bad = "# Start\n\n## Set it up\n\n<figure class=\"diagram\">…</figure>\n";
+        assert_eq!(jira_guide_problems(bad).len(), 1);
+    }
+
+    #[test]
+    fn a_code_left_in_the_faq_is_caught() {
+        let faq = "# FAQ\n\n### `decision_seal_mismatch`\n\nFix it.\n";
+        let errors = "# Error codes\n\n### `legacy_source`\n";
+        let problems = faq_code_problems(faq, errors, &["decision_seal_mismatch", "legacy_source"]);
+        assert_eq!(
+            problems,
+            [
+                "the FAQ still explains `decision_seal_mismatch`",
+                "the errors chapter has no ### `decision_seal_mismatch`"
+            ]
+        );
+    }
+
+    #[test]
+    fn a_long_chapter_or_one_without_go_further_is_caught() {
+        let title = |t: &str| (t == "roles.md").then(|| "Roles".to_string());
+        let good = "# FAQ\n\nShort.\n\n<figure>many many words</figure>\n\n## Go further\n\n- [Roles](roles.md)\n";
+        assert!(
+            everyday_problems(good, 5, Lang::En, title).is_empty(),
+            "{:?}",
+            everyday_problems(good, 5, Lang::En, title)
+        );
+        let long = format!(
+            "# FAQ\n\n{}\n\n## Go further\n\n- [Roles](roles.md)\n",
+            "word ".repeat(1300)
+        );
+        assert!(everyday_problems(&long, 1200, Lang::En, title)[0].contains("over 1200"));
+        let ends = "# Concepts\n\n## Seal\n\nText.\n";
+        assert_eq!(
+            everyday_problems(ends, 1200, Lang::En, title),
+            ["ends with \"Seal\", not \"Go further\""]
+        );
+        let wrong = "# FAQ\n\n## Go further\n\n- [The roles](roles.md)\n";
+        assert_eq!(everyday_problems(wrong, 1200, Lang::En, title).len(), 1);
+    }
+
+    #[test]
+    fn a_french_diagram_speaks_french() {
+        let fr = GOOD_DIAGRAM.replace("The workflow.", "Le déroulé.");
+        let md = fr
+            .replace(
+                "Two steps: you ask, Claude plans",
+                "Le workflow en deux étapes",
+            )
+            .replace(">Ask<", ">Demander<");
+        assert_eq!(anglicisms(&md), ["workflow"]);
+        let text = fr
+            .replace("Two steps: you ask, Claude plans", "Deux étapes")
+            .replace(">Ask<", ">La review<");
+        assert_eq!(anglicisms(&text), ["review"]);
+    }
 }
 
 /// The checks applied to the embedded chapters of both editions.
@@ -1431,6 +2062,42 @@ mod chapter_tests {
     }
 
     #[test]
+    fn both_editions_follow_the_refactored_order() {
+        for lang in LANGS {
+            let problems = toc_problems(summary(lang));
+            assert!(problems.is_empty(), "{}: {problems:#?}", lang.tag());
+            let titles = title_problems(summary(lang), |path| {
+                lang.chapters()
+                    .iter()
+                    .find(|(p, _)| *p == path)
+                    .and_then(|(_, md)| md.lines().find_map(|l| l.strip_prefix("# ")))
+                    .map(str::to_string)
+            });
+            assert!(titles.is_empty(), "{}: {titles:#?}", lang.tag());
+        }
+    }
+
+    #[test]
+    fn a_chapter_out_of_its_part_is_caught() {
+        let moved = summary(Lang::En)
+            .replace("- [Roles](roles.md)\n", "")
+            .replace(
+                "- [FAQ](faq.md)\n",
+                "- [FAQ](faq.md)\n- [Roles](roles.md)\n",
+            );
+        let problems = toc_problems(&moved);
+        assert!(
+            problems
+                .iter()
+                .any(|p| p.contains("roles.md does not belong")),
+            "{problems:?}"
+        );
+        let renamed = summary(Lang::En).replace("[FAQ](faq.md)", "[Questions](faq.md)");
+        let titles = title_problems(&renamed, |_| Some("FAQ".into()));
+        assert!(titles.iter().any(|p| p.contains("faq.md")), "{titles:?}");
+    }
+
+    #[test]
     fn no_chapter_is_removed() {
         let before = [
             "introduction.md",
@@ -1455,6 +2122,8 @@ mod chapter_tests {
             "reference/json-output.md",
             "faq.md",
             "architecture.md",
+            "guides/decisions.md",
+            "reference/errors.md",
         ];
         for lang in LANGS {
             let now = paths(lang);
@@ -1476,7 +2145,7 @@ mod chapter_tests {
                 (PATHS[3], (250, 310)),
                 ("quickstart.md", (500, 625)),
             ] {
-                let words = prose_words(chapter(lang, path));
+                let words = prose_words(&without_figures(chapter(lang, path)));
                 let cap = cap(lang, caps);
                 assert!(
                     words <= cap,
@@ -1790,7 +2459,7 @@ mod chapter_tests {
     /// The chapters of the "Start here" and "Everyday use" parts, as both
     /// `SUMMARY.md` list them: `the_everyday_list_follows_the_summary`
     /// fails if a chapter is added to those parts and not here.
-    const EVERYDAY: [&str; 17] = [
+    const EVERYDAY: [&str; 18] = [
         "introduction.md",
         "choose-your-path.md",
         "paths/review.md",
@@ -1799,13 +2468,14 @@ mod chapter_tests {
         "paths/team.md",
         "glossary.md",
         "quickstart.md",
+        "guides/start-from-nothing.md",
         "installation.md",
         "workflow.md",
         "skills.md",
+        "guides/mcp.md",
         "guides/review-a-plan.md",
         "guides/example-plan.md",
         "guides/approve-a-plan.md",
-        "guides/start-from-nothing.md",
         "concepts.md",
         "faq.md",
     ];
@@ -1832,6 +2502,221 @@ mod chapter_tests {
                 if !problems.is_empty() {
                     found.push(format!("{} {path}: {problems:?}", lang.tag()));
                 }
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn the_jira_guide_leads_with_what_it_changes() {
+        for (lang, title) in [
+            (Lang::En, "Start from a Jira ticket"),
+            (Lang::Fr, "Partir d'un ticket Jira"),
+        ] {
+            let md = chapter(lang, "guides/mcp.md");
+            assert!(
+                md.starts_with(&format!("# {title}\n")),
+                "{}: title",
+                lang.tag()
+            );
+            let everyday = &parts(summary(lang))[EVERYDAY_PART].1;
+            assert!(
+                everyday.iter().any(|c| c == "guides/mcp.md"),
+                "{}: part",
+                lang.tag()
+            );
+            let problems = jira_guide_problems(md);
+            assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
+        }
+    }
+
+    /// The codes and messages the FAQ explained before the refactor, all
+    /// moved to "Error codes and fixes".
+    const FAQ_CODES: [&str; 22] = [
+        "no compagnon project found",
+        "skills_review_mode",
+        "zero_delta_without_marker",
+        "decision_seal_mismatch",
+        "predecessor_not_accepted",
+        "decision_missing_frontmatter",
+        "validation_failed",
+        "rename_source_missing",
+        "delta_unexpected_heading",
+        "inherit_pin_failed",
+        "managed_section_malformed",
+        "unlocked",
+        "needs_update",
+        "invalid",
+        "unknown_config_key",
+        "change_unknown_key",
+        "schema_unknown_key",
+        "decision_unknown_field",
+        "compagnon_version_unsatisfied",
+        "update_checksum_mismatch",
+        "update_not_writable",
+        "compagnon: command not found",
+    ];
+
+    #[test]
+    fn error_codes_moved_out_of_the_faq() {
+        for lang in LANGS {
+            let faq = chapter(lang, "faq.md");
+            let problems = faq_code_problems(faq, chapter(lang, "reference/errors.md"), &FAQ_CODES);
+            assert!(problems.is_empty(), "{}: {problems:#?}", lang.tag());
+            assert!(
+                faq.contains("reference/errors.md"),
+                "{}: the FAQ links the errors chapter",
+                lang.tag()
+            );
+        }
+    }
+
+    /// `target`, a link written in chapter `from`, as a chapter path of the
+    /// book (`../roles.md#x` from `guides/mcp.md` is `roles.md`).
+    fn resolve(from: &str, target: &str) -> String {
+        let target = target.split('#').next().unwrap_or_default();
+        let mut parts: Vec<&str> = from.split('/').collect();
+        parts.pop();
+        for segment in target.split('/') {
+            match segment {
+                ".." => {
+                    parts.pop();
+                }
+                "." | "" => {}
+                s => parts.push(s),
+            }
+        }
+        parts.join("/")
+    }
+
+    /// The title `SUMMARY.md` gives a chapter.
+    fn summary_title(lang: Lang, path: &str) -> Option<String> {
+        summary_entries(summary(lang))
+            .find_map(|(title, target)| (target == path).then(|| title.to_string()))
+    }
+
+    #[test]
+    fn every_entry_point_puts_jira_forward() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            for path in ["introduction.md", "quickstart.md"]
+                .into_iter()
+                .chain(PATHS)
+            {
+                for p in jira_problems(chapter(lang, path)) {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+            }
+        }
+        for (name, readme) in [
+            ("README.md", include_str!("../../../README.md")),
+            ("README.fr.md", include_str!("../../../README.fr.md")),
+        ] {
+            for p in jira_problems(readme) {
+                found.push(format!("{name}: {p}"));
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn both_home_pages_put_jira_after_the_profiles() {
+        for (lang, page) in [
+            (Lang::En, include_str!("../../../docs/site/index.html")),
+            (Lang::Fr, include_str!("../../../docs/site/fr.html")),
+        ] {
+            let problems = jira_problems(page);
+            assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
+            assert!(
+                jira_after_profiles(page, &profile_labels(lang)),
+                "{}: Jira comes before the last profile",
+                lang.tag()
+            );
+        }
+    }
+
+    /// Everyday chapters exempt from the word cap and the "Go further"
+    /// ending: the annotated example plan, whose body is a whole plan
+    /// quoted for the reader to study.
+    const UNCAPPED_EVERYDAY: [&str; 1] = ["guides/example-plan.md"];
+
+    #[test]
+    fn everyday_chapters_are_short_and_end_with_go_further() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            let everyday = &parts(summary(lang))[EVERYDAY_PART].1;
+            for path in everyday
+                .iter()
+                .filter(|p| !UNCAPPED_EVERYDAY.contains(&p.as_str()))
+            {
+                let problems = everyday_problems(
+                    chapter(lang, path),
+                    cap(lang, (1200, 1500)),
+                    lang,
+                    |target| summary_title(lang, &resolve(path, target)),
+                );
+                for p in problems {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn every_diagram_theme_is_contrasted_enough() {
+        let sheets = [
+            (
+                "docs/theme/mairistem.css",
+                include_str!("../../../docs/theme/mairistem.css"),
+            ),
+            ("assets/docs.css", include_str!("../assets/docs.css")),
+            (
+                "docs/site/index.html",
+                include_str!("../../../docs/site/index.html"),
+            ),
+            (
+                "docs/site/fr.html",
+                include_str!("../../../docs/site/fr.html"),
+            ),
+        ];
+        let mut found = Vec::new();
+        for (file, css) in sheets {
+            let themes = diagram_themes(css);
+            assert_eq!(
+                themes.len(),
+                2,
+                "{file} should define a light and a dark diagram theme"
+            );
+            for (selector, tokens) in themes {
+                found.extend(contrast_problems(&format!("{file} {selector}"), &tokens));
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn every_diagram_has_a_text_alternative() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            for (path, md) in lang.chapters() {
+                for p in diagram_problems(md) {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+            }
+        }
+        for (page, html) in [
+            (
+                "docs/site/index.html",
+                include_str!("../../../docs/site/index.html"),
+            ),
+            (
+                "docs/site/fr.html",
+                include_str!("../../../docs/site/fr.html"),
+            ),
+        ] {
+            for p in diagram_problems(html) {
+                found.push(format!("{page}: {p}"));
             }
         }
         assert!(found.is_empty(), "{found:#?}");

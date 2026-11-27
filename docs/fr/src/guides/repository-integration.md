@@ -220,3 +220,10 @@ En CI, `compagnon doctor --strict` sort avec le code `1` lorsqu'une vérificatio
 manque ; les avertissements ne font jamais échouer la commande.
 `compagnon doctor --json` fournit le même rapport aux scripts, avec des
 identifiants et des codes stables — voir [Sortie JSON](../reference/json-output.md#doctor).
+
+## Pour aller plus loin
+
+- [Déployer Compagnon pour une équipe](team-rollout.md)
+- [Notes de version et CHANGELOG](release-notes.md)
+- [Interface en ligne de commande](../reference/cli.md)
+- [Configuration](../reference/configuration.md)

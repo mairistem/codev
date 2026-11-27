@@ -13,29 +13,30 @@
 # Au quotidien
 
 - [Votre première modification](quickstart.md)
+- [Partir de rien](guides/start-from-nothing.md)
 - [Installation](installation.md)
-- [Le déroulé](workflow.md)
-- [Les compétences Claude Code](skills.md)
+- [Comment ça marche](workflow.md)
+- [Parler à Claude](skills.md)
+- [Partir d'un ticket Jira](guides/mcp.md)
 - [Relire un plan](guides/review-a-plan.md)
 - [Un exemple de plan commenté](guides/example-plan.md)
 - [Approuver un plan sur GitHub ou GitLab](guides/approve-a-plan.md)
-- [Partir de rien](guides/start-from-nothing.md)
 - [Concepts](concepts.md)
-- [FAQ et dépannage](faq.md)
+- [FAQ](faq.md)
 
 # Aller plus loin
 
+- [Décisions](guides/decisions.md)
+- [Compte rendu de relecture](guides/review-record.md)
 - [Rôles](roles.md)
-- [Migrer depuis codev](guides/moving-from-codev.md)
-- [Sources héritées](guides/inherited-sources.md)
-- [Intégration au dépôt et compagnon doctor](guides/repository-integration.md)
 - [Adopter Compagnon sur un projet existant](guides/existing-project.md)
 - [Déployer Compagnon pour une équipe](guides/team-rollout.md)
+- [Intégration au dépôt et compagnon doctor](guides/repository-integration.md)
 - [Notes de version et CHANGELOG](guides/release-notes.md)
-- [Compte rendu de relecture](guides/review-record.md)
-- [Jira et autres serveurs MCP](guides/mcp.md)
+- [Sources héritées](guides/inherited-sources.md)
 - [Langue des artefacts](guides/artifact-language.md)
 - [Schémas personnalisés](guides/custom-schemas.md)
+- [Migrer depuis codev](guides/moving-from-codev.md)
 
 # Référence
 
@@ -43,6 +44,7 @@
 - [Configuration](reference/configuration.md)
 - [Formats de fichiers](reference/file-formats.md)
 - [Sortie JSON](reference/json-output.md)
+- [Codes d'erreur et solutions](reference/errors.md)
 
 # Contribuer
 

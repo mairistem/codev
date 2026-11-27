@@ -4,7 +4,8 @@
 //! - default: writes to `temp_dir()/compagnon-docs-<version>.html` and opens
 //!   it in the system browser;
 //! - `--write <PATH>`: writes to the given path, does not open;
-//! - `--print`: prints the markdown source to stdout.
+//! - `--print`: prints the markdown source to stdout, the diagrams' drawings
+//!   left out and their captions kept.
 //!
 //! Each form takes `--lang en|fr`. The chapters of a language are the ones
 //! its `docs/<lang>/src/SUMMARY.md` lists — the same source the website is
@@ -59,6 +60,35 @@ impl Lang {
             Lang::Fr => CHAPTERS_FR,
         }
     }
+}
+
+/// The `<svg …>…</svg>` elements of `text`, each with its byte offset.
+/// An unclosed one runs to the end.
+pub(crate) fn svg_elements(text: &str) -> Vec<(usize, &str)> {
+    let mut out = Vec::new();
+    let mut from = 0;
+    while let Some(start) = text[from..].find("<svg").map(|i| from + i) {
+        let end = text[start..]
+            .find("</svg>")
+            .map_or(text.len(), |i| start + i + "</svg>".len());
+        out.push((start, &text[start..end]));
+        from = end;
+    }
+    out
+}
+
+/// `md` without its drawings: each `<svg>…</svg>` element is left out,
+/// and the `<figcaption>` after it stays, so that a terminal or a tool
+/// reading the markdown gets the caption instead of drawing instructions.
+pub fn without_drawings(md: &str) -> String {
+    let mut out = String::with_capacity(md.len());
+    let mut from = 0;
+    for (start, svg) in svg_elements(md) {
+        out.push_str(&md[from..start]);
+        from = start + svg.len();
+    }
+    out.push_str(&md[from..]);
+    out
 }
 
 /// The whole documentation of a language as one markdown document.
@@ -911,6 +941,32 @@ mod tests {
             "compagnon-init--what-it-does"
         );
         assert_eq!(s.slug("Getting started"), "getting-started-1");
+    }
+
+    #[test]
+    fn print_leaves_out_drawings_and_keeps_captions() {
+        let md = "Text.\n\n<figure class=\"diagram\">\n<svg role=\"img\" aria-label=\"x\">\n\
+                  <text>Ask</text>\n</svg>\n<figcaption>The workflow.</figcaption>\n</figure>\n";
+        let printed = without_drawings(md);
+        assert!(!printed.contains("<svg"), "{printed}");
+        assert!(
+            printed.contains("<figcaption>The workflow.</figcaption>"),
+            "{printed}"
+        );
+        assert!(printed.starts_with("Text."), "{printed}");
+        for lang in [Lang::En, Lang::Fr] {
+            assert!(!without_drawings(&markdown(lang)).contains("<svg"));
+        }
+    }
+
+    #[test]
+    fn offline_manual_styles_diagrams_in_both_schemes() {
+        let html = render_html("# Compagnon\n\nText.\n", Lang::En, "0.7.0");
+        let themes = crate::docs_checks::diagram_themes(&html);
+        assert_eq!(themes.len(), 2, "a light and a dark diagram theme");
+        let dark = html.rfind("@media (prefers-color-scheme: dark)").unwrap();
+        let last_ink = html.rfind("--dg-ink:").unwrap();
+        assert!(dark < last_ink, "the dark theme sits in the dark scheme");
     }
 
     #[test]

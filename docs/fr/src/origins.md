@@ -10,30 +10,9 @@ fouille l'historique des enregistrements pour retrouver pourquoi un comportement
 Compagnon inverse la démarche : pour chaque modification significative, vous commencez par
 écrire ce que vous voulez, vous le relisez, puis vous l'implémentez.
 
-Ce que Compagnon vous apporte :
-
-- **Un cycle explicite.** Chaque modification passe par quatre étapes : proposer,
-  réaliser, synchroniser et archiver. Chaque étape a son artefact et sa compétence Claude
-  Code dédiée. Voir [Le déroulé](workflow.md).
-- **Des deltas de spécifications, fusionnés avec précision.** Une
-  modification ne réécrit jamais une spécification en entier. Elle déclare des exigences `ADDED`, `MODIFIED`,
-  `REMOVED` ou `RENAMED`, que Compagnon fusionne dans les spécifications
-  principales à l'archivage de la modification, sans toucher au reste du fichier. C'est ce qui rend
-  Compagnon utilisable sur du code existant, et pas seulement sur des projets
-  neufs.
-- **Des décisions d'architecture immuables.** Les décisions acceptées (ADR)
-  sont scellées par une empreinte de leur contenu. `compagnon validate` signale
-  toute réécriture silencieuse. On ne modifie pas une décision : on la
-  remplace par une nouvelle.
-- **Des conventions partagées entre dépôts.** Un projet peut hériter du
-  contexte, des règles et des décisions d'un autre dépôt, en lecture seule,
-  épinglés sur un enregistrement git (commit). Voir [Sources héritées](guides/inherited-sources.md).
-- **La langue de votre équipe.** Les artefacts sont rédigés dans la langue
-  définie dans la configuration, tandis que leur structure reste lisible par la
-  machine. Voir [Langue des artefacts](guides/artifact-language.md).
-- **Un binaire natif unique.** Aucun environnement d'exécution à installer.
-  Des binaires précompilés pour macOS, Linux et Windows, vérifiés par SHA-256
-  à l'installation.
+Ce que vous y gagnez au quotidien est expliqué dans
+[Compagnon en deux minutes](introduction.md) et [Comment ça marche](workflow.md) ;
+ce qui le distingue des outils qui l'ont précédé est décrit ci-dessous.
 
 ## Origines
 

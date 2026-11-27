@@ -263,13 +263,20 @@ fn inline_marks_are_named_or_decorative() {
     ] {
         let text = read(file);
         let uses: Vec<&str> = text
-            .match_indices("<use href=\"#cp-mark\">")
+            .match_indices("<use href=\"#cp-")
+            .filter(|(i, _)| {
+                text[*i..].starts_with("<use href=\"#cp-mark\">")
+                    || text[*i..].starts_with("<use href=\"#cp-logo\">")
+            })
             .map(|(i, _)| {
                 let start = text[..i].rfind("<svg").expect("inside an svg");
                 &text[start..i]
             })
             .collect();
-        assert!(!uses.is_empty(), "{file} does not show the mark");
+        assert!(
+            !uses.is_empty(),
+            "{file} shows neither the mark nor the logo"
+        );
         for svg in uses {
             let named = svg.contains("role=\"img\"") && svg.contains("aria-label=\"Compagnon");
             let decorative = svg.contains("aria-hidden=\"true\"");
@@ -558,6 +565,89 @@ fn both_home_pages_lead_with_the_four_profiles() {
             page.matches("rel=\"alternate\"").count(),
             2,
             "one alternate per language"
+        );
+    }
+}
+
+/// The header brand links of a page — the links whose opening tag holds
+/// `marker` — that do not show the "Compagnon by Mairistem" logo, or still
+/// show the Mairistem logo.
+fn header_brand_problems(text: &str, marker: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    let mut found = 0;
+    for (i, _) in text.match_indices(marker) {
+        let start = text[..i].rfind("<a ").unwrap_or(i);
+        let end = text[i..].find("</a>").map_or(text.len(), |e| i + e);
+        let link = &text[start..end];
+        found += 1;
+        if !link.contains("<use href=\"#cp-logo\">") {
+            problems.push(format!(
+                "brand link {found} lacks the Compagnon by Mairistem logo"
+            ));
+        }
+        if link.contains("#mx-logo") {
+            problems.push(format!("brand link {found} still shows the Mairistem logo"));
+        }
+    }
+    if found == 0 {
+        problems.push("no brand link".into());
+    }
+    problems
+}
+
+#[test]
+fn headers_show_the_compagnon_by_mairistem_logo() {
+    for (file, marker, count) in [
+        ("docs/theme/index.hbs", "class=\"mx-brand-logo\"", 2),
+        ("docs/site/index.html", "class=\"brand\"", 1),
+        ("docs/site/fr.html", "class=\"brand\"", 1),
+    ] {
+        let text = read(file);
+        assert_eq!(text.matches(marker).count(), count, "{file}: brand links");
+        let problems = header_brand_problems(&text, marker);
+        assert!(problems.is_empty(), "{file}: {problems:?}");
+    }
+}
+
+#[test]
+fn a_header_still_showing_the_mairistem_logo_is_caught() {
+    let page = "<a class=\"brand\" href=\"./\" aria-label=\"Compagnon, by Mairistem — home\">\
+                <svg class=\"logo\"><use href=\"#mx-logo\"/></svg></a>";
+    assert_eq!(
+        header_brand_problems(page, "class=\"brand\""),
+        [
+            "brand link 1 lacks the Compagnon by Mairistem logo",
+            "brand link 1 still shows the Mairistem logo"
+        ]
+    );
+}
+
+/// The home pages' copy buttons sit in each code block's header, beside the
+/// command: the script must find the command from the block, not from the
+/// button's parent, or a click does nothing and announces nothing.
+#[test]
+fn home_page_copy_buttons_find_their_command() {
+    for file in ["docs/site/index.html", "docs/site/fr.html"] {
+        let page = read(file);
+        let buttons = page.matches("<button class=\"copy\"").count();
+        assert_eq!(buttons, 2, "{file}: two copy buttons");
+        for (i, _) in page.match_indices("<button class=\"copy\"") {
+            let block_start = page[..i]
+                .rfind("<div class=\"codeblock\">")
+                .expect("in a code block");
+            let block_end = block_start + page[block_start..].find("</div>").expect("closed");
+            assert!(
+                page[block_start..block_end].contains("<pre"),
+                "{file}: a copy button's block has no command"
+            );
+        }
+        assert!(
+            page.contains("button.closest('.codeblock')"),
+            "{file}: the script finds the command from the button's code block"
+        );
+        assert!(
+            !page.contains("button.parentNode.querySelector('pre')"),
+            "{file}: the script looks for the command beside the button, where it is not"
         );
     }
 }

@@ -412,9 +412,11 @@ enum Command {
     /// - `--write <PATH>`: writes the HTML to the given path, opens
     ///   nothing (for sharing — email, Confluence, shared drive);
     /// - `--print`: prints the markdown source to stdout (to pipe into
-    ///   `less`, `bat` or an LLM).
+    ///   `less`, `bat` or an LLM), the diagrams' drawings left out and their
+    ///   captions kept.
     Docs {
-        /// Print the markdown source to stdout (does not open anything)
+        /// Print the markdown source to stdout, without the diagrams' drawings
+        /// (does not open anything)
         #[arg(long, conflicts_with = "write")]
         print: bool,
         /// Write the HTML to the given path (does not open anything)
@@ -657,7 +659,9 @@ fn run(cli: Cli) -> i32 {
             let lang = lang.to_lang();
             if print {
                 use std::io::Write as _;
-                return match std::io::stdout().write_all(docs::markdown(lang).as_bytes()) {
+                return match std::io::stdout()
+                    .write_all(docs::without_drawings(&docs::markdown(lang)).as_bytes())
+                {
                     Ok(()) => 0,
                     // `compagnon docs --print | head`: the reader left, which is
                     // not an error worth reporting.
@@ -1980,6 +1984,31 @@ mod completions_tests {
                 script.contains("migrate"),
                 "output for {shell:?} does not offer `migrate`"
             );
+        }
+    }
+
+    #[test]
+    fn the_reference_quotes_the_docs_help() {
+        let mut command = Cli::command();
+        let docs = command
+            .find_subcommand_mut("docs")
+            .expect("a docs subcommand");
+        let help = docs.render_long_help().to_string();
+        let print_lines: Vec<&str> = help
+            .lines()
+            .filter(|l| l.contains("--print") || l.contains("Print the markdown"))
+            .collect();
+        assert!(!print_lines.is_empty());
+        for reference in [
+            include_str!("../../../docs/en/src/reference/cli.md"),
+            include_str!("../../../docs/fr/src/reference/cli.md"),
+        ] {
+            for line in &print_lines {
+                assert!(
+                    reference.contains(line.trim()),
+                    "the reference lacks: {line}"
+                );
+            }
         }
     }
 

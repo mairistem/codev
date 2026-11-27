@@ -80,6 +80,13 @@ Claude rédige un plan et s'arrête : il ne modifie encore aucun code. Le
 raccourci fait la même chose : `/compagnon-propose ajoute un mode sombre qui
 suit le réglage du système`.
 
+**Vous avez un ticket Jira ?** Nommez-le :
+
+> Prépare un plan pour PROJ-123.
+
+Claude le lit, sans le modifier, et le cite en tête du plan
+([Partir d'un ticket Jira](guides/mcp.md)).
+
 <details>
 <summary>Sous le capot : comment le plan est rédigé</summary>
 
@@ -108,9 +115,6 @@ Lisez-les comme la proposition d'un collègue. Pour changer quelque chose,
 dites-le simplement :
 
 > Dans le plan, garde le choix de l'utilisateur quand il choisit un thème à la main.
-
-[Relire un plan](guides/review-a-plan.md) vous dit quoi regarder dans chaque
-fichier, sans terminal.
 
 <details>
 <summary>Sous le capot : vérifier le plan</summary>
@@ -149,6 +153,25 @@ raison d'être du mode sombre. Raccourci : `/compagnon-archive
 add-dark-mode`. Enregistrez ensuite le résultat dans l'historique du projet
 ([Git](glossary.md#git)), ou demandez-le à Claude.
 
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 220" role="img" aria-label="Le dossier d'une modification : _compagnon/changes/&lt;nom&gt;/ contient la proposition, les spécifications, la conception et les tâches ; l'archivage le déplace vers _compagnon/changes/archive/&lt;date&gt;-&lt;nom&gt;/ et met à jour les spécifications du projet.">
+<g stroke-width="2" style="fill:var(--dg-file)">
+<rect x="8" y="20" width="300" height="180" rx="12" style="stroke:var(--dg-claude)"/><rect x="420" y="20" width="332" height="80" rx="12" style="stroke:var(--dg-line)" stroke-dasharray="5 4"/><rect x="420" y="120" width="332" height="80" rx="12" style="stroke:var(--dg-line)"/>
+</g>
+<path d="M312,110h60M372,110V60h42m-6,-5l6,5l-6,5M372,110V160h42m-6,-5l6,5l-6,5" fill="none" stroke-width="2" style="stroke:var(--dg-line)"/>
+<g class="mono" font-size="13" style="fill:var(--dg-ink)">
+<text x="24" y="48" font-weight="600">_compagnon/changes/&lt;nom&gt;/</text><text x="40" y="84">proposal.md</text><text x="40" y="112">specs/…/spec.md</text><text x="40" y="140">design.md</text><text x="40" y="168">tasks.md</text>
+<text x="436" y="48" font-weight="600">_compagnon/changes/archive/</text><text x="436" y="70">&lt;date&gt;-&lt;nom&gt;/</text><text x="436" y="148" font-weight="600">_compagnon/specs/…/spec.md</text>
+</g>
+<g font-size="13" style="fill:var(--dg-muted)">
+<text x="316" y="102" font-size="12">archiver</text><text x="436" y="90">conservé tel quel</text><text x="436" y="176">mis à jour par le plan</text>
+</g>
+</svg>
+</div>
+<figcaption>Du début à l'archive : le plan est conservé, et les spécifications du projet disent ce qu'il a changé.</figcaption>
+</figure>
+
 <details>
 <summary>Sous le capot : ce que fait l'archivage</summary>
 
@@ -167,10 +190,10 @@ Moved to: /home/you/acme-app/_compagnon/changes/archive/2026-09-30-add-dark-mode
 
 </details>
 
-## Et ensuite
+## Pour aller plus loin
 
-- [Le déroulé](workflow.md) détaille chaque étape.
-- [Les compétences Claude Code](skills.md#comment-demander) donne, pour
-  chaque compétence, des façons de la demander.
-- Dites « fais-moi visiter Compagnon » pour une visite guidée de votre
-  projet.
+- [Comment ça marche](workflow.md) : chaque étape en détail.
+- [Parler à Claude](skills.md#comment-demander) : d'autres façons de
+  demander.
+- [Partir d'un ticket Jira](guides/mcp.md)
+- [Relire un plan](guides/review-a-plan.md) : quoi vérifier dans un plan.

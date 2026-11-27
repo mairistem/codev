@@ -64,7 +64,15 @@ not read the project:
   by a `help: …` line with the fix.
 - **Choosing a change.** Commands that take `--change <CHANGE>` infer it when
   the project has exactly one active change, and fail with `ambiguous_change`
-  when there are several.
+  when there are several, naming them:
+
+  ```text
+  error: several active changes: add-audit-log, rework — specify which one
+  help: `--change add-audit-log`
+  ```
+
+  Change names are in [kebab-case](../glossary.md#kebab-case): lowercase
+  letters, digits and hyphens, such as `add-user-auth`.
 
 ## Project
 
@@ -424,13 +432,13 @@ Open the compagnon documentation in the browser
 
 Three forms:
 
-- default: writes `compagnon-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM).
+- default: writes `compagnon-docs-<version>.html` to the system temp folder and opens it in the browser; - `--write <PATH>`: writes the HTML to the given path, opens nothing (for sharing — email, Confluence, shared drive); - `--print`: prints the markdown source to stdout (to pipe into `less`, `bat` or an LLM), the diagrams' drawings left out and their captions kept.
 
 Usage: compagnon docs [OPTIONS]
 
 Options:
       --print
-          Print the markdown source to stdout (does not open anything)
+          Print the markdown source to stdout, without the diagrams' drawings (does not open anything)
 
       --write <PATH>
           Write the HTML to the given path (does not open anything)
@@ -452,7 +460,7 @@ Renders this documentation as one self-contained HTML page — inline CSS, no
 network access — and opens it in your browser. The page is written to
 `compagnon-docs-<version>.html` in the system temporary folder. `--write` writes
 it elsewhere without opening it, for sharing; `--print` prints the Markdown
-source. `--lang` selects the English (`en`, the default) or French (`fr`)
+source, with each diagram's caption in place of its drawing. `--lang` selects the English (`en`, the default) or French (`fr`)
 edition. `compagnon docs` works anywhere, including outside a Compagnon project.
 
 `--print` is meant to be piped: when the reader stops early, as in
@@ -858,6 +866,24 @@ When the running Compagnon does not satisfy the project's
 and fail with `compagnon_version_unsatisfied`, naming the requirement, the
 running version and the fix `compagnon doctor` gives. Raise a CI pin
 (`COMPAGNON_VERSION=`) together with `compagnon_version`.
+
+What it checks:
+
+- the shape of specs and deltas: every requirement uses `SHALL` or `MUST`
+  (or `DOIT` or `DOIVENT`) and has at least one `#### Scenario:`;
+- that a delta does not contradict itself: no requirement both added and
+  modified, no renaming that clashes with an addition;
+- the zero-delta rule: a change with no deltas at all must declare
+  `skip_specs: true` in its `change.yaml` — a cleanup, an upgrade or a
+  documentation change that alters no behavior;
+- that sealed decisions have not been altered.
+
+Use `--strict` in continuous integration ([CI](../glossary.md#ci)), the
+checks that run on every push, so that warnings fail the build too:
+
+```bash
+compagnon validate --strict
+```
 
 Exit status:
 

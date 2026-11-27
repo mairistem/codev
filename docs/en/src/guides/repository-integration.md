@@ -210,3 +210,10 @@ missing, and `/compagnon-onboard` lists the missing items with their fix.
 In CI, `compagnon doctor --strict` exits with status `1` when a check is missing;
 warnings never fail. `compagnon doctor --json` gives the same report to scripts,
 with stable check ids and codes — see [JSON output](../reference/json-output.md#doctor).
+
+## Go further
+
+- [Deploying Compagnon for a team](team-rollout.md)
+- [Release notes and CHANGELOG](release-notes.md)
+- [Command-line interface](../reference/cli.md)
+- [Configuration](../reference/configuration.md)

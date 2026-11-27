@@ -15,6 +15,8 @@ pages, about half an hour, then your first try.
 
 - [An annotated example plan](../guides/example-plan.md): what a whole
   plan looks like.
+- [Start from a Jira ticket](../guides/mcp.md): if your idea is already a
+  Jira ticket, name it in your request.
 - [Glossary](../glossary.md), for any word you meet.
 
 Not your case? [Choose another path](../choose-your-path.md).

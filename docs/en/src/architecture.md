@@ -21,12 +21,39 @@ interfaces or a dependency-injection container.
 
 ## The crate graph
 
-```text
-compagnon-cli ──▶ compagnon-agents ──▶ compagnon-engine ──▶ compagnon-core
-    │                               ▲                ▲
-    ├───────────────────────────────┘                │
-    └────────────────────────────────────────────────┘
-```
+<figure class="diagram">
+<div class="scroll">
+<svg viewBox="0 0 760 330" role="img" aria-label="The crate graph, an arrow meaning depends on: compagnon-cli, the shell, depends on compagnon-agents, compagnon-engine and compagnon-core; compagnon-agents, the Claude Code target, depends on compagnon-engine and compagnon-core; compagnon-engine, the disk through ports, depends on compagnon-core; compagnon-core, pure, depends on no other crate; compagnon-evals, the role evaluations, a workspace member outside the binary, depends on compagnon-core only.">
+<defs><marker id="dg-architecture-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
+<text x="8" y="22" font-size="13" style="fill:var(--dg-muted)">An arrow means “depends on”</text>
+<rect x="8" y="120" width="150" height="58" rx="10" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="83" y="144" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-cli</text>
+<text x="83" y="166" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">the shell</text>
+<rect x="206" y="120" width="150" height="58" rx="10" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="281" y="144" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-agents</text>
+<text x="281" y="166" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">Claude Code target</text>
+<rect x="404" y="120" width="150" height="58" rx="10" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="479" y="144" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-engine</text>
+<text x="479" y="166" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">disk, through ports</text>
+<rect x="602" y="120" width="150" height="58" rx="10" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="2"/>
+<text x="677" y="144" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-core</text>
+<text x="677" y="166" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">pure, no I/O</text>
+<line x1="160" y1="149" x2="204" y2="149" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<line x1="358" y1="149" x2="402" y2="149" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<line x1="556" y1="149" x2="600" y2="149" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<path d="M50,118 V44 H710 V116" fill="none" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<path d="M110,118 V80 H479 V116" fill="none" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<path d="M281,180 V216 H660 V182" fill="none" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<rect x="602" y="256" width="150" height="58" rx="10" style="fill:var(--dg-file);stroke:var(--dg-line)" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="677" y="280" text-anchor="middle" class="mono" font-size="14" font-weight="600" style="fill:var(--dg-ink)">compagnon-evals</text>
+<text x="677" y="302" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">role evaluations</text>
+<line x1="720" y1="254" x2="720" y2="182" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-architecture-arrow)"/>
+<text x="588" y="280" text-anchor="end" font-size="12" style="fill:var(--dg-muted)">Workspace member, never built</text>
+<text x="588" y="298" text-anchor="end" font-size="12" style="fill:var(--dg-muted)">into the compagnon binary</text>
+</svg>
+</div>
+<figcaption>The crate graph: every arrow points towards compagnon-core, which depends on no other crate, and Cargo refuses to compile a cycle.</figcaption>
+</figure>
 
 | Crate | Role | I/O |
 |---|---|---|
@@ -35,7 +62,9 @@ compagnon-cli ──▶ compagnon-agents ──▶ compagnon-engine ──▶ co
 | `compagnon-agents` | The `AgentTarget` trait and its Claude Code implementation; the workflow catalog | Through ports |
 | `compagnon-cli` | Argument parsing, human rendering, the versioned JSON contract, prompts, embedded docs | Yes — it is the shell |
 
-`compagnon-agents` also depends on `compagnon-core`, and `compagnon-cli` on every crate.
+The fifth workspace member, `compagnon-evals`, scores the reviewing roles
+(see [Reliability of the roles](reliability.md)). It depends on
+`compagnon-core` only and is never built into the released binary.
 
 A module becomes a crate only when it has earned it — a clean test boundary,
 or an external consumer. Splitting earlier only produces refactoring churn.

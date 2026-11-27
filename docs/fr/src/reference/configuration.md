@@ -95,7 +95,7 @@ Les déroulés à installer comme compétences (skills) Claude Code, désignés 
 identifiant : `propose`, `explore`, `onboard`, `configure`, `apply`, `sync`,
 `archive`, `update`. En l'absence de la clé, les huit sont installés. Un
 identifiant inconnu produit l'avertissement `unknown_workflow` et est ignoré.
-Voir [Les compétences Claude Code](../skills.md).
+Voir [Les compétences installées](#les-compétences-installées).
 
 ## context
 
@@ -192,7 +192,7 @@ chaque installation de Claude Code et ne sont donc jamais hérités.
 |---|---|
 | `jira_tool` | Outil qui récupère un ticket Jira, utilisé par `/compagnon-propose` lorsqu'un identifiant de ticket est mentionné |
 
-Voir [Jira et autres serveurs MCP](../guides/mcp.md).
+Voir [Partir d'un ticket Jira](../guides/mcp.md).
 
 ## changelog
 
@@ -459,6 +459,113 @@ l'en-tête d'une décision d'architecture (ADR)**. Lorsque vous ajoutez une clé
 connaissent, relevez aussi `compagnon_version` : les membres de l'équipe restés
 sur un Compagnon plus ancien apprendront par `compagnon doctor` et les compétences quelle
 version installer.
+
+## Les compétences installées
+
+`compagnon init` et `compagnon update` installent chaque compétence dans son
+propre dossier, `.claude/skills/compagnon-<workflow>/SKILL.md`. Comment les
+solliciter : [Parler à Claude](../skills.md) ; ce que fait chacune, étape par
+étape : [Comment ça marche](../workflow.md).
+
+### Choisir les compétences à installer
+
+Par défaut, les huit compétences sont installées. Pour en installer moins,
+vous avez deux façons de faire :
+
+- choisir le préréglage **minimal** à l'installation de Compagnon :
+  `propose`, `explore`, `onboard` et `configure` ;
+- ou lister les compétences souhaitées sous [`workflows:`](#workflows) :
+
+```yaml
+workflows:
+  - propose
+  - explore
+  - apply
+  - archive
+```
+
+Lancez ensuite `compagnon update`. Un nom que Compagnon ne connaît pas
+produit un avertissement et est ignoré. `compagnon update` ne supprime pas
+les compétences que vous ne listez plus : supprimez vous-même leurs
+dossiers dans `.claude/skills/`.
+
+### Permissions des outils
+
+Chaque compétence ne peut utiliser que les outils dont sa tâche a besoin.
+Une compétence qui ne doit pas écrire de fichiers ne reçoit pas les outils
+pour le faire. Cela fait partie de ce que chaque compétence vous promet.
+
+- Toutes les compétences peuvent lancer des commandes `compagnon` et lire
+  des fichiers.
+- Seule `/compagnon-apply` peut lancer n'importe quelle commande, parce
+  qu'elle doit lancer vos tests et compiler votre projet.
+- `/compagnon-sync` et `/compagnon-archive` ne peuvent écrire aucun
+  fichier : toutes leurs modifications passent par Compagnon lui-même.
+- `/compagnon-explore` et `/compagnon-onboard` n'écrivent rien.
+
+Chaque compétence déclare les outils qu'elle peut utiliser dans le champ
+`allowed-tools` de son frontmatter :
+
+| Compétence | `allowed-tools` |
+|---|---|
+| `compagnon-propose` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep`, plus l'outil MCP Jira s'il est configuré, plus `Agent` en mode de relecture isolé |
+| `compagnon-explore` | `Bash(compagnon:*), Read, Glob, Grep` |
+| `compagnon-onboard` | `Bash(compagnon:*), Read, Glob` |
+| `compagnon-configure` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep` |
+| `compagnon-apply` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` en mode de relecture isolé ou quand le `developer` a un modèle |
+| `compagnon-update` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep` |
+| `compagnon-sync` | `Bash(compagnon:*), Read` |
+| `compagnon-archive` | `Bash(compagnon:*), Read` |
+
+`Bash(compagnon:*)` permet à une compétence de lancer des commandes `compagnon`, et rien
+d'autre. Seule `compagnon-apply` obtient un accès général à `Bash`, parce qu'elle
+doit lancer vos tests et vos commandes de compilation.
+
+`Agent` est l'outil de sous-agent de Claude Code. `compagnon-propose` et
+`compagnon-apply` le demandent lorsque ce fichier définit
+`review: { mode: isolated }`
+([Relecture en ligne ou isolée](../roles.md#relecture-en-ligne-ou-isolée)) : chaque
+rôle relecteur travaille alors comme sous-agent. `compagnon-apply` le demande
+aussi quand le `developer` a un modèle : il lui confie alors les tâches
+dans un sous-agent ([Le modèle du développeur](../roles.md#le-modèle-du-développeur)).
+Aucune autre compétence ne le demande jamais. Après avoir changé de mode, lancez `compagnon update` ;
+`compagnon doctor` signale `skills_review_mode` tant que vous ne l'avez pas
+fait. Les deux compétences décrivent la relecture isolée dans les deux modes, car
+le `change.yaml` d'une modification peut remplacer le mode du projet : sans
+l'outil pré-autorisé, Claude Code demande avant de lancer un sous-agent,
+et s'il ne peut pas en lancer, les rôles relisent en ligne.
+
+### Modifier une compétence générée
+
+Vous pouvez modifier à la main le `SKILL.md` d'une compétence.
+`compagnon update` s'en aperçoit, et laisse votre fichier modifié en place
+au lieu de l'écraser. `compagnon update --force` le remplace par la version
+générée : vérifiez d'abord vos modifications (`git diff`), car il les
+écrase, puis réappliquez-les.
+
+<details>
+<summary>Sous le capot : comment Compagnon repère une modification à la main</summary>
+
+Chaque `SKILL.md` généré enregistre la version de Compagnon qui l'a produit et
+une empreinte (`checksum`) de son propre contenu. Si vous modifiez une compétence
+à la main, son contenu ne correspond plus à son empreinte : `compagnon update`
+détecte la modification et laisse le fichier en place :
+
+```text
+  Left in place because edited by hand — rerun with --force to overwrite:
+    /home/you/acme-app/.claude/skills/compagnon-apply/SKILL.md
+```
+
+`compagnon update --force` l'écrase avec la version générée. Les compétences issues
+d'une autre version de Compagnon sont toujours régénérées, tout comme les compétences
+de cette version que Compagnon a rendues lui-même — une compilation antérieure, ou
+l'autre mode de relecture —, puisqu'elles correspondent encore à leur empreinte.
+Une compétence de cette version générée avant les empreintes est préservée comme
+une modification : lancez une fois `compagnon update --force` pour lui donner son
+empreinte — vérifiez d'abord `git diff`, car il écrase aussi vos vraies
+modifications, puis réappliquez-les.
+
+</details>
 
 ## Variables d'environnement
 

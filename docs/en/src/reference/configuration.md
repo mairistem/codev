@@ -91,7 +91,8 @@ this setting. See [Artifact language](../guides/artifact-language.md).
 The workflows to install as Claude Code skills, by id: `propose`, `explore`,
 `onboard`, `configure`, `apply`, `sync`, `archive`, `update`. When the key is
 absent, all eight are installed. An unknown id produces an `unknown_workflow`
-warning and is ignored. See [Claude Code skills](../skills.md).
+warning and is ignored. See
+[The installed skills](#the-installed-skills).
 
 ## context
 
@@ -184,7 +185,7 @@ Code setup, so they are never inherited.
 |---|---|
 | `jira_tool` | Tool that fetches a Jira issue, used by `/compagnon-propose` when a ticket id is mentioned |
 
-See [Jira and other MCP servers](../guides/mcp.md).
+See [Start from a Jira ticket](../guides/mcp.md).
 
 ## changelog
 
@@ -427,6 +428,109 @@ earlier reject an unknown key inside a role, in `change.yaml`, in a project
 schema and in an ADR frontmatter**. When you add a key that
 only recent versions know, raise `compagnon_version` too, so that teammates on an
 older Compagnon learn from `compagnon doctor` and the skills which version to install.
+
+## The installed skills
+
+`compagnon init` and `compagnon update` write each skill in its own folder,
+`.claude/skills/compagnon-<workflow>/SKILL.md`. How to ask for them is in
+[Asking Claude](../skills.md); what each one does, step by step, in
+[How it works](../workflow.md).
+
+### Choosing which skills to install
+
+By default, all eight are installed. To install fewer, you have two ways:
+
+- pick the **minimal** preset when you set up Compagnon: `propose`,
+  `explore`, `onboard` and `configure`;
+- or list the skills you want under [`workflows:`](#workflows):
+
+```yaml
+workflows:
+  - propose
+  - explore
+  - apply
+  - archive
+```
+
+Then run `compagnon update`. A name Compagnon does not know produces a
+warning and is ignored. `compagnon update` does not delete the skills you
+no longer list: remove their folders from `.claude/skills/` yourself.
+
+### Tool permissions
+
+Each skill may use only the tools its job needs. A skill that must not
+write files is not given the tools to write them. This is part of what
+each skill promises you.
+
+- Every skill may run `compagnon` commands, and read files.
+- Only `/compagnon-apply` may run any command, because it must run your
+  tests and build your project.
+- `/compagnon-sync` and `/compagnon-archive` cannot write files at all:
+  every change they make goes through Compagnon itself.
+- `/compagnon-explore` and `/compagnon-onboard` write nothing.
+
+Each skill declares the tools it may use in the `allowed-tools` field of its
+frontmatter:
+
+| Skill | `allowed-tools` |
+|---|---|
+| `compagnon-propose` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep`, plus the Jira MCP tool when configured, plus `Agent` in isolated review mode |
+| `compagnon-explore` | `Bash(compagnon:*), Read, Glob, Grep` |
+| `compagnon-onboard` | `Bash(compagnon:*), Read, Glob` |
+| `compagnon-configure` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep` |
+| `compagnon-apply` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` in isolated review mode or when the `developer` has a model |
+| `compagnon-update` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep` |
+| `compagnon-sync` | `Bash(compagnon:*), Read` |
+| `compagnon-archive` | `Bash(compagnon:*), Read` |
+
+`Bash(compagnon:*)` lets a skill run `compagnon` commands and nothing else. Only
+`compagnon-apply` gets general `Bash`, because it must run your tests and build
+commands.
+
+`Agent` is Claude Code's sub-agent tool. `compagnon-propose` and `compagnon-apply`
+request it when this file sets `review: { mode: isolated }`
+([Inline or isolated review](../roles.md#inline-or-isolated-review)): each
+reviewing role then runs as a sub-agent. `compagnon-apply` also requests it
+when the `developer` has a model: it then hands the tasks to a sub-agent
+on that model ([The developer's model](../roles.md#the-developers-model)).
+No other skill ever requests it.
+After changing the mode, run `compagnon update`; `compagnon doctor` reports
+`skills_review_mode` until you do. Both skills describe the isolated
+review in either mode, because a change's `change.yaml` may override the
+project's mode: without the tool pre-approved, Claude Code asks before
+starting a sub-agent, and if it cannot start one, the roles review
+inline.
+
+### Editing a generated skill
+
+You can edit a skill's `SKILL.md` by hand. `compagnon update` notices it,
+and leaves your edited file in place rather than overwriting it.
+`compagnon update --force` replaces it with the generated version: check
+your changes first (`git diff`), since it overwrites them, and apply them
+again after.
+
+<details>
+<summary>Under the hood: how Compagnon detects a hand edit</summary>
+
+Each generated `SKILL.md` records the compagnon version that produced it and a
+checksum of its own content. If you edit a skill by hand, its content no
+longer matches its checksum: `compagnon update` detects the edit and leaves the
+file in place:
+
+```text
+  Left in place because edited by hand — rerun with --force to overwrite:
+    /home/you/acme-app/.claude/skills/compagnon-apply/SKILL.md
+```
+
+`compagnon update --force` overwrites it with the generated version. Skills from
+another compagnon version are always regenerated, and so are skills of this
+version that Compagnon rendered itself — an earlier build, or the other review
+mode — since they still match their checksum. A skill generated before
+checksums existed, of this version, is preserved like an edit: run `compagnon
+update --force` once to give it its checksum — check `git diff` first, since
+it also overwrites your real edits, and apply them again after.
+
+</details>
 
 ## Environment variables
 

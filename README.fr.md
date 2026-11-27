@@ -60,6 +60,10 @@ cela — et le plan reste dans votre dépôt.
    Claude rédige le plan et attend votre accord.
    [Votre première modification](https://mairistem.github.io/compagnon/fr/quickstart.html) parcourt le cycle complet.
 
+   Vous travaillez avec Jira ? Dites « Prépare un plan pour PROJ-123 » :
+   Claude lit le ticket, sans le modifier, et le cite en tête du plan. Voir
+   [Partir d'un ticket Jira](https://mairistem.github.io/compagnon/fr/guides/mcp.html).
+
 ## Trouver votre chemin
 
 Qu'allez-vous faire avec Compagnon ? Chaque réponse ouvre un parcours court :

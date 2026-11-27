@@ -1,4 +1,4 @@
-# Les compétences Claude Code
+# Parler à Claude
 
 Une compétence (skill) est un ensemble d'instructions que Claude Code suit
 pour un type de tâche. Compagnon vous en fournit huit, une pour chaque
@@ -22,6 +22,13 @@ Vous n'avez rien à installer à la main : `compagnon init` et
 | `/compagnon-sync` | Met à jour les spécifications du projet avec ce que la modification apporte, sans la clore | Rien directement : elle passe par `compagnon sync` |
 | `/compagnon-archive` | Vérifie une modification terminée, met à jour les spécifications du projet avec elle, et la classe | Rien directement : elle passe par `compagnon archive` |
 
+Chaque compétence ne reçoit que les outils dont sa tâche a besoin : seule
+`/compagnon-apply` peut lancer n'importe quelle commande, parce qu'elle
+lance vos [tests](glossary.md#test). En mode de relecture isolé,
+`/compagnon-propose` et `/compagnon-apply` utilisent aussi `Agent`,
+l'outil de sous-agent de Claude Code. Voir
+[Permissions des outils](reference/configuration.md#permissions-des-outils).
+
 ## Comment demander
 
 Inutile de retenir les commandes. Claude Code lit la description de chaque
@@ -38,7 +45,7 @@ nouveau à construire ou à corriger « avec Compagnon ».
 
 - « Prépare un plan pour un mode sombre qui suit le réglage du système. »
 - « Rédige une proposition pour exporter les factures en PDF. »
-- « Prépare une modification pour le ticket PROJ-123. »
+- « Prépare un plan pour PROJ-123. »
 
 ### Pour réfléchir à une idée (`/compagnon-explore`)
 
@@ -93,100 +100,38 @@ L'indice : le travail est fini et vérifié.
 - « La modification est terminée, archive-la. »
 - « Archive add-dark-mode. »
 
-## Permissions des outils
-
-Chaque compétence ne peut utiliser que les outils dont sa tâche a besoin.
-Une compétence qui ne doit pas écrire de fichiers ne reçoit pas les outils
-pour le faire. Cela fait partie de ce que chaque compétence vous promet.
-
-- Toutes les compétences peuvent lancer des commandes `compagnon` et lire
-  des fichiers.
-- Seule `/compagnon-apply` peut lancer n'importe quelle commande, parce
-  qu'elle doit lancer vos [tests](glossary.md#test) et compiler votre
-  projet.
-- `/compagnon-sync` et `/compagnon-archive` ne peuvent écrire aucun
-  fichier : toutes leurs modifications passent par Compagnon lui-même.
-- `/compagnon-explore` et `/compagnon-onboard` n'écrivent rien.
-
-<details>
-<summary>Sous le capot : les outils autorisés de chaque compétence</summary>
-
-Chaque compétence déclare les outils qu'elle peut utiliser dans le champ
-`allowed-tools` de son frontmatter.
-
-| Compétence | `allowed-tools` |
-|---|---|
-| `compagnon-propose` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep`, plus l'outil MCP Jira s'il est configuré, plus `Agent` en mode de relecture isolé |
-| `compagnon-explore` | `Bash(compagnon:*), Read, Glob, Grep` |
-| `compagnon-onboard` | `Bash(compagnon:*), Read, Glob` |
-| `compagnon-configure` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep` |
-| `compagnon-apply` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` en mode de relecture isolé ou quand le `developer` a un modèle |
-| `compagnon-update` | `Bash(compagnon:*), Read, Write, Edit, Glob, Grep` |
-| `compagnon-sync` | `Bash(compagnon:*), Read` |
-| `compagnon-archive` | `Bash(compagnon:*), Read` |
-
-`Bash(compagnon:*)` permet à une compétence de lancer des commandes `compagnon`, et rien
-d'autre. Seule `compagnon-apply` obtient un accès général à `Bash`, parce qu'elle
-doit lancer vos tests et vos commandes de build. `compagnon-sync` et
-`compagnon-archive` ne peuvent écrire aucun fichier : toutes leurs modifications
-passent par la CLI.
-
-`Agent` est l'outil de sous-agent de Claude Code. `compagnon-propose` et
-`compagnon-apply` le demandent lorsque `_compagnon/config.yaml` définit
-`review: { mode: isolated }`
-([Relecture en ligne ou isolée](roles.md#relecture-en-ligne-ou-isolée)) : chaque
-rôle relecteur travaille alors comme sous-agent. `compagnon-apply` le demande
-aussi quand le `developer` a un modèle : il lui confie alors les tâches
-dans un sous-agent ([Le modèle du développeur](roles.md#le-modèle-du-développeur)).
-Aucune autre compétence ne le demande jamais. Après avoir changé de mode, lancez `compagnon update` ;
-`compagnon doctor` signale `skills_review_mode` tant que vous ne l'avez pas
-fait. Les deux compétences décrivent la relecture isolée dans les deux modes, car
-le `change.yaml` d'une modification peut remplacer le mode du projet : sans
-l'outil pré-autorisé, Claude Code demande avant de lancer un sous-agent,
-et s'il ne peut pas en lancer, les rôles relisent en ligne.
-
-</details>
-
 ## Annonce des mises à jour
 
 Cinq compétences vérifient, avant de commencer, que vous utilisez la bonne
 version de Compagnon : `/compagnon-propose`, `/compagnon-apply`,
-`/compagnon-update`, `/compagnon-sync` et `/compagnon-archive`. Elles le
-signalent dans deux cas :
+`/compagnon-update`, `/compagnon-sync` et `/compagnon-archive`. Si votre
+équipe exige une version que vous n'avez pas, ou si une plus récente est
+sortie, la compétence le dit en une ligne et vous demande **Update now**
+(mettre à jour maintenant) ou **Later** (plus tard), une fois par demande,
+avant toute autre chose :
 
-- votre équipe exige une version de Compagnon (`compagnon_version` dans la
-  configuration) que vous n'avez pas ;
-- un Compagnon plus récent est disponible, et vous ne l'avez pas mis en
-  sourdine.
-
-La compétence le dit alors en une ligne, avec le lien vers la nouvelle
-version, et vous demande **Update now** (mettre à jour maintenant) ou
-**Later** (plus tard) avant toute autre chose :
-
-- **Update now** installe la nouvelle version
-  (`compagnon self-update --yes`), puis reprend ce que vous avez demandé ;
-- **Later** met l'annonce de cette version en sourdine pendant 7 jours
-  (`compagnon self-update --snooze`), puis reprend.
+- **Update now** installe la nouvelle version, puis reprend ;
+- **Later** met l'annonce de cette version en sourdine pendant 7 jours,
+  puis reprend.
 
 Quand c'est votre équipe qui exige la version, **Later** ne met rien en
-sourdine : c'est l'équipe qui l'a demandé. `/compagnon-sync` et
-`/compagnon-archive` s'arrêtent alors, car `compagnon sync` et
-`compagnon archive` refusent de s'exécuter avec la mauvaise version
-(`compagnon_version_unsatisfied`). Le message donne la correction :
-`compagnon self-update`, ou la version à installer.
-
-La question est posée une fois par demande, jamais au milieu du travail :
-`/compagnon-apply` la pose avant la première tâche. `/compagnon-explore`,
-`/compagnon-onboard` et `/compagnon-configure` ne la posent jamais.
-`/compagnon-onboard` relaie plutôt le résultat de `compagnon doctor`, dont
-la vérification `compagnon_version` dit la même chose.
+sourdine, et `/compagnon-sync` et `/compagnon-archive` s'arrêtent : le
+message donne la version à installer.
 
 <details>
 <summary>Sous le capot : comment une compétence apprend qu'une version existe</summary>
 
 Les cinq compétences lisent les objets `update` et `versionRequirement` de leur
-premier `compagnon status --json`. Aucune compétence n'a besoin de plus que
-`Bash(compagnon:*)` pour cela.
+premier `compagnon status --json` ; aucune compétence n'a besoin de plus que
+`Bash(compagnon:*)` pour cela. **Update now** lance `compagnon self-update --yes` ;
+**Later** lance `compagnon self-update --snooze`. L'exigence de l'équipe est
+`compagnon_version` dans la [configuration](reference/configuration.md#compagnon_version) :
+`compagnon sync` et `compagnon archive` refusent de s'exécuter avec la mauvaise
+version (`compagnon_version_unsatisfied`). `/compagnon-apply` pose la question
+avant la première tâche. `/compagnon-explore`, `/compagnon-onboard` et
+`/compagnon-configure` ne la posent jamais ; `/compagnon-onboard` relaie
+plutôt le résultat de `compagnon doctor`, dont la vérification
+`compagnon_version` dit la même chose.
 
 </details>
 
@@ -220,305 +165,13 @@ L'endroit où elle va dépend de qui elle concerne :
 
 Une entrée ne nomme personne, et ne cite ni donnée personnelle ni secret.
 
-## Les compétences en détail
+## Pour aller plus loin
 
-### Propose (`/compagnon-propose`)
-
-Cette compétence transforme votre demande en plan complet, en quatre
-parties : la proposition, les modifications des spécifications (appelées
-[deltas](glossary.md#delta)), la conception et les tâches.
-
-Avant d'écrire, elle lit le code que votre demande concerne, et fonde le
-périmètre sur ce qu'elle y trouve. Si votre demande contredit les
-spécifications existantes, elle vous le dit au lieu de trancher seule. Elle
-rédige tout le plan, titres compris, dans
-[la langue que votre projet utilise pour les plans](guides/artifact-language.md),
-exactement comme ses instructions les donnent.
-
-Une fois la proposition écrite, Compagnon donne à la compétence la liste
-des exigences existantes que la modification touche probablement. La
-compétence les lit, et modifie celles que la modification altère, au lieu
-d'en ajouter de nouvelles à côté. Cette liste est un point de départ : il
-peut en manquer.
-
-Votre demande n'autorise que la planification, même si elle dit
-« construis » ou « corrige ». La compétence s'arrête une fois le plan
-rédigé, et attend votre retour.
-
-**Qui écrit quoi.** Chaque partie du plan est rédigée par un
-[rôle](glossary.md#rôle), avec des critères « Terminé quand » que Claude
-vérifie avant de passer à la suite :
-
-- le responsable produit (product owner) rédige la proposition, y compris sa note de version pour
-  les utilisateurs, classée par catégorie, ou `None` pour une modification
-  que les utilisateurs ne verront pas ;
-- l'analyste qualité (QA) rédige les spécifications ;
-- l'architecte rédige la conception ;
-- le référent technique (tech lead) rédige les tâches. Ses critères exigent une tâche qui met à
-  jour la documentation concernée, et un test automatisé pour chaque
-  scénario, qui suit les conventions de test de votre projet.
-
-Ces rôles viennent du [schéma](glossary.md#schéma) qu'utilise votre
-projet. Un [schéma personnalisé](guides/custom-schemas.md) définit les
-siens.
-
-**La relecture avant que vous le voyiez.** Avant de vous présenter le plan,
-la compétence le relit en deux étapes :
-
-1. **Traçabilité** : elle vérifie que rien ne manque entre les parties.
-   Chaque exigence a ses scénarios, chaque scénario une tâche avec un test
-   automatisé, et la note de version concorde avec le plan. Les manques
-   sont corrigés dans le plan.
-2. **Relecture contradictoire** : la compétence relit le plan comme le
-   ferait un relecteur sceptique : est-ce utile, le périmètre est-il juste,
-   les décisions tiennent-elles ? Des experts rejoignent cette relecture
-   pour les [domaines](glossary.md#domaine) sensibles que le plan touche,
-   comme la sécurité ou l'accessibilité. Chaque constat est noté, avec sa gravité et sa preuve.
-   L'auteur le corrige ou le conteste, et le relecteur vérifie chaque
-   réponse une fois. Cette relecture n'élargit jamais le périmètre.
-
-Le résumé de la compétence se termine alors par deux listes :
-
-- **Points à discuter** : jusqu'à cinq points courts, les plus graves
-  d'abord. Chacun dit quel est le problème, pourquoi il compte, quelle
-  partie du plan il concerne, et quel rôle l'a relevé. Chacun donne aussi
-  l'identifiant et le statut du constat. S'il n'y en a aucun, le résumé le
-  dit.
-- **À décider** : les désaccords entre Claude et son relecteur que vous
-  seul pouvez trancher, et les problèmes graves pas encore corrigés.
-
-Commencez votre propre relecture par là.
-
-**Les tickets.** Si votre demande mentionne un numéro de ticket (deux
-lettres capitales ou plus, un tiret et un nombre, comme PROJ-123) et que
-Jira est connecté (par un serveur [MCP](glossary.md#mcp)), la compétence lit le premier ticket : en lecture seule, en un
-seul appel. Elle le cite ensuite en tête de la proposition. Voir
-[Jira et autres serveurs MCP](guides/mcp.md).
-
-Rôles : analyste, enquêteur, responsable produit (product owner), analyste
-qualité (QA), architecte, référent technique (tech lead), contrôleur de
-traçabilité et contradicteur — voir
-[Rôles intégrés](roles.md#rôles-intégrés).
-
-<details>
-<summary>Sous le capot : les rôles de chaque étape et les deux relectures en détail</summary>
-
-Le rôle de chaque artefact est déclaré par le schéma et renvoyé par
-`compagnon instructions`. À chaque étape, la compétence demande
-`compagnon roles --at <step>` les rôles de l'étape et applique leurs
-critères, y compris les critères ajoutés par votre projet ; une étape dont
-votre configuration désactive le rôle est sautée, et le résumé le signale
-(voir [Configurer les rôles](roles.md#configurer-les-rôles)).
-
-1. **Traçabilité** — chaque capacité a son fichier de spécification, chaque exigence
-   un scénario nominal et un scénario d'erreur ou de cas limite, chaque
-   scénario une tâche dont la vérification le couvre par un test
-   automatisé, une tâche met à jour la documentation lorsque la section
-   Impact touche un comportement documenté, et la
-   [note de version](reference/file-formats.md#release-note) de la proposition
-   concorde avec le plan — chaque élément incompatible de What Changes, et
-   chaque exigence supprimée ou modifiée de façon incompatible, a son élément
-   **BREAKING**. Les manques sont corrigés dans les artefacts.
-2. **Relecture contradictoire** — la compétence relit le plan en relecteur
-   sceptique : besoin, périmètre, spécifications, décisions, hypothèses, tâches,
-   et si `## Domains` coche chaque domaine que le plan touche, ainsi que
-   les [`rules`](reference/configuration.md#rules) de votre projet. Le
-   contradicteur ne relit lui-même aucun domaine : sécurité, données
-   personnelles, migration, exploitation, performance et accessibilité
-   reviennent à leurs experts. Les
-   [experts](roles.md#experts-et-domaines) dont la proposition coche le
-   domaine dans `## Domains` — sécurité, données personnelles,
-   accessibilité, performance, exploitation, migration — rejoignent cette
-   relecture avec leurs propres connaissances. Avant d'écrire
-   `## Domains`, la compétence lit les
-   [domaines que suggère le diff de la modification](roles.md#les-déclencheurs-et-les-domaines-suggérés)
-   et coche chacun ou le garde non coché avec une raison ; le contradicteur
-   consigne un constat pour chacun resté `unticked`. Chaque constat est écrit
-   dans le [compte rendu de relecture](guides/review-record.md) de la modification, avec
-   sa gravité et sa preuve citée ; l'auteur le corrige ou le conteste, le
-   relecteur vérifie chaque réponse une fois, et la relecture n'élargit
-   jamais le périmètre. En [mode isolé](roles.md#relecture-en-ligne-ou-isolée),
-   le contrôleur de traçabilité et chaque relecteur travaillent comme des
-   sous-agents distincts qui ne voient jamais la conversation, et la compétence
-   fusionne leurs constats avant de les consigner.
-
-</details>
-
-### Explore (`/compagnon-explore`)
-
-Un partenaire de réflexion pour les demandes floues, les enquêtes et les
-comparaisons d'approches. Cette compétence lit le code et les
-spécifications, mais ne crée ni modification, ni plan, ni fichier. Une fois
-l'idée claire, elle propose `/compagnon-propose`.
-
-Posture : [partenaire de réflexion](roles.md#partenaire-de-réflexion-compagnon-explore).
-
-### Onboard (`/compagnon-onboard`)
-
-Une visite guidée pour qui découvre Compagnon. Elle ne modifie rien. Elle
-vous dit ce que fait l'outil, ce que contient le projet (spécifications,
-modifications en cours, décisions), et la seule chose à faire ensuite : par
-exemple `/compagnon-configure` sur un projet tout juste installé.
-
-Elle lance aussi une vérification de votre installation,
-`compagnon doctor --json`, et liste jusqu'à cinq éléments manquants avec la
-façon de corriger chacun. Elle n'applique elle-même aucune de ces
-corrections.
-
-Posture : [guide](roles.md#guide-compagnon-onboard).
-
-### Configure (`/compagnon-configure`)
-
-Cette compétence lit votre README, votre guide de contribution, votre
-documentation et un échantillon de votre code. Elle en tire une
-description de votre projet (le bloc `context:`) et des règles pour chaque
-partie du plan (`rules:`), pour `_compagnon/config.yaml`. Elle vous montre
-la différence, et n'écrit qu'après votre accord. Elle ne touche jamais à
-`schema`, `language`, `workflows`, `mcp` ni `inherits`, et garde vos
-commentaires existants.
-
-Ses règles pour les tâches (`tasks`) comprennent des règles de test pour
-votre langage de programmation : outil de test, emplacement des tests,
-nommage, commandes. Elle les tire de vos tests existants. C'est seulement
-lorsque le projet n'a encore aucun test qu'elle se rabat sur les
-conventions courantes de Rust, TypeScript/JavaScript, Python, Go ou Java.
-
-Tant que la configuration ne comporte aucune `rules:`, `compagnon init` et
-`compagnon status` recommandent de lancer cette compétence.
-
-Posture : [analyste de configuration](roles.md#analyste-de-configuration-compagnon-configure).
-
-### Apply (`/compagnon-apply`)
-
-Cette compétence réalise une modification planifiée. Elle procède ainsi :
-
-1. Elle vérifie que le plan est complet.
-2. Elle prend dans l'ordre chaque tâche non cochée de `tasks.md`, la
-   réalise, la vérifie, et ne la coche qu'une fois la vérification réussie.
-3. Elle écrit les tests à la manière de vos tests existants, puis selon les
-   conventions de votre langage et vos `rules`. Elle trouve comment lancer
-   les tests dans les réglages de votre projet (sa configuration, son
-   manifeste ou son
-   [intégration continue](glossary.md#intégration-continue)), et vous le
-   demande si elle ne trouve rien.
-4. Une fois toutes les tâches cochées, elle relit le code touché par la
-   modification comme le ferait un nouvel arrivant, rejointe par les
-   experts des domaines que coche la proposition. Elle simplifie ce qui ne
-   fait pas de doute, sans élargir le périmètre, et signale au plus cinq
-   notes de relecture, chacune marquée de son rôle. Un constat grave de
-   sécurité ou de données personnelles est toujours signalé.
-5. Enfin, elle lance une fois la suite de tests complète.
-
-Chaque constat va dans le [compte rendu de relecture](guides/review-record.md),
-et suit la même boucle de réponse que ceux du plan. En mode isolé, chaque
-relecteur travaille d'abord seul comme [sous-agent](glossary.md#sous-agent)
-(une copie distincte de Claude qui ne voit pas votre conversation), et la
-compétence fusionne leurs constats.
-
-Le résumé liste ce qu'il vous revient de décider. Par exemple, le code
-touche peut-être désormais un domaine sensible, comme la sécurité ou les
-données personnelles, que le plan ne listait pas. À vous de choisir :
-faire relire ce domaine par son expert, ou expliquer pourquoi ce n'est pas
-nécessaire.
-
-Un expert corrige un défaut manifeste dans le périmètre de la modification,
-avec un test. Tout autre changement de comportement, il le signale au lieu
-de le faire. Les critères et les connaissances de ces deux étapes viennent
-de `compagnon roles` ; lorsqu'aucun rôle n'est actif pour la relecture,
-celle-ci est sautée et le résumé le signale.
-
-La compétence s'arrête au premier blocage ou au premier doute. Elle ne
-touche jamais à une autre modification, ne synchronise jamais et n'archive
-jamais.
-
-Rôles : [développeur](roles.md#développeur-compagnon-apply),
-[nouvel arrivant et experts](roles.md#nouvel-arrivant-et-experts-compagnon-apply).
-
-### Update (`/compagnon-update`)
-
-Cette compétence révise une partie d'un plan qui existe déjà : par
-exemple, une exigence que vous voulez changer après avoir lu le plan. Elle
-cherche ensuite les répercussions sur les autres parties et vous les
-signale.
-
-Elle ne rédige pas les parties manquantes (c'est le rôle de
-`/compagnon-propose`), ne modifie pas le code (celui de `/compagnon-apply`)
-et ne touche pas aux modifications archivées. Elle se termine en vérifiant
-le plan avec `compagnon validate`.
-
-Posture : [éditeur](roles.md#éditeur-compagnon-update).
-
-### Sync (`/compagnon-sync`)
-
-Cette compétence reporte les spécifications d'une modification dans les
-spécifications du projet, sans archiver la modification. Elle lance
-`compagnon sync`, puis vous dit quelles spécifications du projet ont été
-créées, mises à jour ou laissées inchangées.
-
-Posture : [mainteneur des spécifications vivantes](roles.md#mainteneur-des-spécifications-vivantes-compagnon-sync-compagnon-archive).
-
-### Archive (`/compagnon-archive`)
-
-Cette compétence clôt une modification terminée : elle lance
-`compagnon archive`. Si la vérification trouve des erreurs, elle s'arrête
-et vous renvoie vers `compagnon validate`, au lieu de chercher à les
-contourner. Si le compte rendu de relecture bloque l'archivage
-(`review_blocked`), elle vous renvoie vers `compagnon review`, et ne
-consigne jamais une décision à votre place.
-
-Posture : [mainteneur des spécifications vivantes](roles.md#mainteneur-des-spécifications-vivantes-compagnon-sync-compagnon-archive).
-
-## Choisir les compétences à installer
-
-Par défaut, les huit compétences sont installées. Pour en installer moins,
-vous avez deux façons de faire :
-
-- choisir le préréglage **minimal** à l'installation de Compagnon :
-  `propose`, `explore`, `onboard` et `configure` ;
-- ou lister les compétences souhaitées sous `workflows:` dans
-  `_compagnon/config.yaml` :
-
-```yaml
-workflows:
-  - propose
-  - explore
-  - apply
-  - archive
-```
-
-Lancez ensuite `compagnon update`. Un nom que Compagnon ne connaît pas
-produit un avertissement et est ignoré. `compagnon update` ne supprime pas
-les compétences que vous ne listez plus : supprimez vous-même leurs
-dossiers dans `.claude/skills/`.
-
-## Modifier une compétence générée
-
-Vous pouvez modifier à la main le `SKILL.md` d'une compétence.
-`compagnon update` s'en aperçoit, et laisse votre fichier modifié en place
-au lieu de l'écraser. `compagnon update --force` le remplace par la version
-générée : vérifiez d'abord vos modifications (`git diff`), car il les
-écrase, puis réappliquez-les.
-
-<details>
-<summary>Sous le capot : comment Compagnon repère une modification à la main</summary>
-
-Chaque `SKILL.md` généré enregistre la version de Compagnon qui l'a produit et
-une empreinte (`checksum`) de son propre contenu. Si vous modifiez une compétence
-à la main, son contenu ne correspond plus à son empreinte : `compagnon update`
-détecte la modification et laisse le fichier en place :
-
-```text
-  Left in place because edited by hand — rerun with --force to overwrite:
-    /home/you/acme-app/.claude/skills/compagnon-apply/SKILL.md
-```
-
-`compagnon update --force` l'écrase avec la version générée. Les compétences issues
-d'une autre version de Compagnon sont toujours régénérées, tout comme les compétences
-de cette version que Compagnon a rendues lui-même — une compilation antérieure, ou
-l'autre mode de relecture —, puisqu'elles correspondent encore à leur empreinte.
-Une compétence de cette version générée avant les empreintes est préservée comme
-une modification : lancez une fois `compagnon update --force` pour lui donner son
-empreinte — vérifiez d'abord `git diff`, car il écrase aussi vos vraies
-modifications, puis réappliquez-les.
-
-</details>
+- [Comment ça marche](workflow.md) : ce que fait chaque compétence, étape
+  par étape, et les fichiers qu'elle écrit.
+- [Partir d'un ticket Jira](guides/mcp.md) : « Prépare un plan pour
+  PROJ-123 ».
+- [Rôles](roles.md) : les critères que Claude vérifie à chaque étape.
+- [Configuration](reference/configuration.md#les-compétences-installées) :
+  choisir les compétences à installer, leurs permissions, et modifier une
+  compétence générée.

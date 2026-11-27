@@ -57,6 +57,10 @@ builds exactly that — and the plan stays in your repository.
    Claude writes the plan and waits for your approval. [Your first
    change](https://mairistem.github.io/compagnon/en/quickstart.html) walks through the whole cycle.
 
+   Working from Jira? Say "Prepare a plan for PROJ-123": Claude reads the
+   ticket, without changing it, and cites it at the top of the plan. See
+   [Start from a Jira ticket](https://mairistem.github.io/compagnon/en/guides/mcp.html).
+
 ## Find your way
 
 What will you do with Compagnon? Each answer opens a short path:
