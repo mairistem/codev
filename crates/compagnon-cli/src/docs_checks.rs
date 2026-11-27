@@ -270,6 +270,42 @@ pub const CONTRIBUTING: (&str, &str, &[&str]) = (
     ],
 );
 
+/// The steps of [`TUNNEL`] written for beginners: Discover, Get started,
+/// Every day. Their chapters are capped and show an example.
+pub const BEGINNER_STEPS: usize = 3;
+
+/// The steps of [`TUNNEL`] whose chapters each draw a diagram: all but
+/// For your team.
+pub const DIAGRAM_STEPS: usize = 4;
+
+/// The chapters of the beginner steps, in reading order.
+pub fn beginner_chapters() -> impl Iterator<Item = &'static str> {
+    TUNNEL[..BEGINNER_STEPS]
+        .iter()
+        .flat_map(|(_, _, chapters)| chapters.iter().copied())
+}
+
+/// The word cap of a beginner chapter, `(English, French)`: the
+/// introduction and the quickstart keep their own.
+pub fn chapter_cap(path: &str) -> (usize, usize) {
+    match path {
+        "introduction.md" => (450, 560),
+        "quickstart.md" => (500, 625),
+        _ => (1200, 1500),
+    }
+}
+
+/// A chapter's prose (code, `<details>` and figures not counted) over `cap`
+/// words.
+pub fn word_cap_problems(md: &str, cap: usize) -> Vec<String> {
+    let words = prose_words(&without_figures(md));
+    if words > cap {
+        vec![format!("{words} words, cap {cap}")]
+    } else {
+        Vec::new()
+    }
+}
+
 /// The tunnel's chapters, in reading order.
 pub fn tunnel_chapters() -> impl Iterator<Item = &'static str> {
     TUNNEL
@@ -343,21 +379,23 @@ pub const REMOVED_PAGES: [&str; 8] = [
     "guides/moving-from-codev",
 ];
 
+/// Whether `text` names `page` (a path without extension) as a `.md` or
+/// `.html` file: a chapter of the same name in another folder does not
+/// count — `guides/review.md` is not `paths/review.md`.
+fn names_page(text: &str, page: &str) -> bool {
+    let (folder, name) = page.rsplit_once('/').unwrap_or(("", page));
+    [".md", ".html"].iter().any(|ext| {
+        text.match_indices(&format!("{name}{ext}"))
+            .any(|(i, _)| folder.is_empty() || text[..i].ends_with(&format!("{folder}/")))
+    })
+}
+
 /// What in a text — a chapter, a `SUMMARY.md`, a README, a home page, a
 /// `book.toml` — still lists, links or redirects a removed page.
 pub fn removed_pages_problems(text: &str) -> Vec<String> {
     let mut problems: Vec<String> = REMOVED_PAGES
         .iter()
-        .filter(|page| {
-            let name = page.rsplit('/').next().unwrap_or(page);
-            [".md", ".html"].iter().any(|ext| {
-                text.match_indices(&format!("{name}{ext}")).any(|(i, _)| {
-                    // `paths/review.md`, not `guides/review-a-plan.md`.
-                    let before = &text[..i];
-                    !page.contains('/') || before.ends_with(&page[..page.len() - name.len()])
-                })
-            })
-        })
+        .filter(|page| names_page(text, page))
         .map(|page| format!("names the removed page {page}"))
         .collect();
     if text.contains("[output.html.redirect]") {
@@ -471,10 +509,12 @@ pub fn skip_problems(
         problems.push(format!("{count} skip buttons"));
     }
     let start = md.find(OPEN).unwrap_or_default();
-    let before_is_title = md[..start]
-        .lines()
-        .filter(|l| !l.trim().is_empty())
-        .eq(md.lines().take(1).filter(|l| l.starts_with("# ")));
+    // Only the title line may come before the button.
+    let mut before = md[..start].lines().filter(|l| !l.trim().is_empty());
+    let before_is_title = matches!(
+        (before.next(), before.next()),
+        (Some(line), None) if line.starts_with("# ") && md.starts_with(line)
+    );
     if !before_is_title {
         problems.push("the skip button is not right under the title".into());
     }
@@ -594,19 +634,11 @@ pub fn without_figures(md: &str) -> String {
 /// `compagnon init` prints on a GitLab repository.
 pub const GITLAB_EXCEPTIONS: [&str; 2] = ["reference/cli.md", "reference/json-output.md"];
 
-/// The lines naming GitLab, in any case: the documentation names GitHub only.
-pub fn gitlab_mentions(text: &str) -> Vec<String> {
+/// The lines of a text naming `word`, in any case: the documentation names
+/// neither codev, the product's former name, nor GitLab.
+pub fn lines_naming(text: &str, word: &str) -> Vec<String> {
     text.lines()
-        .filter(|line| line.to_lowercase().contains("gitlab"))
-        .map(|line| line.trim().to_string())
-        .collect()
-}
-
-/// The lines naming codev, the product's former name, in any case: the
-/// documentation keeps no trace of it.
-pub fn codev_mentions(text: &str) -> Vec<String> {
-    text.lines()
-        .filter(|line| line.to_lowercase().contains("codev"))
+        .filter(|line| line.to_lowercase().contains(word))
         .map(|line| line.trim().to_string())
         .collect()
 }
@@ -1715,7 +1747,8 @@ mod tests {
     #[test]
     fn a_long_every_day_chapter_is_caught() {
         let md = format!("# Asking Claude\n\n{}\n", "word ".repeat(1300));
-        assert!(prose_words(&without_figures(&md)) > 1200);
+        let (en, _) = chapter_cap("skills.md");
+        assert_eq!(word_cap_problems(&md, en), ["1302 words, cap 1200"]);
     }
 
     #[test]
@@ -2057,20 +2090,26 @@ mod tests {
     fn an_approval_guide_naming_gitlab_is_caught() {
         let md = "# Approving a plan\n\nYour team works on GitHub or GitLab.\n";
         assert_eq!(
-            gitlab_mentions(md),
+            lines_naming(md, "gitlab"),
             ["Your team works on GitHub or GitLab."]
         );
-        assert!(gitlab_mentions("# Approving a plan\n\nYour team works on GitHub.\n").is_empty());
+        assert!(
+            lines_naming(
+                "# Approving a plan\n\nYour team works on GitHub.\n",
+                "gitlab"
+            )
+            .is_empty()
+        );
     }
 
     #[test]
     fn a_chapter_naming_codev_is_caught() {
         let md = "# Origins\n\nCompagnon, formerly codev, plans first.\n";
         assert_eq!(
-            codev_mentions(md),
+            lines_naming(md, "codev"),
             ["Compagnon, formerly codev, plans first."]
         );
-        assert!(codev_mentions("# Origins\n\nCompagnon plans first.\n").is_empty());
+        assert!(lines_naming("# Origins\n\nCompagnon plans first.\n", "codev").is_empty());
     }
 
     #[test]
@@ -2160,6 +2199,20 @@ mod chapter_tests {
 
     const LANGS: [Lang; 2] = [Lang::En, Lang::Fr];
 
+    /// The READMEs and home pages: where readers enter the documentation.
+    const ENTRY_POINTS: [(&str, &str); 4] = [
+        ("README.md", include_str!("../../../README.md")),
+        ("README.fr.md", include_str!("../../../README.fr.md")),
+        (
+            "docs/site/index.html",
+            include_str!("../../../docs/site/index.html"),
+        ),
+        (
+            "docs/site/fr.html",
+            include_str!("../../../docs/site/fr.html"),
+        ),
+    ];
+
     /// `(English, French)` word caps.
     fn cap(lang: Lang, (en, fr): (usize, usize)) -> usize {
         if lang == Lang::En { en } else { fr }
@@ -2193,16 +2246,10 @@ mod chapter_tests {
     fn the_first_steps_stay_under_their_caps() {
         let mut found = Vec::new();
         for lang in LANGS {
-            for path in TUNNEL[..3].iter().flat_map(|(_, _, c)| c.iter()) {
-                let caps = match *path {
-                    "introduction.md" => (450, 560),
-                    "quickstart.md" => (500, 625),
-                    _ => (1200, 1500),
-                };
-                let words = prose_words(&without_figures(chapter(lang, path)));
-                let cap = cap(lang, caps);
-                if words > cap {
-                    found.push(format!("{} {path}: {words} words, cap {cap}", lang.tag()));
+            for path in beginner_chapters() {
+                let cap = cap(lang, chapter_cap(path));
+                for p in word_cap_problems(chapter(lang, path), cap) {
+                    found.push(format!("{} {path}: {p}", lang.tag()));
                 }
             }
         }
@@ -2393,7 +2440,7 @@ mod chapter_tests {
         let mut found = Vec::new();
         for lang in LANGS {
             let anchors = glossary_anchors(chapter(lang, "glossary.md"));
-            for path in TUNNEL[..3].iter().flat_map(|(_, _, c)| c.iter()) {
+            for path in beginner_chapters() {
                 let problems = vocabulary_problems(chapter(lang, path), lang, &anchors);
                 if !problems.is_empty() {
                     found.push(format!("{} {path}: {problems:?}", lang.tag()));
@@ -2415,12 +2462,8 @@ mod chapter_tests {
                 "{}: title",
                 lang.tag()
             );
-            let everyday = &parts(summary(lang))[2].1;
-            assert!(
-                everyday.iter().any(|c| c == "guides/mcp.md"),
-                "{}: part",
-                lang.tag()
-            );
+            let (_, _, everyday) = TUNNEL[2];
+            assert!(everyday.contains(&"guides/mcp.md"), "{}: part", lang.tag());
             let problems = jira_guide_problems(md);
             assert!(problems.is_empty(), "{}: {problems:?}", lang.tag());
         }
@@ -2517,7 +2560,7 @@ mod chapter_tests {
     fn the_first_steps_show_only_what_a_beginner_needs() {
         let mut found = Vec::new();
         for lang in LANGS {
-            for path in TUNNEL[..3].iter().flat_map(|(_, _, c)| c.iter()) {
+            for path in beginner_chapters() {
                 for p in beginner_block_problems(chapter(lang, path)) {
                     found.push(format!("{}/{path}: {p}", lang.tag()));
                 }
@@ -2532,8 +2575,12 @@ mod chapter_tests {
         for lang in LANGS {
             for (step, (_, _, chapters)) in TUNNEL.iter().enumerate() {
                 for path in *chapters {
-                    let problems =
-                        show_and_tell_problems(chapter(lang, path), lang, step < 4, step < 3);
+                    let problems = show_and_tell_problems(
+                        chapter(lang, path),
+                        lang,
+                        step < DIAGRAM_STEPS,
+                        step < BEGINNER_STEPS,
+                    );
                     for p in problems {
                         found.push(format!("{}/{path}: {p}", lang.tag()));
                     }
@@ -2559,18 +2606,8 @@ mod chapter_tests {
                 }
             }
         }
-        for (name, text) in [
-            ("README.md", include_str!("../../../README.md")),
-            ("README.fr.md", include_str!("../../../README.fr.md")),
+        for (name, text) in ENTRY_POINTS.into_iter().chain([
             ("CHANGELOG.md", include_str!("../../../CHANGELOG.md")),
-            (
-                "docs/site/index.html",
-                include_str!("../../../docs/site/index.html"),
-            ),
-            (
-                "docs/site/fr.html",
-                include_str!("../../../docs/site/fr.html"),
-            ),
             (
                 "docs/en/book.toml",
                 include_str!("../../../docs/en/book.toml"),
@@ -2579,7 +2616,7 @@ mod chapter_tests {
                 "docs/fr/book.toml",
                 include_str!("../../../docs/fr/book.toml"),
             ),
-        ] {
+        ]) {
             for p in removed_pages_problems(text) {
                 found.push(format!("{name}: {p}"));
             }
@@ -2595,24 +2632,13 @@ mod chapter_tests {
                 if GITLAB_EXCEPTIONS.contains(path) {
                     continue;
                 }
-                for line in gitlab_mentions(md) {
+                for line in lines_naming(md, "gitlab") {
                     found.push(format!("{}/{path}: {line}", lang.tag()));
                 }
             }
         }
-        for (name, text) in [
-            ("README.md", include_str!("../../../README.md")),
-            ("README.fr.md", include_str!("../../../README.fr.md")),
-            (
-                "docs/site/index.html",
-                include_str!("../../../docs/site/index.html"),
-            ),
-            (
-                "docs/site/fr.html",
-                include_str!("../../../docs/site/fr.html"),
-            ),
-        ] {
-            for line in gitlab_mentions(text) {
+        for (name, text) in ENTRY_POINTS {
+            for line in lines_naming(text, "gitlab") {
                 found.push(format!("{name}: {line}"));
             }
         }
@@ -2624,24 +2650,13 @@ mod chapter_tests {
         let mut found = Vec::new();
         for lang in LANGS {
             for (path, md) in lang.chapters() {
-                for line in codev_mentions(md) {
+                for line in lines_naming(md, "codev") {
                     found.push(format!("{}/{path}: {line}", lang.tag()));
                 }
             }
         }
-        for (name, text) in [
-            ("README.md", include_str!("../../../README.md")),
-            ("README.fr.md", include_str!("../../../README.fr.md")),
-            (
-                "docs/site/index.html",
-                include_str!("../../../docs/site/index.html"),
-            ),
-            (
-                "docs/site/fr.html",
-                include_str!("../../../docs/site/fr.html"),
-            ),
-        ] {
-            for line in codev_mentions(text) {
+        for (name, text) in ENTRY_POINTS {
+            for line in lines_naming(text, "codev") {
                 found.push(format!("{name}: {line}"));
             }
         }

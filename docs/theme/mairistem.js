@@ -118,7 +118,7 @@
   var here = -1;
   STEPS.forEach(function (step, i) {
     step.chapters.forEach(function (chapter) {
-      if (path.slice(-(chapter.length + 6)) === '/' + chapter + '.html') { here = i; }
+      if (path.endsWith('/' + chapter + '.html')) { here = i; }
     });
   });
   var main = document.querySelector('#mdbook-content main, .content main, main');
@@ -130,7 +130,10 @@
       head.className = 'tn-head';
       var eyebrow = document.createElement('p');
       eyebrow.className = 'tn-eyebrow';
-      eyebrow.textContent = (fr ? 'Étape ' + (here + 1) + ' sur 5 · ' : 'Step ' + (here + 1) + ' of 5 · ') + STEPS[here][fr ? 'fr' : 'en'];
+      var label = fr
+        ? 'Étape ' + (here + 1) + ' sur ' + STEPS.length + ' · ' + STEPS[here].fr
+        : 'Step ' + (here + 1) + ' of ' + STEPS.length + ' · ' + STEPS[here].en;
+      eyebrow.textContent = label;
       var bar = document.createElement('ol');
       bar.className = 'tn-progress';
       bar.setAttribute('aria-hidden', 'true');
