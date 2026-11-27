@@ -73,7 +73,7 @@ judges, and it is cheap to change before the text exists).
 | `guides/repository-integration.md` | `guides/team-rollout.md`, sections on what `compagnon init` writes and `compagnon doctor` |
 | inherited sources, artifact language, release notes, custom schemas | For your team |
 | reference chapters, glossary, FAQ, example plan | Appendices |
-| `guides/moving-from-codev.md` | removed (the reference keeps `compagnon migrate`) |
+| `guides/moving-from-codev.md` | removed as a page; the steps `compagnon migrate` does not take move to its section of `reference/cli.md` |
 
 Skip buttons, where a reader may not need the page, each ending with the
 title of the chapter it opens: Your first change ("You do not code? Skip

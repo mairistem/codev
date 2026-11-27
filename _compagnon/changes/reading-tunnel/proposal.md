@@ -40,8 +40,9 @@ end, no profiles, nothing kept for the past, and GitHub only.
   unchanged.
 - **Removed, with nothing kept for the past**: Choose your path, the four
   path pages, Starting from nothing and Repository integration as pages
-  (their content moves into the tunnel), and Moving from codev with its
-  requirement. No redirect: the old addresses simply disappear.
+  (their content moves into the tunnel), and Moving from codev as a page
+  (the steps `compagnon migrate` does not take move to its section of the
+  command-line reference). No redirect: the old addresses simply disappear.
 - **GitHub only**: the tunnel, the glossary, the FAQ, the example plan,
   the READMEs and the home pages name GitHub alone; the command-line
   reference keeps describing what `compagnon init` prints while the
@@ -97,5 +98,5 @@ end, no profiles, nothing kept for the past, and GitHub only.
 ## Release note
 
 - Changed: The documentation reads as one guided path in five steps — discover, get started, every day, understand, for your team — each page ending with the next step and, where some readers can skip it, a button saying where to go; the reference, the glossary and the FAQ move to appendices.
-- Removed: **BREAKING** The "Choose your path" page, the four profile pages, "Starting from nothing", "Repository integration" and "Moving from codev" as separate pages; their old addresses no longer exist, and their useful content is now in the tunnel.
+- Removed: **BREAKING** Seven pages and their addresses, with no redirect: "Choose your path" and the four profile pages (the home page now shows the five steps), "Starting from nothing" (now a section of Installation), "Repository integration" (now in Deploying Compagnon for a team) and "Moving from codev" (now in the command-line reference, under `compagnon migrate`); How it works' Apply, Sync and Archive sections move to the new "Building and filing away".
 - Changed: The documentation names GitHub only.

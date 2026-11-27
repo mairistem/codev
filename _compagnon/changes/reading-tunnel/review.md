@@ -161,3 +161,43 @@ history:
   - status: fixed
     by: accessibility
 ```
+
+### migration
+
+#### R-migration-1 Removing Moving from codev dropped the manual steps codev users still need
+
+```yaml
+severity: medium
+confidence: high
+location: 'specs/docs/spec.md#Requirement: Moving from codev to Compagnon is documented in both languages'
+evidence: |
+  **Migration**: `compagnon migrate` stays documented in the command-line
+recommendation: 'Move the steps the command does not take into the compagnon migrate section of the command-line reference, with a check.'
+history:
+  - status: open
+    by: migration
+  - status: fixed
+    by: qa
+    ref: 'spec: new requirement "The command-line reference says how to move from codev" with its scenarios; Migration note reworded; task 2.1 moves the content before the guide is deleted'
+  - status: fixed
+    by: migration
+```
+
+#### R-migration-2 The BREAKING release note did not say where each removed page went
+
+```yaml
+severity: low
+confidence: high
+location: 'proposal.md#Release note'
+evidence: |
+  - Removed: **BREAKING** The "Choose your path" page, the four profile pages, "Starting from nothing", "Repository integration" and "Moving from codev" as separate pages; their old addresses no longer exist, and their useful content is now in the tunnel.
+recommendation: 'Say where each removed page went.'
+history:
+  - status: open
+    by: migration
+  - status: fixed
+    by: product
+    ref: 'proposal.md Release note names the new place of each removed page'
+  - status: fixed
+    by: migration
+```

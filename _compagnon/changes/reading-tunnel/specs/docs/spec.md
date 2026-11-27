@@ -470,6 +470,32 @@ French.
 - **AND** its styles define the diagram colors for the light scheme and
   for `prefers-color-scheme: dark`
 
+### Requirement: The command-line reference says how to move from codev
+
+In both editions, the `compagnon migrate` section of `reference/cli.md`
+SHALL hold, besides what the command does, the steps it does not take:
+renaming the `CODEV_*` environment variables to `COMPAGNON_*`, the JSON
+codes, scripts and CI jobs; widening a `codev_version` requirement; for an
+inherited source, migrating the source first and then running
+`compagnon sources update` in each project that inherits it, failing
+which those projects stop with `legacy_source`; hand-edited skills
+installed by codev 0.6; going back with
+`compagnon self-update --version 0.6.1`.
+
+#### Scenario: Both references keep the codev steps
+
+- **GIVEN** both editions of `reference/cli.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each `compagnon migrate` section names `COMPAGNON_VERSION`,
+  `compagnon sources update`, `legacy_source` and
+  `compagnon self-update --version 0.6.1`
+
+#### Scenario: A reference that lost the source steps is caught
+
+- **GIVEN** a `compagnon migrate` section that never names `legacy_source`
+- **WHEN** the check runs on it
+- **THEN** it fails naming `legacy_source`
+
 ## REMOVED Requirements
 
 ### Requirement: The documentation opens with a short Start here path
@@ -514,9 +540,11 @@ word caps.
 
 ### Requirement: Moving from codev to Compagnon is documented in both languages
 
-**Reason**: The owner wants no legacy in the refactored documentation.
-**Migration**: `compagnon migrate` stays documented in the command-line
-reference; the CHANGELOG keeps the note on moving from codev.
+**Reason**: The owner wants no page kept for the past in the refactored
+documentation.
+**Migration**: What a codev project still needs moves to the
+`compagnon migrate` section of the command-line reference — see "The
+command-line reference says how to move from codev".
 
 ## RENAMED Requirements
 
