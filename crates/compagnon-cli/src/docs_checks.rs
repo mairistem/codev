@@ -366,6 +366,191 @@ pub fn removed_pages_problems(text: &str) -> Vec<String> {
     problems
 }
 
+/// The chapter path a link written in chapter `from` opens, anchor left
+/// out: `../roles.md#x` from `guides/mcp.md` is `roles.md`.
+pub fn resolve(from: &str, target: &str) -> String {
+    let target = target.split('#').next().unwrap_or_default();
+    let mut parts: Vec<&str> = from.split('/').collect();
+    parts.pop();
+    for segment in target.split('/') {
+        match segment {
+            ".." => {
+                parts.pop();
+            }
+            "." | "" => {}
+            s => parts.push(s),
+        }
+    }
+    parts.join("/")
+}
+
+/// The links of a text as `(text, target)`, the text with its inner
+/// whitespace collapsed (a link may wrap across lines).
+fn link_pairs(text: &str) -> Vec<(String, String)> {
+    let flat = text.split_whitespace().collect::<Vec<_>>().join(" ");
+    links(&flat)
+        .into_iter()
+        .map(|(range, target)| (flat[range].to_string(), target))
+        .collect()
+}
+
+/// The title of a tunnel chapter's last section, per edition.
+pub fn next_step_heading(lang: Lang) -> &'static str {
+    match lang {
+        Lang::En => "Next step",
+        Lang::Fr => "Étape suivante",
+    }
+}
+
+/// What is wrong with the end of tunnel chapter `from`: its last `## `
+/// section (outside code) is not "Next step", or its first link does not
+/// open `next` with `next_title` as its text.
+pub fn next_step_problems(
+    md: &str,
+    from: &str,
+    lang: Lang,
+    next: &str,
+    next_title: &str,
+) -> Vec<String> {
+    let heading = next_step_heading(lang);
+    let all = lines(md);
+    let last = all
+        .iter()
+        .rposition(|l| l.fence.is_none() && l.text.starts_with("## "));
+    let Some(at) = last else {
+        return vec![format!("has no \"{heading}\" section")];
+    };
+    let title = all[at].text[3..].trim();
+    if title != heading {
+        return vec![format!("ends with \"{title}\", not \"{heading}\"")];
+    }
+    let body: String = all[at + 1..]
+        .iter()
+        .map(|l| l.text)
+        .collect::<Vec<_>>()
+        .join("\n");
+    match link_pairs(&body).first() {
+        None => vec![format!("\"{heading}\" links nothing")],
+        Some((text, target)) => {
+            let opened = resolve(from, target);
+            let mut problems = Vec::new();
+            if opened != next {
+                problems.push(format!("\"{heading}\" opens {opened}, not {next}"));
+            }
+            if text != next_title {
+                problems.push(format!(
+                    "\"{heading}\" reads \"{text}\", not \"{next_title}\""
+                ));
+            }
+            problems
+        }
+    }
+}
+
+/// What is wrong with the skip button of tunnel chapter `from`, if it has
+/// one: not right under the title, before the first paragraph; not one
+/// link alone; a text that does not read "<who>? Skip to <title>"
+/// (« <qui> ? Passez à <titre> ») with the title of the chapter it opens
+/// (`title_of`); or a chapter that does not come later in the tunnel
+/// (`position_of`, `here` being the chapter's own position).
+pub fn skip_problems(
+    md: &str,
+    from: &str,
+    lang: Lang,
+    here: usize,
+    position_of: impl Fn(&str) -> Option<usize>,
+    title_of: impl Fn(&str) -> Option<String>,
+) -> Vec<String> {
+    const OPEN: &str = "<div class=\"skip-step\">";
+    let count = md.matches(OPEN).count();
+    if count == 0 {
+        return Vec::new();
+    }
+    let mut problems = Vec::new();
+    if count > 1 {
+        problems.push(format!("{count} skip buttons"));
+    }
+    let start = md.find(OPEN).unwrap_or_default();
+    let before_is_title = md[..start]
+        .lines()
+        .filter(|l| !l.trim().is_empty())
+        .eq(md.lines().take(1).filter(|l| l.starts_with("# ")));
+    if !before_is_title {
+        problems.push("the skip button is not right under the title".into());
+    }
+    let inner = &md[start + OPEN.len()..];
+    let inner = &inner[..inner.find("</div>").unwrap_or(inner.len())];
+    let pairs = link_pairs(inner);
+    let [(text, target)] = pairs.as_slice() else {
+        problems.push(format!("{} links in the skip button", pairs.len()));
+        return problems;
+    };
+    let opened = resolve(from, target);
+    let word = match lang {
+        Lang::En => "? Skip to ",
+        Lang::Fr => " ? Passez à ",
+    };
+    match (title_of(&opened), text.split_once(word)) {
+        (None, _) => problems.push(format!("the skip button opens {opened}, no chapter")),
+        (Some(title), Some((who, rest))) if !who.is_empty() && rest == title => {}
+        (Some(title), _) => problems.push(format!(
+            "the skip button reads \"{text}\", not \"…{}{title}\"",
+            word.trim_start()
+        )),
+    }
+    if position_of(&opened).is_none_or(|p| p <= here) {
+        problems.push(format!("the skip button leads back or out, to {opened}"));
+    }
+    problems
+}
+
+/// The fenced blocks a beginner sees outside "Under the hood" blocks that
+/// are neither a shell block that installs or initializes, nor a
+/// `markdown` or `text` excerpt, named by their language.
+pub fn beginner_block_problems(md: &str) -> Vec<String> {
+    let mut found: Vec<String> = Vec::new();
+    for l in lines(md) {
+        let Some(lang) = l.fence else { continue };
+        if l.details || ["markdown", "text"].contains(&lang) || SHELL_LANGS.contains(&lang) {
+            continue;
+        }
+        let name = if lang.is_empty() { "unnamed" } else { lang };
+        let problem = format!("a `{name}` block outside \"Under the hood\"");
+        if !found.contains(&problem) {
+            found.push(problem);
+        }
+    }
+    found.extend(
+        stray_commands(md)
+            .into_iter()
+            .map(|c| format!("the command `{c}` outside \"Under the hood\"")),
+    );
+    found
+}
+
+/// What a tunnel chapter lacks: a diagram, when `diagram`, and an example
+/// block titled "Example" (« Exemple »), when `example`.
+pub fn show_and_tell_problems(md: &str, lang: Lang, diagram: bool, example: bool) -> Vec<String> {
+    let mut problems = Vec::new();
+    if diagram && !md.contains("<figure class=\"diagram\"") {
+        problems.push("no diagram".to_string());
+    }
+    let title = match lang {
+        Lang::En => "<p class=\"example-title\">Example</p>",
+        Lang::Fr => "<p class=\"example-title\">Exemple</p>",
+    };
+    let has_example = md.match_indices("<div class=\"example\">").any(|(i, _)| {
+        md[i..]
+            .trim_start_matches("<div class=\"example\">")
+            .trim_start()
+            .starts_with(title)
+    });
+    if example && !has_example {
+        problems.push("no example block".to_string());
+    }
+    problems
+}
+
 /// The entries of a `SUMMARY.md`, as `(title, target)`, in order.
 pub fn summary_entries(summary: &str) -> impl Iterator<Item = (&str, &str)> {
     summary.lines().filter_map(|line| {
@@ -1348,6 +1533,132 @@ mod tests {
         );
     }
 
+    fn tunnel_title(path: &str) -> Option<String> {
+        summary_entries(TUNNEL_SUMMARY)
+            .find_map(|(title, target)| (target == path).then(|| title.to_string()))
+    }
+
+    fn tunnel_position(path: &str) -> Option<usize> {
+        tunnel_chapters().position(|c| c == path)
+    }
+
+    #[test]
+    fn a_chapter_leading_to_the_wrong_page_is_caught() {
+        let good = "# Concepts\n\nText.\n\n## Next step\n\n[Decisions](guides/decisions.md)\n";
+        assert!(
+            next_step_problems(
+                good,
+                "concepts.md",
+                Lang::En,
+                "guides/decisions.md",
+                "Decisions"
+            )
+            .is_empty()
+        );
+        let roles = "# Concepts\n\nText.\n\n## Next step\n\n[Roles](roles.md)\n";
+        assert_eq!(
+            next_step_problems(
+                roles,
+                "concepts.md",
+                Lang::En,
+                "guides/decisions.md",
+                "Decisions"
+            ),
+            [
+                "\"Next step\" opens roles.md, not guides/decisions.md",
+                "\"Next step\" reads \"Roles\", not \"Decisions\""
+            ]
+        );
+        let ends = "# Concepts\n\n## Seal\n\n```text\n## Next step\n```\n";
+        assert_eq!(
+            next_step_problems(
+                ends,
+                "concepts.md",
+                Lang::En,
+                "guides/decisions.md",
+                "Decisions"
+            ),
+            ["ends with \"Seal\", not \"Next step\""]
+        );
+    }
+
+    #[test]
+    fn a_misplaced_backward_or_misworded_skip_button_is_caught() {
+        let button = |target: &str, text: &str| {
+            format!("<div class=\"skip-step\">\n\n[{text}]({target})\n\n</div>\n")
+        };
+        let check = |md: &str| {
+            skip_problems(
+                md,
+                "guides/mcp.md",
+                Lang::En,
+                tunnel_position("guides/mcp.md").unwrap_or_default(),
+                tunnel_position,
+                tunnel_title,
+            )
+        };
+        let good = format!(
+            "# Start from a Jira ticket\n\n{}\nText.\n",
+            button("review-a-plan.md", "No Jira? Skip to Reviewing a plan")
+        );
+        assert!(check(&good).is_empty(), "{:?}", check(&good));
+        let back = format!(
+            "# Start from a Jira ticket\n\n{}\nText.\n",
+            button("../skills.md", "No Jira? Skip to Asking Claude")
+        );
+        assert_eq!(
+            check(&back),
+            ["the skip button leads back or out, to skills.md"]
+        );
+        let late = format!(
+            "# Start from a Jira ticket\n\nText.\n\n## Set it up\n\n{}",
+            button("review-a-plan.md", "No Jira? Skip to Reviewing a plan")
+        );
+        assert_eq!(
+            check(&late),
+            ["the skip button is not right under the title"]
+        );
+        let worded = format!(
+            "# Start from a Jira ticket\n\n{}\nText.\n",
+            button("review-a-plan.md", "No Jira? Skip to the review")
+        );
+        assert_eq!(
+            check(&worded),
+            [
+                "the skip button reads \"No Jira? Skip to the review\", not \"…? Skip to Reviewing a plan\""
+            ]
+        );
+    }
+
+    #[test]
+    fn configuration_shown_to_a_beginner_is_caught() {
+        let md = "# Start from a Jira ticket\n\n```yaml\nmcp:\n  jira_tool: x\n```\n\n<details>\n<summary>Under the hood: set it up</summary>\n\n```yaml\nmcp: {}\n```\n\n</details>\n\n```text\n> Prepare a plan\n```\n";
+        assert_eq!(
+            beginner_block_problems(md),
+            ["a `yaml` block outside \"Under the hood\""]
+        );
+    }
+
+    #[test]
+    fn a_page_without_diagram_or_example_is_caught() {
+        let skills = "# Asking Claude\n\n<div class=\"example\">\n<p class=\"example-title\">Example</p>\n\n```text\n> Plan it\n```\n\n</div>\n";
+        assert_eq!(
+            show_and_tell_problems(skills, Lang::En, true, true),
+            ["no diagram"]
+        );
+        let install = "# Installation\n\n<figure class=\"diagram\">…</figure>\n";
+        assert_eq!(
+            show_and_tell_problems(install, Lang::En, true, true),
+            ["no example block"]
+        );
+    }
+
+    #[test]
+    fn a_long_every_day_chapter_is_caught() {
+        let md = format!("# Asking Claude\n\n{}\n", "word ".repeat(1300));
+        assert!(prose_words(&without_figures(&md)) > 1200);
+    }
+
     #[test]
     fn a_terminal_command_outside_under_the_hood_is_caught() {
         let md = "Step.\n\n```bash\ncompagnon validate\n```\n\n<details>\n<summary>Under the hood: y</summary>\n\n```bash\ncompagnon status\n```\n</details>\n";
@@ -2066,6 +2377,82 @@ mod chapter_tests {
                 lang.tag()
             );
         }
+    }
+
+    /// The title `SUMMARY.md` gives a chapter.
+    fn summary_title(lang: Lang, path: &str) -> Option<String> {
+        summary_entries(summary(lang))
+            .find_map(|(title, target)| (target == path).then(|| title.to_string()))
+    }
+
+    #[test]
+    fn each_tunnel_page_leads_to_the_next() {
+        let mut found = Vec::new();
+        let tunnel: Vec<&str> = tunnel_chapters().collect();
+        for lang in LANGS {
+            for (i, path) in tunnel.iter().enumerate() {
+                let next = tunnel.get(i + 1).copied().unwrap_or(APPENDICES.2[0]);
+                let title = summary_title(lang, next).unwrap_or_default();
+                let md = chapter(lang, path);
+                for p in next_step_problems(md, path, lang, next, &title) {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+                let skips = skip_problems(
+                    md,
+                    path,
+                    lang,
+                    i,
+                    |p| tunnel.iter().position(|c| *c == p),
+                    |p| summary_title(lang, p),
+                );
+                for p in skips {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+            }
+            for path in APPENDICES.2 {
+                let md = chapter(lang, path);
+                if md
+                    .lines()
+                    .any(|l| l.trim() == format!("## {}", next_step_heading(lang)))
+                {
+                    found.push(format!(
+                        "{}/{path}: an appendix with a next step",
+                        lang.tag()
+                    ));
+                }
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn the_first_steps_show_only_what_a_beginner_needs() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            for path in TUNNEL[..3].iter().flat_map(|(_, _, c)| c.iter()) {
+                for p in beginner_block_problems(chapter(lang, path)) {
+                    found.push(format!("{}/{path}: {p}", lang.tag()));
+                }
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn every_tunnel_page_draws_and_shows() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            for (step, (_, _, chapters)) in TUNNEL.iter().enumerate() {
+                for path in *chapters {
+                    let problems =
+                        show_and_tell_problems(chapter(lang, path), lang, step < 4, step < 3);
+                    for p in problems {
+                        found.push(format!("{}/{path}: {p}", lang.tag()));
+                    }
+                }
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
     }
 
     #[test]
