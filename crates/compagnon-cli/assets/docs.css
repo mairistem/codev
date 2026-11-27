@@ -747,9 +747,10 @@ figure.diagram .mono {
 }
 .example > p:not(.example-title) { margin: 12px 8px 6px; color: #40565e; }
 .example a { color: #c4361b; }
+.example p code { background: #eef3f4; color: #00394d; }
 .example pre { margin: 0; border: 0; border-radius: 6px; background: #1e1e1e; color: #e6e6e6; }
 .example pre code { background: none; color: inherit; }
 details > summary { list-style: none; }
 details > summary::-webkit-details-marker { display: none; }
-details > summary::after { content: " +"; font-weight: 400; color: var(--muted); }
-details[open] > summary::after { content: " \2212"; }
+details > summary::after { content: " +" / ""; font-weight: 400; color: var(--muted); }
+details[open] > summary::after { content: " \2212" / ""; }

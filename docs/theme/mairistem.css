@@ -1817,7 +1817,7 @@ html:not(.js) {
 }
 
 .content details > summary::after {
-  content: "+";
+  content: "+" / "";
   flex: none;
   font-size: 1.4em;
   font-weight: 400;
@@ -1826,7 +1826,7 @@ html:not(.js) {
 }
 
 .content details[open] > summary::after {
-  content: "\2212";
+  content: "\2212" / "";
   color: var(--tn-minus);
 }
 
@@ -2113,6 +2113,18 @@ html:not(.js) {
 
 .content .example a {
   color: #c4361b;
+}
+
+.content .example p code {
+  background: #eef3f4;
+  color: #00394d;
+}
+
+/* Highlighted tokens keep the capture's light text on its dark ground,
+ * whatever the page's theme. */
+.content .example pre code [class^="hljs-"],
+.content .example pre code [class*=" hljs-"] {
+  color: #e6e6e6;
 }
 
 .content .example pre {

@@ -38,8 +38,8 @@
   --card: #ffffff;
   --strong: #004c66;
   --body: #40565e;
-  --muted: #5f767e;
-  --eyebrow: #6e858d;
+  --muted: #5a7078;
+  --eyebrow: #566c74;
   --eyebrow-corail: #c63a1c;
   --border: #e3eaec;
   --hairline: #e7edef;
@@ -85,6 +85,7 @@
     --hairline: rgba(255, 255, 255, .14);
     --link: #ffab03;
     --link-hover: #ffc24d;
+    --focus: #ffab03;
     --deep: #002a3a;
     --dark-card: #004c66;
     --dark-card-border: rgba(255, 255, 255, .14);
@@ -234,8 +235,8 @@ figure.diagram .mono { font-family: var(--mono); }
 .acc { border-bottom: 1px solid var(--hairline); }
 .acc summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 18px 0; font-size: 17px; font-weight: 600; color: var(--strong); }
 .acc summary::-webkit-details-marker { display: none; }
-.acc summary::after { content: "+"; margin-left: auto; font-size: 22px; font-weight: 400; color: var(--muted); }
-.acc[open] summary::after { content: "−"; color: var(--corail); }
+.acc summary::after { content: "+" / ""; margin-left: auto; font-size: 22px; font-weight: 400; color: var(--muted); }
+.acc[open] summary::after { content: "−" / ""; color: var(--corail); }
 .acc p { margin: 0 0 12px; max-width: 60em; color: var(--muted); }
 .acc a { display: inline-block; margin-bottom: 18px; font-weight: 600; }
 .n { font: 600 12px/24px var(--font); width: 24px; height: 24px; border-radius: 6px 6px 6px 0; text-align: center; flex: none; }
