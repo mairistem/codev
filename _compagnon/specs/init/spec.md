@@ -212,19 +212,28 @@ are always an explicit user choice; their presence is the only
 reliable indicator.
 
 If the config is thin, the last lines of the human output MUST
-invite the user to run `/compagnon-configure`:
+invite the user to ask Claude Code, in plain words, to configure
+Compagnon, with `/compagnon-configure` given as the shortcut:
 
 ```
-→ Recommended next step: in Claude Code, run /compagnon-configure.
+→ Recommended next step: in Claude Code, ask
+  "configure Compagnon for this project" (shortcut: /compagnon-configure).
   Claude will analyze the project and enrich _compagnon/config.yaml
   (context, per-artifact rules) — ~30 seconds.
 
-Or skip this step and run /compagnon-propose <an-idea> directly.
+Or skip this step and describe your first change, for example
+"plan <an-idea>" (shortcut: /compagnon-propose <an-idea>).
 ```
 
 If the config is not thin (the user had already written rules, or a
-`compagnon-configure` has already run), the output keeps its current short
-form: "Restart Claude Code, then run /compagnon-propose."
+`compagnon-configure` has already run), the output keeps its short form,
+in plain words with the shortcut: "Restart Claude Code so it discovers the
+skills, then ask it to plan your first change (shortcut:
+/compagnon-propose)." When `propose` is not installed, the short form names
+the first installed skill instead, still as the shortcut after a plain
+request: "Restart Claude Code so it discovers the skills, then ask it to
+use them (shortcut: /<that skill>)." When `configure` is not installed, a
+thin config gets the short form.
 
 The **JSON** output MUST remain unchanged — no field added, no promise
 broken. The hint is reserved for the human output, where it does not
@@ -236,6 +245,8 @@ affect scripts that consume the machine report.
   detected `context:`, but no `rules:` written)
 - **WHEN** the user runs `compagnon init --yes`
 - **THEN** the human output contains the keyword `/compagnon-configure`
+- **AND** it contains the plain request "configure Compagnon for this
+  project" before it
 - **AND** the JSON output (`--json`) does not contain it
 
 #### Scenario: Config with rules does not trigger the hint
@@ -245,6 +256,8 @@ affect scripts that consume the machine report.
   `rules: { specs: [...] }`)
 - **WHEN** the user runs `compagnon init --yes` (idempotence)
 - **THEN** the human output does not contain `/compagnon-configure`
+- **AND** it suggests planning a first change in plain words, with
+  `/compagnon-propose` given after it as the shortcut
 
 #### Scenario: A long auto-detected context does not suppress the hint
 
@@ -253,6 +266,15 @@ affect scripts that consume the machine report.
 - **WHEN** the user runs `compagnon init --yes`
 - **THEN** the human output does contain `/compagnon-configure` — the
   length of the auto-detected context no longer suppresses the hint
+
+#### Scenario: Without propose, the hint names an installed skill
+
+- **GIVEN** a project whose `workflows:` installs `explore` and `onboard`
+  but not `propose` nor `configure`
+- **WHEN** the user runs `compagnon init --yes`
+- **THEN** the human output asks, in plain words, to use the skills, with
+  `/compagnon-explore` as the shortcut
+- **AND** it does not name `/compagnon-propose` nor `/compagnon-configure`
 
 ### Requirement: `compagnon init` records the artifact language
 

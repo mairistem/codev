@@ -1,0 +1,10 @@
+# Two active changes, both planned up to their proposal: onboard lists them
+# and lets the user choose; it does not pick one to implement.
+step: project.onboard
+kind: seeded
+stacks: [typescript]
+summary: "A configured TypeScript API with two active changes, `add-bookmark-tags` and `import-browser-bookmarks`: onboard lists both for the user to choose."
+expected:
+  state: several-changes
+  contains: ["add-bookmark-tags", "import-browser-bookmarks"]
+  absent: ["/compagnon-apply add-bookmark-tags", "/compagnon-apply import-browser-bookmarks"]

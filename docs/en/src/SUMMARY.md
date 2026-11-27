@@ -1,25 +1,36 @@
 # Summary
 
-[Introduction](introduction.md)
+# Start here
 
-# Getting started
+- [Compagnon in two minutes](introduction.md)
+- [Choose your path](choose-your-path.md)
+  - [I review and approve plans — I do not code](paths/review.md)
+  - [I do not code, but I want Claude to build something for me](paths/build.md)
+  - [I am a developer and I have Claude write code](paths/develop.md)
+  - [I set Compagnon up for my team](paths/team.md)
+- [Glossary](glossary.md)
 
+# Everyday use
+
+- [Your first change](quickstart.md)
 - [Installation](installation.md)
-- [Quickstart](quickstart.md)
-
-# Using Compagnon
-
 - [The workflow](workflow.md)
 - [Claude Code skills](skills.md)
-- [Roles](roles.md)
-- [Reliability of the roles](reliability.md)
+- [Reviewing a plan](guides/review-a-plan.md)
+- [An annotated example plan](guides/example-plan.md)
+- [Approving a plan on GitHub or GitLab](guides/approve-a-plan.md)
+- [Starting from nothing](guides/start-from-nothing.md)
 - [Concepts](concepts.md)
+- [FAQ and troubleshooting](faq.md)
 
-# Guides
+# Going further
 
+- [Roles](roles.md)
 - [Moving from codev](guides/moving-from-codev.md)
 - [Inherited sources](guides/inherited-sources.md)
 - [Repository integration and compagnon doctor](guides/repository-integration.md)
+- [Adopting Compagnon on an existing project](guides/existing-project.md)
+- [Deploying Compagnon for a team](guides/team-rollout.md)
 - [Release notes and CHANGELOG](guides/release-notes.md)
 - [Review record](guides/review-record.md)
 - [Jira and other MCP servers](guides/mcp.md)
@@ -33,7 +44,9 @@
 - [File formats](reference/file-formats.md)
 - [JSON output](reference/json-output.md)
 
-# Appendix
+# Contributing
 
-- [FAQ and troubleshooting](faq.md)
+- [Origins](origins.md)
+- [Contributing to Compagnon](contributing.md)
 - [Architecture](architecture.md)
+- [Reliability of the roles](reliability.md)

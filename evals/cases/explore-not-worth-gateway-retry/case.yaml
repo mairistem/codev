@@ -1,0 +1,13 @@
+# A request the code already answers: the gateway client retries timed-out
+# calls with exponential backoff and jitter, in `internal/gateway/retry.go`,
+# specified and tested. The exploration ends as not worth pursuing, naming
+# the file that does it.
+step: idea.explore
+kind: seeded
+stacks: [go]
+summary: "A Go payments service whose gateway client already retries timeouts with exponential backoff (`internal/gateway/retry.go`): the exploration ends as not worth pursuing, naming that file."
+request: Retry the calls to the payment gateway with exponential backoff when they time out.
+expected:
+  outcome: not-worth
+  contains: ["retry.go"]
+  absent: ["crystallizes", "information is missing"]

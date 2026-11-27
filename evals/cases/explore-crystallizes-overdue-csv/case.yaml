@@ -1,0 +1,12 @@
+# A clear, small feature on a small Flask app: the overdue loans already
+# have a page; exporting them as CSV is one route over the same query.
+# Nothing the repository cannot settle: the exploration crystallizes.
+step: idea.explore
+kind: seeded
+stacks: [python]
+summary: "A Flask library app with an overdue-loans page; exporting it as CSV is a small, clear change: the exploration ends by offering `/compagnon-propose`."
+request: Let the librarians download the list of overdue loans as a CSV file, to send it to the town hall each month.
+expected:
+  outcome: crystallizes
+  contains: ["/compagnon-propose"]
+  absent: ["information is missing", "not worth pursuing", "wasn't worth pursuing"]

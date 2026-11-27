@@ -7,7 +7,17 @@
     "claudeVersion": "2.1.289 (Claude Code)",
     "compagnonVersion": "compagnon 0.6.1",
     "repeat": 5,
-    "jobs": 4
+    "jobs": 4,
+    "added": [
+      {
+        "steps": [
+          "idea.explore",
+          "project.onboard"
+        ],
+        "compagnonVersion": "compagnon 0.7.0",
+        "date": "2026-11-26"
+      }
+    ]
   },
   "thresholds": {
     "minRecall": 0.5,
@@ -16,8 +26,8 @@
   },
   "pass": false,
   "repetitions": 5,
-  "costUsd": 77.133,
-  "totalCostUsd": 388.1993,
+  "costUsd": 78.501,
+  "totalCostUsd": 395.0507,
   "figures": {
     "expected": 39.0,
     "truePositives": {
@@ -49,18 +59,18 @@
     }
   },
   "consumption": {
-    "costUsd": 77.133,
-    "durationMs": 9389508.0,
-    "durationApiMs": 10259087.0,
-    "turns": 1391.0,
-    "permissionDenials": 94.0,
-    "inputTokens": 103952.0,
-    "cacheCreationTokens": 4907598.0,
-    "cacheReadTokens": 95251885.0,
-    "outputTokens": 986327.0,
-    "calls": 1374.0,
-    "inputPerCall": 72396.0,
-    "outputPerCall": 702.0
+    "costUsd": 78.501,
+    "durationMs": 9528274.0,
+    "durationApiMs": 10389442.0,
+    "turns": 1461.0,
+    "permissionDenials": 101.0,
+    "inputTokens": 112769.0,
+    "cacheCreationTokens": 5013133.0,
+    "cacheReadTokens": 96568870.0,
+    "outputTokens": 999374.0,
+    "calls": 1415.0,
+    "inputPerCall": 71310.0,
+    "outputPerCall": 691.0
   },
   "failures": [
     "skeptic: 4 false positive(s) exceed 2",
@@ -10057,6 +10067,1546 @@
           },
           {
             "check": "no file modified outside the step",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-crystallizes-overdue-csv",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1486376,
+      "durationMs": 21457,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 19957,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 999,
+          "cacheCreation": 10765,
+          "cacheRead": 123623,
+          "output": 1849
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6616,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6616
+            }
+          },
+          {
+            "cacheCreation": 1336,
+            "cacheRead": 31744,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1336
+            }
+          },
+          {
+            "cacheCreation": 591,
+            "cacheRead": 33080,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 591
+            }
+          },
+          {
+            "cacheCreation": 2222,
+            "cacheRead": 33671,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "file": 2222
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-crystallizes-overdue-csv",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1490494,
+      "durationMs": 25086,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 23578,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 997,
+          "cacheCreation": 10747,
+          "cacheRead": 90842,
+          "output": 2205
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6616,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 6616
+            }
+          },
+          {
+            "cacheCreation": 2226,
+            "cacheRead": 31744,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 758,
+              "skill": 1468
+            }
+          },
+          {
+            "cacheCreation": 1905,
+            "cacheRead": 33970,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 1905
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-crystallizes-overdue-csv",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1557074,
+      "durationMs": 24829,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 23249,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 999,
+          "cacheCreation": 10760,
+          "cacheRead": 123622,
+          "output": 2206
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6616,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6616
+            }
+          },
+          {
+            "cacheCreation": 1336,
+            "cacheRead": 31744,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1336
+            }
+          },
+          {
+            "cacheCreation": 590,
+            "cacheRead": 33080,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 590
+            }
+          },
+          {
+            "cacheCreation": 2218,
+            "cacheRead": 33670,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 0,
+            "sources": {
+              "file": 2218
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-crystallizes-overdue-csv",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.14804840000000002,
+      "durationMs": 26183,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 24572,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 997,
+          "cacheCreation": 10471,
+          "cacheRead": 90677,
+          "output": 2267
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6616,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 6616
+            }
+          },
+          {
+            "cacheCreation": 2061,
+            "cacheRead": 31744,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 599,
+              "skill": 1462
+            }
+          },
+          {
+            "cacheCreation": 1794,
+            "cacheRead": 33805,
+            "input": 2,
+            "output": 6,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 1794
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-crystallizes-overdue-csv",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1539212,
+      "durationMs": 23746,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 21865,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 999,
+          "cacheCreation": 10763,
+          "cacheRead": 123621,
+          "output": 2114
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6616,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6616
+            }
+          },
+          {
+            "cacheCreation": 1336,
+            "cacheRead": 31744,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1336
+            }
+          },
+          {
+            "cacheCreation": 589,
+            "cacheRead": 33080,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 589
+            }
+          },
+          {
+            "cacheCreation": 2222,
+            "cacheRead": 33669,
+            "input": 2,
+            "output": 6,
+            "toolCalls": 0,
+            "sources": {
+              "file": 2222
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-missing-sms-reminders",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1556186,
+      "durationMs": 21437,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 19752,
+        "turns": 5,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 987,
+          "cacheCreation": 10771,
+          "cacheRead": 157468,
+          "output": 1856
+        },
+        "toolCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 6592,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6592
+            }
+          },
+          {
+            "cacheCreation": 1333,
+            "cacheRead": 31720,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1333
+            }
+          },
+          {
+            "cacheCreation": 594,
+            "cacheRead": 33053,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 594
+            }
+          },
+          {
+            "cacheCreation": 273,
+            "cacheRead": 33647,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 273
+            }
+          },
+          {
+            "cacheCreation": 1979,
+            "cacheRead": 33920,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "file": 1979
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"provider\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-missing-sms-reminders",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.16008940000000002,
+      "durationMs": 24132,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 22647,
+        "turns": 5,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 987,
+          "cacheCreation": 10750,
+          "cacheRead": 157462,
+          "output": 2088
+        },
+        "toolCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 6592,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6592
+            }
+          },
+          {
+            "cacheCreation": 1333,
+            "cacheRead": 31720,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1333
+            }
+          },
+          {
+            "cacheCreation": 594,
+            "cacheRead": 33053,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 594
+            }
+          },
+          {
+            "cacheCreation": 267,
+            "cacheRead": 33647,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 267
+            }
+          },
+          {
+            "cacheCreation": 1964,
+            "cacheRead": 33914,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "file": 1964
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"provider\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-missing-sms-reminders",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1793246,
+      "durationMs": 29927,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 28852,
+        "turns": 13,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 985,
+          "cacheCreation": 11659,
+          "cacheRead": 123918,
+          "output": 3022
+        },
+        "toolCalls": 12,
+        "calls": [
+          {
+            "cacheCreation": 6592,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 6592
+            }
+          },
+          {
+            "cacheCreation": 1674,
+            "cacheRead": 31720,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 152,
+              "skill": 1522
+            }
+          },
+          {
+            "cacheCreation": 282,
+            "cacheRead": 33394,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 9,
+            "sources": {
+              "compagnon list": 282
+            }
+          },
+          {
+            "cacheCreation": 3111,
+            "cacheRead": 33676,
+            "input": 2,
+            "output": 6,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 68,
+              "file": 3043
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"provider\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-missing-sms-reminders",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1565574,
+      "durationMs": 21514,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 19923,
+        "turns": 5,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 987,
+          "cacheCreation": 10751,
+          "cacheRead": 157462,
+          "output": 1911
+        },
+        "toolCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 6592,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6592
+            }
+          },
+          {
+            "cacheCreation": 1333,
+            "cacheRead": 31720,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1333
+            }
+          },
+          {
+            "cacheCreation": 594,
+            "cacheRead": 33053,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 594
+            }
+          },
+          {
+            "cacheCreation": 267,
+            "cacheRead": 33647,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 267
+            }
+          },
+          {
+            "cacheCreation": 1965,
+            "cacheRead": 33914,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "file": 1965
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"provider\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-missing-sms-reminders",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.156758,
+      "durationMs": 22180,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 20811,
+        "turns": 5,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 987,
+          "cacheCreation": 10765,
+          "cacheRead": 157580,
+          "output": 1915
+        },
+        "toolCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 6592,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6592
+            }
+          },
+          {
+            "cacheCreation": 1333,
+            "cacheRead": 31720,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1333
+            }
+          },
+          {
+            "cacheCreation": 668,
+            "cacheRead": 33053,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 668
+            }
+          },
+          {
+            "cacheCreation": 237,
+            "cacheRead": 33721,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 237
+            }
+          },
+          {
+            "cacheCreation": 1935,
+            "cacheRead": 33958,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "file": 1935
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"provider\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"not worth pursuing\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"wasn't worth pursuing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-not-worth-gateway-retry",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.15613620000000003,
+      "durationMs": 17158,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 15518,
+        "turns": 5,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 993,
+          "cacheCreation": 11599,
+          "cacheRead": 160006,
+          "output": 1528
+        },
+        "toolCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 6605,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6605
+            }
+          },
+          {
+            "cacheCreation": 1332,
+            "cacheRead": 31733,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1332
+            }
+          },
+          {
+            "cacheCreation": 615,
+            "cacheRead": 33065,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 615
+            }
+          },
+          {
+            "cacheCreation": 2720,
+            "cacheRead": 33680,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 1,
+            "sources": {
+              "file": 2720
+            }
+          },
+          {
+            "cacheCreation": 327,
+            "cacheRead": 36400,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "shell": 327
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"retry.go\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-not-worth-gateway-retry",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.144723,
+      "durationMs": 17225,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 15891,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 991,
+          "cacheCreation": 10909,
+          "cacheRead": 123605,
+          "output": 1597
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6605,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6605
+            }
+          },
+          {
+            "cacheCreation": 1332,
+            "cacheRead": 31733,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1332
+            }
+          },
+          {
+            "cacheCreation": 614,
+            "cacheRead": 33065,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 614
+            }
+          },
+          {
+            "cacheCreation": 2358,
+            "cacheRead": 33679,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "file": 2358
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"retry.go\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-not-worth-gateway-retry",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.140679,
+      "durationMs": 17952,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 16558,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 989,
+          "cacheCreation": 11209,
+          "cacheRead": 90425,
+          "output": 1607
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6605,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 6605
+            }
+          },
+          {
+            "cacheCreation": 1831,
+            "cacheRead": 31733,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 287,
+              "skill": 1544
+            }
+          },
+          {
+            "cacheCreation": 2773,
+            "cacheRead": 33564,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 2773
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"retry.go\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-not-worth-gateway-retry",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1369124,
+      "durationMs": 17167,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 15408,
+        "turns": 3,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 989,
+          "cacheCreation": 10930,
+          "cacheRead": 90152,
+          "output": 1533
+        },
+        "toolCalls": 2,
+        "calls": [
+          {
+            "cacheCreation": 6605,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6605
+            }
+          },
+          {
+            "cacheCreation": 1558,
+            "cacheRead": 31733,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1558
+            }
+          },
+          {
+            "cacheCreation": 2767,
+            "cacheRead": 33291,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 2767
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"retry.go\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-not-worth-gateway-retry",
+      "role": "planner",
+      "step": "idea.explore",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1468202,
+      "durationMs": 18063,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 16728,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 991,
+          "cacheCreation": 11268,
+          "cacheRead": 123606,
+          "output": 1559
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6605,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6605
+            }
+          },
+          {
+            "cacheCreation": 1332,
+            "cacheRead": 31733,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 1332
+            }
+          },
+          {
+            "cacheCreation": 615,
+            "cacheRead": 33065,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 615
+            }
+          },
+          {
+            "cacheCreation": 2716,
+            "cacheRead": 33680,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "file": 2716
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"retry.go\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"crystallizes\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"information is missing\"",
             "passed": true
           }
         ]
@@ -26902,6 +28452,3343 @@
               "edit": 279,
               "output": 124
             }
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-configured",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.163935,
+      "durationMs": 13351,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 13430,
+        "turns": 11,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12905,
+          "cacheRead": 164855,
+          "output": 1348
+        },
+        "toolCalls": 10,
+        "calls": [
+          {
+            "cacheCreation": 6554,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6554
+            }
+          },
+          {
+            "cacheCreation": 3325,
+            "cacheRead": 31682,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3325
+            }
+          },
+          {
+            "cacheCreation": 284,
+            "cacheRead": 35007,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 7,
+            "sources": {
+              "compagnon list": 284
+            }
+          },
+          {
+            "cacheCreation": 2456,
+            "cacheRead": 35291,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon decision": 35,
+              "compagnon doctor": 1588,
+              "compagnon list": 57,
+              "file": 600,
+              "search": 176
+            }
+          },
+          {
+            "cacheCreation": 286,
+            "cacheRead": 37747,
+            "input": 2,
+            "output": 310,
+            "toolCalls": 0,
+            "sources": {
+              "shell": 286
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"README.md\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-configured",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1609354,
+      "durationMs": 12254,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 12134,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12711,
+          "cacheRead": 164192,
+          "output": 1283
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6554,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6554
+            }
+          },
+          {
+            "cacheCreation": 3325,
+            "cacheRead": 31682,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3325
+            }
+          },
+          {
+            "cacheCreation": 281,
+            "cacheRead": 35007,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 5,
+            "sources": {
+              "compagnon list": 281
+            }
+          },
+          {
+            "cacheCreation": 1799,
+            "cacheRead": 35288,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "compagnon decision": 36,
+              "compagnon doctor": 1615,
+              "compagnon list": 59,
+              "search": 89
+            }
+          },
+          {
+            "cacheCreation": 752,
+            "cacheRead": 37087,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "file": 743,
+              "shell": 9
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"README.md\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-configured",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.16486459999999997,
+      "durationMs": 13128,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 12669,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12864,
+          "cacheRead": 164918,
+          "output": 1411
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6554,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6554
+            }
+          },
+          {
+            "cacheCreation": 3325,
+            "cacheRead": 31682,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3325
+            }
+          },
+          {
+            "cacheCreation": 283,
+            "cacheRead": 35007,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 283
+            }
+          },
+          {
+            "cacheCreation": 2521,
+            "cacheRead": 35290,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon decision": 38,
+              "compagnon doctor": 1691,
+              "compagnon list": 61,
+              "file": 638,
+              "search": 93
+            }
+          },
+          {
+            "cacheCreation": 181,
+            "cacheRead": 37811,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 0,
+            "sources": {
+              "shell": 181
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"README.md\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-configured",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.15855239999999998,
+      "durationMs": 12377,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 12027,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12627,
+          "cacheRead": 164712,
+          "output": 1193
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6554,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6554
+            }
+          },
+          {
+            "cacheCreation": 3325,
+            "cacheRead": 31682,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3325
+            }
+          },
+          {
+            "cacheCreation": 283,
+            "cacheRead": 35007,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 283
+            }
+          },
+          {
+            "cacheCreation": 2315,
+            "cacheRead": 35290,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon decision": 35,
+              "compagnon doctor": 1552,
+              "compagnon list": 56,
+              "file": 586,
+              "search": 86
+            }
+          },
+          {
+            "cacheCreation": 150,
+            "cacheRead": 37605,
+            "input": 2,
+            "output": 9,
+            "toolCalls": 0,
+            "sources": {
+              "shell": 150
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"README.md\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-configured",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.161562,
+      "durationMs": 13114,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 12506,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12746,
+          "cacheRead": 164725,
+          "output": 1295
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6554,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6554
+            }
+          },
+          {
+            "cacheCreation": 3325,
+            "cacheRead": 31682,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3325
+            }
+          },
+          {
+            "cacheCreation": 288,
+            "cacheRead": 35007,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 288
+            }
+          },
+          {
+            "cacheCreation": 2318,
+            "cacheRead": 35295,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon decision": 35,
+              "compagnon doctor": 1554,
+              "compagnon list": 56,
+              "file": 587,
+              "search": 86
+            }
+          },
+          {
+            "cacheCreation": 261,
+            "cacheRead": 37613,
+            "input": 2,
+            "output": 337,
+            "toolCalls": 0,
+            "sources": {
+              "shell": 261
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"README.md\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-no-compagnon",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1128024,
+      "durationMs": 8325,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 7714,
+        "turns": 4,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 9267,
+          "cacheRead": 126427,
+          "output": 632
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 5511,
+            "cacheRead": 25754,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 5511
+            }
+          },
+          {
+            "cacheCreation": 3329,
+            "cacheRead": 31265,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3329
+            }
+          },
+          {
+            "cacheCreation": 220,
+            "cacheRead": 34594,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 220
+            }
+          },
+          {
+            "cacheCreation": 207,
+            "cacheRead": 34814,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 207
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"compagnon init\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-no-compagnon",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1129624,
+      "durationMs": 8590,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 7786,
+        "turns": 4,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 9267,
+          "cacheRead": 126427,
+          "output": 640
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 5511,
+            "cacheRead": 25754,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 5511
+            }
+          },
+          {
+            "cacheCreation": 3329,
+            "cacheRead": 31265,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3329
+            }
+          },
+          {
+            "cacheCreation": 220,
+            "cacheRead": 34594,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 220
+            }
+          },
+          {
+            "cacheCreation": 207,
+            "cacheRead": 34814,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 207
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"compagnon init\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-no-compagnon",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1115824,
+      "durationMs": 7289,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 6549,
+        "turns": 4,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 9267,
+          "cacheRead": 126427,
+          "output": 571
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 5511,
+            "cacheRead": 25754,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 5511
+            }
+          },
+          {
+            "cacheCreation": 3329,
+            "cacheRead": 31265,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3329
+            }
+          },
+          {
+            "cacheCreation": 220,
+            "cacheRead": 34594,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 220
+            }
+          },
+          {
+            "cacheCreation": 207,
+            "cacheRead": 34814,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 207
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"compagnon init\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-no-compagnon",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1132224,
+      "durationMs": 8680,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 8027,
+        "turns": 4,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 9267,
+          "cacheRead": 126427,
+          "output": 653
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 5511,
+            "cacheRead": 25754,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 5511
+            }
+          },
+          {
+            "cacheCreation": 3329,
+            "cacheRead": 31265,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3329
+            }
+          },
+          {
+            "cacheCreation": 220,
+            "cacheRead": 34594,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 220
+            }
+          },
+          {
+            "cacheCreation": 207,
+            "cacheRead": 34814,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 207
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"compagnon init\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-no-compagnon",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1118224,
+      "durationMs": 8339,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 7661,
+        "turns": 4,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 9267,
+          "cacheRead": 126427,
+          "output": 583
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 5511,
+            "cacheRead": 25754,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 5511
+            }
+          },
+          {
+            "cacheCreation": 3329,
+            "cacheRead": 31265,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3329
+            }
+          },
+          {
+            "cacheCreation": 220,
+            "cacheRead": 34594,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 220
+            }
+          },
+          {
+            "cacheCreation": 207,
+            "cacheRead": 34814,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon list": 207
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"compagnon init\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-complete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.162712,
+      "durationMs": 13035,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 11987,
+        "turns": 11,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12955,
+          "cacheRead": 164715,
+          "output": 1269
+        },
+        "toolCalls": 10,
+        "calls": [
+          {
+            "cacheCreation": 6563,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6563
+            }
+          },
+          {
+            "cacheCreation": 3328,
+            "cacheRead": 31691,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3328
+            }
+          },
+          {
+            "cacheCreation": 269,
+            "cacheRead": 35019,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 269
+            }
+          },
+          {
+            "cacheCreation": 2301,
+            "cacheRead": 35288,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "compagnon decision": 36,
+              "compagnon doctor": 1596,
+              "compagnon list": 39,
+              "file": 542,
+              "search": 88
+            }
+          },
+          {
+            "cacheCreation": 494,
+            "cacheRead": 37589,
+            "input": 2,
+            "output": 320,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 253,
+              "skill": 241
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-ingredient-search\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-complete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1790294,
+      "durationMs": 16956,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 16180,
+        "turns": 12,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 13647,
+          "cacheRead": 165122,
+          "output": 1804
+        },
+        "toolCalls": 11,
+        "calls": [
+          {
+            "cacheCreation": 6563,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6563
+            }
+          },
+          {
+            "cacheCreation": 3328,
+            "cacheRead": 31691,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3328
+            }
+          },
+          {
+            "cacheCreation": 287,
+            "cacheRead": 35019,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 7,
+            "sources": {
+              "compagnon list": 287
+            }
+          },
+          {
+            "cacheCreation": 2672,
+            "cacheRead": 35306,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 2,
+            "sources": {
+              "compagnon decision": 40,
+              "compagnon doctor": 1785,
+              "compagnon list": 44,
+              "file": 606,
+              "search": 196
+            }
+          },
+          {
+            "cacheCreation": 797,
+            "cacheRead": 37978,
+            "input": 2,
+            "output": 305,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 317,
+              "skill": 480
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-ingredient-search\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-complete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.16516160000000002,
+      "durationMs": 13563,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 12830,
+        "turns": 11,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 13103,
+          "cacheRead": 164743,
+          "output": 1332
+        },
+        "toolCalls": 10,
+        "calls": [
+          {
+            "cacheCreation": 6563,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6563
+            }
+          },
+          {
+            "cacheCreation": 3328,
+            "cacheRead": 31691,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3328
+            }
+          },
+          {
+            "cacheCreation": 283,
+            "cacheRead": 35019,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 283
+            }
+          },
+          {
+            "cacheCreation": 2301,
+            "cacheRead": 35302,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "compagnon decision": 36,
+              "compagnon doctor": 1596,
+              "compagnon list": 39,
+              "file": 542,
+              "search": 88
+            }
+          },
+          {
+            "cacheCreation": 628,
+            "cacheRead": 37603,
+            "input": 2,
+            "output": 299,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 245,
+              "skill": 383
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-ingredient-search\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-complete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.157324,
+      "durationMs": 11608,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 10936,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12447,
+          "cacheRead": 164220,
+          "output": 1207
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6563,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6563
+            }
+          },
+          {
+            "cacheCreation": 3331,
+            "cacheRead": 31691,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3331
+            }
+          },
+          {
+            "cacheCreation": 270,
+            "cacheRead": 35022,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 5,
+            "sources": {
+              "compagnon list": 270
+            }
+          },
+          {
+            "cacheCreation": 1795,
+            "cacheRead": 35292,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "compagnon decision": 36,
+              "compagnon doctor": 1629,
+              "compagnon list": 40,
+              "search": 90
+            }
+          },
+          {
+            "cacheCreation": 488,
+            "cacheRead": 37087,
+            "input": 2,
+            "output": 332,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 256,
+              "skill": 232
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-ingredient-search\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-complete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1658832,
+      "durationMs": 14765,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 13258,
+        "turns": 11,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12985,
+          "cacheRead": 164871,
+          "output": 1414
+        },
+        "toolCalls": 10,
+        "calls": [
+          {
+            "cacheCreation": 6563,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6563
+            }
+          },
+          {
+            "cacheCreation": 3328,
+            "cacheRead": 31691,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3328
+            }
+          },
+          {
+            "cacheCreation": 287,
+            "cacheRead": 35019,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 7,
+            "sources": {
+              "compagnon list": 287
+            }
+          },
+          {
+            "cacheCreation": 2421,
+            "cacheRead": 35306,
+            "input": 2,
+            "output": 5,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon decision": 36,
+              "compagnon doctor": 1618,
+              "compagnon list": 40,
+              "file": 549,
+              "search": 178
+            }
+          },
+          {
+            "cacheCreation": 386,
+            "cacheRead": 37727,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 386
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-ingredient-search\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-propose\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-incomplete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1375606,
+      "durationMs": 9277,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 8212,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 12002,
+          "cacheRead": 128718,
+          "output": 753
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6569,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6569
+            }
+          },
+          {
+            "cacheCreation": 3330,
+            "cacheRead": 31697,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3330
+            }
+          },
+          {
+            "cacheCreation": 1839,
+            "cacheRead": 35027,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 1839
+            }
+          },
+          {
+            "cacheCreation": 264,
+            "cacheRead": 36866,
+            "input": 2,
+            "output": 351,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 264
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose add-due-dates\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-incomplete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1685074,
+      "durationMs": 14609,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 14042,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12875,
+          "cacheRead": 164492,
+          "output": 1593
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6569,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6569
+            }
+          },
+          {
+            "cacheCreation": 3330,
+            "cacheRead": 31697,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3330
+            }
+          },
+          {
+            "cacheCreation": 284,
+            "cacheRead": 35027,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 5,
+            "sources": {
+              "compagnon list": 284
+            }
+          },
+          {
+            "cacheCreation": 2018,
+            "cacheRead": 35311,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "compagnon decision": 40,
+              "compagnon doctor": 1839,
+              "compagnon list": 38,
+              "search": 100
+            }
+          },
+          {
+            "cacheCreation": 674,
+            "cacheRead": 37329,
+            "input": 2,
+            "output": 387,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 276,
+              "skill": 398
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose add-due-dates\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-incomplete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1595292,
+      "durationMs": 13385,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 12717,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12469,
+          "cacheRead": 164241,
+          "output": 1309
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6569,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6569
+            }
+          },
+          {
+            "cacheCreation": 3330,
+            "cacheRead": 31697,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3330
+            }
+          },
+          {
+            "cacheCreation": 269,
+            "cacheRead": 35027,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 5,
+            "sources": {
+              "compagnon list": 269
+            }
+          },
+          {
+            "cacheCreation": 1797,
+            "cacheRead": 35296,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "compagnon decision": 36,
+              "compagnon doctor": 1638,
+              "compagnon list": 34,
+              "search": 89
+            }
+          },
+          {
+            "cacheCreation": 504,
+            "cacheRead": 37093,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 266,
+              "skill": 238
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose add-due-dates\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-incomplete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.181127,
+      "durationMs": 17370,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 16635,
+        "turns": 12,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 13713,
+          "cacheRead": 165170,
+          "output": 1882
+        },
+        "toolCalls": 11,
+        "calls": [
+          {
+            "cacheCreation": 6569,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6569
+            }
+          },
+          {
+            "cacheCreation": 3330,
+            "cacheRead": 31697,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3330
+            }
+          },
+          {
+            "cacheCreation": 285,
+            "cacheRead": 35027,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 7,
+            "sources": {
+              "compagnon list": 285
+            }
+          },
+          {
+            "cacheCreation": 2694,
+            "cacheRead": 35312,
+            "input": 2,
+            "output": 5,
+            "toolCalls": 2,
+            "sources": {
+              "compagnon decision": 40,
+              "compagnon doctor": 1816,
+              "compagnon list": 38,
+              "file": 603,
+              "search": 198
+            }
+          },
+          {
+            "cacheCreation": 835,
+            "cacheRead": 38006,
+            "input": 2,
+            "output": 333,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 348,
+              "skill": 487
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose add-due-dates\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-planning-incomplete",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1376806,
+      "durationMs": 9248,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 8183,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 12007,
+          "cacheRead": 128718,
+          "output": 757
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6569,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6569
+            }
+          },
+          {
+            "cacheCreation": 3330,
+            "cacheRead": 31697,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3330
+            }
+          },
+          {
+            "cacheCreation": 1839,
+            "cacheRead": 35027,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 1839
+            }
+          },
+          {
+            "cacheCreation": 269,
+            "cacheRead": 36866,
+            "input": 2,
+            "output": 353,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 269
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-propose add-due-dates\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-several-changes",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.150105,
+      "durationMs": 11589,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 10087,
+        "turns": 5,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12044,
+          "cacheRead": 165120,
+          "output": 999
+        },
+        "toolCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3327,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3327
+            }
+          },
+          {
+            "cacheCreation": 1509,
+            "cacheRead": 35015,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 1509
+            }
+          },
+          {
+            "cacheCreation": 241,
+            "cacheRead": 36524,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 241
+            }
+          },
+          {
+            "cacheCreation": 407,
+            "cacheRead": 36765,
+            "input": 2,
+            "output": 429,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 407
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"import-browser-bookmarks\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply import-browser-bookmarks\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-several-changes",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.166721,
+      "durationMs": 14231,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 13383,
+        "turns": 12,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12860,
+          "cacheRead": 164360,
+          "output": 1511
+        },
+        "toolCalls": 11,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3327,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3327
+            }
+          },
+          {
+            "cacheCreation": 284,
+            "cacheRead": 35015,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 284
+            }
+          },
+          {
+            "cacheCreation": 1931,
+            "cacheRead": 35299,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 3,
+            "sources": {
+              "compagnon decision": 37,
+              "compagnon doctor": 1659,
+              "compagnon list": 55,
+              "search": 180
+            }
+          },
+          {
+            "cacheCreation": 758,
+            "cacheRead": 37230,
+            "input": 2,
+            "output": 468,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 544,
+              "skill": 213
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"import-browser-bookmarks\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply import-browser-bookmarks\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-several-changes",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.13715159999999998,
+      "durationMs": 10146,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 9047,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 11710,
+          "cacheRead": 128353,
+          "output": 853
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3327,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3327
+            }
+          },
+          {
+            "cacheCreation": 1507,
+            "cacheRead": 35015,
+            "input": 2,
+            "output": 47,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon list": 1507
+            }
+          },
+          {
+            "cacheCreation": 316,
+            "cacheRead": 36522,
+            "input": 2,
+            "output": 412,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 223,
+              "output": 93
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"import-browser-bookmarks\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply import-browser-bookmarks\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-several-changes",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1783462,
+      "durationMs": 16054,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 14825,
+        "turns": 12,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 976,
+          "cacheCreation": 13077,
+          "cacheRead": 201966,
+          "output": 1629
+        },
+        "toolCalls": 11,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3327,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3327
+            }
+          },
+          {
+            "cacheCreation": 266,
+            "cacheRead": 35015,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 266
+            }
+          },
+          {
+            "cacheCreation": 1933,
+            "cacheRead": 35281,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon decision": 37,
+              "compagnon doctor": 1661,
+              "compagnon list": 55,
+              "search": 182
+            }
+          },
+          {
+            "cacheCreation": 426,
+            "cacheRead": 37214,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "skill": 426
+            }
+          },
+          {
+            "cacheCreation": 565,
+            "cacheRead": 37640,
+            "input": 2,
+            "output": 9,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 565
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"import-browser-bookmarks\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply import-browser-bookmarks\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-several-changes",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1652474,
+      "durationMs": 13889,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 12850,
+        "turns": 12,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12781,
+          "cacheRead": 164327,
+          "output": 1470
+        },
+        "toolCalls": 11,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3327,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3327
+            }
+          },
+          {
+            "cacheCreation": 266,
+            "cacheRead": 35015,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 266
+            }
+          },
+          {
+            "cacheCreation": 1934,
+            "cacheRead": 35281,
+            "input": 2,
+            "output": 6,
+            "toolCalls": 3,
+            "sources": {
+              "compagnon decision": 37,
+              "compagnon doctor": 1662,
+              "compagnon list": 55,
+              "search": 182
+            }
+          },
+          {
+            "cacheCreation": 694,
+            "cacheRead": 37215,
+            "input": 2,
+            "output": 436,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon status": 652,
+              "shell": 43
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"import-browser-bookmarks\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply add-bookmark-tags\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply import-browser-bookmarks\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-thin-config",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1532076,
+      "durationMs": 12013,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 11479,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 12553,
+          "cacheRead": 127138,
+          "output": 1330
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3327,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3327
+            }
+          },
+          {
+            "cacheCreation": 292,
+            "cacheRead": 35015,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 7,
+            "sources": {
+              "compagnon list": 292
+            }
+          },
+          {
+            "cacheCreation": 2374,
+            "cacheRead": 35307,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon decision": 36,
+              "compagnon doctor": 1709,
+              "compagnon list": 69,
+              "file": 382,
+              "search": 178
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-thin-config",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.16546419999999998,
+      "durationMs": 14046,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 13100,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12890,
+          "cacheRead": 164676,
+          "output": 1433
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3327,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3327
+            }
+          },
+          {
+            "cacheCreation": 282,
+            "cacheRead": 35015,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 282
+            }
+          },
+          {
+            "cacheCreation": 2251,
+            "cacheRead": 35297,
+            "input": 2,
+            "output": 5,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon decision": 35,
+              "compagnon doctor": 1684,
+              "compagnon list": 68,
+              "file": 376,
+              "search": 88
+            }
+          },
+          {
+            "cacheCreation": 470,
+            "cacheRead": 37548,
+            "input": 2,
+            "output": 398,
+            "toolCalls": 0,
+            "sources": {
+              "skill": 470
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-thin-config",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1496106,
+      "durationMs": 12242,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 11787,
+        "turns": 9,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 12406,
+          "cacheRead": 127133,
+          "output": 1209
+        },
+        "toolCalls": 8,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3327,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3327
+            }
+          },
+          {
+            "cacheCreation": 287,
+            "cacheRead": 35015,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 287
+            }
+          },
+          {
+            "cacheCreation": 2232,
+            "cacheRead": 35302,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon decision": 35,
+              "compagnon doctor": 1670,
+              "compagnon list": 67,
+              "file": 373,
+              "search": 87
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-thin-config",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.14781719999999998,
+      "durationMs": 11037,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 10559,
+        "turns": 8,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 972,
+          "cacheCreation": 12327,
+          "cacheRead": 127801,
+          "output": 1145
+        },
+        "toolCalls": 7,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3679,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3679
+            }
+          },
+          {
+            "cacheCreation": 251,
+            "cacheRead": 35367,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 5,
+            "sources": {
+              "compagnon list": 251
+            }
+          },
+          {
+            "cacheCreation": 1837,
+            "cacheRead": 35618,
+            "input": 2,
+            "output": 6,
+            "toolCalls": 0,
+            "sources": {
+              "compagnon decision": 35,
+              "compagnon doctor": 1650,
+              "compagnon list": 66,
+              "search": 86
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "onboard-thin-config",
+      "role": "planner",
+      "step": "project.onboard",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1619198,
+      "durationMs": 13616,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 12835,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 974,
+          "cacheCreation": 12617,
+          "cacheRead": 164674,
+          "output": 1365
+        },
+        "toolCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 6560,
+            "cacheRead": 25128,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 6560
+            }
+          },
+          {
+            "cacheCreation": 3327,
+            "cacheRead": 31688,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 3327
+            }
+          },
+          {
+            "cacheCreation": 283,
+            "cacheRead": 35015,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "compagnon list": 283
+            }
+          },
+          {
+            "cacheCreation": 2247,
+            "cacheRead": 35298,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 1,
+            "sources": {
+              "compagnon decision": 35,
+              "compagnon doctor": 1681,
+              "compagnon list": 68,
+              "file": 375,
+              "search": 88
+            }
+          },
+          {
+            "cacheCreation": 200,
+            "cacheRead": 37545,
+            "input": 2,
+            "output": 453,
+            "toolCalls": 0,
+            "sources": {
+              "shell": 200
+            }
+          }
+        ]
+      },
+      "checks": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "no file modified, created or removed",
+            "passed": true
+          },
+          {
+            "check": "no change created under `_compagnon/changes/`",
+            "passed": true
+          },
+          {
+            "check": "the final message says \"/compagnon-configure\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"/compagnon-apply\"",
+            "passed": true
+          },
+          {
+            "check": "the final message does not say \"compagnon init\"",
+            "passed": true
           }
         ]
       }
@@ -101399,6 +106286,87 @@
       }
     },
     {
+      "id": "explore-crystallizes-overdue-csv",
+      "role": "planner",
+      "step": "idea.explore",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.149,
+        "durationMs": 24829.0,
+        "durationApiMs": 23249.0,
+        "turns": 4.0,
+        "permissionDenials": 0.0,
+        "inputTokens": 999.0,
+        "cacheCreationTokens": 10760.0,
+        "cacheReadTokens": 123621.0,
+        "outputTokens": 2205.0,
+        "calls": 4.0,
+        "inputPerCall": 33846.75,
+        "outputPerCall": 551.5
+      },
+      "sources": {
+        "compagnon list": 591.0,
+        "file": 2218.0,
+        "prompt": 6616.0,
+        "shell": 0.0,
+        "skill": 1336.0
+      }
+    },
+    {
+      "id": "explore-missing-sms-reminders",
+      "role": "planner",
+      "step": "idea.explore",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.1568,
+        "durationMs": 22180.0,
+        "durationApiMs": 20811.0,
+        "turns": 5.0,
+        "permissionDenials": 1.0,
+        "inputTokens": 987.0,
+        "cacheCreationTokens": 10765.0,
+        "cacheReadTokens": 157462.0,
+        "outputTokens": 1915.0,
+        "calls": 5.0,
+        "inputPerCall": 33845.2,
+        "outputPerCall": 383.0
+      },
+      "sources": {
+        "compagnon list": 594.0,
+        "file": 1965.0,
+        "prompt": 6592.0,
+        "shell": 267.0,
+        "skill": 1333.0
+      }
+    },
+    {
+      "id": "explore-not-worth-gateway-retry",
+      "role": "planner",
+      "step": "idea.explore",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.1447,
+        "durationMs": 17225.0,
+        "durationApiMs": 15891.0,
+        "turns": 4.0,
+        "permissionDenials": 0.0,
+        "inputTokens": 991.0,
+        "cacheCreationTokens": 11209.0,
+        "cacheReadTokens": 123605.0,
+        "outputTokens": 1559.0,
+        "calls": 4.0,
+        "inputPerCall": 34023.6667,
+        "outputPerCall": 399.25
+      },
+      "sources": {
+        "compagnon list": 615.0,
+        "file": 2358.0,
+        "prompt": 6605.0,
+        "shell": 0.0,
+        "skill": 1332.0
+      }
+    },
+    {
       "id": "implement-decision-accept-command",
       "role": "planner",
       "step": "code.implement",
@@ -101755,6 +106723,182 @@
         "output": 124.0,
         "prompt": 7405.0,
         "skill": 13251.0
+      }
+    },
+    {
+      "id": "onboard-configured",
+      "role": "planner",
+      "step": "project.onboard",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.1616,
+        "durationMs": 13114.0,
+        "durationApiMs": 12506.0,
+        "turns": 10.0,
+        "permissionDenials": 1.0,
+        "inputTokens": 974.0,
+        "cacheCreationTokens": 12746.0,
+        "cacheReadTokens": 164725.0,
+        "outputTokens": 1295.0,
+        "calls": 5.0,
+        "inputPerCall": 35689.0,
+        "outputPerCall": 259.0
+      },
+      "sources": {
+        "compagnon decision": 35.0,
+        "compagnon doctor": 1588.0,
+        "compagnon list": 341.0,
+        "file": 600.0,
+        "prompt": 6554.0,
+        "search": 89.0,
+        "shell": 181.0,
+        "skill": 3325.0
+      }
+    },
+    {
+      "id": "onboard-no-compagnon",
+      "role": "planner",
+      "step": "project.onboard",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.1128,
+        "durationMs": 8339.0,
+        "durationApiMs": 7714.0,
+        "turns": 4.0,
+        "permissionDenials": 1.0,
+        "inputTokens": 972.0,
+        "cacheCreationTokens": 9267.0,
+        "cacheReadTokens": 126427.0,
+        "outputTokens": 632.0,
+        "calls": 4.0,
+        "inputPerCall": 34166.5,
+        "outputPerCall": 158.0
+      },
+      "sources": {
+        "compagnon list": 427.0,
+        "prompt": 5511.0,
+        "skill": 3329.0
+      }
+    },
+    {
+      "id": "onboard-planning-complete",
+      "role": "planner",
+      "step": "project.onboard",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.1652,
+        "durationMs": 13563.0,
+        "durationApiMs": 12830.0,
+        "turns": 11.0,
+        "permissionDenials": 1.0,
+        "inputTokens": 974.0,
+        "cacheCreationTokens": 12985.0,
+        "cacheReadTokens": 164743.0,
+        "outputTokens": 1332.0,
+        "calls": 5.0,
+        "inputPerCall": 35764.0,
+        "outputPerCall": 266.4
+      },
+      "sources": {
+        "compagnon decision": 36.0,
+        "compagnon doctor": 1618.0,
+        "compagnon list": 322.0,
+        "compagnon status": 256.0,
+        "file": 542.0,
+        "prompt": 6563.0,
+        "search": 90.0,
+        "skill": 3569.0
+      }
+    },
+    {
+      "id": "onboard-planning-incomplete",
+      "role": "planner",
+      "step": "project.onboard",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.1595,
+        "durationMs": 13385.0,
+        "durationApiMs": 12717.0,
+        "turns": 10.0,
+        "permissionDenials": 1.0,
+        "inputTokens": 974.0,
+        "cacheCreationTokens": 12469.0,
+        "cacheReadTokens": 164241.0,
+        "outputTokens": 1309.0,
+        "calls": 5.0,
+        "inputPerCall": 35536.8,
+        "outputPerCall": 261.8
+      },
+      "sources": {
+        "compagnon decision": 36.0,
+        "compagnon doctor": 1638.0,
+        "compagnon list": 323.0,
+        "compagnon status": 269.0,
+        "file": 0.0,
+        "prompt": 6569.0,
+        "search": 89.0,
+        "skill": 3568.0
+      }
+    },
+    {
+      "id": "onboard-several-changes",
+      "role": "planner",
+      "step": "project.onboard",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.1652,
+        "durationMs": 13889.0,
+        "durationApiMs": 12850.0,
+        "turns": 12.0,
+        "permissionDenials": 1.0,
+        "inputTokens": 974.0,
+        "cacheCreationTokens": 12781.0,
+        "cacheReadTokens": 164360.0,
+        "outputTokens": 1470.0,
+        "calls": 5.0,
+        "inputPerCall": 35627.6,
+        "outputPerCall": 271.5
+      },
+      "sources": {
+        "compagnon decision": 37.0,
+        "compagnon doctor": 1659.0,
+        "compagnon list": 339.0,
+        "compagnon status": 544.0,
+        "output": 0.0,
+        "prompt": 6560.0,
+        "search": 180.0,
+        "shell": 0.0,
+        "skill": 3327.0
+      }
+    },
+    {
+      "id": "onboard-thin-config",
+      "role": "planner",
+      "step": "project.onboard",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.1532,
+        "durationMs": 12242.0,
+        "durationApiMs": 11787.0,
+        "turns": 10.0,
+        "permissionDenials": 1.0,
+        "inputTokens": 972.0,
+        "cacheCreationTokens": 12553.0,
+        "cacheReadTokens": 127801.0,
+        "outputTokens": 1330.0,
+        "calls": 4.0,
+        "inputPerCall": 35275.0,
+        "outputPerCall": 286.6
+      },
+      "sources": {
+        "compagnon decision": 35.0,
+        "compagnon doctor": 1681.0,
+        "compagnon list": 351.0,
+        "file": 375.0,
+        "prompt": 6560.0,
+        "search": 88.0,
+        "shell": 0.0,
+        "skill": 3327.0
       }
     },
     {
@@ -103765,58 +108909,58 @@
   "sources": [
     {
       "source": "skill",
-      "tokens": 1085907.0,
+      "tokens": 1110353.0,
       "share": 0.224
     },
     {
       "source": "file",
-      "tokens": 1060226.0,
-      "share": 0.218
+      "tokens": 1068284.0,
+      "share": 0.215
     },
     {
       "source": "prompt",
-      "tokens": 702154.0,
-      "share": 0.145
+      "tokens": 760284.0,
+      "share": 0.153
     },
     {
       "source": "edit",
       "tokens": 428935.0,
-      "share": 0.088
+      "share": 0.086
     },
     {
       "source": "search",
-      "tokens": 403335.0,
-      "share": 0.083
+      "tokens": 403871.0,
+      "share": 0.081
     },
     {
       "source": "shell",
-      "tokens": 347590.0,
-      "share": 0.072
+      "tokens": 348038.0,
+      "share": 0.07
     },
     {
       "source": "output",
       "tokens": 184447.0,
-      "share": 0.038
+      "share": 0.037
     },
     {
       "source": "compagnon instructions",
       "tokens": 172598.0,
-      "share": 0.036
+      "share": 0.035
     },
     {
       "source": "compagnon roles",
       "tokens": 111141.0,
-      "share": 0.023
+      "share": 0.022
     },
     {
       "source": "compagnon review",
       "tokens": 100105.0,
-      "share": 0.021
+      "share": 0.02
     },
     {
       "source": "compagnon validate",
       "tokens": 81415.0,
-      "share": 0.017
+      "share": 0.016
     },
     {
       "source": "compagnon new",
@@ -103825,18 +108969,23 @@
     },
     {
       "source": "compagnon status",
-      "tokens": 44523.0,
+      "tokens": 45592.0,
       "share": 0.009
     },
     {
       "source": "agent",
       "tokens": 36667.0,
-      "share": 0.008
+      "share": 0.007
     },
     {
       "source": "compagnon list",
-      "tokens": 26508.0,
-      "share": 0.005
+      "tokens": 30411.0,
+      "share": 0.006
+    },
+    {
+      "source": "compagnon doctor",
+      "tokens": 8184.0,
+      "share": 0.002
     },
     {
       "source": "compagnon archive",
@@ -103851,6 +109000,11 @@
     {
       "source": "compagnon sync",
       "tokens": 1943.0,
+      "share": 0.0
+    },
+    {
+      "source": "compagnon decision",
+      "tokens": 179.0,
       "share": 0.0
     }
   ],
@@ -104060,6 +109214,33 @@
         "share": 0.021
       }
     ],
+    "idea.explore": [
+      {
+        "source": "prompt",
+        "tokens": 19813.0,
+        "share": 0.611
+      },
+      {
+        "source": "file",
+        "tokens": 6541.0,
+        "share": 0.202
+      },
+      {
+        "source": "skill",
+        "tokens": 4001.0,
+        "share": 0.123
+      },
+      {
+        "source": "compagnon list",
+        "tokens": 1800.0,
+        "share": 0.056
+      },
+      {
+        "source": "shell",
+        "tokens": 267.0,
+        "share": 0.008
+      }
+    ],
     "plan.challenge": [
       {
         "source": "skill",
@@ -104266,6 +109447,53 @@
         "source": "compagnon status",
         "tokens": 295.0,
         "share": 0.0
+      }
+    ],
+    "project.onboard": [
+      {
+        "source": "prompt",
+        "tokens": 38317.0,
+        "share": 0.528
+      },
+      {
+        "source": "skill",
+        "tokens": 20445.0,
+        "share": 0.282
+      },
+      {
+        "source": "compagnon doctor",
+        "tokens": 8184.0,
+        "share": 0.113
+      },
+      {
+        "source": "compagnon list",
+        "tokens": 2103.0,
+        "share": 0.029
+      },
+      {
+        "source": "file",
+        "tokens": 1517.0,
+        "share": 0.021
+      },
+      {
+        "source": "compagnon status",
+        "tokens": 1069.0,
+        "share": 0.015
+      },
+      {
+        "source": "search",
+        "tokens": 536.0,
+        "share": 0.007
+      },
+      {
+        "source": "shell",
+        "tokens": 181.0,
+        "share": 0.002
+      },
+      {
+        "source": "compagnon decision",
+        "tokens": 179.0,
+        "share": 0.002
       }
     ]
   },
@@ -104831,6 +110059,174 @@
       "calls": 31.0,
       "inputPerCall": 39099.0,
       "outputPerCall": 399.0
+    }
+  },
+  "ideaExplore": {
+    "cases": 3,
+    "repetitions": [
+      {
+        "repetition": 1,
+        "runs": 3,
+        "passed": 3,
+        "checks": 17,
+        "checksPassed": 17,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 2,
+        "runs": 3,
+        "passed": 3,
+        "checks": 17,
+        "checksPassed": 17,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 3,
+        "runs": 3,
+        "passed": 3,
+        "checks": 17,
+        "checksPassed": 17,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 4,
+        "runs": 3,
+        "passed": 3,
+        "checks": 17,
+        "checksPassed": 17,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 5,
+        "runs": 3,
+        "passed": 3,
+        "checks": 17,
+        "checksPassed": 17,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      }
+    ],
+    "passRate": {
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "checkRate": {
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "strayed": {
+      "median": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "consumption": {
+      "costUsd": 0.4505,
+      "durationMs": 64234.0,
+      "durationApiMs": 59951.0,
+      "turns": 13.0,
+      "permissionDenials": 1.0,
+      "inputTokens": 2977.0,
+      "cacheCreationTokens": 32734.0,
+      "cacheReadTokens": 404688.0,
+      "outputTokens": 5679.0,
+      "calls": 13.0,
+      "inputPerCall": 33901.0,
+      "outputPerCall": 440.0
+    }
+  },
+  "projectOnboard": {
+    "cases": 6,
+    "repetitions": [
+      {
+        "repetition": 1,
+        "runs": 6,
+        "passed": 6,
+        "checks": 34,
+        "checksPassed": 34,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 2,
+        "runs": 6,
+        "passed": 6,
+        "checks": 34,
+        "checksPassed": 34,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 3,
+        "runs": 6,
+        "passed": 6,
+        "checks": 34,
+        "checksPassed": 34,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 4,
+        "runs": 6,
+        "passed": 6,
+        "checks": 34,
+        "checksPassed": 34,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 5,
+        "runs": 6,
+        "passed": 6,
+        "checks": 34,
+        "checksPassed": 34,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      }
+    ],
+    "passRate": {
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "checkRate": {
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "strayed": {
+      "median": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "consumption": {
+      "costUsd": 0.9175,
+      "durationMs": 74532.0,
+      "durationApiMs": 70404.0,
+      "turns": 57.0,
+      "permissionDenials": 6.0,
+      "inputTokens": 5840.0,
+      "cacheCreationTokens": 72801.0,
+      "cacheReadTokens": 912297.0,
+      "outputTokens": 7368.0,
+      "calls": 28.0,
+      "inputPerCall": 35388.0,
+      "outputPerCall": 253.0
     }
   }
 }

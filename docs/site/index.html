@@ -9,12 +9,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Compagnon — Spec-driven development for Claude Code</title>
-<meta name="description" content="Compagnon adds a thin layer of specifications to your repository, so that you and Claude Code agree on what must be built before a line of code is written.">
+<title>Compagnon — Plan with Claude before it codes</title>
+<meta name="description" content="Compagnon makes Claude Code write a short plan that you read and approve before any code is written.">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="alternate" hreflang="en" href="en/">
-<link rel="alternate" hreflang="fr" href="fr/">
+<link rel="alternate" hreflang="en" href="./">
+<link rel="alternate" hreflang="fr" href="fr.html">
 <style>
 @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/IBMPlexSans-Regular.woff2") format("woff2"); }
 @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/IBMPlexSans-Medium.woff2") format("woff2"); }
@@ -571,6 +571,15 @@ a:hover { color: var(--corail-texte-hover); }
   .delta-card figcaption { padding: 14px 18px; }
   .delta-card figcaption code { display: none; }
 }
+@media (max-width: 440px) {
+  .site-header .container { gap: 8px; }
+  .logo { height: 18px; }
+  .brand, .brand-product { gap: 8px; }
+  .brand-product { font-size: 16px; }
+  .brand-product::before { height: 18px; }
+  .site-nav { margin-right: -6px; }
+  .site-nav a { padding: 0 6px; font-size: 14px; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
 }
@@ -589,7 +598,7 @@ a:hover { color: var(--corail-texte-hover); }
     </a>
     <nav class="site-nav" aria-label="Main">
       <a class="nav-docs" href="en/">Documentation</a>
-      <a href="fr/" hreflang="fr" lang="fr">Français</a>
+      <a href="fr.html" hreflang="fr" lang="fr">Français</a>
       <a href="https://github.com/mairistem/compagnon">GitHub</a>
     </nav>
   </div>
@@ -600,28 +609,43 @@ a:hover { color: var(--corail-texte-hover); }
     <div class="container">
       <div>
         <p class="eyebrow">Open source · Claude Code</p>
-        <h1 id="hero-title">Spec-driven development for Claude Code.</h1>
-        <p class="lead">Compagnon adds a thin layer of specifications to your repository, so that you and Claude Code agree on what must be built before a line of code is written — and so that architecture decisions, once made, stop being re-debated on every change.</p>
+        <h1 id="hero-title">Plan with Claude before it codes.</h1>
+        <p class="lead">Before any code is written, Claude writes down what it is about to build: a short plan you read, correct and approve. Then Claude builds exactly that, and the plan stays with your project.</p>
         <div class="actions">
           <a class="button button-primary" href="en/">Read the documentation</a>
-          <a class="button button-outline" href="fr/" hreflang="fr" lang="fr">Documentation en français</a>
+          <a class="button button-outline" href="fr.html" hreflang="fr" lang="fr">Accueil en français</a>
         </div>
         <p class="hero-links"><a class="link-arrow" href="https://github.com/mairistem/compagnon">View the source on GitHub <span aria-hidden="true">→</span></a></p>
       </div>
-      <figure class="delta-card">
-        <figcaption><span>A change adds one requirement</span><code>specs/ui/theme/spec.md</code></figcaption>
-<pre><code><span class="h">## ADDED Requirements</span>
+    </div>
+  </section>
 
-<span class="h">### Requirement: The chosen theme is remembered</span>
-
-The application <span class="k">SHALL</span> restore the theme the user last picked, on every device they sign in from.
-
-<span class="h">#### Scenario: Returning user</span>
-
-<span class="k">-</span> <span class="g">**GIVEN**</span> a user who picked the dark theme on their laptop
-<span class="k">-</span> <span class="g">**WHEN**</span> they sign in on their phone
-<span class="k">-</span> <span class="g">**THEN**</span> the application renders with the dark theme</code></pre>
-      </figure>
+  <section class="section" aria-labelledby="paths-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Choose your path</p>
+        <h2 id="paths-title">What will you do with Compagnon?</h2>
+        <p>Pick the answer closest to what you will do. Each one opens a short path of at most three pages.</p>
+      </div>
+      <ul class="features">
+        <li class="feature">
+          <h3><a href="en/paths/review.html">I review and approve plans — I do not code</a></h3>
+          <p>Claude writes a plan; you check that it says the right thing, ask for changes, then approve it. No terminal.</p>
+        </li>
+        <li class="feature">
+          <h3><a href="en/paths/build.html">I do not code, but I want Claude to build something for me</a></h3>
+          <p>You describe your idea in plain words, approve Claude’s plan, and Claude builds it.</p>
+        </li>
+        <li class="feature">
+          <h3><a href="en/paths/develop.html">I am a developer and I have Claude write code</a></h3>
+          <p>A first change in ten minutes, then how to ask for each step.</p>
+        </li>
+        <li class="feature">
+          <h3><a href="en/paths/team.html">I set Compagnon up for my team</a></h3>
+          <p>Installation, checks on the shared project, who reviews plans and code.</p>
+        </li>
+      </ul>
+      <p class="more">You want to change Compagnon itself? <a class="link-arrow" href="en/origins.html">Start with its origins <span aria-hidden="true">→</span></a></p>
     </div>
   </section>
 
@@ -664,6 +688,20 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
         <h2 id="why-title">Plans before code, decisions that hold</h2>
         <p>Every change follows the same cycle — propose, apply, sync, archive — with one Claude Code skill per step.</p>
       </div>
+      <figure class="delta-card">
+        <figcaption><span>A change adds one requirement</span><code>specs/ui/theme/spec.md</code></figcaption>
+<pre><code><span class="h">## ADDED Requirements</span>
+
+<span class="h">### Requirement: The chosen theme is remembered</span>
+
+The application <span class="k">SHALL</span> restore the theme the user last picked, on every device they sign in from.
+
+<span class="h">#### Scenario: Returning user</span>
+
+<span class="k">-</span> <span class="g">**GIVEN**</span> a user who picked the dark theme on their laptop
+<span class="k">-</span> <span class="g">**WHEN**</span> they sign in on their phone
+<span class="k">-</span> <span class="g">**THEN**</span> the application renders with the dark theme</code></pre>
+      </figure>
       <ul class="features">
         <li class="feature">
           <div class="feature-title"><svg class="symbol" viewBox="0 0 518.83 518.83" aria-hidden="true" focusable="false"><path fill="#00c39b" d="M518.83,0v518.83h-125.02V213.42L88.41,518.83,0,430.43,305.41,125.02H0V0h518.83Z"/></svg><h3>Changes are deltas</h3></div>
@@ -753,7 +791,7 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
     </div>
     <ul class="footer-links">
       <li><a href="en/">Documentation</a></li>
-      <li><a href="fr/" hreflang="fr" lang="fr">Documentation en français</a></li>
+      <li><a href="fr.html" hreflang="fr" lang="fr">Accueil en français</a></li>
       <li><a href="https://github.com/mairistem/compagnon/releases/latest">Releases</a></li>
       <li><a href="https://github.com/mairistem/compagnon">GitHub</a></li>
     </ul>

@@ -1,9 +1,14 @@
 # Concepts
 
-Compagnon conserve trois types d'enregistrements dans le dépôt : les **specs**
-disent ce que fait le système, les **décisions** expliquent pourquoi il est
-construit ainsi, et les **changes** sont le travail en cours qui modifie les
-unes et les autres.
+Compagnon conserve trois types d'enregistrements dans le [dépôt](glossary.md#dépôt) de
+votre projet, à côté du code :
+
+- les **spécifications** disent ce que fait le système ;
+- les **décisions** expliquent pourquoi il est construit ainsi ;
+- les **modifications** sont le travail en cours qui fait évoluer les
+  spécifications et les décisions.
+
+Voici où se trouve chacun d'eux :
 
 ```text
 _compagnon/
@@ -17,25 +22,32 @@ _compagnon/
 └── compagnon.lock      # sources git héritées et épinglées (le cas échéant)
 ```
 
-Compagnon trouve ce dossier en remontant l'arborescence depuis le répertoire
-courant : chaque commande fonctionne donc depuis n'importe quel
-sous-répertoire du projet.
+Vous pouvez lancer chaque commande Compagnon depuis n'importe quel dossier du
+projet. Compagnon remonte de dossier en dossier jusqu'à trouver `_compagnon/`.
 
 ## Capacité
 
-Une capacité est une unité de comportement observable qu'offre le système —
-l'authentification des utilisateurs, le réglage du thème, la commande
-`validate`. Une capacité est identifiée par un chemin de segments en
-kebab-case, comme `ui/theme` ou `identity/user-auth`, qui indique aussi
-l'emplacement de sa spec. Regroupez les capacités selon l'organisation de
-votre domaine métier, et non selon celle de votre code.
+Une [capacité](glossary.md#capacité) est une chose que fait le système et que
+l'on peut constater de l'extérieur. Par exemple : la connexion des
+utilisateurs, le réglage du thème ou la commande `validate`.
 
-## Spec
+Chaque capacité porte un nom fait de parties séparées par des barres
+obliques, comme `ui/theme` ou `identity/user-auth`. Chaque partie est écrite
+en [kebab-case](glossary.md#kebab-case) : des mots en minuscules reliés par
+des traits d'union. Ce nom est aussi celui du dossier où est rangée la
+spécification de la capacité.
 
-La spec principale d'une capacité se trouve dans
-`_compagnon/specs/<capability>/spec.md`. Elle comporte une section `## Purpose` —
-une ou deux phrases sur la raison d'être de la capacité — et une section
-`## Requirements` :
+Regroupez vos capacités selon l'organisation de votre métier, et non selon
+celle de votre code.
+
+## Spécification
+
+Chaque capacité a une spécification, rangée dans
+`_compagnon/specs/<capability>/spec.md`. C'est la référence du projet pour ce
+que fait cette capacité aujourd'hui. Elle comporte deux sections :
+
+- `## Purpose` : une ou deux phrases sur la raison d'être de la capacité ;
+- `## Requirements` : les règles que suit la capacité.
 
 ```markdown
 # Theme Specification
@@ -57,44 +69,62 @@ L'application SHALL s'afficher avec le jeu de couleurs du système d'exploitatio
 - **THEN** l'application s'affiche avec le thème sombre
 ```
 
-Chaque exigence est normative (elle emploie `SHALL` ou `MUST`, ou `DOIT` ou
-`DOIVENT` dans une spec en français) et comporte au
-moins un scénario décrivant un comportement observable. Une spec décrit un
-comportement, jamais une implémentation : si le code peut changer sans que le
-comportement change, la spec ne doit pas changer non plus.
+Chaque exigence est une règle ferme : elle emploie `SHALL` ou `MUST` (`DOIT`
+ou `DOIVENT` dans une spécification rédigée en français). Chaque exigence
+comporte au moins un scénario : un court exemple de ce que l'on peut voir se
+produire. Dans l'exemple ci-dessus, quand l'ordinateur est en mode sombre,
+l'application affiche le thème sombre.
 
-On ne modifie jamais directement une spec principale. Elle n'évolue que
-lorsqu'un change est synchronisé ou archivé, ce qui rend son historique
-lisible.
+Une spécification décrit ce que fait le système, jamais la façon dont le code
+le fait. Un test simple : si le code peut évoluer sans que le comportement
+évolue, la spécification ne doit pas évoluer non plus.
 
-## Change
+Vous ne modifiez jamais directement les spécifications du projet. Elles
+n'évoluent que lorsqu'une modification est synchronisée ou archivée. Ainsi,
+chaque retouche d'une spécification arrive avec la modification qui
+l'explique, et son historique reste lisible.
 
-Un change est un dossier `_compagnon/changes/<name>/` qui porte une évolution du
-système : une proposal, des deltas de specs, un design et une liste de tâches,
-ainsi qu'un fichier `change.yaml` contenant ses métadonnées. Les artefacts que
-comporte un change sont définis par son [schéma](guides/custom-schemas.md) ;
-le schéma par défaut, `spec-driven`, est décrit dans
-[Le workflow](workflow.md).
+## Modification
 
-Un change est **actif** tant qu'il se trouve dans `_compagnon/changes/<name>/`.
-L'archivage le déplace dans `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`, où
-il devient la trace du pourquoi et du comment de l'évolution des specs.
+Une modification est un travail sur le système, rangé dans son propre dossier
+`_compagnon/changes/<name>/`. Elle contient :
+
+- une proposition : pourquoi ce travail est nécessaire et ce qu'il change ;
+- les retouches prévues des spécifications, appelées
+  [deltas](glossary.md#delta) ;
+- une conception : comment le travail sera fait ;
+- une liste de tâches ;
+- un fichier `change.yaml`, qui contient les informations de la modification
+  (ses métadonnées).
+
+Ces documents sont les [artefacts](glossary.md#artefact) de la
+modification : les parties de son plan. Le [schéma](glossary.md#schéma) fixe
+les parties que contient le plan : voir
+[Schémas personnalisés](guides/custom-schemas.md). Le schéma par défaut
+s'appelle `spec-driven`. Il fixe aussi les étapes que suit une
+modification, le [déroulé](glossary.md#déroulé), décrit dans
+[Le déroulé](workflow.md).
+
+Une modification est **active** tant que son dossier se trouve dans
+`_compagnon/changes/<name>/`. L'archivage déplace le dossier dans
+`_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`. Elle y reste comme la
+trace du pourquoi et du comment de l'évolution des spécifications.
 
 ## Delta
 
-Un delta est la partie d'un change qui modifie une spec. Il se trouve dans
-`_compagnon/changes/<name>/specs/<capability>/spec.md` — le même chemin de
-capacité que la spec principale qu'il cible — et s'organise en quatre
-opérations au plus :
+Un delta est la partie d'une modification qui retouche une spécification. Il
+se trouve dans `_compagnon/changes/<name>/specs/<capability>/spec.md`, sous
+le même nom de capacité que la spécification du projet qu'il retouche. Il
+contient au plus quatre sortes de retouches, chacune dans sa propre section :
 
-| Section | Effet lors de la fusion |
+| Section | Ce qu'elle fait lors de la fusion dans la spécification du projet |
 |---|---|
-| `## ADDED Requirements` | Ajoute les exigences à la fin de la spec principale |
+| `## ADDED Requirements` | Ajoute les exigences à la fin de la spécification |
 | `## MODIFIED Requirements` | Remplace sur place l'exigence de même nom |
-| `## REMOVED Requirements` | Supprime l'exigence, avec une **Reason** (raison) et une **Migration** |
-| `## RENAMED Requirements` | Change le titre d'une exigence sans toucher à son contenu |
+| `## REMOVED Requirements` | Supprime l'exigence, en donnant une **Reason** (raison) et une **Migration** (que faire à la place) |
+| `## RENAMED Requirements` | Change le titre d'une exigence sans toucher à son texte |
 
-Voici un delta qui modifie une exigence et en renomme une autre :
+Voici un delta qui modifie une exigence et en renomme une autre :
 
 ```markdown
 ## MODIFIED Requirements
@@ -115,150 +145,206 @@ L'application SHALL s'afficher avec le jeu de couleurs du système d'exploitatio
 - TO: Le thème choisi suit l'utilisateur
 ```
 
-Un bloc `MODIFIED` remplace l'exigence tout entière : copiez donc le bloc
-complet depuis la spec principale — scénarios compris — avant de le modifier.
-Tout contenu omis est perdu lors de la fusion. Si vous ajoutez un comportement
-sans modifier l'existant, utilisez `ADDED`.
+Attention avec `MODIFIED` : ce bloc remplace l'exigence tout entière. Copiez
+d'abord l'exigence complète depuis la spécification du projet, scénarios
+compris, puis modifiez la copie. Tout ce que vous omettez est perdu lors de
+la fusion. Si vous ajoutez seulement un comportement, sans modifier
+l'existant, utilisez `ADDED`.
 
 La fusion ne touche que les exigences nommées dans le delta. Tout le reste de
-la spec principale — autres exigences, sections libres, commentaires — reste
-tel quel.
+la spécification du projet reste tel quel : autres exigences, sections
+libres, commentaires.
 
 Le delta d'une **nouvelle** capacité commence par sa propre section
-`## Purpose` ; sa fusion crée la spec principale. Supprimer entièrement une
-capacité — un delta `REMOVED` qui vide une spec — exige
-`retire_capabilities: true` dans `change.yaml`, car cette suppression ne peut
-être annulée que depuis git.
+`## Purpose`. Sa fusion crée la spécification de la capacité.
+
+Vous pouvez aussi supprimer entièrement une capacité, avec un delta
+`REMOVED` qui vide sa spécification. Il faut pour cela
+`retire_capabilities: true` dans `change.yaml`. Cette sécurité existe parce
+que seul [git](glossary.md#git), l'historique des versions du projet, peut
+annuler la suppression.
 
 La syntaxe exacte figure dans [Formats de fichiers](reference/file-formats.md).
 
 ## Décision
 
 Une décision, ou ADR (*architecture decision record*), est un fichier
-`_compagnon/decisions/NNNN-<slug>.md` qui consigne un choix d'architecture : son
-contexte, la décision elle-même, ses conséquences et les alternatives
-envisagées.
+rangé dans `_compagnon/decisions/`, nommé d'un numéro et d'un titre court
+(`NNNN-<nom-court>.md`). Elle consigne un choix sur la façon
+dont le système est construit : ce qui y a mené (le contexte), le choix
+lui-même, ses conséquences et les autres options envisagées.
 
 ```bash
 compagnon decision new "Use PostgreSQL for persistence"
 compagnon decision accept 0001
 ```
 
-Une décision a l'un des cinq statuts suivants : `accepted`, `superseded`,
-`proposed`, `deprecated` ou `rejected`. Toutes les commandes qui créent une
-décision — `compagnon decision new`, [`supersede`](#remplacement),
-[`deviate`](#écart) et [`promote`](#promotion) — la créent `proposed`, afin que
-vous puissiez la rédiger librement ; `compagnon decision accept` la passe à
-`accepted` une fois son texte définitif. L'acceptation est la seule étape qui
-fait entrer une décision en vigueur : une décision `proposed` ne remplace encore
-rien et ne s'écarte encore de rien. Une décision est **en vigueur**
-lorsqu'elle est `accepted` et qu'aucune autre ne la remplace. Les décisions en
-vigueur sont transmises à l'agent chaque fois qu'il rédige un `design.md`,
-afin que les designs les respectent au lieu de les remettre en débat.
+Une décision a l'un des cinq statuts suivants : `accepted` (acceptée),
+`superseded` (remplacée), `proposed` (proposée), `deprecated` (obsolète) ou
+`rejected` (rejetée).
 
-Chaque décision possède un identifiant court (`0007`) et un identifiant
-qualifié qui indique sa provenance : `project/0007` pour une décision du projet
-lui-même, `path:~/shared/0100` ou `git:git@github.com:acme/shared.git/0100`
-pour une décision héritée d'un autre dépôt.
+Toutes les commandes qui créent une décision la créent `proposed` :
+`compagnon decision new`, [`supersede`](#remplacement),
+[`deviate`](#écart) et [`promote`](#promotion). Tant qu'elle est `proposed`,
+vous pouvez la rédiger et la reprendre librement. Une fois son texte
+définitif, `compagnon decision accept` la passe à `accepted`.
+
+L'acceptation est la seule étape qui fait entrer une décision en vigueur.
+Une décision `proposed` ne remplace encore aucune autre décision et ne
+s'en écarte pas encore. Une décision est **en vigueur** lorsqu'elle est
+`accepted` et qu'aucune autre ne la remplace.
+
+L'[agent](glossary.md#agent) reçoit les décisions en vigueur chaque fois qu'il rédige un
+`design.md`. Ainsi, les conceptions les respectent au lieu de les remettre
+en débat.
+
+Chaque décision possède un identifiant court, comme `0007`, et un
+identifiant complet qui dit aussi d'où elle vient : de votre projet, ou d'un
+autre dépôt dont il hérite.
+
+<details>
+<summary>Sous le capot : l'identifiant complet d'une décision</summary>
+
+L'identifiant qualifié indique la provenance de la décision : `project/0007`
+pour une décision du projet lui-même, `path:~/shared/0100` ou
+`git:git@github.com:acme/shared.git/0100` pour une décision héritée d'un
+autre dépôt.
+
+</details>
 
 ## Sceau
 
-Une décision acceptée est immuable. Lorsqu'une décision devient acceptée par
-une commande `compagnon decision` — `accept`, ou `new --status accepted` — Compagnon
-enregistre une empreinte SHA-256 du contenu de la décision dans
-`_compagnon/decisions/seal.yaml` ; `compagnon decision seal` fait
-de même pour une décision que vous avez acceptée à la main.
-`compagnon validate` compare le contenu de chaque décision locale `accepted` ou
-`superseded` à son empreinte, et signale une modification par l'erreur
-`decision_seal_mismatch` et un sceau manquant par l'avertissement
-`decision_unsealed`. Une décision `proposed` n'est pas scellée.
+Une décision acceptée ne doit plus être modifiée. Compagnon le vérifie grâce
+à un [sceau](glossary.md#sceau) : une empreinte du texte de la décision, enregistrée au moment où
+elle est acceptée. Si quelqu'un modifie le texte ensuite, `compagnon validate`
+voit que l'empreinte ne correspond plus et le signale. Il avertit aussi
+lorsqu'une décision acceptée n'a pas de sceau. Une décision `proposed` n'est
+pas scellée.
 
-Le frontmatter n'est pas couvert par le sceau : un statut peut donc passer de
-`accepted` à `superseded` sans le briser.
+Le sceau ne couvre pas le [frontmatter](glossary.md#frontmatter) de la
+décision, le court en-tête en haut du fichier qui contient son statut. Le
+statut peut donc passer de `accepted` à `superseded` sans briser le sceau.
 
 > **Remarque**
-> Scellez une décision lorsque son texte est définitif : rédigez d'abord la
+> Scellez une décision lorsque son texte est définitif : rédigez d'abord la
 > décision `proposed`, puis lancez `compagnon decision accept <ID>`, qui change
-> le statut et enregistre le sceau en une seule étape. Si vous avez modifié
-> volontairement une décision scellée, `compagnon decision seal <ID> --force`
-> enregistre le nouveau contenu ; pour changer ce que dit une décision
-> acceptée, [remplacez-la](#remplacement) plutôt.
+> le statut et enregistre le sceau en une seule étape. Pour changer ce que
+> dit une décision acceptée, [remplacez-la](#remplacement) plutôt que de la
+> modifier. Si vous avez modifié volontairement une décision scellée,
+> `compagnon decision seal <ID> --force` enregistre le nouveau texte.
+
+<details>
+<summary>Sous le capot : comment le sceau est enregistré et vérifié</summary>
+
+Lorsqu'une décision devient acceptée par une commande `compagnon decision` —
+`accept`, ou `new --status accepted` — Compagnon enregistre une empreinte
+SHA-256 du contenu de la décision dans `_compagnon/decisions/seal.yaml`.
+`compagnon decision seal` fait de même pour une décision que vous avez
+acceptée à la main. `compagnon validate` compare le contenu de chaque décision
+locale `accepted` ou `superseded` à son empreinte, et signale une
+modification par l'erreur `decision_seal_mismatch` et un sceau manquant par
+l'avertissement `decision_unsealed`.
+
+</details>
 
 ## Remplacement
 
-Pour changer une décision, remplacez-la plutôt que de la modifier :
+Pour changer une décision, ne la modifiez pas : remplacez-la par une
+nouvelle. La commande s'appelle `supersede` (remplacer).
 
 ```bash
 compagnon decision supersede 0001 "Use SQLite for persistence"
 ```
 
-Compagnon crée une nouvelle décision `proposed` dont le frontmatter indique
-`supersedes: ["0001"]`, et ne touche pas à `0001` : elle reste `accepted`, et en
-vigueur, pendant que vous rédigez la nouvelle. Accepter la nouvelle décision
-marque `0001` comme `superseded` dans la même étape :
+Compagnon crée une nouvelle décision `proposed` dont le frontmatter nomme
+celle qu'elle remplace : `supersedes: ["0001"]`. Il ne touche pas à `0001`,
+qui reste `accepted`, et en vigueur, pendant que vous rédigez la nouvelle.
+Quand vous acceptez la nouvelle décision, `0001` est marquée `superseded`
+dans la même étape :
 
 ```bash
 compagnon decision accept 0002
 ```
 
-Le contenu de l'ancienne décision reste strictement identique : son sceau reste
-valide et l'historique du raisonnement est préservé. Seule une décision
-`accepted` peut être remplacée : si une autre décision a remplacé `0001`
-entre-temps, `compagnon decision accept` refuse avec `predecessor_not_accepted` et
-n'écrit rien.
+Le texte de l'ancienne décision reste strictement identique. Son sceau reste
+donc valide, et l'historique du raisonnement est préservé.
+
+Seule une décision `accepted` peut être remplacée. Si une autre décision a
+remplacé `0001` entre-temps, `compagnon decision accept` refuse, avec
+l'erreur `predecessor_not_accepted`, et n'écrit rien.
 
 ## Écart
 
-Une décision [héritée](#source-héritée) ne peut pas être remplacée depuis
-votre projet, puisque vous ne pouvez pas écrire dans sa source. Consignez
-plutôt un écart local :
+Certaines décisions viennent d'un autre dépôt : elles sont
+[héritées](#source-héritée). Vous ne pouvez pas en remplacer une depuis votre
+projet, puisque vous ne pouvez pas écrire dans sa source. Consignez plutôt
+une exception locale, appelée écart :
 
 ```bash
 compagnon decision deviate path:~/shared/0100 "Services log in logfmt"
 ```
 
-Cette commande crée une décision locale `proposed` dont le champ
-`deviates_from` pointe vers la décision héritée. L'écart entre en vigueur
-lorsque vous l'acceptez avec `compagnon decision accept` : la décision héritée reste
-alors visible dans `compagnon decision list`, mais elle n'est plus en vigueur pour
-votre projet et n'est plus transmise à l'agent lorsqu'il rédige des designs.
-D'ici là, la décision héritée reste en vigueur.
+Cette commande crée une décision `proposed` dans votre projet. Son champ
+`deviates_from` pointe vers la décision héritée.
+
+L'écart entre en vigueur lorsque vous l'acceptez avec
+`compagnon decision accept`. Dès lors, la décision héritée apparaît toujours
+dans `compagnon decision list`, mais elle ne s'applique plus à votre projet,
+et l'agent ne la reçoit plus lorsqu'il rédige des conceptions. Tant que vous
+n'avez pas accepté l'écart, la décision héritée reste en vigueur.
 
 ## Promotion
 
-Un design contient souvent une décision qui mérite de survivre au change.
-Rédigez-la dans `design.md` sous la forme d'un bloc `### Decision: <title>`,
-puis promouvez-la :
+Pendant qu'on prépare une modification, sa conception fait souvent un choix
+qui mérite de lui survivre. Rédigez ce choix dans `design.md` sous la forme
+d'un bloc `### Decision: <title>`, puis promouvez-le en décision à part
+entière :
 
 ```bash
 compagnon decision promote add-audit-log "Append-only audit table"
 ```
 
-Compagnon crée un ADR `proposed` dont la section `## Decision` reprend tel quel le
-contenu du bloc, et remplace le contenu du bloc par une référence au nouvel
-ADR. Relisez-le et répartissez le texte promu dans les sections de l'ADR, puis
-acceptez-le avec `compagnon decision accept`, qui le scelle — idéalement avant
-d'archiver le change.
+Compagnon crée un ADR `proposed`. Sa section `## Decision` reprend le texte
+du bloc, mot pour mot. Dans `design.md`, le texte du bloc est remplacé par
+une référence au nouvel ADR.
+
+Relisez ensuite l'ADR et répartissez le texte promu dans ses sections
+(contexte, décision, conséquences). Enfin, acceptez-le avec
+`compagnon decision accept`, qui le scelle. Idéalement, faites-le avant
+d'archiver la modification.
 
 ## Source héritée
 
-Un projet peut hériter, en lecture seule, du contenu d'autres dépôts Compagnon —
-un dossier partagé sur votre machine (`path:`) ou un dépôt git épinglé sur un
-commit (`git:`). Chaque source apporte son `context:`, ses `rules:` et ses
-décisions. Rien d'exécutable n'est jamais hérité, et rien n'est lu depuis une
-branche mouvante : les sources git sont épinglées dans `_compagnon/compagnon.lock`.
+Un projet peut reprendre le contenu d'autres dépôts Compagnon, sans pouvoir
+le modifier. Une source peut être :
+
+- un dossier partagé sur votre ordinateur (`path:`) ;
+- un dépôt git (`git:`), épinglé sur un
+  [enregistrement](glossary.md#enregistrement) précis (commit).
+
+Chaque source apporte son `context:`, ses `rules:` et ses décisions. Rien de
+ce qui s'exécute comme un programme n'est jamais hérité. Les sources tirées
+d'un dépôt git sont figées sur une version exacte : elles ne changent
+jamais à votre insu (cette version est notée dans
+`_compagnon/compagnon.lock`).
 Voir [Sources héritées](guides/inherited-sources.md).
 
 ## Schéma
 
-Un schéma définit les artefacts que comporte un change, les prérequis de
-chacun, ainsi que les instructions et les templates que suit l'agent pour les
-rédiger. Compagnon embarque un schéma, `spec-driven`. Un projet peut définir les
-siens dans `_compagnon/schemas/`. Voir
+Le schéma définit les artefacts que comporte une modification, ce que chacun
+doit contenir, ainsi que les instructions et les modèles que suit l'agent
+pour les rédiger. Compagnon fournit un schéma, `spec-driven`. Un projet peut
+définir les siens dans `_compagnon/schemas/`. Voir
 [Schémas personnalisés](guides/custom-schemas.md).
 
-Dans `spec-driven`, chaque instruction s'ouvre sur le rôle qui porte
-l'artefact et ses critères « Done when » : product owner pour la proposal
-(pourquoi et quoi), analyste QA pour les specs (comportement observable),
-architecte pour le design (comment), tech lead pour les tâches (ordonnancement
-et vérification).
+Dans `spec-driven`, chaque partie du plan a un [rôle](glossary.md#rôle)
+responsable, et une liste de critères (« Terminé quand ») qui disent quand
+elle est terminée :
+
+- le responsable produit (product owner), pour la proposition (pourquoi et
+  quoi) ;
+- l'analyste qualité (QA), pour les spécifications (le comportement que l'on peut
+  observer) ;
+- l'architecte, pour la conception (comment) ;
+- le référent technique (tech lead), pour les tâches (leur ordre, et comment
+  vérifier chacune).

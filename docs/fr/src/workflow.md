@@ -1,8 +1,30 @@
-# Le workflow
+# Le déroulé
 
-Dans un projet Compagnon, chaque change passe par les quatre mêmes étapes. Chaque
-étape dispose d'une skill Claude Code et — sauf l'implémentation — d'une
-commande CLI qui effectue le travail sous-jacent.
+Dans un projet Compagnon, chaque modification passe par les cinq mêmes
+étapes, dans le même ordre. Cette suite d'étapes est le
+[déroulé](glossary.md#déroulé) de Compagnon :
+
+1. **Demander.** Vous dites ce que vous voulez, avec vos mots.
+2. **Planifier.** Claude rédige le plan de la modification (voir
+   [Proposer](#proposer)).
+3. **Relire.** Claude remet en question son propre plan, puis vous le lisez
+   et décidez (voir [Proposer](#proposer) et
+   [Relire un plan](guides/review-a-plan.md)). Une fois le code écrit, il
+   est relu à son tour (voir [Réaliser](#réaliser)).
+4. **Réaliser.** Claude écrit le code que décrit le plan (voir
+   [Réaliser](#réaliser)).
+5. **Archiver.** Les spécifications du projet sont mises à jour et la
+   modification est classée (voir [Archiver](#archiver) ;
+   [Synchroniser](#synchroniser) peut mettre à jour les spécifications plus
+   tôt).
+
+À chaque étape, vous formulez votre demande à Claude avec vos mots, et
+Claude suit une compétence (skill) : un ensemble d'instructions écrit pour
+cette étape. La plupart des compétences ont aussi une commande à taper dans
+un [terminal](glossary.md#terminal) (l'outil en ligne de commande), qui effectue le travail de
+fond. La réalisation n'a pas de commande : c'est le travail de
+l'[agent](glossary.md#agent). Les compétences, dans l'ordre où vous les
+utilisez :
 
 ```text
 ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐
@@ -12,158 +34,205 @@ commande CLI qui effectue le travail sous-jacent.
 └───────────┘    └───────────┘    └───────────┘    └───────────┘
 ```
 
-| Étape | Skill | CLI | Écrit |
+| Étape | Compétence | Commande | Ce qu'elle écrit |
 |---|---|---|---|
-| Propose | `/compagnon-propose` | `compagnon new change`, `compagnon instructions` | `_compagnon/changes/<name>/` |
-| Apply | `/compagnon-apply` | — | Code du projet, cases de `tasks.md` |
-| Sync (facultative) | `/compagnon-sync` | `compagnon sync` | `_compagnon/specs/` |
-| Archive | `/compagnon-archive` | `compagnon archive` | `_compagnon/specs/`, `_compagnon/changes/archive/` |
+| Proposer | `/compagnon-propose` | `compagnon new change`, `compagnon instructions` | `_compagnon/changes/<name>/` |
+| Réaliser | `/compagnon-apply` | — | Code du projet, cases de `tasks.md` |
+| Synchroniser (facultatif) | `/compagnon-sync` | `compagnon sync` | `_compagnon/specs/` |
+| Archiver | `/compagnon-archive` | `compagnon archive` | `_compagnon/specs/`, `_compagnon/changes/archive/` |
 
-Deux autres skills accompagnent le cycle : `/compagnon-explore`, pour mûrir une
-idée avant de proposer quoi que ce soit, et `/compagnon-update`, pour réviser un
-plan déjà rédigé. Voir [Les skills Claude Code](skills.md).
+Deux autres compétences vous aident en chemin. `/compagnon-explore` vous
+permet de mûrir une idée avant de proposer quoi que ce soit.
+`/compagnon-update` révise un plan déjà rédigé. Voir
+[Les compétences de Claude Code](skills.md).
 
-À chaque étape, l'agent tient un rôle défini — product owner, analyste QA,
-architecte, tech lead, relecteur sceptique, développeur — avec des critères
-qu'il vérifie avant de passer à la suite, et s'arrête là où vous décidez.
+À chaque étape, Claude tient un [rôle](glossary.md#rôle) défini :
+responsable produit (product owner), analyste qualité (QA), architecte, référent technique (tech lead), relecteur
+sceptique ou développeur. Chaque rôle a des critères qu'il vérifie avant de
+passer à la suite. Claude s'arrête aux moments où c'est à vous de décider.
 Voir [Rôles](roles.md).
 
-## Propose
+## Proposer
 
-L'étape propose crée le dossier d'un change et rédige ses artefacts de
-planification. Avec le schéma par défaut `spec-driven`, un change compte
-quatre artefacts :
+Proposer, c'est planifier la modification avant d'écrire la moindre ligne
+de code. Claude crée un dossier pour la modification et y rédige le plan.
+Le plan se compose de plusieurs fichiers, que Compagnon appelle des
+[artefacts](glossary.md#artefact). Un [schéma](glossary.md#schéma) fixe les
+fichiers que contient un plan. Avec le schéma par défaut, `spec-driven`, un
+plan en compte quatre :
 
-| Artefact | Fichier | Dépend de | Rôle |
+| Artefact | Fichier | Demande d'abord | Ce qu'il dit |
 |---|---|---|---|
-| `proposal` | `proposal.md` | — | Pourquoi le change est nécessaire, ce qui change, quelles capacités sont concernées |
-| `specs` | `specs/**/*.md` | `proposal` | Les deltas de specs : le comportement ajouté, modifié, supprimé ou renommé |
-| `design` | `design.md` | `proposal` | Comment l'implémenter : décisions, alternatives, risques |
-| `tasks` | `tasks.md` | `specs`, `design` | La liste des tâches d'implémentation |
+| `proposal` | `proposal.md` | — | Pourquoi la modification est nécessaire, ce qui change, et quelles [capacités](glossary.md#capacité) (domaines du produit) elle touche |
+| `specs` | `specs/**/*.md` | `proposal` | Les changements apportés aux spécifications, appelés [deltas](glossary.md#delta) : le comportement ajouté, modifié, supprimé ou renommé |
+| `design` | `design.md` | `proposal` | Comment la construire : décisions, solutions écartées, risques |
+| `tasks` | `tasks.md` | `specs`, `design` | La liste des tâches à réaliser |
 
-Les dépendances forment un graphe : `specs` et `design` peuvent être rédigés
-dès que la proposal existe, et `tasks` une fois ces deux artefacts terminés.
-`compagnon status` présente chaque artefact comme terminé (`[x]`), prêt à être
-rédigé (`[ ]`), bloqué par une dépendance (`[-]`) ou ignoré (`[~]`). Cet état
-se déduit uniquement des fichiers présents : Compagnon ne tient aucun fichier
-d'état.
+Les fichiers dépendent les uns des autres. Les spécifications et la
+conception peuvent être rédigées dès que la proposition existe. Les tâches
+viennent une fois les deux terminées. Compagnon déduit où en est un plan
+uniquement des fichiers présents : il ne tient aucun registre à part.
 
-Dans Claude Code, `/compagnon-propose` fait tout en une seule passe :
+<details>
+<summary>Sous le capot : comment `compagnon status` présente chaque artefact</summary>
 
-1. Si votre demande mentionne un identifiant de ticket comme `PROJ-123` et
-   qu'un serveur MCP Jira est configuré, la skill récupère d'abord le ticket.
-   Voir [Jira et autres serveurs MCP](guides/mcp.md).
-2. Elle crée le change avec `compagnon new change <name>`.
-3. Pour chaque artefact prêt, elle lance
-   `compagnon instructions <artifact> --change <name> --json`, étudie le code
-   concerné et rédige le fichier en suivant le template.
-4. Elle vérifie la traçabilité entre proposal, specs et tâches, puis relit le
-   plan en relecteur sceptique : elle écrit chaque constat dans le
-   [compte rendu de revue](guides/review-record.md) du change, corrige ce
-   qui ne fait pas de doute et liste jusqu'à cinq points à challenger. Voir
-   [Propose](skills.md#propose-compagnon-propose).
-5. Elle s'arrête lorsque la planification est complète et présente le plan.
-   Elle ne commence jamais l'implémentation dans le même tour.
+`compagnon status` présente chaque artefact comme terminé (`[x]`), prêt à
+être rédigé (`[ ]`), bloqué par une dépendance (`[-]`) ou ignoré (`[~]`). Cet
+état se déduit uniquement des fichiers présents : Compagnon ne tient aucun
+fichier d'état.
 
-Lorsqu'elle rédige `design.md`, la skill reçoit les décisions d'architecture
-en vigueur, afin que le design les respecte — ou propose explicitement d'en
+</details>
+
+Dans Claude Code, `/compagnon-propose` rédige tout le plan d'une traite :
+
+1. Si votre demande cite un numéro de ticket comme `PROJ-123`, et qu'une
+   connexion à Jira (un serveur MCP) est configurée, Claude lit d'abord le
+   ticket. Voir [Jira et autres serveurs MCP](guides/mcp.md).
+2. Il crée le dossier de la modification.
+3. Pour chaque fichier prêt à être rédigé, il récupère les instructions de
+   ce fichier, étudie le code concerné et rédige le fichier à partir de son
+   modèle.
+4. Il vérifie que la proposition, les spécifications et les tâches
+   concordent. Puis il relit le plan en relecteur sceptique. Il écrit chaque
+   constat dans le [compte rendu de relecture](guides/review-record.md) de
+   la modification. Il corrige ce qui ne fait pas de doute et liste
+   jusqu'à cinq points à discuter avec vous. Voir
+   [Proposer](skills.md#propose-compagnon-propose).
+5. Il s'arrête une fois le plan complet et vous le présente. Il attend
+   votre accord avant de commencer la réalisation.
+
+<details>
+<summary>Sous le capot : les commandes que lance la compétence de proposition</summary>
+
+L'étape 2 lance `compagnon new change <name>`. L'étape 3 lance, pour chaque
+artefact prêt :
+
+```bash
+compagnon instructions <artifact> --change <name> --json
+```
+
+</details>
+
+Quand il rédige `design.md`, Claude reçoit les décisions d'architecture en
+vigueur. La conception les respecte alors, ou propose ouvertement d'en
 remplacer une. Voir [Décisions](concepts.md#décision).
 
-Un change sans impact sur le comportement — refactorisation, montée de version
-d'une dépendance, documentation — déclare `skip_specs: true` dans son
-`change.yaml`. L'artefact `specs` est alors ignoré, et la validation accepte
-l'absence de deltas.
+Certaines modifications ne changent pas ce que fait le produit : un
+nettoyage du code, une nouvelle version d'une brique sur laquelle
+s'appuie le code, de la documentation. Une telle modification déclare `skip_specs: true` dans son
+`change.yaml`. Son plan n'a alors pas de spécifications, et la validation
+accepte qu'elle n'ait aucun delta.
 
-## Apply
+## Réaliser
 
-`/compagnon-apply <name>` implémente le plan. La skill lit `tasks.md`, traite
-chaque tâche `- [ ]` non cochée dans l'ordre du fichier, lance la vérification
-indiquée par la tâche (un test, une commande, un comportement observable),
-et ne coche la case qu'une fois la vérification réussie. Les tests suivent
-d'abord votre suite de tests existante, puis les conventions de votre langage
-et vos [`rules`](reference/configuration.md#rules). Une fois toutes les
-tâches cochées, la skill relit le code touché par le change comme le ferait
-un nouvel arrivant sur le projet, rejointe par les
-[experts](roles.md#experts-et-domaines) qu'activent les domaines de la
-proposal, simplifie ce qui ne fait pas de doute sans élargir le périmètre,
-et liste au plus cinq notes de relecture dans son résumé. Chaque constat est
-conservé dans le [compte rendu de revue](guides/review-record.md) du change,
-avec la réponse de l'auteur et la vérification du relecteur ; ce que vous
-seul pouvez trancher est listé à la fin. Elle lance ensuite une fois la
-suite de tests complète.
+`/compagnon-apply <name>` construit ce que décrit le plan. Claude lit
+`tasks.md` et prend chaque tâche non cochée (`- [ ]`) dans l'ordre du
+fichier. Pour chacune, il lance la vérification que la tâche indique : un
+[test](glossary.md#test), une commande ou un comportement observable. Il ne coche la case
+qu'une fois cette vérification réussie.
 
-Elle s'arrête au premier blocage ou à la première ambiguïté pour vous
-consulter plutôt que de deviner. Elle ne modifie que le change désigné,
-n'archive jamais et ne synchronise jamais : ces étapes restent des demandes
-explicites de votre part.
+Les nouveaux tests suivent d'abord vos tests existants, puis les habitudes
+de votre langage de programmation, puis vos
+[`rules`](reference/configuration.md#rules).
 
-`apply` est la seule skill autorisée à exécuter des commandes shell
-arbitraires, parce qu'elle doit lancer vos tests. Elle n'a pas d'équivalent en
-CLI : l'implémentation est le travail de l'agent.
+Une fois toutes les tâches cochées, Claude relit le code qu'il a touché,
+comme le ferait un nouvel arrivant sur le projet. Les
+[experts](roles.md#experts-et-domaines) des points sensibles que cite la
+proposition, appelés [domaines](glossary.md#domaine) (sécurité, données
+personnelles…), se joignent à cette relecture. Claude simplifie ce qui
+ne fait pas de doute, sans élargir le périmètre, et liste au plus cinq
+notes de relecture dans son résumé. Chaque constat est conservé dans le
+[compte rendu de relecture](guides/review-record.md) de la modification, avec la
+réponse de l'auteur et la vérification du relecteur. Ce que vous seul
+pouvez trancher est listé à la fin. Claude lance ensuite une fois tous les
+tests du projet.
 
-## Sync
+Claude s'arrête au premier blocage ou au premier point flou pour vous
+consulter, plutôt que de deviner. Il ne travaille que sur la modification
+que vous avez désignée. Il n'archive jamais et ne synchronise jamais : c'est
+à vous de demander ces étapes.
+
+La réalisation est la seule compétence autorisée à lancer n'importe quelle
+commande dans le terminal, parce qu'elle doit lancer vos tests. Elle n'a
+pas de commande à elle : construire est le travail de l'agent.
+
+## Synchroniser
 
 ```bash
 compagnon sync --change <name>
 ```
 
-La synchronisation fusionne les deltas du change dans les specs principales
-sous `_compagnon/specs/`, **sans** déplacer le change. Utilisez-la lorsqu'un autre
-change en cours a besoin de voir une nouvelle capacité dans les specs
-principales, ou pour relire la fusion avant l'archivage.
+La synchronisation recopie les deltas de la modification dans les
+spécifications du projet, sous `_compagnon/specs/`, **sans** déplacer la
+modification. Elle sert dans deux cas : quand une autre modification en
+cours a besoin de voir une nouvelle capacité dans les spécifications du
+projet, ou quand vous voulez vérifier le résultat avant l'archivage.
 
-La synchronisation est idempotente : la relancer indique que les specs sont
-inchangées. Dans le cas courant, vous pouvez sauter cette étape : l'archivage
-synchronise pour vous.
+La relancer ne fait aucun mal : la deuxième fois, elle indique que les
+spécifications sont inchangées. En général, vous sautez cette étape, car
+l'archivage synchronise pour vous.
 
-Comme l'archivage, la synchronisation valide d'abord le change et refuse de
-continuer si la validation signale une erreur : rien n'est écrit, et
-`compagnon validate <name>` affiche les constats.
+Comme l'archivage, la synchronisation valide d'abord la modification. Si la
+validation signale une erreur, elle refuse de continuer : rien n'est écrit,
+et `compagnon validate <name>` montre ce qui ne va pas.
 
-## Archive
+## Archiver
 
 ```bash
 compagnon archive --change <name>
 ```
 
-L'archivage clôt un change :
+L'archivage clôt une modification, en quatre temps :
 
-1. Il valide le change et **refuse** de continuer si la validation signale une
-   erreur, en vous renvoyant vers `compagnon validate <name>` pour le détail.
-2. Il vérifie le [compte rendu de revue](guides/review-record.md) et
-   **refuse** de continuer (`review_blocked`) s'il manque pour une étape où
-   des rôles de relecture étaient actifs, ou si un constat de gravité haute
-   est encore ouvert ou contesté ; `compagnon review --change <name>` montre ce
-   qui reste.
-3. Il fusionne les deltas dans les specs principales, exactement comme `sync`.
-4. Il déplace le dossier du change, compte rendu compris, dans
+1. Il valide la modification. Si la validation signale une erreur, il
+   **refuse** de continuer et vous renvoie vers `compagnon validate <name>`
+   pour le détail.
+2. Il vérifie le [compte rendu de relecture](guides/review-record.md). Il
+   **refuse** de continuer dans deux cas : une relecture était attendue mais
+   n'a pas été consignée, ou un problème sérieux relevé en relecture n'est
+   pas encore réglé (`review_blocked`).
+   `compagnon review --change <name>` montre ce qui reste.
+3. Il recopie les deltas dans les spécifications du projet, exactement comme
+   la synchronisation.
+4. Il déplace le dossier de la modification, compte rendu compris, dans
    `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`.
 
-La fusion complète est calculée et vérifiée avant l'écriture du premier
-fichier : un change invalide ou un delta inapplicable — par exemple une
-exigence `MODIFIED` absente de la spec principale — est signalé avant toute
-modification sur le disque.
+<details>
+<summary>Sous le capot : quand l'archivage refuse à cause du compte rendu</summary>
 
-Après l'archivage, les specs principales décrivent le comportement que vous
-avez livré, et le dossier archivé conserve la trace du pourquoi et du comment.
-Commitez les deux — et, si le change a une note de version, lancez
-`compagnon changelog --write` pour l'ajouter à `CHANGELOG.md` (voir
-[Notes de version et CHANGELOG](guides/release-notes.md)).
+L'archivage signale `review_blocked` quand le compte rendu manque pour une
+étape où des rôles de relecture étaient actifs, ou quand un constat de
+gravité `high` est encore `open` ou `disputed`.
 
-## Choisir le change
+</details>
 
-`compagnon status`, `compagnon instructions`, `compagnon sync` et `compagnon archive`
-acceptent `--change <name>`. Lorsque le projet compte exactement un change
-actif, vous pouvez l'omettre. S'il y en a plusieurs, Compagnon vous demande de
-choisir :
+Compagnon prépare et vérifie toute la mise à jour des spécifications du
+projet avant d'écrire le premier fichier. Un problème est donc signalé avant toute modification sur le
+disque : une modification invalide, ou un delta qui ne s'applique pas. Par
+exemple, un delta peut modifier (`MODIFIED`) une exigence que la
+spécification du projet ne contient pas.
+
+Après l'archivage, les spécifications du projet décrivent le comportement
+que vous avez livré. Le dossier archivé garde la trace du pourquoi et du
+comment. Enregistrez les deux dans [Git](glossary.md#git), l'historique du
+projet : c'est un [enregistrement](glossary.md#enregistrement) (commit). Si la modification a une
+note de version, lancez `compagnon changelog --write` pour l'ajouter à
+`CHANGELOG.md` (voir [Notes de version et CHANGELOG](guides/release-notes.md)).
+
+## Choisir la modification
+
+`compagnon status`, `compagnon instructions`, `compagnon sync` et
+`compagnon archive` acceptent `--change <name>`. Quand le projet compte
+exactement une modification en cours, vous pouvez l'omettre. S'il y en a
+plusieurs, Compagnon vous demande de choisir :
 
 ```text
 error: several active changes: add-audit-log, rework — specify which one
 help: `--change add-audit-log`
 ```
 
-Les noms de changes sont en kebab-case : lettres minuscules, chiffres et
-tirets, par exemple `add-user-auth`.
+Les noms des modifications s'écrivent en [kebab-case](glossary.md#kebab-case) :
+lettres minuscules, chiffres et tirets, par exemple `add-user-auth`.
 
 ## Valider
 
@@ -171,20 +240,31 @@ tirets, par exemple `add-user-auth`.
 compagnon validate
 ```
 
-Sans argument, `compagnon validate` vérifie chaque change actif, chaque spec
-principale et les sceaux des décisions. Passez le nom d'un change ou d'une
-capacité pour ne vérifier qu'un élément, ou `--changes` / `--specs` pour ne
-vérifier qu'une famille. Les erreurs font sortir la commande avec le code 1 ;
-avec `--strict`, les avertissements aussi. Utilisez cette option en CI :
+Sans rien d'autre, `compagnon validate` vérifie chaque modification en
+cours, chaque spécification du projet et les [sceaux](glossary.md#sceau) qui
+protègent les décisions. Pour ne vérifier qu'un élément, donnez le nom d'une modification
+ou d'une capacité. Pour ne vérifier qu'une famille, ajoutez `--changes` ou
+`--specs`.
+
+Une erreur fait échouer la commande (code de sortie 1). Avec `--strict`,
+les avertissements aussi. Utilisez `--strict` en
+[intégration continue](glossary.md#intégration-continue) (CI),
+les vérifications lancées automatiquement à chaque envoi de code :
 
 ```bash
 compagnon validate --strict
 ```
 
-Les vérifications portent sur la structure des specs et des deltas (chaque
-exigence emploie `SHALL` ou `MUST` — ou `DOIT` ou `DOIVENT` — et comporte au
-moins un `#### Scenario:`), sur la cohérence interne d'un delta (aucune exigence à la
-fois ajoutée et modifiée, aucun renommage en conflit avec un ajout), sur la
-règle du delta vide, et sur l'intégrité des décisions scellées. Voir
-[Formats de fichiers](reference/file-formats.md) pour les règles que chaque
-fichier doit respecter.
+La validation vérifie :
+
+- la forme des spécifications et des deltas : chaque exigence emploie
+  `SHALL` ou `MUST` (ou `DOIT` ou `DOIVENT`) et comporte au moins un
+  `#### Scenario:` ;
+- qu'un delta ne se contredit pas : aucune exigence à la fois ajoutée et
+  modifiée, aucun renommage en conflit avec un ajout ;
+- la règle du delta vide : une modification sans aucun delta doit déclarer
+  `skip_specs: true` ;
+- que les décisions scellées n'ont pas été altérées.
+
+Voir [Formats de fichiers](reference/file-formats.md) pour les règles que
+chaque fichier doit respecter.

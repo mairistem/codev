@@ -1,13 +1,13 @@
-# Compte rendu de revue
+# Compte rendu de relecture
 
-Quand le contradicteur et les experts challengent un plan, ou que le nouvel
+Quand le contradicteur et les experts mettent un plan à l'épreuve, ou que le nouvel
 arrivant et les experts relisent le code, ce qu'ils trouvent ne reste pas
-dans la conversation. Tout va dans le compte rendu de revue du change,
+dans la conversation. Tout va dans le compte rendu de relecture de la modification,
 `_compagnon/changes/<name>/review.md` : chaque constat avec sa gravité, la
 preuve sur laquelle il repose, et chaque réponse qu'il a reçue — qui l'a
 corrigé, qui l'a contesté et pourquoi, qui en a accepté le risque. Compagnon
-vérifie ce qui peut l'être, et `compagnon archive` ne clôt pas un change dont
-la revue n'est pas tranchée.
+vérifie ce qui peut l'être, et `compagnon archive` ne clôt pas une modification
+dont la relecture n'est pas tranchée.
 
 ## Ce que contient un constat
 
@@ -31,17 +31,17 @@ history:
 ```
 ````
 
-- **L'identifiant**, `R-security-1`, est stable pendant toute la vie du
-  change : l'identifiant du rôle et le prochain numéro libre. Il n'est
+- **L'identifiant**, `R-security-1`, est stable pendant toute la vie de la
+  modification : l'identifiant du rôle et le prochain numéro libre. Il n'est
   jamais renuméroté ni réutilisé, si bien qu'une discussion peut le citer.
 - **La gravité** dit à quel point c'est grave si le relecteur a raison, et
   **la confiance** à quel point il en est sûr — voir les échelles dans
-  [Rôles](../roles.md#gravité-confiance-et-compte-rendu-de-revue). Un
+  [Rôles](../roles.md#gravité-confiance-et-compte-rendu-de-relecture). Un
   constat de confiance basse est conservé et reçoit une réponse, mais il ne
   vous est présenté que si vous devez le trancher.
 - **L'emplacement** est `path:line` ou `path:start-end` depuis la racine du
-  projet pour le code, ou `<file>#<heading>` depuis le dossier du change
-  pour le plan (`"design.md#Decision: Sessions live in the database"`).
+  projet pour le code, ou `<file>#<heading>` depuis le dossier de la
+  modification pour le plan (`"design.md#Decision: Sessions live in the database"`).
   Mettez-le entre guillemets : YAML lit `: ` comme une nouvelle clé.
 - **La preuve** est le texte cité, copié mot pour mot — des lignes entières
   ou le fragment qui compte. Un relecteur prouve ce qu'il avance.
@@ -50,9 +50,9 @@ Le format complet est dans [Formats de fichiers](../reference/file-formats.md#re
 Les titres, les clés et les valeurs du bloc restent en anglais : Compagnon les
 lit.
 
-## Les revues isolées
+## Les relectures isolées
 
-En [mode isolé](../roles.md#revue-en-ligne-ou-isolée), le compte rendu dit
+En [mode isolé](../roles.md#relecture-en-ligne-ou-isolée), le compte rendu dit
 aussi comment l'étape s'est déroulée, et qui a relevé quoi :
 
 ````markdown
@@ -106,23 +106,23 @@ liste d'identifiants de rôles distincts commençant par le rôle du constat
 
 ## La boucle de réponse
 
-Un constat commence `open`. Ensuite :
+Un constat commence à l'état `open`. Ensuite :
 
 1. **L'auteur répond.** Le rôle qui possède l'artefact cité à
-   `plan.challenge` — product owner, analyste QA, architecte, tech lead —
-   ou le développeur à `code.review` le corrige (`fixed`, avec `ref` : le
-   commit ou la modification de fichier) ou le conteste (`disputed`, avec
+   `plan.challenge` — responsable produit, analyste qualité, architecte, référent technique —
+   ou le développeur à `code.review` le corrige (`fixed`, avec `ref` : 
+   l'enregistrement ou le changement de fichier) ou le conteste (`disputed`, avec
    `note` : l'argument).
 2. **Le relecteur vérifie la réponse, une fois.** Une correction est
    validée (`fixed` à nouveau, par le relecteur) ou rouverte (`open`, avec
    la raison). Une contestation est acceptée (`rejected`) ou maintenue
    (`disputed`, avec la raison).
-3. **Ce qui reste vous revient.** Le résumé de la skill liste, sous **À
+3. **Ce qui reste vous revient.** Le résumé de la compétence liste, sous **À
    décider**, chaque contestation que le relecteur a maintenue et chaque
    constat de gravité haute encore ouvert, avec les deux arguments. Vous le
    corrigez, en acceptez le risque (`accepted-risk`, avec une
-   justification) ou le reportez (`deferred`, avec `to` : le change ou le
-   ticket où il part). La skill consigne votre décision sous la forme
+   justification) ou le reportez (`deferred`, avec `to` : la modification ou
+   le ticket où il part). La compétence consigne votre décision sous la forme
    `by: human:<votre nom>` ; elle ne décide jamais à votre place.
 
 | Statut | Posé par | Exige |
@@ -139,8 +139,8 @@ sur l'un d'eux, ouvrez un nouveau constat.
 
 ## Ce que Compagnon vérifie
 
-`compagnon validate` lit le compte rendu de chaque change actif. Il ne juge
-jamais un constat — un constat `open` est l'état normal d'une revue — mais
+`compagnon validate` lit le compte rendu de chaque modification active. Il ne juge
+jamais un constat — un constat `open` est l'état normal d'une relecture — mais
 il vérifie tout ce qui ne demande pas de jugement :
 
 - **Le format** : les titres, un bloc `yaml` par constat, les champs, les
@@ -161,7 +161,7 @@ il vérifie tout ce qui ne demande pas de jugement :
   octets NUL ou dépasse 4 Mio n'est pas comparé
   (`review_evidence_unchecked`).
 - **Les sections** : quand le compte rendu contient une étape, chaque rôle
-  actif à cette étape pour le change a sa section (`review_role_missing`).
+  actif à cette étape pour la modification a sa section (`review_role_missing`).
   Un rôle désactivé peut écrire `Disabled by configuration.`.
 
 Aucun contrôle n'utilise git ni le réseau : ils lisent l'arbre de travail.
@@ -175,15 +175,15 @@ compagnon review --change add-sessions
 Affiche le compte rendu étape par étape — chaque rôle, chaque constat avec
 sa gravité, son statut et son emplacement —, qui doit agir ensuite sur
 chacun (`author`, `reviewer` ou `human`), les défauts du compte rendu, et
-si la revue permet d'archiver le change. Les skills lisent cette sortie
-telle qu'elle s'affiche pour reprendre une revue interrompue et vérifier le
+si la relecture permet d'archiver la modification. Les compétences lisent
+cette sortie telle qu'elle s'affiche pour reprendre une relecture interrompue et vérifier le
 compte rendu ; `--json` produit le document
-[`ReviewV1`](../reference/json-output.md#review), pour les scripts. La commande sort avec 1 seulement quand le
+[`ReviewV1`](../reference/json-output.md#review), pour les scripts. La commande se termine avec le code 1 seulement quand le
 compte rendu contient une erreur.
 
 ## Archiver
 
-`compagnon archive` vérifie la revue après la validation. Il refuse, avec le
+`compagnon archive` vérifie la relecture après la validation. Il refuse, avec le
 code `review_blocked`, quand :
 
 - des rôles étaient actifs à `plan.challenge` ou `code.review` et que le
@@ -195,12 +195,12 @@ code `review_blocked`, quand :
 Une étape sans rôle actif n'a pas besoin de section. `compagnon sync` ne
 regarde pas le compte rendu.
 
-## Les changes commencés avant le compte rendu
+## Les modifications commencées avant le compte rendu
 
-Un change planifié avec un Compagnon antérieur n'a pas de compte rendu : son
+Une modification planifiée avec un Compagnon antérieur n'a pas de compte rendu : son
 archivage est donc refusé. Relancez les étapes de relecture —
 `/compagnon-apply` relit le code et écrit le compte rendu — ou dites
-explicitement que le change n'a pas été relu en désactivant ses rôles de
+explicitement que la modification n'a pas été relue en désactivant ses rôles de
 relecture dans son `change.yaml` :
 
 ```yaml
@@ -209,7 +209,7 @@ roles:
   newcomer: never
 ```
 
-Une équipe qui n'utilise pas du tout les skills fait de même dans
+Une équipe qui n'utilise pas du tout les compétences fait de même dans
 `_compagnon/config.yaml`. Pour que tout le monde utilise un Compagnon qui applique
 le verrou, relevez [`compagnon_version`](../reference/configuration.md) à la
 version qui l'apporte : un Compagnon plus ancien ignore `review.md` et archive
@@ -222,11 +222,11 @@ quand même.
   fois est une erreur.
 - **Une session interrompue** reprend à partir du compte rendu : `awaiting`
   dit qui doit répondre ensuite.
-- **Un change de documentation seule, ou encore sans code**, a tout de
+- **Une modification de documentation seule, ou encore sans code**, a tout de
   même ses sections de relecture — `No finding.` est une réponse valide.
-- **Les fichiers générés, vendorisés ou binaires** peuvent être cités ; les
+- **Les fichiers générés, embarqués depuis un tiers (vendored) ou binaires** peuvent être cités ; les
   fichiers binaires et très volumineux ne sont pas comparés.
 - **Windows** : `\` dans un emplacement se lit `/`, et les fins de ligne
   `\r\n` sont ignorées dans le compte rendu comme dans les fichiers cités.
-- **Monorepos** : les chemins sont relatifs à la racine du projet Compagnon ;
+- **Dépôts multiprojets (monorepos)** : les chemins sont relatifs à la racine du projet Compagnon ;
   un fichier hors de cette racine ne peut pas être cité.

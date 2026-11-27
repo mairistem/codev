@@ -1,0 +1,89 @@
+{
+  "format": 2,
+  "case": "onboard-thin-config",
+  "error": null,
+  "costUsd": 0.16546419999999998,
+  "durationMs": 14046,
+  "consumption": {
+    "durationApiMs": 13100,
+    "turns": 10,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 974,
+      "cacheCreation": 12890,
+      "cacheRead": 164676,
+      "output": 1433
+    },
+    "toolCalls": 9,
+    "calls": [
+      {
+        "cacheCreation": 6560,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6560
+        }
+      },
+      {
+        "cacheCreation": 3327,
+        "cacheRead": 31688,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3327
+        }
+      },
+      {
+        "cacheCreation": 282,
+        "cacheRead": 35015,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 6,
+        "sources": {
+          "compagnon list": 282
+        }
+      },
+      {
+        "cacheCreation": 2251,
+        "cacheRead": 35297,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon decision": 35,
+          "compagnon doctor": 1684,
+          "compagnon list": 68,
+          "file": 376,
+          "search": 88
+        }
+      },
+      {
+        "cacheCreation": 470,
+        "cacheRead": 37548,
+        "input": 2,
+        "output": 398,
+        "toolCalls": 0,
+        "sources": {
+          "skill": 470
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "**Compagnon** is a planning tool for software projects that keeps its plans under version control. Every change goes through a **propose → apply → archive** cycle, documented in `_compagnon/`. Each step has its own Claude Code skill (`/compagnon-<step>`), and the `compagnon` CLI does the underlying work. Your planning lives in the repository, next to the code.\n\nHere you have:\n- 0 main specs\n- 0 local decisions in effect, 0 inherited\n- 0 active changes\n\nThis project has just been set up and is ready for your first change.\n- Setup to complete:\n  - `config.rules` — fix: `/compagnon-configure`\n  - `specs` — fix: `/compagnon-propose <a change> — documenting existing behavior is planned work too`\n  - `ci` — fix: `add \\`compagnon validate --strict\\` to your CI pipeline`\n- 2 warnings, see `compagnon doctor`\n\n**What's next**: your config has no `rules:` yet. Start with `/compagnon-configure`: Claude will read the project (README, docs, some of the code) and add to `_compagnon/config.yaml`. Then type `/compagnon-propose <an-idea>` for your first change."
+  ],
+  "readOnly": {
+    "finalMessage": "**Compagnon** is a planning tool for software projects that keeps its plans under version control. Every change goes through a **propose → apply → archive** cycle, documented in `_compagnon/`. Each step has its own Claude Code skill (`/compagnon-<step>`), and the `compagnon` CLI does the underlying work. Your planning lives in the repository, next to the code.\n\nHere you have:\n- 0 main specs\n- 0 local decisions in effect, 0 inherited\n- 0 active changes\n\nThis project has just been set up and is ready for your first change.\n- Setup to complete:\n  - `config.rules` — fix: `/compagnon-configure`\n  - `specs` — fix: `/compagnon-propose <a change> — documenting existing behavior is planned work too`\n  - `ci` — fix: `add \\`compagnon validate --strict\\` to your CI pipeline`\n- 2 warnings, see `compagnon doctor`\n\n**What's next**: your config has no `rules:` yet. Start with `/compagnon-configure`: Claude will read the project (README, docs, some of the code) and add to `_compagnon/config.yaml`. Then type `/compagnon-propose <an-idea>` for your first change.",
+    "changesCreated": []
+  }
+}

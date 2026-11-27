@@ -10,6 +10,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use compagnon_core::decisions::seal;
 use compagnon_evals::case::{Case, Kind, PlanCase, Step};
 use compagnon_evals::runner::{self, Tools};
 
@@ -83,6 +84,7 @@ fn the_planning_fixture_holds_the_ref_and_the_skills_of_the_compagnon_under_test
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     };
     let tools = Tools {
         claude: PathBuf::from("claude"),
@@ -161,6 +163,7 @@ fn the_update_fixture_lays_the_change_on_the_ref() {
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     };
     let tools = Tools {
         claude: PathBuf::from("claude"),
@@ -203,6 +206,7 @@ fn bare_case(id: &str, step: Step, change: &str) -> Case {
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     }
 }
 
@@ -364,6 +368,45 @@ fn the_configure_fixture_without_a_configuration_keeps_the_skills() {
 }
 
 #[test]
+fn an_onboard_case_without_compagnon() {
+    let root = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("onboard-fixture");
+    let _ = fs::remove_dir_all(&root);
+    let case_dir = root.join("case");
+    write(&case_dir.join("base/README.md"), "# Notes\n");
+    // The compagnon under test: `init` writes a configuration and the skills.
+    let bin = root.join("bin");
+    fs::create_dir_all(&bin).unwrap();
+    let compagnon: PathBuf = bin.join("compagnon");
+    fs::write(
+        &compagnon,
+        "#!/bin/sh\n[ \"$1\" = \"init\" ] || exit 3\n\
+         mkdir -p _compagnon/changes .claude/skills/compagnon-onboard\n\
+         printf 'schema: spec-driven\\n' > _compagnon/config.yaml\n\
+         printf 'skill\\n' > .claude/skills/compagnon-onboard/SKILL.md\n",
+    )
+    .unwrap();
+    fs::set_permissions(&compagnon, fs::Permissions::from_mode(0o755)).unwrap();
+    let tools = Tools {
+        claude: PathBuf::from("claude"),
+        compagnon,
+        git: PathBuf::from("git"),
+    };
+    let dir = root.join("work").join("onboard-x-1");
+    runner::setup_configure(&case_dir, &dir, &tools).unwrap();
+    assert_eq!(
+        fs::read_to_string(dir.join(".claude/skills/compagnon-onboard/SKILL.md")).unwrap(),
+        "skill\n"
+    );
+    assert!(!dir.join("_compagnon").exists());
+    assert_eq!(
+        fs::read_to_string(dir.join("README.md")).unwrap(),
+        "# Notes\n"
+    );
+    assert_eq!(git(&dir, &["status", "--porcelain"]), "");
+    assert!(runner::change_folders(&dir).is_empty());
+}
+
+#[test]
 fn a_case_pinned_before_the_rename_is_migrated_before_it_runs() {
     use compagnon_core::legacy;
     use compagnon_evals::case::{Artifact, UpdateCase};
@@ -384,6 +427,50 @@ fn a_case_pinned_before_the_rename_is_migrated_before_it_runs() {
         &repo.join(format!("crates/{stem}-core/Cargo.toml")),
         &format!("[package]\nname = \"{stem}-core\"\n"),
     );
+    // Two sealed decisions naming the former name: the first matching its
+    // seal, the second edited after it.
+    let decisions = repo.join(legacy::PLANNING_DIR).join("decisions");
+    let adr =
+        |id: &str| format!("---\nid: {id}\nstatus: accepted\n---\n\nRun `{stem} validate`.\n");
+    write(&decisions.join("0001-a.md"), &adr("0001"));
+    write(&decisions.join("0002-b.md"), &adr("0002"));
+    let stale = "sha256:0000000000000000000000000000000000000000000000000000000000000000";
+    write(
+        &decisions.join("seal.yaml"),
+        &seal::render_seal_file(&seal::SealFile {
+            version: seal::SEAL_FILE_VERSION,
+            seals: vec![
+                seal::Seal {
+                    id: "0001".into(),
+                    body_sha256: seal::body_hash(&adr("0001")).unwrap(),
+                    sealed_at: "2026-09-30".into(),
+                },
+                seal::Seal {
+                    id: "0002".into(),
+                    body_sha256: stale.into(),
+                    sealed_at: "2026-09-30".into(),
+                },
+            ],
+        }),
+    );
+    // A workspace whose formatted line the longer name pushes past the
+    // width, and a module it declares, not formatted, the rename leaves.
+    write(
+        &repo.join("Cargo.toml"),
+        "[workspace]\nmembers = [\"crates/tool\"]\n\n[workspace.package]\nedition = \"2024\"\n",
+    );
+    write(
+        &repo.join("crates/tool/Cargo.toml"),
+        "[package]\nname = \"tool\"\nedition.workspace = true\n",
+    );
+    let lib = format!(
+        "mod untouched;\n\npub fn f() -> std::path::PathBuf {{\n    \
+         std::path::Path::new(\"/p/.claude/skills/{stem}-propose/SKILL.md\").join(\"aaaaaaaaaaaaaaaaaaaa\")\n}}\n"
+    );
+    write(&repo.join("crates/tool/src/lib.rs"), &lib);
+    let untouched = "fn  g( ) {}\n";
+    write(&repo.join("crates/tool/src/untouched.rs"), untouched);
+    assert!(rustfmt_checks(&repo.join("crates/tool/src/lib.rs")));
     git(&repo, &["add", "-A"]);
     git(&repo, &["commit", "-q", "-m", "before the rename"]);
     let pinned = git(&repo, &["rev-parse", "HEAD"]);
@@ -426,4 +513,79 @@ fn a_case_pinned_before_the_rename_is_migrated_before_it_runs() {
     assert_eq!(read("_compagnon/changes/add-auth/design.md"), "# Design\n");
     assert!(!dir.join(legacy::PLANNING_DIR).exists());
     assert!(!dir.join(format!("crates/{stem}-core")).exists());
+
+    // The seal the rename alone broke holds again; the one already broken
+    // stays as the commit held it.
+    let seals = seal::parse_seal_file(&read("_compagnon/decisions/seal.yaml")).unwrap();
+    let renamed = read("_compagnon/decisions/0001-a.md");
+    assert!(renamed.contains("compagnon validate"));
+    assert_eq!(
+        seals.find("0001").unwrap().body_sha256,
+        seal::body_hash(&renamed).unwrap()
+    );
+    assert_eq!(seals.find("0002").unwrap().body_sha256, stale);
+
+    // The renamed file is formatted again; the module it declares is not
+    // touched.
+    assert!(rustfmt_checks(&dir.join("crates/tool/src/lib.rs")));
+    assert_eq!(read("crates/tool/src/untouched.rs"), untouched);
+}
+
+/// Whether `rustfmt --check` passes on `file` alone, in edition 2024.
+fn rustfmt_checks(file: &Path) -> bool {
+    let text = fs::read_to_string(file).unwrap();
+    let mut child = Command::new("rustfmt")
+        .args(["--edition", "2024", "--check"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::null())
+        .spawn()
+        .expect("rustfmt runs");
+    use std::io::Write;
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(text.as_bytes())
+        .unwrap();
+    child.wait().unwrap().success()
+}
+
+#[test]
+fn an_unparsable_seal_file_is_left_as_it_is() {
+    use compagnon_core::legacy;
+    let dir = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("unparsable-seal");
+    let _ = fs::remove_dir_all(&dir);
+    let decisions = dir.join(legacy::PLANNING_DIR).join("decisions");
+    write(
+        &decisions.join("0001-a.md"),
+        "---\nid: 0001\n---\n\nA body.\n",
+    );
+    write(
+        &decisions.join("seal.yaml"),
+        "version: 1\nseals: [ not a list\n",
+    );
+    runner::bring_through_rename(&dir).unwrap();
+    assert_eq!(
+        fs::read_to_string(dir.join("_compagnon/decisions/seal.yaml")).unwrap(),
+        "version: 1\nseals: [ not a list\n"
+    );
+}
+
+#[test]
+fn a_tree_under_the_current_names_is_left_as_it_is() {
+    let dir = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("current-names");
+    let _ = fs::remove_dir_all(&dir);
+    let seal =
+        "version: 1\nseals:\n- id: '0001'\n  bodySha256: sha256:00\n  sealedAt: 2026-09-30\n";
+    write(&dir.join("_compagnon/decisions/seal.yaml"), seal);
+    write(
+        &dir.join("_compagnon/decisions/0001-a.md"),
+        "---\nid: 0001\n---\n\nBody.\n",
+    );
+    write(&dir.join("Cargo.toml"), "[package]\nname = \"x\"\n");
+    write(&dir.join("src/lib.rs"), "fn  g( ) {}\n");
+    runner::bring_through_rename(&dir).unwrap();
+    let read = |p: &str| fs::read_to_string(dir.join(p)).unwrap();
+    assert_eq!(read("_compagnon/decisions/seal.yaml"), seal);
+    assert_eq!(read("src/lib.rs"), "fn  g( ) {}\n");
 }

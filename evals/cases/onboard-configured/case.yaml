@@ -1,0 +1,11 @@
+# A configured project with no active change: its configuration has rules
+# and a spec describes it. The recommendation is to read `README.md`, then
+# `/compagnon-propose` an idea.
+step: project.onboard
+kind: seeded
+stacks: [go]
+summary: "A Go CLI whose configuration has rules and no active change: onboard recommends reading `README.md`, then `/compagnon-propose`."
+expected:
+  state: configured
+  contains: ["README.md", "/compagnon-propose"]
+  absent: ["/compagnon-apply", "/compagnon-configure", "compagnon init"]

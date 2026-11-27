@@ -4,11 +4,13 @@ other artifacts.
 
 **Strict boundary.** This skill reads and writes **only** files under
 `_compagnon/changes/<name>/`. It does **not modify** project code — that is
-`/compagnon-apply`'s job after the revision. It does **not create** a missing
-artifact — that is `/compagnon-propose`'s job. It does **not touch** an
+the apply step's job after the revision. It does **not create** a missing
+artifact — that is the propose step's job. It does **not touch** an
 already archived change — an archived change is history.
 
 ---
+
+{{fragment:next-steps}}
 
 ## Input
 
@@ -49,8 +51,8 @@ Find the requested artifact in `artifacts[]`:
 
 - status `done` → OK, it can be revised.
 - status `ready` or `blocked` → the artifact does not exist yet.
-  **Refuse** and explicitly point to `/compagnon-propose` (or
-  `/compagnon-continue` in the extended profile) to create it.
+  **Refuse** and explicitly suggest creating it with the plan, say
+  “finish the plan of <name>” (shortcut: `/compagnon-propose`).
 - status `skipped` → **refuse** and explain that this artifact is
   disabled by `skip_specs` in `change.yaml`.
 
@@ -108,8 +110,9 @@ After writing, compare the state of the change with what changed:
   - a task that contradicts a requirement in `specs/` → name the
     requirement at stake.
 
-**Report**, **suggest** the next action (often: "run
-`/compagnon-update specs …`" or "delete `_compagnon/changes/<name>/specs/<capability>/spec.md`"),
+**Report**, **suggest** the next action (often: say “update the specs: …”
+(shortcut: `/compagnon-update specs …`), or say “delete the orphaned spec”
+for `_compagnon/changes/<name>/specs/<capability>/spec.md`),
 but **do not act** without explicit confirmation.
 
 ### 5. Final guardrail — `compagnon validate`
@@ -129,25 +132,26 @@ One or two sentences:
 
 - the file or files touched;
 - the `compagnon validate` verdict;
-- the recommended next action — often `/compagnon-apply` (if the revision
-  affects the implementation) or `/compagnon-archive` (if the acknowledged gap
-  is closed).
+- the recommended next action — often say “implement the change”
+  (shortcut: `/compagnon-apply`) if the revision affects the
+  implementation, or say “archive the change”
+  (shortcut: `/compagnon-archive`) if the acknowledged gap is closed.
 
 {{fragment:memory-capture}}
 
 ## Output
 
 The step 6 summary, preceded by the ripple report if there is one and its
-status (accepted by the user, declined, deferred to a separate
-`/compagnon-update`).
+status (accepted by the user, declined, deferred to a separate revision).
 
 ## Guardrails
 
 - **No code** — every path written by this skill lives under
   `_compagnon/changes/<name>/`. Refuse if the user asks to adjust code: that is
-  `/compagnon-apply`'s job after the revision.
+  the apply step's job after the revision.
 - **No creation** — if the requested artifact does not exist, refuse and
-  point to `/compagnon-propose`. Never create a `proposal.md`, `design.md` or
+  suggest finishing the plan: say “finish the plan of <name>”
+  (shortcut: `/compagnon-propose`). Never create a `proposal.md`, `design.md` or
   `tasks.md` from scratch in this skill.
 - **Nothing archived** — a change living under `changes/archive/` is
   history. Refuse and remind the user that correcting it requires

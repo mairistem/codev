@@ -1,0 +1,10 @@
+# A project freshly initialized: a configuration with no `rules:`, no
+# change. The recommendation is `/compagnon-configure` first.
+step: project.onboard
+kind: seeded
+stacks: [python]
+summary: "A Python app just initialized, its configuration without rules and no change: onboard recommends `/compagnon-configure` first."
+expected:
+  state: thin-config
+  contains: ["/compagnon-configure"]
+  absent: ["/compagnon-apply", "compagnon init"]

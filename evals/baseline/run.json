@@ -5,5 +5,15 @@
   "claudeVersion": "2.1.289 (Claude Code)",
   "compagnonVersion": "compagnon 0.6.1",
   "repeat": 5,
-  "jobs": 4
+  "jobs": 4,
+  "added": [
+    {
+      "steps": [
+        "idea.explore",
+        "project.onboard"
+      ],
+      "compagnonVersion": "compagnon 0.7.0",
+      "date": "2026-11-26"
+    }
+  ]
 }

@@ -1,0 +1,85 @@
+{
+  "format": 2,
+  "case": "explore-missing-sms-reminders",
+  "error": null,
+  "costUsd": 0.16008940000000002,
+  "durationMs": 24132,
+  "consumption": {
+    "durationApiMs": 22647,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 987,
+      "cacheCreation": 10750,
+      "cacheRead": 157462,
+      "output": 2088
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 6592,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6592
+        }
+      },
+      {
+        "cacheCreation": 1333,
+        "cacheRead": 31720,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 1333
+        }
+      },
+      {
+        "cacheCreation": 594,
+        "cacheRead": 33053,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon list": 594
+        }
+      },
+      {
+        "cacheCreation": 267,
+        "cacheRead": 33647,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 267
+        }
+      },
+      {
+        "cacheCreation": 1964,
+        "cacheRead": 33914,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "file": 1964
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "# Exploration: day-before text reminders\n\n**Outcome: information is missing.** This can't become a change yet, because the README says the text-message provider hasn't been chosen.\n\n## What the repository already knows\n\n- **Specs:** there is one capability, `appointments`. Its only requirement is that a booking is confirmed by mail. Nothing in the specs covers reminders or text messages.\n- **Changes in progress:** none, so this wouldn't duplicate any work.\n- **Decisions:** `_compagnon/decisions/` is empty, so no settled choice gets in the way.\n- **Code:**\n  - `src/patients.ts:5` already stores a `mobile` number in international format, given at registration. So the recipient is already known.\n  - `src/appointments.ts:21` already has `on(day)`, which returns the appointments for a given day. That is exactly the query a \"day before\" job needs.\n  - `src/notify/mailer.ts` is the only notification channel, and it sends mail only. `package.json` has no text-message client.\n  - Nothing schedules work: no cron and no job runner. `src/server.ts` is a bare Express app.\n- **README, \"Open topics\":** *\"Text-message reminders: the clinic's management is comparing offers from messaging providers; no contract is signed. Ask Claire Dubois (operations) before building anything on a provider.\"*\n\n## The shape it would take\n\n```\n daily trigger ──► on(tomorrow) ──► for each appointment\n   (e.g. 18:00)                        │\n                                       ▼\n                              find(patientId).mobile\n                                       │\n                                       ▼\n                            src/notify/sms.ts  ──► provider API (unknown)\n```\n\n## Options compared\n\n1. **Wait for the provider, then build the whole thing.** This is what I recommend. Each provider shapes the design differently: how you log in, how delivery reports and STOP/opt-out are handled, the sender ID, the cost per message. If we build without knowing these, we'll probably have to redo them.\n2. **Build a provider-agnostic `SmsSender` interface, plus the scheduler, now; plug in the provider later.** The scheduling half would ship sooner. But the feature would be incomplete, so no patient would get anything. It would also go directly against the README's instruction to ask operations first. I'd only do this if Claire Dubois agrees.\n3. **Send the day-before reminder by mail as a stopgap.** This works with today's mailer. But it is not what was asked for. If it's wanted, it should be a separate change.\n\n## What is missing, and who can provide it\n\n1. **Which provider, and whether the contract is signed:** Claire Dubois (operations). This blocks everything else.\n2. **Patient consent and opt-out:** clinic management and whoever handles data protection. Registration collects a mobile number, but I don't see any recorded consent to receive text messages. I'm assuming French or EU rules apply because the clinic sends French-formatted mail, but I haven't checked that.\n3. **Product details:** clinic management. These questions need answers, and the code doesn't settle them. The defaults I'd suggest are in brackets:\n   - What time is the reminder sent? [the evening before, around 18:00]\n   - What about an appointment booked less than 24 hours ahead? [no reminder; the confirmation covers it]\n   - What does the text say? [practitioner, day and time, matching the mail confirmation]\n4. **A technical prerequisite to plan around:** appointments live only in an in-memory array (`src/appointments.ts:10`), so a restart wipes them. A daily job would only see appointments booked since the last restart. Persistence, or at least that risk, will have to be part of the change, or come before it.\n\nOnce the provider is confirmed, come back with the answers and I can create the change with `/compagnon-propose`."
+  ],
+  "readOnly": {
+    "finalMessage": "# Exploration: day-before text reminders\n\n**Outcome: information is missing.** This can't become a change yet, because the README says the text-message provider hasn't been chosen.\n\n## What the repository already knows\n\n- **Specs:** there is one capability, `appointments`. Its only requirement is that a booking is confirmed by mail. Nothing in the specs covers reminders or text messages.\n- **Changes in progress:** none, so this wouldn't duplicate any work.\n- **Decisions:** `_compagnon/decisions/` is empty, so no settled choice gets in the way.\n- **Code:**\n  - `src/patients.ts:5` already stores a `mobile` number in international format, given at registration. So the recipient is already known.\n  - `src/appointments.ts:21` already has `on(day)`, which returns the appointments for a given day. That is exactly the query a \"day before\" job needs.\n  - `src/notify/mailer.ts` is the only notification channel, and it sends mail only. `package.json` has no text-message client.\n  - Nothing schedules work: no cron and no job runner. `src/server.ts` is a bare Express app.\n- **README, \"Open topics\":** *\"Text-message reminders: the clinic's management is comparing offers from messaging providers; no contract is signed. Ask Claire Dubois (operations) before building anything on a provider.\"*\n\n## The shape it would take\n\n```\n daily trigger ──► on(tomorrow) ──► for each appointment\n   (e.g. 18:00)                        │\n                                       ▼\n                              find(patientId).mobile\n                                       │\n                                       ▼\n                            src/notify/sms.ts  ──► provider API (unknown)\n```\n\n## Options compared\n\n1. **Wait for the provider, then build the whole thing.** This is what I recommend. Each provider shapes the design differently: how you log in, how delivery reports and STOP/opt-out are handled, the sender ID, the cost per message. If we build without knowing these, we'll probably have to redo them.\n2. **Build a provider-agnostic `SmsSender` interface, plus the scheduler, now; plug in the provider later.** The scheduling half would ship sooner. But the feature would be incomplete, so no patient would get anything. It would also go directly against the README's instruction to ask operations first. I'd only do this if Claire Dubois agrees.\n3. **Send the day-before reminder by mail as a stopgap.** This works with today's mailer. But it is not what was asked for. If it's wanted, it should be a separate change.\n\n## What is missing, and who can provide it\n\n1. **Which provider, and whether the contract is signed:** Claire Dubois (operations). This blocks everything else.\n2. **Patient consent and opt-out:** clinic management and whoever handles data protection. Registration collects a mobile number, but I don't see any recorded consent to receive text messages. I'm assuming French or EU rules apply because the clinic sends French-formatted mail, but I haven't checked that.\n3. **Product details:** clinic management. These questions need answers, and the code doesn't settle them. The defaults I'd suggest are in brackets:\n   - What time is the reminder sent? [the evening before, around 18:00]\n   - What about an appointment booked less than 24 hours ahead? [no reminder; the confirmation covers it]\n   - What does the text say? [practitioner, day and time, matching the mail confirmation]\n4. **A technical prerequisite to plan around:** appointments live only in an in-memory array (`src/appointments.ts:10`), so a restart wipes them. A daily job would only see appointments booked since the last restart. Persistence, or at least that risk, will have to be part of the change, or come before it.\n\nOnce the provider is confirmed, come back with the answers and I can create the change with `/compagnon-propose`.",
+    "changesCreated": []
+  }
+}

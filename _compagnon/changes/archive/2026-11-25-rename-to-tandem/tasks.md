@@ -109,7 +109,7 @@ renames the crates and the repository.
   (`asset_names_follow_the_release_workflow`, …); below `0.7.0` the asset,
   archive root and binary names come from `legacy`, verified by
   `a_downgrade_below_0_7_asks_for_the_codev_archive`.
-- [ ] 3.4 Update `release.yml`: build `--bin compagnon`, stage
+- [x] 3.4 Update `release.yml`: build `--bin compagnon`, stage
   `compagnon-<version>-<target>`; when the tag starts with `v0.7.`, also stage
   the same binary as `codev[.exe]` in `codev-<version>-<target>/`, archive
   it, and list all archives in `SHA256SUMS`; release notes from
@@ -122,7 +122,12 @@ renames the crates and the repository.
   `codev 0.6.1 self-update --yes` installs it and that `codev --version`
   then prints the Compagnon version and the rename line — manual because it
   needs a published release and a 0.6 binary.
-- [ ] 3.5 Update `install.sh` and `install.ps1`: repository
+  Done 2026-11-25: release v0.7.0 (run #14) holds the eight archives and
+  SHA256SUMS; codev 0.6.1, downloaded from its release, ran
+  `self-update --version 0.7.0 --yes` through `mairistem/codev` and then
+  printed the rename notice and `compagnon 0.7.0`. The macOS builds needed
+  `macos-latest` (#64): GitHub no longer serves `macos-14`.
+- [x] 3.5 Update `install.sh` and `install.ps1`: repository
   `mairistem/compagnon`, `COMPAGNON_VERSION`, archives `compagnon-*`, installed as
   `~/.local/bin/compagnon` and `%LOCALAPPDATA%\Programs\compagnon\compagnon.exe`;
   read `COMPAGNON_VERSION`, else `CODEV_VERSION`; below `0.7.0` fetch
@@ -132,6 +137,7 @@ renames the crates and the repository.
   installers with `CODEV_VERSION=0.6.1` (installs `codev` 0.6.1) and
   `COMPAGNON_VERSION=0.7.0` against the release (installs `compagnon`) — run
   after `v0.7.0` exists, before announcing it.
+  Done 2026-11-25: Installers #1 green on Ubuntu, macOS and Windows.
 
 ## 4. Compagnon mark
 
@@ -240,10 +246,15 @@ renames the crates and the repository.
   pull request; manual: an external lookup.
   Checked 2026-11-25: no `compagnon` on crates.io (nor `compagnon-core`),
   PyPI, npm, Homebrew formulae or casks.
-- [ ] 8.2 Rename the GitHub repository `mairistem/codev` to
+- [x] 8.2 Rename the GitHub repository `mairistem/codev` to
   `mairistem/compagnon` in its settings right before tagging, and never
   re-create `mairistem/codev`; verified by
   `curl -sI https://api.github.com/repos/mairistem/codev` answering a
   redirect; manual: a repository setting.
-- [ ] 8.3 Tag `v0.7.0` and check the release lists eight archives and
+  Done 2026-11-25: the repository is `mairistem/compagnon`; the former
+  name redirects.
+- [x] 8.3 Tag `v0.7.0` and check the release lists eight archives and
   `SHA256SUMS`; verified on the release page.
+  Done 2026-11-25: a first v0.7.0 published without archives (macOS
+  builds on the retired `macos-14`) was deleted with its tag and
+  re-created after #64.

@@ -140,9 +140,12 @@ pub fn setup(outcome: &SetupOutcome, initialized: bool) -> String {
         if outcome.config_thin && has_configure {
             // Call to action for the empty config — it is the recommended
             // entry point right after an init on a new project.
+            // Plain words first, the slash command as the shortcut: a
+            // beginner does not know the commands yet.
+            let _ = writeln!(out, "→ Recommended next step: in Claude Code, ask");
             let _ = writeln!(
                 out,
-                "→ Recommended next step: in Claude Code, run /compagnon-configure."
+                "  \"configure Compagnon for this project\" (shortcut: /compagnon-configure)."
             );
             let _ = writeln!(
                 out,
@@ -152,19 +155,25 @@ pub fn setup(outcome: &SetupOutcome, initialized: bool) -> String {
             let _ = writeln!(out);
             let _ = writeln!(
                 out,
-                "Or skip this step and run /compagnon-propose <an-idea> directly."
+                "Or skip this step and describe your first change, for example"
             );
-        } else {
-            let first = outcome
-                .skills
-                .iter()
-                .find(|s| s.ends_with("propose"))
-                .or_else(|| outcome.skills.first());
             let _ = writeln!(
                 out,
-                "Restart Claude Code so it discovers the skills, then run /{}.",
-                first.map(String::as_str).unwrap_or("compagnon-propose")
+                "\"plan <an-idea>\" (shortcut: /compagnon-propose <an-idea>)."
             );
+        } else if outcome.skills.iter().any(|s| s.ends_with("propose")) {
+            let _ = writeln!(
+                out,
+                "Restart Claude Code so it discovers the skills, then ask it to plan"
+            );
+            let _ = writeln!(out, "your first change (shortcut: /compagnon-propose).");
+        } else if let Some(first) = outcome.skills.first() {
+            // Without propose, name a skill that is installed.
+            let _ = writeln!(
+                out,
+                "Restart Claude Code so it discovers the skills, then ask it to use"
+            );
+            let _ = writeln!(out, "them (shortcut: /{first}).");
         }
     }
     if initialized && let Some(missing) = outcome.doctor_missing.filter(|n| *n > 0) {
@@ -1646,6 +1655,21 @@ apply:
             rendered.contains("/compagnon-propose"),
             "output must keep /compagnon-propose as an alternative: {rendered}"
         );
+        let before = |request: &str, command: &str| {
+            let (r, c) = (rendered.find(request), rendered.find(command));
+            r.is_some() && c.is_some() && r < c
+        };
+        assert!(
+            before(
+                "\"configure Compagnon for this project\"",
+                "/compagnon-configure"
+            ),
+            "the plain request comes first: {rendered}"
+        );
+        assert!(
+            before("\"plan <an-idea>\"", "/compagnon-propose <an-idea>"),
+            "{rendered}"
+        );
     }
 
     #[test]
@@ -1660,6 +1684,23 @@ apply:
             rendered.contains("Restart Claude Code"),
             "non-thin output keeps the short line: {rendered}"
         );
+        let (request, command) = (
+            rendered.find("ask it to plan").expect("a plain request"),
+            rendered.find("/compagnon-propose").expect("the shortcut"),
+        );
+        assert!(request < command, "{rendered}");
+    }
+
+    #[test]
+    fn setup_without_propose_names_an_installed_skill() {
+        let outcome = setup_outcome(&["compagnon-explore", "compagnon-onboard"], true);
+        let rendered = setup(&outcome, true);
+        assert!(
+            rendered.contains("(shortcut: /compagnon-explore)"),
+            "{rendered}"
+        );
+        assert!(!rendered.contains("/compagnon-propose"), "{rendered}");
+        assert!(!rendered.contains("/compagnon-configure"), "{rendered}");
     }
 
     #[test]

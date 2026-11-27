@@ -8,6 +8,8 @@ response: wait for a new request from the user.
 
 ---
 
+{{fragment:next-steps}}
+
 ## Input
 
 The request must contain either a change name in kebab-case, or a description
@@ -285,7 +287,8 @@ Summarize:
   instead;
 - **To decide** — from step 7: what only the user can decide, or
   "Nothing to decide";
-- "Review them. When you are ready, ask me to apply this change."
+- "Review them. When you are ready, say “the plan is good, build it”
+  (shortcut: `/compagnon-apply`)." — alone, on the last line.
 
 ## Guardrails
 

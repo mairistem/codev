@@ -415,6 +415,7 @@ mod tests {
             }),
             merge: None,
             configure: None,
+            read_only: None,
         }
     }
 

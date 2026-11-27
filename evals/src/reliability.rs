@@ -169,8 +169,8 @@ pub struct PlanningFigures {
 }
 
 /// The figures of a check-scored step in `report.json` — `plan.update`,
-/// `change.sync`, `change.archive` or `configure.enrich`: medians and
-/// ranges over the repetitions.
+/// `change.sync`, `change.archive`, `configure.enrich`, `idea.explore` or
+/// `project.onboard`: medians and ranges over the repetitions.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CheckStepFigures {
@@ -224,6 +224,10 @@ pub struct Baseline {
     pub change_archive: Option<CheckStepFigures>,
     /// The configure step, when the baseline holds configure runs.
     pub configure_enrich: Option<CheckStepFigures>,
+    /// The explore step, when the baseline holds explore runs.
+    pub idea_explore: Option<CheckStepFigures>,
+    /// The onboard step, when the baseline holds onboard runs.
+    pub project_onboard: Option<CheckStepFigures>,
     /// The sums of the cases' median consumption.
     pub consumption: Option<Measures>,
     /// Where the tokens go, ranked by cost; empty when no run recorded its
@@ -257,6 +261,10 @@ struct ReportFile {
     change_archive: Option<CheckStepFigures>,
     #[serde(default)]
     configure_enrich: Option<CheckStepFigures>,
+    #[serde(default)]
+    idea_explore: Option<CheckStepFigures>,
+    #[serde(default)]
+    project_onboard: Option<CheckStepFigures>,
     #[serde(default)]
     consumption: Option<Measures>,
     #[serde(default)]
@@ -319,6 +327,8 @@ impl Baseline {
             change_sync: report.change_sync,
             change_archive: report.change_archive,
             configure_enrich: report.configure_enrich,
+            idea_explore: report.idea_explore,
+            project_onboard: report.project_onboard,
             consumption: report.consumption,
             sources: report.sources,
         })
@@ -414,6 +424,33 @@ fn version(raw: Option<&str>, name: &str) -> String {
         .to_string()
 }
 
+/// The run's Compagnon version, then, in parentheses, the version and date
+/// of each set of steps a resumed run added with another Compagnon:
+/// `0.6.1 (`idea.explore`, `project.onboard`: 0.7.0, 2026-11-26)`.
+fn compagnon_versions(run: &RunInfo, lang: Lang) -> String {
+    let mut line = version(run.compagnon_version.as_deref(), "compagnon");
+    if run.added.is_empty() {
+        return line;
+    }
+    let c = lang.colon();
+    let entries: Vec<String> = run
+        .added
+        .iter()
+        .map(|a| {
+            let steps: Vec<String> = a.steps.iter().map(|s| format!("`{s}`")).collect();
+            format!(
+                "{}{c}{}, {}",
+                steps.join(", "),
+                version(Some(&a.compagnon_version), "compagnon"),
+                a.date
+            )
+        })
+        .collect();
+    let separator = lang.pick("; ", "\u{a0}; ");
+    line.push_str(&format!(" ({})", entries.join(separator)));
+    line
+}
+
 /// A fraction of medians, or `—` when the denominator is zero.
 fn fraction(num: f64, den: f64) -> String {
     if den == 0.0 {
@@ -461,10 +498,10 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             "compagnon's reviewing roles are measured, not assumed. This page shows how they \
              scored the last time the evaluation suite ran, on the run committed in the \
              repository as its baseline. It is generated from that baseline and changes with it.",
-            "Les rôles de revue de compagnon sont mesurés, pas supposés. Cette page montre leurs \
+            "Les rôles de relecture de compagnon sont mesurés, pas supposés. Cette page montre leurs \
              scores lors de la dernière exécution de la suite d'évaluation, celle que le dépôt \
              conserve comme ligne de base. Elle est générée à partir de cette ligne de base et \
-             change avec elle."
+             évolue avec elle."
         )
     );
 
@@ -488,11 +525,11 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                  [Measuring the roles](roles.md#measuring-the-roles) gives the rules."
                 .to_string(),
             Lang::Fr => format!(
-                "La suite est un ensemble de petits projets, chacun avec un change planifié. Un \
+                "La suite est un ensemble de petits projets, chacun avec une modification planifiée. Un \
                  cas **ensemencé** cache des défauts qu'un rôle devrait trouver, chacun avec sa \
                  gravité, son emplacement et sa catégorie de problème{NBSP}; un **témoin propre** \
-                 n'en cache aucun. Claude Code exécute une étape de skill sur chaque cas avec un \
-                 seul rôle, et la suite note le compte rendu de revue que le rôle écrit{c}les \
+                 n'en dissimule aucun. Claude Code exécute une étape de compétence sur chaque cas avec un \
+                 seul rôle, et la suite note le compte rendu de relecture que le rôle écrit{c}les \
                  défauts trouvés et manqués, les constats qui ne correspondent à aucun défaut \
                  (**faux positifs**), si chaque preuve citée se trouve vraiment aux lignes \
                  indiquées, et si la gravité concorde avec celle attendue. \
@@ -570,6 +607,8 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         (&b.change_sync, "sync", "de synchronisation"),
         (&b.change_archive, "archive", "d'archivage"),
         (&b.configure_enrich, "configure", "de configuration"),
+        (&b.idea_explore, "explore", "d'exploration"),
+        (&b.project_onboard, "onboard", "de prise en main"),
     ] {
         if let Some(f) = figures {
             planning.push_str(&format!(", {} {}", f.cases, lang.pick(en, fr)));
@@ -589,7 +628,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         b.run.date,
         lang.pick("Model", "Modèle"),
         version(b.run.claude_version.as_deref(), "Claude Code"),
-        version(b.run.compagnon_version.as_deref(), "compagnon"),
+        compagnon_versions(&b.run, lang),
         lang.pick("Cases", "Cas"),
         b.cases,
         seeded,
@@ -667,6 +706,8 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             note: match (lang, failing.len()) {
                 (Lang::En, 0) => "every role meets every threshold".to_string(),
                 (Lang::Fr, 0) => "chaque rôle respecte chaque seuil".to_string(),
+                (Lang::En, 1) => "1 fails at least one".to_string(),
+                (Lang::Fr, 1) => "1 en dépasse au moins un".to_string(),
                 (Lang::En, n) => format!("{n} fail at least one"),
                 (Lang::Fr, n) => format!("{n} en dépassent au moins un"),
             },
@@ -763,7 +804,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         let _ = writeln!(
             out,
             "| {} | {}{NBSP}({}/{}) | {} | {} | {} | {} | {} | {} |",
-            r.role,
+            role_id(lang, &r.role),
             r.cases,
             r.seeded,
             r.controls,
@@ -794,6 +835,12 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     }
     if let Some(f) = &b.configure_enrich {
         checked_section(&mut out, Step::ConfigureEnrich, f, lang);
+    }
+    if let Some(f) = &b.idea_explore {
+        checked_section(&mut out, Step::IdeaExplore, f, lang);
+    }
+    if let Some(f) = &b.project_onboard {
+        checked_section(&mut out, Step::ProjectOnboard, f, lang);
     }
     if let Some(m) = &b.consumption {
         consumption_section(&mut out, b, m, lang);
@@ -867,7 +914,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                 out,
                 "- {} **{}** {}{c}{}",
                 over_icon(),
-                r.role,
+                role_id(lang, &r.role),
                 lang.pick("fails", "dépasse"),
                 details.join(", ")
             );
@@ -876,7 +923,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             .roles
             .iter()
             .filter(|r| r.fails(t).is_empty())
-            .map(|r| format!("**{}**", r.role))
+            .map(|r| format!("**{}**", role_id(lang, &r.role)))
             .collect();
         if !ok.is_empty() {
             let _ = writeln!(
@@ -964,7 +1011,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                  compagnon plans a project it has never seen.",
                 "**La planification rejoue un historique public.** Les cas de planification \
                  rejouent des demandes sur des états passés de compagnon, que le modèle a pu lire\u{a0}: \
-                 leurs chiffres comparent deux versions des skills sur les mêmes cas, ils ne disent \
+                 leurs chiffres comparent deux versions des compétences sur les mêmes cas, ils ne disent \
                  pas comment compagnon planifie un projet qu'il n'a jamais vu.",
             )
             .to_string(),
@@ -1057,11 +1104,11 @@ fn planning_section(out: &mut String, p: &PlanningFigures, lang: Lang) {
                 p.cases
             ),
             Lang::Fr => format!(
-                "{} cas de planification rejouent une demande sur le dépôt tel qu'il était avant un \
-                 change archivé, et notent le plan qu'écrit `/compagnon-propose` face à ce que ce change \
-                 a vraiment fait{c}le **rappel principal** est la part des exigences visées par la \
-                 demande que le plan modifie, le **rappel collatéral** la part de celles que le vrai \
-                 change a modifiées au passage{NBSP}; un **doublon probable** est une exigence ajoutée \
+                "{} cas de planification rejouent une demande sur le dépôt tel qu'il était avant une \
+                 modification archivée, et notent le plan qu'écrit `/compagnon-propose` face à ce que \
+                 cette modification a vraiment fait{c}le **rappel principal** est la part des \
+                 exigences visées par la demande que le plan modifie, le **rappel collatéral** la \
+                 part de celles que la vraie modification a touchées au passage{NBSP}; un **doublon probable** est une exigence ajoutée \
                  là où il fallait en modifier une. Chaque chiffre est la médiane sur les \
                  répétitions, avec son écart.",
                 p.cases,
@@ -1133,14 +1180,14 @@ fn implement_section(out: &mut String, i: &ImplementFigures, lang: Lang) {
                 i.cases
             ),
             Lang::Fr => format!(
-                "{} cas d'implémentation posent le plan d'un change archivé sur le dépôt tel qu'il \
-                 était avant lui, et demandent à `/compagnon-apply` de l'implémenter, revue comprise. \
+                "{} cas d'implémentation posent le plan d'une modification archivée sur le dépôt tel qu'il \
+                 était avant elle, et demandent à `/compagnon-apply` de l'implémenter, relecture comprise. \
                  Après chaque exécution, l'évaluation formate, analyse, teste et construit \
                  elle-même le code, puis lance un script caché qui pilote le `compagnon` construit \
-                 comme le ferait un utilisateur, écrit d'après les scénarios du change et éprouvé \
-                 sur le vrai change. Une exécution **réussit** quand toutes les tâches sont \
+                 comme le ferait un utilisateur, écrit d'après les scénarios de la modification et éprouvé \
+                 sur la vraie modification. Une exécution **réussit** quand toutes les tâches sont \
                  cochées, que les vérifications du projet passent, que chaque assertion du script \
-                 tient, que le compte rendu de revue est valide et que rien hors du change n'est \
+                 tient, que le compte rendu de relecture est valide et que rien hors de la modification n'est \
                  touché{c}un plan sans tâches doit être refusé. Chaque chiffre est la médiane sur \
                  les répétitions, avec son écart{c}le refus est compté à part.",
                 i.cases,
@@ -1213,12 +1260,12 @@ fn update_section(out: &mut String, u: &CheckStepFigures, lang: Lang) {
                 u.cases
             ),
             Lang::Fr => format!(
-                "{} cas de révision posent un change archivé sur le dépôt tel qu'il était avant \
-                 lui, et demandent à `/compagnon-update` de réviser l'un de ses artefacts comme le \
+                "{} cas de révision posent une modification archivée sur le dépôt tel qu'il était avant \
+                 elle, et demandent à `/compagnon-update` de réviser l'un de ses artefacts comme le \
                  ferait son auteur. Chaque exécution est vérifiée sans modèle{c}l'artefact demandé \
                  est révisé, les autres fichiers restent tels quels, une conséquence sur un autre \
-                 artefact est signalée plutôt qu'appliquée, le change passe toujours la \
-                 validation, et une demande portant sur un artefact que le change n'a pas est \
+                 artefact est signalée plutôt qu'appliquée, la modification passe toujours la \
+                 validation, et une demande portant sur un artefact que la modification n'a pas est \
                  refusée. Une exécution **réussit** quand toutes ses vérifications réussissent. \
                  Chaque chiffre est la médiane sur les répétitions, avec son écart.",
                 u.cases,
@@ -1245,7 +1292,7 @@ fn update_section(out: &mut String, u: &CheckStepFigures, lang: Lang) {
         (
             lang.pick(
                 "Runs that modify a file outside the change",
-                "Exécutions qui modifient un fichier hors du change",
+                "Exécutions qui modifient un fichier hors de la modification",
             ),
             u.strayed,
             false,
@@ -1256,13 +1303,18 @@ fn update_section(out: &mut String, u: &CheckStepFigures, lang: Lang) {
     out.push('\n');
 }
 
-/// A sync, archive or configure step: what its cases do, then its three
-/// measures, median and range.
+/// A sync, archive, configure, explore or onboard step: what its cases
+/// do, then its three measures, median and range.
 fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lang) {
     let (title_en, title_fr) = match step {
-        Step::ChangeSync => ("Syncing a change", "La synchronisation d'un change"),
-        Step::ChangeArchive => ("Archiving a change", "L'archivage d'un change"),
+        Step::ChangeSync => ("Syncing a change", "La synchronisation d'une modification"),
+        Step::ChangeArchive => ("Archiving a change", "L'archivage d'une modification"),
         Step::ConfigureEnrich => ("Configuring a project", "La configuration d'un projet"),
+        Step::IdeaExplore => ("Exploring an idea", "L'exploration d'une idée"),
+        Step::ProjectOnboard => (
+            "Discovering compagnon on a project",
+            "La découverte de compagnon sur un projet",
+        ),
         other => unreachable!("{} has no check-scored section", other.as_str()),
     };
     let skill = if step == Step::ChangeSync {
@@ -1284,13 +1336,50 @@ fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lan
             step = step.as_str(),
         ),
         (Step::ChangeSync | Step::ChangeArchive, Lang::Fr) => format!(
-            "{n} cas (`{step}`) posent un change de l'archive de ce dépôt sur le dépôt tel qu'il \
-             était avant lui, et lancent `/compagnon-{skill}` dessus. Chaque exécution est vérifiée \
+            "{n} cas (`{step}`) posent une modification de l'archive de ce dépôt sur le dépôt tel qu'il \
+             était avant elle, et lancent `/compagnon-{skill}` dessus. Chaque exécution est vérifiée \
              sans modèle{c}les fichiers sous `_compagnon/` sont ceux que `compagnon {skill}` laisse \
-             lui-même sur une copie — ou tels qu'ils étaient, quand la skill doit s'arrêter —, \
+             lui-même sur une copie — ou tels qu'ils étaient, quand la compétence doit s'arrêter —, \
              aucun fichier hors de l'étape n'est modifié, et la réponse dit ce que le cas attend. \
-             Quand la skill demande s'il faut mettre compagnon à jour, l'exécution répond **Plus tard**.",
+             Quand la compétence demande s'il faut mettre compagnon à jour, l'exécution répond **Plus tard**.",
             step = step.as_str(),
+        ),
+        (Step::IdeaExplore, Lang::En) => format!(
+            "{n} cases (`idea.explore`) run `/compagnon-explore` on a request about a small \
+             project, each expecting one of the three ways the skill ends — the idea \
+             crystallizes into a change to propose, information is missing, or it is not worth \
+             pursuing. Each run is checked without a model{c}no file is modified, created or \
+             removed, no change is created, and the agent's final message holds the mark of the \
+             expected outcome and none of the others'. No user answers: where the skill would \
+             ask, the run ends as the skill says."
+        ),
+        (Step::IdeaExplore, Lang::Fr) => format!(
+            "{n} cas (`idea.explore`) lancent `/compagnon-explore` sur une demande portant sur un \
+             petit projet, chacun attendant l'une des trois issues que nomme la compétence — \
+             l'idée se cristallise en une modification à proposer, une information manque, ou \
+             elle ne vaut pas d'être poursuivie. Chaque exécution est vérifiée sans modèle{c}aucun \
+             fichier n'est modifié, créé ou supprimé, aucune modification n'est créée, et le \
+             dernier message de l'agent porte la marque de l'issue attendue et aucune de celles \
+             des autres. Personne ne répond{c}là où la compétence poserait une question, \
+             l'exécution s'arrête comme la compétence le dit."
+        ),
+        (Step::ProjectOnboard, Lang::En) => format!(
+            "{n} cases (`project.onboard`) run `/compagnon-onboard` on a small project, one per \
+             row of the skill's recommendation table — no `_compagnon/`, a thin configuration, a \
+             configured project, an active change whose plan is incomplete, one ready to \
+             implement, several active changes. Each run is checked without a model{c}no file is \
+             modified, created or removed, no change is created, and the agent's final message \
+             recommends the next action of the project's state and none of the other states'."
+        ),
+        (Step::ProjectOnboard, Lang::Fr) => format!(
+            "{n} cas (`project.onboard`) lancent `/compagnon-onboard` sur un petit projet, un par \
+             ligne du tableau de recommandations de la compétence — pas de `_compagnon/`, une \
+             configuration sommaire, un projet configuré, une modification active dont le plan \
+             est incomplet, une modification prête à être implémentée, plusieurs modifications \
+             actives. Chaque exécution est vérifiée sans modèle{c}aucun fichier n'est modifié, \
+             créé ou supprimé, aucune modification n'est créée, et le dernier message de l'agent \
+             recommande l'action suivante de l'état du projet, et aucune de celles des autres \
+             états."
         ),
         (_, Lang::En) => format!(
             "{n} cases (`configure.enrich`) run `/compagnon-configure` on a small project, the \
@@ -1302,7 +1391,7 @@ fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lan
         ),
         (_, Lang::Fr) => format!(
             "{n} cas (`configure.enrich`) lancent `/compagnon-configure` sur un petit projet, la \
-             réponse de l'auteur à sa confirmation fixée par le cas. Chaque exécution est vérifiée \
+             réponse de l'auteur à la demande de confirmation étant fixée par le cas. Chaque exécution est vérifiée \
              sans modèle{c}les autres champs et les commentaires de la configuration sont \
              conservés, `context:` et `rules:` ont la forme attendue et nomment ce que font les \
              tests du projet, compagnon lit toujours le fichier — ou rien n'est écrit sur un non, et \
@@ -1363,9 +1452,9 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
         "- {}{c}{}\n- {}{c}{}\n- {}{c}{}\n",
         lang.pick("One run of the suite", "Une exécution de la suite"),
         lang.usd(b.cost_usd),
-        lang.pick("Input per call, in tokens", "Entrée par appel, en tokens"),
+        lang.pick("Input per call, in tokens", "Entrée par appel, en jetons"),
         tokens(m.input_per_call),
-        lang.pick("Output per call, in tokens", "Sortie par appel, en tokens"),
+        lang.pick("Output per call, in tokens", "Sortie par appel, en jetons"),
         tokens(m.output_per_call),
     );
     if b.sources.is_empty() {
@@ -1380,12 +1469,12 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
              among what brought them in: the skill read, each `compagnon` subcommand, the files, the \
              searches, the model's own output; `prompt` is Claude Code's own prompt and the \
              request. Per case the median over its runs, summed over the cases.",
-            "Chaque appel au modèle est enregistré. Les tokens qu'un appel écrit dans le cache — ce \
+            "Chaque appel au modèle est enregistré. Les jetons qu'un appel écrit dans le cache — ce \
              qui est entré dans son contexte depuis l'appel précédent, l'essentiel du coût d'une \
-             exécution — sont répartis entre ce qui les a apportés\u{a0}: la lecture de la skill, \
+             exécution — sont répartis entre ce qui les a apportés\u{a0}: la lecture de la compétence, \
              chaque sous-commande `compagnon`, les fichiers, les recherches, la sortie du modèle \
-             lui-même\u{a0}; `prompt` est le prompt propre de Claude Code et la demande. Par cas la \
-             médiane sur ses exécutions, sommée sur les cas."
+             lui-même\u{a0}; `prompt` est la consigne (prompt) propre de Claude Code et la demande. Pour chaque \
+             cas, on prend la médiane de ses exécutions, puis on additionne les cas."
         )
     );
     let _ = writeln!(out, "{}\n", sources_chart(&b.sources, lang));
@@ -1394,19 +1483,42 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
         "| {} |\n|---|---:|---:|",
         lang.pick(
             "Source | Tokens | Share of the cost",
-            "Source | Tokens | Part du coût"
+            "Source | Jetons | Part du coût"
         )
     );
     for s in &b.sources {
         let _ = writeln!(
             out,
-            "| {} | {} | {} |",
+            "| `{}` | {} | {} |",
             s.source,
             number(s.tokens),
             percent(lang, s.share)
         );
     }
     out.push('\n');
+}
+
+/// A role id as the reader types it: in inline code in French prose, where
+/// the English id would otherwise read as an untranslated word.
+fn role_id(lang: Lang, role: &str) -> String {
+    match lang {
+        Lang::En => role.to_string(),
+        Lang::Fr => format!("`{role}`"),
+    }
+}
+
+/// `1 rôle` or `3 rôles`.
+fn fr_roles(n: usize) -> String {
+    if n == 1 {
+        "1 rôle".to_string()
+    } else {
+        format!("{n} rôles")
+    }
+}
+
+/// The singular or plural form, by count.
+fn fr_verb(n: usize, one: &'static str, many: &'static str) -> &'static str {
+    if n == 1 { one } else { many }
 }
 
 /// `60 %`, with a no-break space in French.
@@ -1427,7 +1539,7 @@ fn sources_chart(sources: &[SourceShare], lang: Lang) -> String {
     let bottom = first + row_h * sources.len() as f64;
     let height = bottom + 22.0;
     let c = lang.colon();
-    let title = lang.pick("Where the tokens go", "Où vont les tokens");
+    let title = lang.pick("Where the tokens go", "Où vont les jetons");
     let mut desc = lang
         .pick(
             "Horizontal bars, one per source, ranked by their share of the cost. ",
@@ -1446,7 +1558,7 @@ fn sources_chart(sources: &[SourceShare], lang: Lang) -> String {
                 number(s.tokens)
             ),
             Lang::Fr => format!(
-                "{}{c}{} tokens, {share} du coût",
+                "{}{c}{} jetons, {share} du coût",
                 s.source,
                 number(s.tokens)
             ),
@@ -1515,7 +1627,7 @@ fn sources_chart(sources: &[SourceShare], lang: Lang) -> String {
         lang.pick(
             "The share of the cost of the tokens written to the cache, per source, over every case \
              of the suite.",
-            "La part du coût des tokens écrits dans le cache, par source, sur tous les cas de la \
+            "La part du coût des jetons écrits dans le cache, par source, sur tous les cas de la \
              suite.",
         ),
     )
@@ -1564,7 +1676,7 @@ fn verdict(b: &Baseline, lang: Lang) -> String {
     }
     let list = |rs: &[&RoleRow]| {
         rs.iter()
-            .map(|r| r.role.as_str())
+            .map(|r| role_id(lang, &r.role))
             .collect::<Vec<_>>()
             .join(", ")
     };
@@ -1579,8 +1691,9 @@ fn verdict(b: &Baseline, lang: Lang) -> String {
                 list(&fp)
             ),
             Lang::Fr => format!(
-                "{} rôles sur {roles} signalent plus de {} faux positifs{c}{}.",
-                fp.len(),
+                "{} sur {roles} {} plus de {} faux positifs{c}{}.",
+                fr_roles(fp.len()),
+                fr_verb(fp.len(), "signale", "signalent"),
                 t.max_false_positives,
                 list(&fp)
             ),
@@ -1596,9 +1709,11 @@ fn verdict(b: &Baseline, lang: Lang) -> String {
                 list(&recall)
             ),
             Lang::Fr => format!(
-                "{} rôles sur {roles} trouvent moins de {} de leurs défauts ensemencés{c}{}.",
-                recall.len(),
+                "{} sur {roles} {} moins de {} de {} défauts ensemencés{c}{}.",
+                fr_roles(recall.len()),
+                fr_verb(recall.len(), "trouve", "trouvent"),
                 lang.ratio(t.min_recall),
+                fr_verb(recall.len(), "ses", "leurs"),
                 list(&recall)
             ),
         });
@@ -1613,8 +1728,9 @@ fn verdict(b: &Baseline, lang: Lang) -> String {
                 list(&evidence)
             ),
             Lang::Fr => format!(
-                "{} rôles sur {roles} citent une preuve valide moins de {} du temps{c}{}.",
-                evidence.len(),
+                "{} sur {roles} {} une preuve valide moins de {} du temps{c}{}.",
+                fr_roles(evidence.len()),
+                fr_verb(evidence.len(), "cite", "citent"),
                 lang.ratio(t.min_evidence),
                 list(&evidence)
             ),
@@ -1750,22 +1866,32 @@ fn false_positive_chart(b: &Baseline, lang: Lang) -> String {
         let cy = y + row_h / 2.0;
         let over = r.false_positives > f64::from(t.max_false_positives);
         let fp = number(r.false_positives);
+        let en_fp = if r.false_positives == 1.0 {
+            "false positive"
+        } else {
+            "false positives"
+        };
+        let fr_fp = if r.false_positives < 2.0 {
+            "faux positif"
+        } else {
+            "faux positifs"
+        };
         let tip = match (lang, over) {
             (Lang::En, true) => format!(
-                "{}: {} false positives, over the threshold of {}",
-                r.role, fp, t.max_false_positives
+                "{}: {} {}, over the threshold of {}",
+                r.role, fp, en_fp, t.max_false_positives
             ),
             (Lang::En, false) => format!(
-                "{}: {} false positives, within the threshold of {}",
-                r.role, fp, t.max_false_positives
+                "{}: {} {}, within the threshold of {}",
+                r.role, fp, en_fp, t.max_false_positives
             ),
             (Lang::Fr, true) => format!(
-                "{}{c}{} faux positifs, au-delà du seuil de {}",
-                r.role, fp, t.max_false_positives
+                "{}{c}{} {}, au-delà du seuil de {}",
+                r.role, fp, fr_fp, t.max_false_positives
             ),
             (Lang::Fr, false) => format!(
-                "{}{c}{} faux positifs, dans le seuil de {}",
-                r.role, fp, t.max_false_positives
+                "{}{c}{} {}, dans le seuil de {}",
+                r.role, fp, fr_fp, t.max_false_positives
             ),
         };
         let _ = write!(desc, "{tip}. ");
@@ -2029,7 +2155,7 @@ fn meter_chart(b: &Baseline, lang: Lang) -> String {
             ),
             Lang::Fr => format!(
                 "Chaque jauge va de 0 à 1 et se termine par sa fraction. La ligne pointillée du \
-                 rappel est le seuil{NBSP}; {} marque un rôle en deçà. Un rôle sans cas ensemencé \
+                 rappel est le seuil{NBSP}; {} marque un rôle sous le seuil. Un rôle sans cas ensemencé \
                  n'a pas de rappel (—).",
                 "▲ en deçà"
             ),
@@ -2085,6 +2211,7 @@ mod tests {
                 jobs: None,
                 review_mode: None,
                 fixture_config: None,
+                added: Vec::new(),
             },
             thresholds: Thresholds::default(),
             cost_usd: 15.1836,
@@ -2099,6 +2226,8 @@ mod tests {
             change_sync: None,
             change_archive: None,
             configure_enrich: None,
+            idea_explore: None,
+            project_onboard: None,
             consumption: None,
             sources: vec![],
         }
@@ -2148,6 +2277,58 @@ mod tests {
         let e = Baseline::parse(&report_json("2026-11-02", 1), RUN_JSON).unwrap_err();
         assert!(e.contains("report.json") && e.contains("run.json"), "{e}");
         assert!(e.contains("2026-11-02") && e.contains("2026-10-13"), "{e}");
+    }
+
+    #[test]
+    fn the_chapter_names_the_added_steps_version() {
+        let mut b = baseline(vec![role("ops", 4, 4, 1)]);
+        b.run.added = vec![crate::observed::AddedSteps {
+            steps: vec!["idea.explore".into(), "project.onboard".into()],
+            compagnon_version: "compagnon 0.7.0".into(),
+            date: "2026-11-26".into(),
+        }];
+        let en = page(&b, Lang::En);
+        assert!(
+            en.contains(
+                "- compagnon: 0.6.1 (`idea.explore`, `project.onboard`: 0.7.0, 2026-11-26)\n"
+            ),
+            "{en}"
+        );
+        let fr = page(&b, Lang::Fr);
+        assert!(
+            fr.contains(
+                "- compagnon\u{a0}: 0.6.1 (`idea.explore`, `project.onboard`\u{a0}: 0.7.0, 2026-11-26)\n"
+            ),
+            "{fr}"
+        );
+    }
+
+    #[test]
+    fn a_run_without_added_steps_gives_the_run_version_alone() {
+        let b = baseline(vec![role("ops", 4, 4, 1)]);
+        assert!(page(&b, Lang::En).contains("- compagnon: 0.6.1\n"));
+        assert!(page(&b, Lang::Fr).contains("- compagnon\u{a0}: 0.6.1\n"));
+    }
+
+    #[test]
+    fn the_chapter_separates_several_added_entries() {
+        let mut b = baseline(vec![role("ops", 4, 4, 1)]);
+        for (step, v, date) in [
+            ("idea.explore", "compagnon 0.7.0", "2026-11-26"),
+            ("code.review", "compagnon 0.7.1", "2026-12-02"),
+        ] {
+            b.run.added.push(crate::observed::AddedSteps {
+                steps: vec![step.into()],
+                compagnon_version: v.into(),
+                date: date.into(),
+            });
+        }
+        assert!(page(&b, Lang::En).contains(
+            "- compagnon: 0.6.1 (`idea.explore`: 0.7.0, 2026-11-26; `code.review`: 0.7.1, 2026-12-02)\n"
+        ));
+        assert!(page(&b, Lang::Fr).contains(
+            "(`idea.explore`\u{a0}: 0.7.0, 2026-11-26\u{a0}; `code.review`\u{a0}: 0.7.1, 2026-12-02)\n"
+        ));
     }
 
     #[test]
@@ -2436,12 +2617,12 @@ mod tests {
             (
                 Lang::En,
                 "## What a run consumes",
-                "| skill | 60000 | 60 % |",
+                "| `skill` | 60000 | 60 % |",
             ),
             (
                 Lang::Fr,
                 "## Ce que consomme une exécution",
-                "| skill | 60000 | 60\u{a0}% |",
+                "| `skill` | 60000 | 60\u{a0}% |",
             ),
         ] {
             let text = page(&b, lang);
@@ -2451,8 +2632,8 @@ mod tests {
             };
             assert!(at(heading) < at(row));
             assert!(
-                at("| skill |") < at("| compagnon roles |")
-                    && at("| compagnon roles |") < at("| file |")
+                at("| `skill` |") < at("| `compagnon roles` |")
+                    && at("| `compagnon roles` |") < at("| `file` |")
             );
             assert!(text.contains(&format!("rel-src-title-{}", lang.tag())));
             // The chart draws the sources in the same order, each named on hover.
@@ -2501,8 +2682,8 @@ mod tests {
         }
         let fr = page(&b, Lang::Fr);
         for needle in [
-            "## La synchronisation d'un change",
-            "## L'archivage d'un change",
+            "## La synchronisation d'une modification",
+            "## L'archivage d'une modification",
             "| Exécutions qui réussissent | 0,90 (0,80–1,00) |",
             "**Plus tard**",
             "4 de synchronisation, 6 d'archivage)",
@@ -2537,5 +2718,49 @@ mod tests {
         }
         let without = page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En);
         assert!(!without.contains("Configuring a project"));
+    }
+
+    #[test]
+    fn the_reliability_chapter_gives_the_explore_and_onboard_measures() {
+        let report = report_json("2026-10-13", 2).replacen(
+            r#""cases":[{"id":"a"}"#,
+            r#""projectOnboard":{"cases":6,"passRate":{"median":0.9,"min":0.8,"max":1.0},"checkRate":null,"strayed":null,"repetitions":[]},"cases":[{"id":"a"}"#,
+            1,
+        );
+        let parsed = Baseline::parse(&report, RUN_JSON).unwrap();
+        assert_eq!(parsed.project_onboard.unwrap().cases, 6);
+        assert_eq!(parsed.idea_explore, None);
+        let mut b = baseline(vec![role("security", 2, 2, 0)]);
+        b.project_onboard = Some(figures(6));
+        let en = page(&b, Lang::En);
+        for needle in [
+            "## Discovering compagnon on a project",
+            "6 cases (`project.onboard`)",
+            "| Runs that pass | 0.90 (0.80–1.00) |",
+            "6 onboard)",
+        ] {
+            assert!(en.contains(needle), "missing {needle} in {en}");
+        }
+        assert!(!en.contains("Exploring an idea"), "{en}");
+        let fr = page(&b, Lang::Fr);
+        for needle in [
+            "## La découverte de compagnon sur un projet",
+            "6 cas (`project.onboard`)",
+            "| Exécutions qui réussissent | 0,90 (0,80–1,00) |",
+            "6 de prise en main)",
+        ] {
+            assert!(fr.contains(needle), "missing {needle} in {fr}");
+        }
+        assert!(!fr.contains("{c}"), "{fr}");
+        b.idea_explore = Some(figures(3));
+        let en = page(&b, Lang::En);
+        let explore = en.find("## Exploring an idea").expect("an explore section");
+        let onboard = en.find("## Discovering compagnon").unwrap();
+        assert!(explore < onboard, "{en}");
+        assert!(en.contains("3 cases (`idea.explore`)"), "{en}");
+        assert!(page(&b, Lang::Fr).contains("## L'exploration d'une idée"));
+        let without = page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En);
+        assert!(!without.contains("Discovering compagnon"));
+        assert!(!without.contains("Exploring an idea"));
     }
 }

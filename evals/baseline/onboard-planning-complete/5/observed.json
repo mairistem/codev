@@ -1,0 +1,89 @@
+{
+  "format": 2,
+  "case": "onboard-planning-complete",
+  "error": null,
+  "costUsd": 0.1658832,
+  "durationMs": 14765,
+  "consumption": {
+    "durationApiMs": 13258,
+    "turns": 11,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 974,
+      "cacheCreation": 12985,
+      "cacheRead": 164871,
+      "output": 1414
+    },
+    "toolCalls": 10,
+    "calls": [
+      {
+        "cacheCreation": 6563,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6563
+        }
+      },
+      {
+        "cacheCreation": 3328,
+        "cacheRead": 31691,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3328
+        }
+      },
+      {
+        "cacheCreation": 287,
+        "cacheRead": 35019,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 7,
+        "sources": {
+          "compagnon list": 287
+        }
+      },
+      {
+        "cacheCreation": 2421,
+        "cacheRead": 35306,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon decision": 36,
+          "compagnon doctor": 1618,
+          "compagnon list": 40,
+          "file": 549,
+          "search": 178
+        }
+      },
+      {
+        "cacheCreation": 386,
+        "cacheRead": 37727,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "compagnon status": 386
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "**Compagnon** is a versioned planning tool for software projects: every change goes through a **propose → apply → archive** cycle documented in `_compagnon/`. Each step is driven by a Claude Code skill (`/compagnon-<step>`), and the `compagnon` CLI does the atomic work underneath. Your planning lives in the repository, alongside the code.\n\nHere you have:\n- 1 main spec: `recipes`\n- 0 local decisions in effect, 0 inherited\n- 1 active change: `add-ingredient-search`, with its planning complete (4 of 4 artifacts written)\n- Setup to complete:\n  - `ci`: fix: add `compagnon validate --strict` to your CI pipeline\n- 2 warnings, see `compagnon doctor`\n\n**What's next**: the plan for `add-ingredient-search` is ready to build. Type `/compagnon-apply add-ingredient-search` to work through its tasks."
+  ],
+  "readOnly": {
+    "finalMessage": "**Compagnon** is a versioned planning tool for software projects: every change goes through a **propose → apply → archive** cycle documented in `_compagnon/`. Each step is driven by a Claude Code skill (`/compagnon-<step>`), and the `compagnon` CLI does the atomic work underneath. Your planning lives in the repository, alongside the code.\n\nHere you have:\n- 1 main spec: `recipes`\n- 0 local decisions in effect, 0 inherited\n- 1 active change: `add-ingredient-search`, with its planning complete (4 of 4 artifacts written)\n- Setup to complete:\n  - `ci`: fix: add `compagnon validate --strict` to your CI pipeline\n- 2 warnings, see `compagnon doctor`\n\n**What's next**: the plan for `add-ingredient-search` is ready to build. Type `/compagnon-apply add-ingredient-search` to work through its tasks.",
+    "changesCreated": []
+  }
+}

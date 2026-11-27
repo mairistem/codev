@@ -1,0 +1,13 @@
+# A feature whose decision rests on something the repository cannot tell:
+# the clinic has no text-message provider yet, and which one it signs with
+# sets the API, the cost and the delivery guarantees. The exploration ends
+# by naming what is missing and who can provide it.
+step: idea.explore
+kind: seeded
+stacks: [typescript]
+summary: "A booking service that notifies by mail only; SMS reminders depend on a provider the clinic has not chosen: the exploration ends on the missing information, the provider."
+request: Send patients a text message reminder the day before their appointment.
+expected:
+  outcome: missing
+  contains: ["provider"]
+  absent: ["crystallizes", "not worth pursuing", "wasn't worth pursuing"]

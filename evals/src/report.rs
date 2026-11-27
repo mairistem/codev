@@ -4,6 +4,7 @@
 
 use std::fmt::Write as _;
 
+use crate::observed::RunInfo;
 use crate::score::{Class, Measure, Measures, Outcome, SourceShare, Spread, SuiteScore, number};
 
 pub fn json(score: &SuiteScore) -> String {
@@ -72,8 +73,36 @@ fn checked_noun(step: crate::case::Step) -> &'static str {
         crate::case::Step::ChangeSync => "sync",
         crate::case::Step::ChangeArchive => "archive",
         crate::case::Step::ConfigureEnrich => "configure",
+        crate::case::Step::IdeaExplore => "explore",
+        crate::case::Step::ProjectOnboard => "onboard",
         other => unreachable!("{} has no check-scored section", other.as_str()),
     }
+}
+
+/// The run's Compagnon version as `run.json` records it, then, in
+/// parentheses, that of each set of steps a resumed run added with another
+/// Compagnon, with its date. The English, raw-text variant of the line the
+/// reliability chapter writes (`reliability::compagnon_versions`): the
+/// report prints every version as recorded, the chapter trims and localizes
+/// them.
+fn compagnon_versions(run: &RunInfo) -> String {
+    let mut line = run
+        .compagnon_version
+        .as_deref()
+        .unwrap_or("unknown")
+        .to_string();
+    if !run.added.is_empty() {
+        let entries: Vec<String> = run
+            .added
+            .iter()
+            .map(|a| {
+                let steps: Vec<String> = a.steps.iter().map(|s| format!("`{s}`")).collect();
+                format!("{}: {}, {}", steps.join(", "), a.compagnon_version, a.date)
+            })
+            .collect();
+        line.push_str(&format!(" ({})", entries.join("; ")));
+    }
+    line
 }
 
 pub fn markdown(score: &SuiteScore) -> String {
@@ -88,7 +117,7 @@ pub fn markdown(score: &SuiteScore) -> String {
         run.date,
         run.model.as_deref().unwrap_or("Claude Code's default"),
         run.claude_version.as_deref().unwrap_or("unknown"),
-        run.compagnon_version.as_deref().unwrap_or("unknown"),
+        compagnon_versions(run),
         distinct,
         score.repetitions,
         score.cost_usd,
@@ -271,7 +300,7 @@ pub fn markdown(score: &SuiteScore) -> String {
         );
     }
 
-    for (step, c) in score.merge_and_configure_steps() {
+    for (step, c) in score.checked_steps() {
         let spread = |s: Option<Spread>, ratio: bool| match s {
             None => "—".to_string(),
             Some(s) if ratio => ratio_range(Some(s.median), Some(s), repeated),
@@ -581,6 +610,29 @@ mod tests {
         );
         assert!(md.contains("One run per case"), "{md}");
         assert!(md.contains("R-privacy-1"), "{md}");
+    }
+
+    #[test]
+    fn the_report_names_the_added_steps_version() {
+        let mut score = scores();
+        score.run.compagnon_version = Some("compagnon 0.6.1".into());
+        assert!(
+            markdown(&score).contains("- compagnon: compagnon 0.6.1\n"),
+            "{}",
+            markdown(&score)
+        );
+        score.run.added = vec![crate::observed::AddedSteps {
+            steps: vec!["idea.explore".into(), "project.onboard".into()],
+            compagnon_version: "compagnon 0.7.0".into(),
+            date: "2026-11-26".into(),
+        }];
+        let md = markdown(&score);
+        assert!(
+            md.contains(
+                "- compagnon: compagnon 0.6.1 (`idea.explore`, `project.onboard`: compagnon 0.7.0, 2026-11-26)\n"
+            ),
+            "{md}"
+        );
     }
 
     #[test]
@@ -965,9 +1017,48 @@ mod tests {
     #[test]
     fn a_report_without_configure_cases_has_no_configure_section() {
         let s = scores();
-        assert!(!markdown(&s).contains("configure.enrich"));
+        let md = markdown(&s);
+        for step in ["configure.enrich", "idea.explore", "project.onboard"] {
+            assert!(!md.contains(step), "{step} in {md}");
+        }
         let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
-        assert!(json.get("configureEnrich").is_none());
+        for key in ["configureEnrich", "ideaExplore", "projectOnboard"] {
+            assert!(json.get(key).is_none(), "{key}");
+        }
         assert!(json["cases"][0].get("checks").is_none());
+    }
+
+    #[test]
+    fn the_report_of_an_explore_run() {
+        use crate::read_only::tests::{explore_case, run_ending};
+        let c = explore_case("explore-crystallizes-x");
+        let s = suite(
+            run(),
+            vec![
+                crate::score::read_only_case(
+                    &c,
+                    &run_ending("It crystallizes: ask me for /compagnon-propose."),
+                ),
+                crate::score::read_only_case(
+                    &c,
+                    &run_ending("Ask me for /compagnon-propose, though the SLA is missing."),
+                )
+                .at(2),
+            ],
+            Thresholds::default(),
+        );
+        let md = markdown(&s);
+        assert!(md.contains("## `idea.explore`"), "{md}");
+        assert!(md.contains("every explore run pooled"), "{md}");
+        assert!(md.contains("| 1 | 0.50 (0.00–1.00) |"), "{md}");
+        assert!(
+            md.contains("- Check the final message does not say \"is missing\": **failed**"),
+            "{md}"
+        );
+        assert!(!md.contains("project.onboard"), "{md}");
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert_eq!(json["ideaExplore"]["cases"], 1);
+        assert_eq!(json["ideaExplore"]["passRate"]["median"], 0.5);
+        assert!(json.get("projectOnboard").is_none());
     }
 }

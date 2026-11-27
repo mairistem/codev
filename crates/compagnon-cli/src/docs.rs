@@ -53,7 +53,7 @@ impl Lang {
         }
     }
 
-    fn chapters(self) -> &'static [(&'static str, &'static str)] {
+    pub(crate) fn chapters(self) -> &'static [(&'static str, &'static str)] {
         match self {
             Lang::En => CHAPTERS_EN,
             Lang::Fr => CHAPTERS_FR,
@@ -69,18 +69,25 @@ impl Lang {
 pub fn markdown(lang: Lang) -> String {
     let chapters = lang.chapters();
 
-    // Anchor of each chapter's title, to rewrite links to a whole chapter.
-    // Every heading goes through the slugger, in page order, exactly as
-    // `render_html` will do: repeated titles get the same `-N` suffixes.
+    // The anchors of each chapter on the single page. Every heading goes
+    // through one slugger, in page order, exactly as `render_html` will do:
+    // a heading repeated across chapters ("Archive" in the glossary and in
+    // the workflow) gets a `-N` suffix there, while mdBook, one page per
+    // chapter, gives it the plain slug. Each chapter maps its own anchors,
+    // as mdBook computes them, to the ones of the single page.
     let mut slugger = Slugger::default();
-    let mut chapter_anchors: HashMap<&str, String> = HashMap::new();
+    let mut chapter_anchors: HashMap<&str, ChapterAnchors> = HashMap::new();
     for (path, source) in chapters {
+        let mut local = Slugger::default();
+        let mut anchors = ChapterAnchors::default();
         for (index, heading) in heading_texts(source).into_iter().enumerate() {
             let slug = slugger.slug(&heading);
             if index == 0 {
-                chapter_anchors.insert(path, slug);
+                anchors.title = slug.clone();
             }
+            anchors.headings.insert(local.slug(&heading), slug);
         }
+        chapter_anchors.insert(path, anchors);
     }
 
     let mut out = String::new();
@@ -91,6 +98,14 @@ pub fn markdown(lang: Lang) -> String {
         out.push_str(&rewrite_links(source, path, &chapter_anchors));
     }
     out
+}
+
+/// A chapter's anchors on the single page: its title's, and each heading's,
+/// keyed by the anchor mdBook gives it on the chapter's own page.
+#[derive(Default)]
+struct ChapterAnchors {
+    title: String,
+    headings: HashMap<String, String>,
 }
 
 /// Converts markdown into standalone HTML, wrapped in the HTML5 template
@@ -213,7 +228,7 @@ pub fn open_default(lang: Lang, version: &str) -> io::Result<PathBuf> {
 /// The text of every ATX heading of a chapter, outside code fences, with
 /// inline code and emphasis markers removed — the text the HTML renderer
 /// sees.
-fn heading_texts(source: &str) -> Vec<String> {
+pub(crate) fn heading_texts(source: &str) -> Vec<String> {
     let mut in_fence = false;
     let mut out = Vec::new();
     for line in source.lines() {
@@ -232,13 +247,13 @@ fn heading_texts(source: &str) -> Vec<String> {
     out
 }
 
-/// Rewrites the inline links of one chapter that point to another chapter.
+/// Rewrites the inline links of one chapter to anchors of the single page.
 ///
-/// `other.md#anchor` becomes `#anchor`; `other.md` becomes the anchor of
-/// that chapter's title. Paths are resolved relative to the current
-/// chapter, like mdBook does. External links and plain anchors are left
-/// alone.
-fn rewrite_links(source: &str, chapter: &str, anchors: &HashMap<&str, String>) -> String {
+/// `other.md#anchor` and `#anchor` become the anchor that heading gets on
+/// the single page; `other.md` becomes the anchor of that chapter's title.
+/// Paths are resolved relative to the current chapter, like mdBook does.
+/// External links, and anchors no heading produces, are left alone.
+fn rewrite_links(source: &str, chapter: &str, anchors: &HashMap<&str, ChapterAnchors>) -> String {
     let base = Path::new(chapter).parent().unwrap_or(Path::new(""));
     let mut out = String::with_capacity(source.len());
     let mut rest = source;
@@ -247,16 +262,30 @@ fn rewrite_links(source: &str, chapter: &str, anchors: &HashMap<&str, String>) -
         rest = &rest[start + 2..];
         let Some(end) = rest.find(')') else { break };
         let target = &rest[..end];
-        out.push_str(&rewrite_target(target, base, anchors));
+        out.push_str(&rewrite_target(target, chapter, base, anchors));
         rest = &rest[end..];
     }
     out.push_str(rest);
     out
 }
 
-fn rewrite_target(target: &str, base: &Path, anchors: &HashMap<&str, String>) -> String {
-    if target.contains("://") || target.starts_with('#') || target.starts_with("mailto:") {
+fn rewrite_target(
+    target: &str,
+    chapter: &str,
+    base: &Path,
+    anchors: &HashMap<&str, ChapterAnchors>,
+) -> String {
+    if target.contains("://") || target.starts_with("mailto:") {
         return target.to_string();
+    }
+    let on_page = |path: &str, fragment: &str| {
+        anchors
+            .get(path)
+            .and_then(|a| a.headings.get(fragment))
+            .map_or_else(|| format!("#{fragment}"), |slug| format!("#{slug}"))
+    };
+    if let Some(fragment) = target.strip_prefix('#') {
+        return on_page(chapter, fragment);
     }
     let (path, fragment) = match target.split_once('#') {
         Some((p, f)) => (p, Some(f)),
@@ -267,8 +296,8 @@ fn rewrite_target(target: &str, base: &Path, anchors: &HashMap<&str, String>) ->
     }
     let resolved = normalize(&base.join(path));
     match (fragment, anchors.get(resolved.as_str())) {
-        (Some(f), _) => format!("#{f}"),
-        (None, Some(anchor)) => format!("#{anchor}"),
+        (Some(f), _) => on_page(&resolved, f),
+        (None, Some(chapter)) => format!("#{}", chapter.title),
         // A link to a file outside the book (e.g. the repository README):
         // there is no page to point to, keep it as written.
         (None, None) => target.to_string(),
@@ -294,12 +323,12 @@ fn normalize(path: &Path) -> String {
 /// spaces turned into `-`, other punctuation dropped, and a `-N` suffix on
 /// repeats.
 #[derive(Default)]
-struct Slugger {
+pub(crate) struct Slugger {
     seen: HashMap<String, usize>,
 }
 
 impl Slugger {
-    fn slug(&mut self, text: &str) -> String {
+    pub(crate) fn slug(&mut self, text: &str) -> String {
         let base: String = text
             .trim()
             .chars()
@@ -774,11 +803,18 @@ mod tests {
         }
     }
 
+    fn titled(title: &str) -> ChapterAnchors {
+        ChapterAnchors {
+            title: title.to_string(),
+            headings: HashMap::new(),
+        }
+    }
+
     #[test]
     fn links_between_chapters_become_in_page_anchors() {
         let mut anchors = HashMap::new();
-        anchors.insert("concepts.md", "concepts".to_string());
-        anchors.insert("reference/cli.md", "cli-reference".to_string());
+        anchors.insert("concepts.md", titled("concepts"));
+        anchors.insert("reference/cli.md", titled("cli-reference"));
         let source = "See [deltas](concepts.md#delta), [the CLI](../reference/cli.md), \
                       [the site](https://example.com/a.md) and [above](#top).";
         let out = rewrite_links(source, "guides/mcp.md", &anchors);
@@ -787,6 +823,83 @@ mod tests {
             "See [deltas](#delta), [the CLI](#cli-reference), \
              [the site](https://example.com/a.md) and [above](#top)."
         );
+    }
+
+    #[test]
+    fn a_heading_repeated_across_chapters_keeps_its_links() {
+        // "Archive" is a glossary entry and a workflow section: on the
+        // single page, the workflow's gets `archive-1`.
+        let mut slugger = Slugger::default();
+        let mut anchors = HashMap::new();
+        for (path, headings) in [
+            ("glossary.md", ["Glossary", "Archive"]),
+            ("workflow.md", ["The workflow", "Archive"]),
+        ] {
+            let mut chapter = ChapterAnchors::default();
+            let mut local = Slugger::default();
+            for (i, h) in headings.iter().enumerate() {
+                let slug = slugger.slug(h);
+                if i == 0 {
+                    chapter.title = slug.clone();
+                }
+                chapter.headings.insert(local.slug(h), slug);
+            }
+            anchors.insert(path, chapter);
+        }
+        let workflow = rewrite_links(
+            "See [Archive](#archive) and [the term](glossary.md#archive).",
+            "workflow.md",
+            &anchors,
+        );
+        assert_eq!(
+            workflow,
+            "See [Archive](#archive-1) and [the term](#archive)."
+        );
+        let glossary = rewrite_links("See [it](workflow.md#archive).", "glossary.md", &anchors);
+        assert_eq!(glossary, "See [it](#archive-1).");
+    }
+
+    fn percent_decoded(text: &str) -> String {
+        let bytes = text.as_bytes();
+        let mut out = Vec::with_capacity(bytes.len());
+        let mut i = 0;
+        while i < bytes.len() {
+            if bytes[i] == b'%'
+                && i + 2 < bytes.len()
+                && let Ok(b) = u8::from_str_radix(&text[i + 1..i + 3], 16)
+            {
+                out.push(b);
+                i += 3;
+                continue;
+            }
+            out.push(bytes[i]);
+            i += 1;
+        }
+        String::from_utf8_lossy(&out).into_owned()
+    }
+
+    #[test]
+    fn the_offline_manual_links_land_on_their_heading() {
+        // Every in-page link of the manual points to an id a heading gets.
+        for lang in [Lang::En, Lang::Fr] {
+            let md = markdown(lang);
+            let html = render_html(&md, lang, "0.0.0");
+            let mut missing = Vec::new();
+            let mut rest = html.as_str();
+            while let Some(i) = rest.find("href=\"#") {
+                rest = &rest[i + 7..];
+                let end = rest.find('"').unwrap_or(0);
+                // The renderer percent-encodes accents in an href, as the
+                // browser decodes them before matching the id.
+                let id = percent_decoded(&rest[..end]);
+                if !html.contains(&format!("id=\"{id}\"")) {
+                    missing.push(id);
+                }
+            }
+            missing.sort();
+            missing.dedup();
+            assert!(missing.is_empty(), "{lang:?}: {missing:?}");
+        }
     }
 
     #[test]

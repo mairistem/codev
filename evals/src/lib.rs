@@ -17,6 +17,7 @@ pub mod lint;
 pub mod merge;
 pub mod observed;
 pub mod plan;
+pub mod read_only;
 pub mod reliability;
 pub mod report;
 pub mod runner;

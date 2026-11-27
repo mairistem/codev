@@ -1,6 +1,10 @@
 # Installation
 
-Compagnon est un binaire unique. Des binaires précompilés sont publiés sur
+Cette page s'adresse à la personne qui installe l'outil ; si vous relisez
+seulement des plans, vous pouvez la passer.
+
+Compagnon est un programme unique, prêt à l'emploi. Des copies toutes prêtes
+(binaires précompilés) sont publiées sur
 [GitHub Releases](https://github.com/mairistem/compagnon/releases) pour les
 plateformes suivantes :
 
@@ -12,7 +16,7 @@ plateformes suivantes :
 | Windows, x86_64 | `x86_64-pc-windows-msvc` |
 
 Il existe quatre façons de l'installer. Les deux premières sont les plus
-rapides et ne nécessitent pas Rust.
+rapides et ne demandent aucun outil de développement.
 
 ## macOS et Linux : install.sh
 
@@ -20,10 +24,11 @@ rapides et ne nécessitent pas Rust.
 curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 ```
 
-Le script détecte votre système et votre architecture, télécharge l'archive
-correspondante et le fichier `SHA256SUMS` depuis la dernière GitHub Release,
-vérifie l'empreinte SHA-256 de l'archive et installe le binaire dans
-`~/.local/bin/compagnon`. Il refuse d'installer si l'empreinte ne correspond pas,
+Le script détecte votre système et votre type de processeur. Il télécharge
+l'archive correspondante et le fichier `SHA256SUMS` depuis la dernière
+version publiée sur GitHub. Il vérifie l'empreinte SHA-256 de l'archive avec
+ce fichier. Puis il installe le programme dans `~/.local/bin/compagnon`. Il
+refuse d'installer si l'empreinte ne correspond pas,
 et crée `~/.local/bin` si nécessaire.
 
 Si `~/.local/bin` n'est pas dans votre `PATH`, le script affiche la ligne
@@ -79,8 +84,8 @@ précompilé. Sur ARM64, compilez depuis les sources.
 
 Si vous préférez ne pas exécuter un script directement dans votre shell,
 téléchargez vous-même les fichiers depuis la
-[dernière release](https://github.com/mairistem/compagnon/releases/latest). Chaque
-release contient une archive par cible, nommée
+[dernière version publiée](https://github.com/mairistem/compagnon/releases/latest).
+Chaque version contient une archive par plateforme, nommée
 `compagnon-<version>-<target>.tar.gz` (`.zip` sous Windows), ainsi qu'un fichier
 `SHA256SUMS`.
 
@@ -120,7 +125,7 @@ plus haut.
 ## Depuis les sources : cargo install
 
 Avec une chaîne d'outils Rust (1.89 ou ultérieure), vous pouvez compiler Compagnon
-à partir d'un clone du dépôt. C'est la voie à suivre pour les contributeurs et
+à partir d'un clone du [dépôt](glossary.md#dépôt). C'est la voie à suivre pour les contributeurs et
 pour les plateformes sans binaire précompilé.
 
 ```bash
@@ -165,9 +170,9 @@ compagnon completions powershell | Out-String | Invoke-Expression
 
 ## Prérequis
 
-- **Claude Code**, pour utiliser les skills. La CLI elle-même fonctionne
-  sans.
-- **git**, uniquement pour les [sources héritées](guides/inherited-sources.md)
+- **Claude Code**, pour utiliser les compétences. La commande `compagnon`
+  elle-même fonctionne sans.
+- **[git](glossary.md#git)**, uniquement pour les [sources héritées](guides/inherited-sources.md)
   hébergées dans un dépôt git.
 
 ## Mise à jour
@@ -180,8 +185,8 @@ compagnon self-update --check          # indique seulement la version installée
 compagnon self-update --version 0.5.0  # une version précise, rétrogradation comprise
 ```
 
-La commande télécharge la release la plus récente pour votre plateforme,
-vérifie son SHA-256 avec le `SHA256SUMS` de la release — comme le font les
+La commande télécharge la version publiée la plus récente pour votre plateforme,
+vérifie son SHA-256 avec le `SHA256SUMS` de cette version — comme le font les
 installateurs — et remplace le binaire sur place. Ensuite, dans un projet
 Compagnon, elle lance `compagnon update` avec le nouveau binaire. Elle a besoin de
 `curl` et de `tar`, fournis par macOS, la plupart des distributions Linux et
@@ -195,22 +200,25 @@ jamais, sauf si vous passez `--version`. Sous Windows, l'ancien binaire est
 conservé sous le nom `compagnon.old.exe` à côté du nouveau, jusqu'à ce que la
 commande Compagnon suivante le supprime.
 
-`compagnon status` vous signale l'existence d'une release plus récente, au plus
+`compagnon status` vous signale l'existence d'une version plus récente, au plus
 une fois par jour ; voir
 [Compagnon vérifie-t-il les mises à jour ?](faq.md#compagnon-vérifie-t-il-les-mises-à-jour-)
 pour le désactiver.
 
-Vous pouvez toujours relancer l'installateur ou télécharger une release plus
-récente. Ensuite, dans chaque projet, régénérez les skills pour qu'elles
+Vous pouvez toujours relancer l'installateur ou télécharger une version plus
+récente. Ensuite, dans chaque projet, régénérez les compétences pour qu'elles
 correspondent à la nouvelle version :
 
 ```bash
 compagnon update
 ```
 
-`compagnon update` rafraîchit aussi les sections gérées par Compagnon dans `CLAUDE.md`
-et dans le modèle de pull request, ainsi que la version de Compagnon épinglée dans
-`.github/workflows/compagnon.yml`, là où `compagnon init` les a écrites. Consultez
+`compagnon update` rafraîchit aussi trois fichiers, là où `compagnon init`
+les a écrits. Dans `CLAUDE.md`, il rafraîchit les sections gérées par
+Compagnon. Dans le modèle de [demande de fusion](glossary.md#demande-de-fusion),
+il rafraîchit aussi les sections gérées par Compagnon. Dans
+`.github/workflows/compagnon.yml`, il met à jour la version de Compagnon
+épinglée. Consultez
 [`compagnon update`](reference/cli.md#compagnon-update) pour savoir comment sont
-traitées les skills modifiées à la main, et `compagnon doctor` pour vérifier le
+traitées les compétences modifiées à la main, et `compagnon doctor` pour vérifier le
 résultat.

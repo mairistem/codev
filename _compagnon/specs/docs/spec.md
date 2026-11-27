@@ -292,9 +292,9 @@ shown:
   the reader's color scheme;
 - in the header of the mdBook documentation, in both languages, next to
   the Mairistem logo;
-- in the header of the landing page `docs/site/index.html`, next to the
-  Mairistem logo;
-- as the favicon of the documentation and of the landing page;
+- in the header of the landing pages `docs/site/index.html` and
+  `docs/site/fr.html`, next to the Mairistem logo;
+- as the favicon of the documentation and of the landing pages;
 - in the self-contained HTML file written by `compagnon docs`, inline, with
   no external asset.
 
@@ -350,3 +350,631 @@ shared source repository still laid out for codev, and what a hand-edited
 - **GIVEN** the migration guide listed in `docs/en/src/SUMMARY.md` only
 - **WHEN** the test suite of `compagnon-cli` runs
 - **THEN** it fails naming the missing chapter
+
+### Requirement: The documentation opens with a short Start here path
+
+Each language's `SUMMARY.md` SHALL open with a part titled "Start here"
+("Commencer ici" in French) listing exactly, in this order:
+`introduction.md` (Compagnon in two minutes), `choose-your-path.md`, the
+four path pages `paths/review.md`, `paths/build.md`, `paths/develop.md`
+and `paths/team.md` (nested under Choose your path), and `glossary.md`.
+The table of contents SHALL then group the other chapters in four parts,
+in this order: Everyday use, Going further, Reference, Contributing ("Au
+quotidien", "Aller plus loin", "Référence", "Contribuer"); Everyday use
+opens with `quickstart.md`. The Contributing part MUST
+hold `origins.md`, `architecture.md` and `reliability.md`. No chapter is
+removed: every chapter listed before this change stays listed, under its
+file path, so that existing links keep working.
+
+#### Scenario: Both editions open with the Start here path
+
+- **GIVEN** the repository's `docs/en/src/SUMMARY.md` and
+  `docs/fr/src/SUMMARY.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each lists exactly `introduction.md`, `choose-your-path.md`,
+  `paths/review.md`, `paths/build.md`, `paths/develop.md`, `paths/team.md`
+  and `glossary.md`, in that order, under its first part
+- **AND** its Everyday use part opens with `quickstart.md`
+- **AND** its parts are, in order, Start here, Everyday use, Going further,
+  Reference, Contributing (or their French titles)
+- **AND** the Contributing part holds `origins.md`, `architecture.md` and
+  `reliability.md`
+
+#### Scenario: A chapter moved into the Start here path is caught
+
+- **GIVEN** a `SUMMARY.md` that lists `concepts.md` inside the Start here
+  part
+- **WHEN** the check runs on it
+- **THEN** it fails naming `concepts.md`
+
+#### Scenario: A chapter missing from the Start here path is caught
+
+- **GIVEN** a `SUMMARY.md` whose Start here part lacks `glossary.md`
+- **WHEN** the check runs on it
+- **THEN** it fails naming `glossary.md`
+
+#### Scenario: No chapter is removed
+
+- **GIVEN** the 22 chapters each `SUMMARY.md` listed before this change
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** it fails naming any of them no longer listed
+
+#### Scenario: The offline manual follows the new order
+
+- **WHEN** the user runs `compagnon docs --print`
+- **THEN** the manual starts with the introduction, then Choose your path,
+  then the four path pages, then the glossary
+
+### Requirement: The Start here path stays short and plain
+
+Not counting fenced code blocks nor "Under the hood" blocks (`<details>`),
+the introduction SHALL hold at most 450 words in English and 560 in
+French, Choose your path at most 200 and 250, each path page at most 250
+and 310, and the quickstart at most 500 and 625. The introduction MUST
+hold a section titled "Who decides" ("Qui décide") saying, in plain words,
+that the reader decides, that Claude proposes and carries out, and that
+nothing is applied without the reader's approval. The quickstart MUST walk
+through the Claude Code path, with one section per step in this order:
+`/compagnon-propose`, reading the plan, `/compagnon-apply`,
+`/compagnon-archive`. A fenced shell block (`bash`, `sh`, `shell`,
+`console`, `powershell`, `pwsh`) outside an "Under the hood" block MAY only
+install Compagnon or run `compagnon init`.
+
+#### Scenario: The path stays under its word caps
+
+- **GIVEN** the Start here chapters of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** it fails naming the chapter, the edition and the count when the
+  introduction, Choose your path, a path page or the quickstart exceeds its
+  cap
+
+#### Scenario: Under the hood blocks and code are not counted
+
+- **GIVEN** a chapter of 480 words of prose, a 400-word `<details>` block
+  and a 100-word fenced code block
+- **WHEN** its words are counted
+- **THEN** the count is 480
+
+#### Scenario: The introduction says who decides
+
+- **GIVEN** the introduction of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each holds the "Who decides" / "Qui décide" section
+
+#### Scenario: The quickstart walks the four skills in order
+
+- **GIVEN** the quickstart of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** `/compagnon-propose`, `/compagnon-apply` and `/compagnon-archive`
+  first appear in that order, each in a section heading of its own
+
+#### Scenario: A terminal command outside an Under the hood block is caught
+
+- **GIVEN** a chapter with a fenced `bash` block running
+  `compagnon validate` outside any `<details>` block
+- **WHEN** the check runs on it
+- **THEN** it fails naming `compagnon validate`
+
+#### Scenario: Installing and initializing are allowed outside the blocks
+
+- **GIVEN** a chapter whose only fenced shell blocks outside `<details>`
+  install Compagnon and run `compagnon init`
+- **WHEN** the check runs on it
+- **THEN** it passes
+
+### Requirement: The documentation shows how to ask in plain words
+
+Claude Code starts a skill when a request matches its description; the
+`/compagnon-…` command is a shortcut, not a requirement. Each step of the
+quickstart SHALL show first the sentence to say to Claude in plain words
+(in the edition's language), then the skill's command as an alternative.
+The Skills chapter SHALL hold a section "How to ask" ("Comment demander")
+with, for each installed skill, at least two example requests in plain
+words and the cue that makes Claude pick that skill.
+
+#### Scenario: Each quickstart step leads with a plain request
+
+- **GIVEN** the quickstart of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** in each step section, a quoted plain-words request comes before
+  the skill's `/compagnon-…` command
+
+#### Scenario: Every skill has examples
+
+- **GIVEN** the Skills chapter of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** its "How to ask" section names each of the eight skills with at
+  least two quoted example requests
+
+#### Scenario: A skill without examples is caught
+
+- **GIVEN** a "How to ask" section that gives `compagnon-sync` one example
+- **WHEN** the check runs on it
+- **THEN** it fails naming `compagnon-sync`
+
+### Requirement: The glossary defines every term of the Start here path
+
+`glossary.md` SHALL hold one `## <Term>` section per term, defining, in
+plain words, at least: agent, Claude Code, skill, change, plan, proposal,
+spec, requirement, scenario, delta, capability, design, tasks, archive,
+decision, role, review, MCP, artifact, schema, workflow, frontmatter,
+kebab-case — under the French names the French edition uses, following
+the lexicon of the French edition (Modification, Compétence,
+Spécification, Déroulé, Relecture…). Each definition MUST hold at most 60 words in English and 75 in
+French.
+
+#### Scenario: Every required term is defined in both editions
+
+- **GIVEN** `docs/en/src/glossary.md` and `docs/fr/src/glossary.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each holds a section for every required term, each under its
+  cap
+
+#### Scenario: A missing or overlong entry is caught
+
+- **GIVEN** a glossary without a "Delta" section and with a 90-word
+  definition of "Spec"
+- **WHEN** the check runs on it
+- **THEN** it fails naming "Delta" and "Spec"
+
+### Requirement: Non-developers can read and approve a plan without the terminal
+
+`guides/review-a-plan.md` SHALL explain, in both languages, for a reader
+who does not code: what a plan holds (proposal, specs, design, tasks),
+what to check in each, how to read a modified rule — the added,
+modified, removed and renamed sections of the specs, the rule before and
+after — and how to ask Claude for changes before approving.
+It MUST hold no fenced block in a shell language (`bash`, `sh`, `shell`,
+`console`, `powershell`, `pwsh`); quoting part of a plan in a `markdown`
+or `text` block is allowed.
+
+#### Scenario: The guide covers the plan without a terminal
+
+- **GIVEN** both editions of `guides/review-a-plan.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each names the proposal, the specs, the design and the tasks
+- **AND** each explains the added, modified, removed and renamed sections
+  under the keywords its edition's plans show: `ADDED`, `MODIFIED`,
+  `REMOVED`, `RENAMED` in English; `AJOUTÉES`, `MODIFIÉES`, `SUPPRIMÉES`,
+  `RENOMMÉES` in French
+- **AND** each holds no fenced shell block
+
+#### Scenario: A shell block in the guide is caught
+
+- **GIVEN** a guide holding a fenced `bash` block
+- **WHEN** the check runs on it
+- **THEN** it fails
+
+### Requirement: Under the hood blocks fold away in every rendering
+
+A collapsible "Under the hood" block SHALL be an HTML `<details>` element,
+closed by default (no `open` attribute), whose `<summary>` starts with
+"Under the hood" ("Sous le capot" in French) and then names what it
+explains, so that two blocks never share a name in a chapter. Its content
+is Markdown, separated from `<summary>` by a blank line, and MUST be
+rendered both on the website and in the offline manual written by
+`compagnon docs`. The block is the native disclosure element: no script,
+and the browser makes it operable with the keyboard.
+
+#### Scenario: The offline manual renders a folded block
+
+- **GIVEN** a chapter holding a `<details>` block whose content has a
+  fenced code block
+- **WHEN** the manual is rendered
+- **THEN** it holds the `<details>` element, without an `open` attribute,
+  with its `<summary>` and the code block rendered as HTML
+
+#### Scenario: A malformed block is caught
+
+- **GIVEN** a French chapter with a `<details open>` block, and one whose
+  summary reads "Details"
+- **WHEN** the check runs on it
+- **THEN** it fails naming both blocks
+
+#### Scenario: Two blocks with the same name are caught
+
+- **GIVEN** a chapter with two blocks whose summary reads "Under the hood"
+- **WHEN** the check runs on it
+- **THEN** it fails naming the repeated summary
+
+### Requirement: The README is a short entry point
+
+`README.md` and `README.fr.md` SHALL hold, after the mark: the promise in
+at most two sentences, a "Getting started" section ("Démarrer" in French)
+in three numbered steps — install, `compagnon init`, `/compagnon-propose` —
+showing the `curl … | sh` and `iwr … | iex` one-liners, and the four
+profile labels of Choose your path, each linking its path page on the
+documentation site. Each MUST hold at
+most 600 words in English and 750 in French, code blocks excluded.
+
+#### Scenario: Both READMEs stay short, keep the one-liners and link the profiles
+
+- **GIVEN** the repository's `README.md` and `README.fr.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** it fails if either exceeds its cap
+- **AND** it fails unless each "Getting started" section shows both
+  one-liners, `compagnon init` and `/compagnon-propose`
+- **AND** it fails unless each holds the four profile labels of its
+  language, each linking its path page
+
+#### Scenario: A README missing a path page is caught
+
+- **GIVEN** a README that links three of the four path pages
+- **WHEN** the check runs on it
+- **THEN** it fails naming the missing page
+
+### Requirement: The everyday pages explain the technical terms they use
+
+In the chapters of the "Start here" and "Everyday use" parts, glossary
+excepted, the first use of a listed technical term SHALL be a link to its
+glossary entry; the later uses of that term in the chapter need no link.
+The listed terms are, in English, delta, artifact, capability, schema,
+workflow, frontmatter and kebab-case, and in French, delta, artefact,
+capacité, schéma, déroulé, frontmatter and kebab-case. The phrase "main
+specs" ("specs principales") MUST NOT appear in these chapters: they say
+"the project's specs" ("les spécifications du projet"). Headings, inline code,
+fenced code blocks and "Under the hood" blocks are not concerned: a
+configuration key such as `workflows:` stays as it is.
+
+#### Scenario: Every everyday chapter explains its terms
+
+- **GIVEN** the chapters of the "Start here" and "Everyday use" parts of
+  both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** in each, the first use of every listed term is a link to the
+  glossary
+- **AND** none holds "main specs" or "specs principales"
+
+#### Scenario: A term used without a link is caught
+
+- **GIVEN** a chapter whose first prose use of "delta" is plain text, and
+  whose second use is a link to the glossary
+- **WHEN** the check runs on it
+- **THEN** it fails naming "delta"
+
+#### Scenario: A link to the top of the glossary is caught
+
+- **GIVEN** a chapter whose first use of "delta" links to `glossary.md`
+  without an anchor, and another whose link names an anchor no glossary
+  heading produces
+- **WHEN** the check runs on them
+- **THEN** each fails naming "delta"
+
+#### Scenario: A term in code or under the hood is not concerned
+
+- **GIVEN** a chapter that uses "schema" only in inline code, in a fenced
+  block and in a `<details>` block
+- **WHEN** the check runs on it
+- **THEN** it passes
+
+#### Scenario: The phrase "main specs" is caught
+
+- **GIVEN** a chapter that says "merges the deltas into the main specs"
+- **WHEN** the check runs on it
+- **THEN** it fails naming "main specs"
+
+### Requirement: The French edition speaks French
+
+Every French chapter listed in `docs/fr/src/SUMMARY.md`, in all its parts,
+and `README.fr.md`, SHALL use the French word wherever one exists,
+following this lexicon: change → modification, skill → compétence, spec →
+spécification, workflow → déroulé, review → relecture, commit →
+enregistrement, pull request and merge request → demande de fusion,
+design → conception, template → modèle, and, checked by hand because
+« issue » is also French, issue → ticket. The English word
+MAY appear only between parentheses, placed after its French equivalent so
+that a reader can match the screen ("une compétence (skill)"), and stays
+untouched in inline code, fenced code, "Under the hood" blocks, command
+names, flags, configuration keys, JSON fields, error codes and paths
+(`/compagnon-apply`, `_compagnon/changes/`), and in headings that name an
+identifier — a file name, a configuration key, a `compagnon` command.
+« artefact » and « delta », defined in the French glossary, are French
+terms of the edition; Compagnon's review is « relecture », not « revue ». The
+example requests the French edition gives to say to Claude follow the same
+lexicon (« réalise la modification », not « applique le change »).
+
+#### Scenario: The French book holds no anglicism of the lexicon
+
+- **GIVEN** every French chapter listed in `docs/fr/src/SUMMARY.md` and
+  `README.fr.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** none holds, in prose or headings and outside parentheses, the words
+  change, changes, skill, skills, spec, specs, workflow, workflows, review,
+  reviews, commit, commits, pull request, merge request, design, template
+  or templates
+
+#### Scenario: A merge request in prose is caught
+
+- **GIVEN** a French chapter saying « Ouvrez une merge request. »
+- **WHEN** the check runs on it
+- **THEN** it fails naming « merge request »
+
+#### Scenario: An anglicism in prose is caught
+
+- **GIVEN** a French chapter saying « Relisez le change avant de
+  l'archiver »
+- **WHEN** the check runs on it
+- **THEN** it fails naming « change »
+
+#### Scenario: A change counted after a quantifier or in a heading is caught
+
+- **GIVEN** a French chapter saying « aucun change n'est actif » and
+  holding the heading `## Changes`
+- **WHEN** the check runs on it
+- **THEN** it fails naming « change » and « changes »
+
+#### Scenario: A heading naming an identifier is not prose
+
+- **GIVEN** a French chapter with the headings `## review`, `## design.md`
+  and `### compagnon review`
+- **WHEN** the check runs on it
+- **THEN** it passes
+
+#### Scenario: An anglicism of a technical page is caught
+
+- **GIVEN** a French chapter saying « le design et le template du schéma »
+- **WHEN** the check runs on it
+- **THEN** it fails naming « design » and « template »
+
+#### Scenario: The French verb « changer » is not an anglicism
+
+- **GIVEN** a French chapter saying « voici ce qui change »
+- **WHEN** the check runs on it
+- **THEN** it passes
+
+#### Scenario: The English word between parentheses, in code or in a path is allowed
+
+- **GIVEN** a French chapter saying « une compétence (skill) », and
+  naming `/compagnon-apply` and `_compagnon/changes/`
+- **WHEN** the check runs on it
+- **THEN** it passes
+
+#### Scenario: A renamed heading keeps its links
+
+- **GIVEN** a French heading renamed from « Écrire un template » to
+  « Écrire un modèle », and a chapter linking to its old anchor
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** the check that every link of the offline manual lands on a
+  heading fails until the link names the new anchor
+
+### Requirement: Choose your path asks one question with four answers
+
+`choose-your-path.md` SHALL ask one question, "What will you do with
+Compagnon?" ("Qu'allez-vous faire avec Compagnon ?"), answered by four
+profiles phrased as activities, in this order, each a list item whose
+only link opens its path page:
+
+- "I review and approve plans — I do not code" (`paths/review.md`);
+- "I do not code, but I want Claude to build something for me"
+  (`paths/build.md`);
+- "I am a developer and I have Claude write code" (`paths/develop.md`);
+- "I set Compagnon up for my team" (`paths/team.md`).
+
+Below them, one sentence MUST point those who want to change Compagnon
+itself to `origins.md`, the first chapter of the Contributing part. The same four labels, in the same words,
+SHALL be used by the introduction, the READMEs and the home pages of the
+site.
+
+#### Scenario: Both editions ask the question with the four profiles
+
+- **GIVEN** both editions of `choose-your-path.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each holds the four profile labels of its language, in order,
+  each linking its path page and nothing else
+- **AND** a link to `origins.md` follows them
+
+#### Scenario: The introduction uses the four labels
+
+- **GIVEN** both editions of `introduction.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each holds the four profile labels of its language, each
+  linking its path page
+
+#### Scenario: A profile with two links or the wrong page is caught
+
+- **GIVEN** a Choose your path page whose first profile links both
+  `paths/review.md` and `glossary.md`
+- **WHEN** the check runs on it
+- **THEN** it fails naming that profile
+
+### Requirement: Each profile has a short path page
+
+Each path page SHALL be titled with its profile's label, word for word —
+its `# ` heading and its entry in `SUMMARY.md` — so that every link to it,
+from any entry point, names the page it opens. It SHALL open, under that
+title, with one sentence saying who it is for and how long the path takes, then list at most three numbered
+steps, each holding exactly one link to a chapter of the same edition whose
+text is that chapter's title, then a "Next, if you need it" ("Ensuite, si
+besoin") section, and end with a link back to Choose your path. The path
+for people who do not code but want Claude to build something MUST NOT
+take, as a step, a chapter whose fenced shell blocks outside "Under the
+hood" blocks run anything but installing Compagnon or `compagnon init`;
+its "Next" section names no developer chapter.
+
+#### Scenario: Every path page has at most three steps, titled as their pages
+
+- **GIVEN** the four path pages of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each is titled with its profile's label, in `SUMMARY.md` too
+- **AND** each has one to three numbered steps, each with one link whose
+  text equals the title of the chapter it opens
+- **AND** a sentence comes between the title and the first step
+- **AND** each holds a "Next, if you need it" / « Ensuite, si besoin »
+  section and links back to Choose your path
+
+#### Scenario: The build path asks no command beyond installing
+
+- **GIVEN** the build path page of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** no chapter it takes as a step holds, outside "Under the hood"
+  blocks, a shell block running anything but installing or
+  `compagnon init`
+
+#### Scenario: Every link of the paths resolves
+
+- **GIVEN** Choose your path and the four path pages of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** every link to a chapter resolves to a chapter of the table of
+  contents, and every anchor it names to a heading of that chapter
+
+#### Scenario: A path page with four steps is caught
+
+- **GIVEN** a path page with four numbered steps
+- **WHEN** the check runs on it
+- **THEN** it fails naming the page
+
+#### Scenario: A step labelled differently from its page is caught
+
+- **GIVEN** a path page whose step reads "[Step by step](workflow.md)"
+  while `workflow.md` is titled "The workflow"
+- **WHEN** the check runs on it
+- **THEN** it fails naming "Step by step"
+
+### Requirement: The home page asks the question first, in both languages
+
+The site SHALL have a home page in English, `docs/site/index.html`, and in
+French, `docs/site/fr.html` (`lang="fr"`), each linking the other with the
+other's `lang` and `hreflang`; the English page's links to the French
+edition lead to `fr.html`. Each MUST show, before
+any installation command or technical section, the question of Choose your
+path and its four profiles in its language, each linking the path page of
+its edition, and the link for contributors; these links are plain
+`<a href>` elements, which work without script.
+
+#### Scenario: Both home pages lead with the four profiles
+
+- **GIVEN** `docs/site/index.html` and `docs/site/fr.html`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each holds the four labels of its language, each linking
+  `en/paths/…` or `fr/paths/…`
+- **AND** the first label comes before the first installation command
+- **AND** each links `origins.html` of its edition for contributors
+- **AND** `fr.html` declares `lang="fr"`, and each page links the other
+  with the other's `lang` and `hreflang`
+
+#### Scenario: A home page that asks after installing is caught
+
+- **GIVEN** a home page whose first profile label comes after its
+  `curl … | sh` command
+- **WHEN** the check runs on it
+- **THEN** it fails naming the page
+
+### Requirement: Developer pages do not gloss everyday developer words
+
+The workflow, skills, concepts and FAQ chapters, read mostly by
+developers, SHALL NOT explain in parentheses what a terminal or a test is
+("the window where you type commands", "a small program that checks…";
+in French « la fenêtre où l'on tape des commandes », « un petit programme
+qui vérifie »); the glossary link on first use stays.
+
+#### Scenario: The developer chapters hold no gloss
+
+- **GIVEN** the workflow, skills, concepts and FAQ chapters of both
+  editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** none holds one of the glosses of the requirement
+
+#### Scenario: A gloss for developers is caught
+
+- **GIVEN** a chapter saying "a terminal (the window where you type
+  commands)"
+- **WHEN** the check runs on it
+- **THEN** it fails naming the gloss
+
+### Requirement: Each profile finds the pages it asked for
+
+Each edition SHALL hold these pages, listed in its `SUMMARY.md`:
+`guides/example-plan.md` (an annotated example plan),
+`guides/approve-a-plan.md` (approving a plan on GitHub or GitLab) and
+`guides/start-from-nothing.md` (starting from nothing) in the Everyday use
+part; `guides/existing-project.md` (adopting Compagnon on an existing
+project) and `guides/team-rollout.md` (deploying for a team) in the Going
+further part; `contributing.md` in the Contributing part. The path pages
+SHALL lead to them: the build path takes starting from nothing as a
+step and its "Next" names the example plan; the review path's "Next"
+names the example plan and approving; the developer path's "Next" names
+adopting on an existing project; the team path takes deploying for a team
+as a step, Roles moving to its "Next"; `origins.md` ends with a link to
+`contributing.md`.
+
+#### Scenario: Both editions list the new pages where their readers look
+
+- **GIVEN** both editions' `SUMMARY.md` and path pages
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each lists the six pages in their parts
+- **AND** the build path takes `guides/start-from-nothing.md` as a step
+  and names `guides/example-plan.md` under "Next"
+- **AND** the review path names `guides/example-plan.md` and
+  `guides/approve-a-plan.md` under "Next"
+- **AND** the developer path names `guides/existing-project.md` under
+  "Next"
+- **AND** the team path takes `guides/team-rollout.md` as a step and names
+  `roles.md` under "Next"
+- **AND** each edition's `origins.md` links `contributing.md`
+
+#### Scenario: A path page that does not link its new page is caught
+
+- **GIVEN** a review path page whose "Next" lacks `guides/approve-a-plan.md`
+- **WHEN** the check runs on it
+- **THEN** it fails naming the page and the missing link
+
+### Requirement: The example plan is complete and annotated
+
+`guides/example-plan.md` SHALL show one complete plan — its proposal, its
+specs with at least one requirement and scenario, its design and its
+tasks — each part under a page heading of its own, its text in a quoted
+`markdown` block, followed by a "What to check here" heading ("Ce qu'on
+vérifie ici") holding the note addressed to a reviewer. The French edition's plan is
+written as Compagnon writes a plan in French, its structural keywords in
+French.
+
+#### Scenario: Every part of the example is annotated
+
+- **GIVEN** both editions of `guides/example-plan.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each shows the four parts, each followed by its "What to
+  check here" / « Ce qu'on vérifie ici » note
+- **AND** the plan's text is inside fenced `markdown` blocks, none of its
+  headings rendered as a page heading
+- **AND** the French plan uses the French keywords (`### Exigence :`,
+  `#### Scénario :`)
+- **AND** each edition's spec block parses with Compagnon's delta parser
+  without issue
+
+#### Scenario: A part of the example without its note is caught
+
+- **GIVEN** an example plan whose design part has no "What to check here"
+  heading after it
+- **WHEN** the check runs on it
+- **THEN** it fails naming the design part
+
+### Requirement: Pages for people who do not code ask for no command
+
+`guides/approve-a-plan.md` SHALL explain, without Claude Code or a
+terminal, where a plan arrives — among the request's changed files, in
+`_compagnon/changes/<name>/`, on GitHub and GitLab alike — where its points to discuss are, and how
+to comment, ask for changes and approve on GitHub and on GitLab; it MUST
+hold no fenced shell block. `guides/start-from-nothing.md` SHALL say what
+to get first — Claude Code and a folder for the project — and its fenced
+shell blocks outside "Under the hood" blocks MAY only install Compagnon or
+run `compagnon init`.
+
+#### Scenario: The two pages keep to what a non-developer can do
+
+- **GIVEN** both editions of `guides/approve-a-plan.md` and
+  `guides/start-from-nothing.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** the approving page holds no fenced shell block, names GitHub
+  and GitLab, and names `_compagnon/changes/` as where the plan is
+- **AND** in French, each quoted button label stands between parentheses
+  after its action, never as inline code
+- **AND** the starting page names Claude Code before its first shell
+  block, and runs nothing but installing and `compagnon init` outside
+  "Under the hood" blocks
+
+#### Scenario: A command in a page for non-developers is caught
+
+- **GIVEN** an approving page holding a fenced `bash` block, and a
+  starting page running `compagnon validate`
+- **WHEN** the check runs on them
+- **THEN** each fails, naming the block or the command

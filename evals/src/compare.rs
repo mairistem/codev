@@ -314,7 +314,7 @@ fn improvements(baseline: &SuiteScore, candidate: &SuiteScore) -> Vec<String> {
             c,
         ));
     }
-    for (step, b, c) in merge_and_configure_pairs(baseline, candidate) {
+    for (step, b, c) in checked_pairs(baseline, candidate) {
         out.extend(checked::improvements(step.as_str(), "pass rate", b, c));
     }
     out
@@ -365,7 +365,7 @@ pub fn compare(
     if let (Some(base), Some(cand)) = (&baseline.implement, &candidate.implement) {
         failures.extend(implement_quality(base, cand));
     }
-    failures.extend(merge_and_configure_quality(baseline, candidate));
+    failures.extend(checked_quality(baseline, candidate));
     let improved = improvements(baseline, candidate);
     let base_floor = floor(baseline);
     let consumption_failures = consumption(baseline, candidate, base_floor);
@@ -384,7 +384,7 @@ pub fn compare(
         planning_section(baseline, candidate),
         update_section(baseline, candidate),
         implement_section(baseline, candidate),
-        merge_and_configure_sections(baseline, candidate),
+        checked_sections(baseline, candidate),
         improved_section(&improved),
         consumption_section(baseline, candidate, &verdict),
         sources_section(baseline, candidate),
@@ -752,16 +752,16 @@ fn update_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
     out
 }
 
-/// The sync, archive and configure steps both runs hold; `plan.update`
+/// The check-scored steps both runs hold — sync, archive, configure,
+/// explore and onboard, those of `SuiteScore::checked_steps`; `plan.update`
 /// is judged by [`update_quality`].
-fn merge_and_configure_pairs<'a>(
+fn checked_pairs<'a>(
     baseline: &'a SuiteScore,
     candidate: &'a SuiteScore,
 ) -> Vec<(Step, &'a CheckStepScore, &'a CheckStepScore)> {
-    let cand: BTreeMap<Step, &CheckStepScore> =
-        candidate.merge_and_configure_steps().into_iter().collect();
+    let cand: BTreeMap<Step, &CheckStepScore> = candidate.checked_steps().into_iter().collect();
     baseline
-        .merge_and_configure_steps()
+        .checked_steps()
         .into_iter()
         .filter_map(|(step, b)| cand.get(&step).map(|c| (step, b, *c)))
         .collect()
@@ -772,13 +772,14 @@ fn shares(score: &SuiteScore, step: Step) -> BTreeMap<String, (u32, u32)> {
     checked::case_pass_shares(&score.cases, |c| c.checks_at(step))
 }
 
-/// The quality failures of the sync, archive and configure steps: the
+/// The quality failures of the check-scored steps (sync, archive,
+/// configure, explore, onboard): the
 /// step's share of runs passing and its runs straying, as the update step
 /// is judged, then each case's share of runs passing against its share in
 /// the baseline — both scored with the cases as they now stand.
-fn merge_and_configure_quality(baseline: &SuiteScore, candidate: &SuiteScore) -> Vec<String> {
+fn checked_quality(baseline: &SuiteScore, candidate: &SuiteScore) -> Vec<String> {
     let mut out = Vec::new();
-    for (step, b, c) in merge_and_configure_pairs(baseline, candidate) {
+    for (step, b, c) in checked_pairs(baseline, candidate) {
         out.extend(checked::quality(step.as_str(), "pass rate", b, c));
         out.extend(checked::case_quality(
             step.as_str(),
@@ -789,9 +790,9 @@ fn merge_and_configure_quality(baseline: &SuiteScore, candidate: &SuiteScore) ->
     out
 }
 
-fn merge_and_configure_sections(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
+fn checked_sections(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
     let mut out = String::new();
-    for (step, b, c) in merge_and_configure_pairs(baseline, candidate) {
+    for (step, b, c) in checked_pairs(baseline, candidate) {
         let _ = writeln!(out, "\n## `{}`\n", step.as_str());
         let _ = writeln!(
             out,
@@ -1727,5 +1728,49 @@ mod tests {
             "{:?}",
             result.failures
         );
+    }
+
+    /// Explore runs: per case, whether each repetition passes.
+    fn exploring(runs: &[(&str, &[bool])]) -> SuiteScore {
+        use crate::read_only::tests::{explore_case, run_ending};
+        let mut scores = Vec::new();
+        for (id, passes) in runs {
+            let c = explore_case(id);
+            for (n, pass) in passes.iter().enumerate() {
+                let last = if *pass {
+                    "Ask me for /compagnon-propose."
+                } else {
+                    "The provider's SLA is missing."
+                };
+                scores.push(crate::score::read_only_case(&c, &run_ending(last)).at(n as u32 + 1));
+            }
+        }
+        suite(run(), scores, Thresholds::default())
+    }
+
+    #[test]
+    fn comparing_two_runs_of_explore() {
+        let base = exploring(&[
+            ("a", &[true; 5]),
+            ("b", &[true; 5]),
+            ("c", &[true, true, true, true, false]),
+        ]);
+        let cand = exploring(&[("a", &[true; 3]), ("b", &[false; 3]), ("c", &[false; 3])]);
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
+        assert!(!result.pass);
+        assert!(
+            result.failures.contains(
+                &"idea.explore: pass rate 0.33 is under the baseline's minimum 0.67".to_string()
+            ),
+            "{:?}",
+            result.failures
+        );
+        assert!(
+            result.report.contains("## `idea.explore`"),
+            "{}",
+            result.report
+        );
+        let same = compare(&base, &base, &[], Mode::QualityOnly, false);
+        assert!(same.pass, "{:?}", same.failures);
     }
 }

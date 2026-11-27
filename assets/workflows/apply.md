@@ -9,6 +9,8 @@ steps, for the user to request.
 
 ---
 
+{{fragment:next-steps}}
+
 ## Input
 
 A change name as argument, or nothing (in which case the change is resolved
@@ -41,7 +43,8 @@ compagnon list
 - A single active change → use it.
 - Several active changes → ask the user which one, listing the names. Do
   not guess.
-- No active change → say so, and suggest `/compagnon-propose` to create one.
+- No active change → say so, and suggest describing the change to plan,
+  say “plan <what you want to build>” (shortcut: `/compagnon-propose`).
 
 Then check the planning:
 
@@ -52,7 +55,8 @@ compagnon status --change "<name>" --json
 {{fragment:version-check}}
 
 If `isPlanningComplete` is `false`, stop: planning is not ready. Say which
-artifacts are missing and suggest `/compagnon-propose` or editing by hand.
+artifacts are missing and suggest finishing the plan, say “finish the plan
+of <name>” (shortcut: `/compagnon-propose`), or editing it by hand.
 Implement nothing.
 
 ### 2. Read the tasks
@@ -190,8 +194,9 @@ Otherwise, summarize:
 - **To decide** — from step 5: what only the user can decide, the
   suggested domains still `unticked` included, or "Nothing to decide".
   `compagnon archive` refuses while a `high` finding is `open` or `disputed`,
-- "The change is ready to be archived. Run `/compagnon-archive` or
-  `compagnon archive` as the next step."
+- "The change is ready to be archived. Once you have reviewed it, say
+  “archive the change” (shortcut: `/compagnon-archive`, or
+  `compagnon archive` in a terminal)."
 
 **Do not archive yourself.** The user must review first.
 

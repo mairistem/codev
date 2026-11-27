@@ -8,6 +8,8 @@ pre-flight step — there is no need to `sync` then `archive` separately.
 
 ---
 
+{{fragment:next-steps}}
+
 ## Input
 
 A change name as argument, or nothing (in which case the change is resolved
@@ -36,8 +38,8 @@ compagnon status --change "<name>" --json
 {{fragment:version-check}}
 
 If `isPlanningComplete` is `false`, stop: planning is not ready. Name the
-missing artifacts and suggest `/compagnon-propose` or `/compagnon-continue`
-(depending on what already exists). Do not run `sync`.
+missing artifacts and suggest finishing the plan, say “finish the plan of
+<name>” (shortcut: `/compagnon-propose`). Do not run `sync`.
 
 ### 2. Run the merge in JSON mode
 
@@ -56,9 +58,10 @@ Fields to use:
 
 On a **non-zero exit**, read `status[0].code`:
 
-- If `code == "validation_failed"` → reply **exactly**:
-  > The change has errors. Run `compagnon validate <name>` to see the details.
-  Nothing more. Do not retry, and do not try to fix the change yourself.
+- If `code == "validation_failed"` → reply with this sentence, said in
+  the user's language, and nothing more:
+  > The change has errors. Say “show me the errors” and I will list them (shortcut: `compagnon validate <name>`).
+  Do not retry, and do not try to fix the change yourself.
 - For **any other code** → relay `status[0].message` as is, and stop.
 
 ### 3. Report to the user
@@ -83,7 +86,7 @@ Updated:
 If `created` or `updated` is non-empty, add **a single line**, without
 pressing the point:
 
-> The change is ready to be archived if you want to close the cycle.
+> The change is ready to be archived if you want to close the cycle: say “archive it” (shortcut: `/compagnon-archive`).
 
 If both lists are empty (`unchanged` only), suggest nothing — a no-op
 sync does not call for an archive.
@@ -99,7 +102,7 @@ archive, or something else).
 - **Never move the change** — the power of `compagnon sync` ends at the
   merge. Moving is the job of `compagnon-archive`.
 - **Do not archive** — if the user wanted to archive, they would have
-  typed `/compagnon-archive`.
+  asked for it.
 - **Do not parse any JSON other than `sync`'s** — the skill knows the
   shape of no other contract.
 - **Do not hide an error** — if the CLI returns a non-zero exit, relay

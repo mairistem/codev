@@ -1,5 +1,6 @@
 //! What the check-scored steps share — `plan.update`, `change.sync`,
-//! `change.archive` and `configure.enrich`: a run's named checks, the
+//! `change.archive`, `configure.enrich`, `idea.explore` and
+//! `project.onboard`: a run's named checks, the
 //! loose text comparison, the measures per repetition (the share of runs
 //! that pass, the share of checks that pass, the runs straying), and how
 //! `compare` judges them. Each step brings its own checks; the measures

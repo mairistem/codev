@@ -891,6 +891,43 @@ fn the_suite_covers_the_configure_projects() {
     );
 }
 
+#[test]
+fn contributing_chapters_document_the_explore_and_onboard_cases() {
+    let (en, fr) = (read("CONTRIBUTING.md"), read("CONTRIBUTING.fr.md"));
+    let both = [
+        ("CONTRIBUTING.md", en.as_str()),
+        ("CONTRIBUTING.fr.md", fr.as_str()),
+    ];
+    let mut gaps = Vec::new();
+    for needle in [
+        "step: idea.explore",
+        "step: project.onboard",
+        "--step idea.explore",
+        "--step project.onboard",
+        "`request`",
+        "`state`",
+        "`contains`",
+        "`absent`",
+        "`not-worth`",
+        "`several-changes`",
+    ] {
+        gaps.extend(missing_mention(&both, needle));
+    }
+    // What a case costs, in each language's numbers.
+    gaps.extend(missing_mention(&both[..1], "0.30 to 0.50"));
+    gaps.extend(missing_mention(&both[1..], "0,30 à 0,50"));
+    assert_eq!(gaps, Vec::<String>::new());
+}
+
+#[test]
+fn the_suite_covers_explore_outcomes_and_onboard_recommendations() {
+    let cases = suite::load_cases(&repo()).unwrap();
+    assert_eq!(
+        compagnon_evals::case::read_only_gaps(&cases),
+        Vec::<String>::new()
+    );
+}
+
 /// The files of a case's `base/`, by path.
 fn suite_files(id: &str) -> Vec<String> {
     compagnon_evals::runner::read_tree(&repo().join("evals/cases").join(id).join("base"))

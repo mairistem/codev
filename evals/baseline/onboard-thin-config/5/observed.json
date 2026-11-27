@@ -1,0 +1,89 @@
+{
+  "format": 2,
+  "case": "onboard-thin-config",
+  "error": null,
+  "costUsd": 0.1619198,
+  "durationMs": 13616,
+  "consumption": {
+    "durationApiMs": 12835,
+    "turns": 10,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 974,
+      "cacheCreation": 12617,
+      "cacheRead": 164674,
+      "output": 1365
+    },
+    "toolCalls": 9,
+    "calls": [
+      {
+        "cacheCreation": 6560,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6560
+        }
+      },
+      {
+        "cacheCreation": 3327,
+        "cacheRead": 31688,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3327
+        }
+      },
+      {
+        "cacheCreation": 283,
+        "cacheRead": 35015,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 6,
+        "sources": {
+          "compagnon list": 283
+        }
+      },
+      {
+        "cacheCreation": 2247,
+        "cacheRead": 35298,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "compagnon decision": 35,
+          "compagnon doctor": 1681,
+          "compagnon list": 68,
+          "file": 375,
+          "search": 88
+        }
+      },
+      {
+        "cacheCreation": 200,
+        "cacheRead": 37545,
+        "input": 2,
+        "output": 453,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 200
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "**Compagnon** is a versioned planning tool for software projects. Every change goes through a **propose → apply → archive** cycle that is written down in `_compagnon/`. Each step has its own Claude Code skill (`/compagnon-<step>`), the `compagnon` command-line tool does the underlying work, and your planning lives in the repository next to the code.\n\nHere you have:\n- 0 main specs\n- 0 local decisions in effect, 0 inherited\n- 0 active changes\n\nThis project is freshly initialized and ready for its first change.\n- Setup still to complete:\n  - `config.rules`: fix with `/compagnon-configure`\n  - `specs`: fix with `/compagnon-propose <a change>` (documenting existing behavior counts as planned work too)\n  - `ci`: fix by adding `compagnon validate --strict` to your CI pipeline\n- 2 warnings (no accepted decision, no CHANGELOG.md); see `compagnon doctor`.\n\n**What's next**: your config is sparse. `_compagnon/config.yaml` has no `rules:` yet, only a one-line context detected from `pyproject.toml`. Start with `/compagnon-configure`: Claude will read the project (README, docs and a sample of the code) and fill in `_compagnon/config.yaml`. Then type `/compagnon-propose <an-idea>` for your first change."
+  ],
+  "readOnly": {
+    "finalMessage": "**Compagnon** is a versioned planning tool for software projects. Every change goes through a **propose → apply → archive** cycle that is written down in `_compagnon/`. Each step has its own Claude Code skill (`/compagnon-<step>`), the `compagnon` command-line tool does the underlying work, and your planning lives in the repository next to the code.\n\nHere you have:\n- 0 main specs\n- 0 local decisions in effect, 0 inherited\n- 0 active changes\n\nThis project is freshly initialized and ready for its first change.\n- Setup still to complete:\n  - `config.rules`: fix with `/compagnon-configure`\n  - `specs`: fix with `/compagnon-propose <a change>` (documenting existing behavior counts as planned work too)\n  - `ci`: fix by adding `compagnon validate --strict` to your CI pipeline\n- 2 warnings (no accepted decision, no CHANGELOG.md); see `compagnon doctor`.\n\n**What's next**: your config is sparse. `_compagnon/config.yaml` has no `rules:` yet, only a one-line context detected from `pyproject.toml`. Start with `/compagnon-configure`: Claude will read the project (README, docs and a sample of the code) and fill in `_compagnon/config.yaml`. Then type `/compagnon-propose <an-idea>` for your first change.",
+    "changesCreated": []
+  }
+}

@@ -1,26 +1,113 @@
 # Claude Code skills
 
-Compagnon ships eight workflows. `compagnon init` and `compagnon update` render each one as
-a Claude Code skill in `.claude/skills/compagnon-<workflow>/SKILL.md`. A skill is
-discovered by Claude Code automatically, and you can also invoke it directly
-by typing its name as a slash command, such as `/compagnon-propose`.
+A skill is a set of instructions that Claude Code follows for one kind of
+task. Compagnon gives you eight, one for each step of its
+[workflow](glossary.md#workflow): planning a change, building it, filing
+it away, and so on. Claude Code finds them on its own, so you can simply
+ask in your own words. You can also start one directly by typing its
+name, such as `/compagnon-propose`.
 
-| Skill | What it does | Modifies |
+You do not install them by hand: `compagnon init` and `compagnon update`
+write each one in its own folder, `.claude/skills/compagnon-<workflow>/SKILL.md`.
+
+| Skill | What it does | What it may change |
 |---|---|---|
-| `/compagnon-propose` | Creates a change and writes all its planning artifacts in one pass | `_compagnon/changes/<name>/` only |
-| `/compagnon-explore` | Thinks an idea through, compares approaches, clarifies a need | Nothing |
-| `/compagnon-onboard` | Introduces Compagnon, reads the project's state, recommends the next action | Nothing |
-| `/compagnon-configure` | Proposes a richer `context:` and per-artifact `rules:` for `_compagnon/config.yaml` | `_compagnon/config.yaml`, after confirmation |
-| `/compagnon-apply` | Implements the tasks of a planned change, checking them off | Project code and `tasks.md` |
-| `/compagnon-update` | Revises a written planning artifact and keeps the others consistent | `_compagnon/changes/<name>/` only |
-| `/compagnon-sync` | Merges a change's deltas into the main specs without archiving | Through `compagnon sync` only |
-| `/compagnon-archive` | Validates, merges and moves a change to the archive | Through `compagnon archive` only |
+| `/compagnon-propose` | Creates a change and writes its whole plan in one go | Only the change's folder, `_compagnon/changes/<name>/` |
+| `/compagnon-explore` | Helps you think an idea through, compare approaches, clarify a need | Nothing |
+| `/compagnon-onboard` | Introduces Compagnon, tells you where the project stands, suggests what to do next | Nothing |
+| `/compagnon-configure` | Reads your project and suggests how to describe it to Compagnon: a richer `context:` and `rules:` for each part of the plan | `_compagnon/config.yaml`, once you confirm |
+| `/compagnon-apply` | Builds a planned change, task by task, ticking each one off | Your project's code and `tasks.md` |
+| `/compagnon-update` | Revises part of a plan already written, and keeps the rest consistent | Only the change's folder, `_compagnon/changes/<name>/` |
+| `/compagnon-sync` | Updates the project's specs with what the change brings, without closing it | Nothing directly: it goes through `compagnon sync` |
+| `/compagnon-archive` | Checks a finished change, updates the project's specs with it, and files it away | Nothing directly: it goes through `compagnon archive` |
+
+## How to ask
+
+You do not need to remember the commands. Claude Code reads the
+description of every installed skill and starts the one that matches your
+request: say what you want, in your own words and in your own language.
+The `/compagnon-…` command is only a shortcut that names the skill
+directly. If Claude picks the wrong skill, or none, say which one you mean
+("use Compagnon to plan this") or type the shortcut.
+
+### To plan a change (`/compagnon-propose`)
+
+The cue: you ask for a plan, a proposal, or for something new to build or
+fix "with Compagnon".
+
+- "Plan a dark mode that follows the system setting."
+- "Write a proposal to let users export their invoices as PDF."
+- "Prepare a change for ticket PROJ-123."
+
+### To think an idea through (`/compagnon-explore`)
+
+The cue: you are not sure yet what to build, or want options compared.
+Nothing is written.
+
+- "Let's explore how we could cache the search results."
+- "I'm hesitating between two ways to store sessions: compare them."
+
+### To get a tour (`/compagnon-onboard`)
+
+The cue: you are new to Compagnon or to the project, and want to know where
+things stand.
+
+- "Show me around Compagnon."
+- "Where does this project stand, and what should I do next?"
+
+### To tailor the setup (`/compagnon-configure`)
+
+The cue: you want Compagnon to know your project's conventions.
+
+- "Configure Compagnon for this project."
+- "Read our README and code, and suggest rules for the plans."
+
+### To build a planned change (`/compagnon-apply`)
+
+The cue: a plan exists and you approve it.
+
+- "The plan is good, implement it."
+- "Carry out the tasks of add-dark-mode."
+
+### To revise a plan (`/compagnon-update`)
+
+The cue: you want to change a plan already written, before it is built.
+
+- "In the plan, keep the user's choice when they pick a theme by hand."
+- "Update the design of add-dark-mode: we store the theme in a cookie."
+
+### To publish the specs early (`/compagnon-sync`)
+
+The cue: another change needs this change's specs before it is archived.
+
+- "Add the specs of add-dark-mode to the project's specs, without archiving."
+- "Sync the specs of this change now."
+
+### To file a finished change (`/compagnon-archive`)
+
+The cue: the work is done and checked.
+
+- "The change is done, archive it."
+- "Archive add-dark-mode."
 
 ## Tool permissions
 
+Each skill may use only the tools its job needs. A skill that must not
+write files is not given the tools to write them. This is part of what
+each skill promises you.
+
+- Every skill may run `compagnon` commands, and read files.
+- Only `/compagnon-apply` may run any command, because it must run your
+  [tests](glossary.md#test) and build your project.
+- `/compagnon-sync` and `/compagnon-archive` cannot write files at all:
+  every change they make goes through Compagnon itself.
+- `/compagnon-explore` and `/compagnon-onboard` write nothing.
+
+<details>
+<summary>Under the hood: the allowed-tools of each skill</summary>
+
 Each skill declares the tools it may use in the `allowed-tools` field of its
-frontmatter. The permissions are part of each skill's promise: a skill that
-must not write files is not given the tools to do so.
+frontmatter.
 
 | Skill | `allowed-tools` |
 |---|---|
@@ -52,82 +139,158 @@ project's mode: without the tool pre-approved, Claude Code asks before
 starting a sub-agent, and if it cannot start one, the roles review
 inline.
 
+</details>
+
 ## Update notice
 
-`/compagnon-propose`, `/compagnon-apply`, `/compagnon-update`, `/compagnon-sync` and
-`/compagnon-archive` read the `update` and `versionRequirement` objects of their
-first `compagnon status --json`. When the project's `compagnon_version` is not
-satisfied, or a newer Compagnon is available and not snoozed, the skill says so
-in one line, with the release link, and asks **Update now** or **Later**
-before doing anything else:
+Five skills check, before they start, that you are running the right
+version of Compagnon: `/compagnon-propose`, `/compagnon-apply`,
+`/compagnon-update`, `/compagnon-sync` and `/compagnon-archive`. They
+speak up in two cases:
 
-- **Update now** runs `compagnon self-update --yes`, then resumes the action;
-- **Later** runs `compagnon self-update --snooze` — 7 days of silence for that
-  version — then resumes. For an unsatisfied `compagnon_version`, nothing is
-  snoozed: the team asked for it. `/compagnon-sync` and `/compagnon-archive` then
-  stop at the refusal of `compagnon sync` or `compagnon archive`, which do not run
-  outside `compagnon_version` (`compagnon_version_unsatisfied`); the message gives
-  the fix — `compagnon self-update`, or the version to install.
+- your team requires a version of Compagnon (`compagnon_version` in the
+  configuration) that you do not have;
+- a newer Compagnon is available, and you have not put it off.
 
-The question is asked once per action, never in the middle of one:
+The skill then says so in one line, with a link to the release, and asks
+you **Update now** or **Later** before doing anything else:
+
+- **Update now** installs the new version (`compagnon self-update --yes`),
+  then carries on with what you asked;
+- **Later** silences the notice for that version for 7 days
+  (`compagnon self-update --snooze`), then carries on.
+
+When your team requires the version, **Later** silences nothing: the team
+asked for it. `/compagnon-sync` and `/compagnon-archive` then stop, because
+`compagnon sync` and `compagnon archive` refuse to run with the wrong
+version (`compagnon_version_unsatisfied`). The message tells you the fix:
+`compagnon self-update`, or the version to install.
+
+The question comes once per request, never in the middle of the work:
 `/compagnon-apply` asks it before the first task. `/compagnon-explore`,
-`/compagnon-onboard` and `/compagnon-configure` never ask; `/compagnon-onboard` relays
-`compagnon doctor`, whose `compagnon_version` check says the same thing. No skill
-needs more than `Bash(compagnon:*)` for it.
+`/compagnon-onboard` and `/compagnon-configure` never ask it.
+`/compagnon-onboard` passes on the result of `compagnon doctor` instead,
+whose `compagnon_version` check says the same thing.
+
+<details>
+<summary>Under the hood: how a skill knows about a new version</summary>
+
+The five skills read the `update` and `versionRequirement` objects of their
+first `compagnon status --json`. No skill needs more than
+`Bash(compagnon:*)` for it.
+
+</details>
 
 ## The author's corrections
 
-When you correct the agent during `/compagnon-propose`, `/compagnon-apply` or
-`/compagnon-update` on how your project does things — a convention, a
-technical choice, an expectation on an artifact — it notes the correction
-once in the change's [`corrections.md`](reference/file-formats.md#correctionsmd):
-where, what it had done, what you asked, one line each. It then quotes the
-entry to you, so that you can have it changed or removed before it is
-committed. `compagnon review` lists the corrections, and `compagnon validate`
+Sometimes you correct Claude on how your project does things: a
+convention, a technical choice, what you expect from a part of the plan.
+When this happens during `/compagnon-propose`, `/compagnon-apply` or
+`/compagnon-update`, Claude writes the correction down once, in the
+change's [`corrections.md`](reference/file-formats.md#correctionsmd): where
+it was, what it had done, what you asked, one line each. It then shows you
+the entry, so that you can have it changed or removed before it is saved
+in a [commit](glossary.md#commit). `compagnon review` lists the corrections, and `compagnon validate`
 checks their file.
 
-Only an instruction that would apply to the next change too is noted. A
-one-off preference about this change, a typo, a change of scope or a
-misunderstanding of the request is not. A project instruction goes to
-`corrections.md`, which the team shares through git, and not to Claude
-Code's personal memory. A preference about how the agent works with you
-stays in that personal memory. An entry names no person and quotes no
-personal data or secret.
+Claude only writes down an instruction that would apply to the next change
+too. It does not note a one-off preference about this change, a typo, a
+change of scope, or a misunderstanding of your request.
+
+Where it goes depends on whom it concerns:
+
+- an instruction about the project goes to `corrections.md`, which the team
+  shares through [git](glossary.md#git). It does not go to Claude Code's
+  personal memory: the notes Claude keeps for you alone, on your computer;
+- a preference about how Claude works with you stays in that personal
+  memory.
+
+An entry names no person, and quotes no personal data and no secret.
 
 ## The skills in detail
 
 ### Propose (`/compagnon-propose`)
 
-Turns a request into a complete plan: proposal, spec deltas, design and
-tasks. It reads the relevant code before writing, grounds the scope in what
-it finds, and reports contradictions with existing specs instead of settling
-them alone. It writes the prose and the structural keywords in the
-project's [artifact language](guides/artifact-language.md), exactly as the
-instructions give them.
+This skill turns your request into a complete plan in four parts: the
+proposal, the changes to the specs (called
+[deltas](glossary.md#delta)), the design and the tasks.
 
-Once the proposal is written, the instructions it reads list the existing
-requirements the change likely touches. The skill reads them and modifies
-those the change alters rather than adding new ones beside them; the list
-is a starting point, not a complete one.
+Before writing, it reads the code your request concerns, and it bases the
+scope on what it finds there. If your request contradicts the existing
+specs, it tells you rather than settling the question alone. It writes the
+whole plan, headings included, in
+[the language your project uses for plans](guides/artifact-language.md),
+exactly as its instructions give them.
 
-The request authorizes planning only, even if it says "build" or "fix": the
-skill stops once the artifacts are written and waits for you.
+Once the proposal is written, Compagnon gives the skill a list of the
+existing requirements the change probably touches. The skill reads them,
+and changes those that the change alters, rather than adding new ones next
+to them. That list is a starting point: it may miss some.
 
-Each artifact has an explicit role, declared by the schema and returned by
-`compagnon instructions` — product owner for the proposal, QA analyst for the
-specs, architect for the design, tech lead for the tasks — with "Done when"
-criteria the agent checks before moving on. The product owner writes the proposal's release note for
-end users, categorized, or `None` for an internal change. The tech lead's criteria require the affected documentation
-to be updated in a task, and every scenario to be covered by an automated
-test that follows your project's test conventions. A
-[custom schema](guides/custom-schemas.md) defines its own.
+Your request only allows planning, even if it says "build" or "fix". The
+skill stops once the plan is written, and waits for you.
 
-At each step it asks `compagnon roles --at <step>` for the roles of the step and
-applies their criteria, your project's extra criteria included; a step whose
-role your configuration disables is skipped, and the summary says so (see
+**Who writes what.** Each part of the plan is written by a
+[role](glossary.md#role), with
+"Done when" criteria that Claude checks before moving on:
+
+- the product owner writes the proposal, including its release note for
+  end users, sorted by category, or `None` for a change users will not
+  notice;
+- the quality (QA) analyst writes the specs;
+- the architect writes the design;
+- the tech lead writes the tasks. Their criteria require a task that updates
+  the documentation affected, and an automated test for every scenario,
+  following your project's test conventions.
+
+These roles come from the [schema](glossary.md#schema) your project uses.
+A [custom schema](guides/custom-schemas.md) defines its own.
+
+**The review before you see it.** Before showing you the plan, the skill
+reviews it in two steps:
+
+1. **Traceability**: it checks that nothing is missing between the parts.
+   Every requirement has its scenarios, every scenario a task with an
+   automated test, and the release note agrees with the plan. Gaps are
+   fixed in the plan.
+2. **Contrarian pass**: the skill re-reads the plan as a skeptical
+   reviewer would: is it needed, is the scope right, do the decisions
+   hold? Experts join this pass for the sensitive areas the plan touches,
+   such as security or accessibility (each such area is called a
+   [domain](glossary.md#domain)). Each finding is written down, with how
+   serious it is and its evidence. The author fixes it or disputes it, and
+   the reviewer checks each answer once. This pass never adds scope.
+
+The skill's summary then ends with two lists:
+
+- **Points to discuss** (headed "Points to challenge" in the summary): up
+  to five short items, most serious first. Each says what the problem is,
+  why it matters, which part of the plan it concerns, and which role raised
+  it. Each also gives the finding's id and status. If there are none, the
+  summary says "No point to challenge found".
+- **To decide**: disagreements between Claude and its reviewer that only
+  you can settle, and serious problems not yet fixed.
+
+Start your own review there.
+
+**Tickets.** If your request mentions a ticket number (two or more capital
+letters, a hyphen and a number, such as PROJ-123) and Jira is connected
+(through an [MCP](glossary.md#mcp) server), the skill
+reads the first ticket: read-only, in a single call. It then quotes it at
+the top of the proposal. See [Jira and other MCP servers](guides/mcp.md).
+
+Roles: analyst, investigator, product owner, QA analyst, architect, tech
+lead, tracer and skeptic — see [Built-in roles](roles.md#built-in-roles).
+
+<details>
+<summary>Under the hood: roles per step and the two review steps in full</summary>
+
+Each artifact's role is declared by the schema and returned by
+`compagnon instructions`. At each step, the skill asks
+`compagnon roles --at <step>` for the roles of the step and applies their
+criteria, your project's extra criteria included; a step whose role your
+configuration disables is skipped, and the summary says so (see
 [Configuring roles](roles.md#configuring-roles)).
-
-Before presenting the plan, the skill reviews it in two steps:
 
 1. **Traceability** — every capability has its spec file, every requirement
    a nominal and an error or edge-case scenario, every scenario a task whose
@@ -159,116 +322,127 @@ Before presenting the plan, the skill reviews it in two steps:
    conversation, and the skill merges their findings before recording
    them.
 
-The summary ends with **Points to challenge**: at most five one-line items
-across all roles, ranked by severity and tagged with the role that raised
-them — finding id, status, what, why it matters, which artifact — or
-"No point to challenge found", then **To decide**: the disputes the
-reviewer maintained and the high-severity findings still open. Start your
-review there.
-
-If the request mentions a ticket identifier matching `[A-Z]{2,}-\d+` and a
-Jira MCP tool is configured, it fetches the first ticket — read-only, a
-single call — and cites it at the top of the proposal. See
-[Jira and other MCP servers](guides/mcp.md).
-
-Roles: analyst, investigator, product owner, QA analyst, architect, tech
-lead, tracer and skeptic — see [Built-in roles](roles.md#built-in-roles).
+</details>
 
 ### Explore (`/compagnon-explore`)
 
 A thinking partner for vague requests, investigations and comparisons of
-approaches. It reads code and specs but creates no change, no artifact and no
-file. When the idea is clear, it suggests `/compagnon-propose`.
+approaches. It reads the code and the specs, but creates no change, no plan
+and no file. Once the idea is clear, it suggests `/compagnon-propose`.
 
 Stance: [thinking partner](roles.md#thinking-partner-compagnon-explore).
 
 ### Onboard (`/compagnon-onboard`)
 
-A read-only tour for someone discovering Compagnon: what the tool does, what the
-current project contains (specs, active changes, decisions), and the one
-action to take next — for example `/compagnon-configure` on a freshly initialized
-project. It also runs `compagnon doctor --json` and lists up to five missing
-setup items with their fix, without running any of them.
+A tour for someone discovering Compagnon. It changes nothing. It tells you
+what the tool does, what the project contains (specs, changes in progress,
+decisions), and the one thing to do next: for example `/compagnon-configure`
+on a project just set up.
+
+It also runs a check of your setup, `compagnon doctor --json`, and lists up
+to five missing items with how to fix each. It runs none of these fixes
+itself.
 
 Stance: [guide](roles.md#guide-compagnon-onboard).
 
 ### Configure (`/compagnon-configure`)
 
-Reads the README, contributing guide, documentation and a sample of the
-source code, then drafts a `context:` block and per-artifact `rules:` for
-`_compagnon/config.yaml`. It shows the diff and writes only after you confirm. It
-never touches `schema`, `language`, `workflows`, `mcp` or `inherits`, and it
-preserves existing comments.
+This skill reads your README, contributing guide, documentation and a
+sample of your code. From them, it drafts a description of your project
+(the `context:` block) and rules for each part of the plan (`rules:`), for
+`_compagnon/config.yaml`. It shows you the difference, and writes only
+after you confirm. It never touches `schema`, `language`, `workflows`,
+`mcp` or `inherits`, and it keeps your existing comments.
 
-Its `tasks` rules include testing rules for your language — framework, where
-tests live, naming, commands — taken from your existing tests. Only when the
-project has no tests yet does it fall back on the mainstream conventions of
-Rust, TypeScript/JavaScript, Python, Go or Java.
+Its rules for the tasks (`tasks`) include testing rules for your
+programming language: framework, where tests live, naming, commands. It
+takes them from your existing tests. Only when the project has no tests
+yet does it fall back on the usual conventions of Rust,
+TypeScript/JavaScript, Python, Go or Java.
 
-While the configuration has no `rules:`, `compagnon init` and `compagnon status`
-recommend running it.
+As long as the configuration has no `rules:`, `compagnon init` and
+`compagnon status` suggest running this skill.
 
 Stance: [project setup analyst](roles.md#project-setup-analyst-compagnon-configure).
 
 ### Apply (`/compagnon-apply`)
 
-Implements a planned change. It checks that planning is complete, then works
-through each unchecked task of `tasks.md` in order, verifies it, and checks
-it off only once the verification passes. It writes tests like your existing
-test suite, then by your language's conventions and your `rules`. It takes
-the test command from your configuration, manifest or CI, and asks you when
-it finds none. Once every task is checked, it reviews the code the change
-touched as a newcomer would, joined by the experts the proposal's domains
-activate: it simplifies what is unambiguous, without widening the scope,
-and reports up to five review notes, each tagged with its role — a
-high-severity security or privacy finding is always reported. Every
-finding goes to the [review record](guides/review-record.md) and through
-the same answer loop as the plan's — in isolated mode, after each
-reviewer has worked alone as a sub-agent and the skill has merged their
-findings — and the summary lists what you must
-decide — including any domain the code now suggests that the proposal
-neither ticks nor justifies: tick it and its expert reviews the code, or
-justify it. An expert
-fixes a clear defect within the change's scope, with a test, and reports
-any other behavior change instead of making it. It takes the criteria and
-knowledge of both steps from `compagnon roles`; when no role is active at the
-review, it is skipped and the summary says so. Then it runs the full test suite once. It stops at the first blocker or ambiguity. It never modifies
-another change, never syncs and never archives.
+This skill builds a planned change. It works like this:
+
+1. It checks that the plan is complete.
+2. It takes each unticked task of `tasks.md` in order, does it, checks it,
+   and ticks it only once the check passes.
+3. It writes tests like your existing ones, then following your
+   language's conventions and your `rules`. It finds how to run the
+   [tests](glossary.md#test) in your project's settings (its
+   configuration, its manifest or its [CI](glossary.md#ci)), and asks you
+   when it finds none.
+4. Once every task is ticked, it re-reads the code the change touched as a
+   newcomer would, joined by the experts of the areas the proposal ticks.
+   It simplifies what is clearly simpler, without widening the scope, and
+   reports up to five review notes, each tagged with its role. A serious
+   security or privacy finding is always reported.
+5. Finally, it runs your full test suite once.
+
+Every finding goes to the [review record](guides/review-record.md), and
+follows the same answer loop as the plan's. In isolated mode, each reviewer
+first works alone as a [sub-agent](glossary.md#sub-agent) (a separate copy
+of Claude that does not see your conversation), and the skill merges their
+findings.
+
+The summary lists what you must decide. For example, the code may now
+touch a sensitive area, such as security or personal data, that the plan
+did not list. You choose: have that area's expert review it, or explain
+why it is not needed.
+
+An expert fixes a clear defect within the change's scope, with a test. Any
+other change of behavior, it reports instead of making it. The criteria and
+knowledge of both steps come from `compagnon roles`; when no role is active
+for the review, the review is skipped and the summary says so.
+
+The skill stops at the first blocker or doubt. It never touches another
+change, never syncs and never archives.
 
 Roles: [developer](roles.md#developer-compagnon-apply),
 [newcomer and experts](roles.md#newcomer-and-experts-compagnon-apply).
 
 ### Update (`/compagnon-update`)
 
-Revises an artifact that already exists — for example a requirement in a spec
-delta after review — then checks the other artifacts for ripple effects and
-reports them. It does not create missing artifacts (that is
-`/compagnon-propose`), does not modify code (that is `/compagnon-apply`), and does not
-touch archived changes. It ends with `compagnon validate`.
+This skill revises a part of a plan that already exists: for example, a
+requirement you want changed after reading the plan. It then looks for the
+effects on the other parts and tells you about them.
+
+It does not write missing parts (that is `/compagnon-propose`), does not
+change code (that is `/compagnon-apply`), and does not touch archived
+changes. It ends by checking the plan with `compagnon validate`.
 
 Stance: [editor](roles.md#editor-compagnon-update).
 
 ### Sync (`/compagnon-sync`)
 
-Runs `compagnon sync` for a change and reports which main specs were created,
-updated or left unchanged.
+This skill brings a change's specs into the project's specs, without
+archiving the change. It runs `compagnon sync`, then tells you which of the
+project's specs were created, updated or left unchanged.
 
 Stance: [maintainer of the living specs](roles.md#maintainer-of-the-living-specs-compagnon-sync-compagnon-archive).
 
 ### Archive (`/compagnon-archive`)
 
-Runs `compagnon archive` for a change. If validation reports errors, it stops and
-points you to `compagnon validate` rather than trying to work around them. If
-the review record blocks archiving (`review_blocked`), it points you to
-`compagnon review` and never records a decision in your place.
+This skill closes a finished change: it runs `compagnon archive`. If the
+check finds errors, it stops, and points you to `compagnon validate`
+rather than trying to work around them. If the review record blocks the
+archive (`review_blocked`), it points you to `compagnon review`, and never
+records a decision in your place.
 
 Stance: [maintainer of the living specs](roles.md#maintainer-of-the-living-specs-compagnon-sync-compagnon-archive).
 
 ## Choosing which skills to install
 
-By default all eight are installed. To install fewer, pick the **minimal**
-preset at init time — `propose`, `explore`, `onboard` and `configure` — or
-list the workflows you want in `_compagnon/config.yaml`:
+By default, all eight are installed. To install fewer, you have two ways:
+
+- pick the **minimal** preset when you set up Compagnon: `propose`,
+  `explore`, `onboard` and `configure`;
+- or list the skills you want under `workflows:` in `_compagnon/config.yaml`:
 
 ```yaml
 workflows:
@@ -278,11 +452,20 @@ workflows:
   - archive
 ```
 
-Then run `compagnon update`. An unknown workflow name produces a warning and is
-ignored. `compagnon update` does not delete skills that are no longer listed;
-remove their folders from `.claude/skills/` yourself.
+Then run `compagnon update`. A name Compagnon does not know produces a
+warning and is ignored. `compagnon update` does not delete the skills you
+no longer list: remove their folders from `.claude/skills/` yourself.
 
 ## Editing a generated skill
+
+You can edit a skill's `SKILL.md` by hand. `compagnon update` notices it,
+and leaves your edited file in place rather than overwriting it.
+`compagnon update --force` replaces it with the generated version: check
+your changes first (`git diff`), since it overwrites them, and apply them
+again after.
+
+<details>
+<summary>Under the hood: how Compagnon detects a hand edit</summary>
 
 Each generated `SKILL.md` records the compagnon version that produced it and a
 checksum of its own content. If you edit a skill by hand, its content no
@@ -301,3 +484,5 @@ mode — since they still match their checksum. A skill generated before
 checksums existed, of this version, is preserved like an edit: run `compagnon
 update --force` once to give it its checksum — check `git diff` first, since
 it also overwrites your real edits, and apply them again after.
+
+</details>

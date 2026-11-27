@@ -1,0 +1,89 @@
+{
+  "format": 2,
+  "case": "onboard-several-changes",
+  "error": null,
+  "costUsd": 0.166721,
+  "durationMs": 14231,
+  "consumption": {
+    "durationApiMs": 13383,
+    "turns": 12,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 974,
+      "cacheCreation": 12860,
+      "cacheRead": 164360,
+      "output": 1511
+    },
+    "toolCalls": 11,
+    "calls": [
+      {
+        "cacheCreation": 6560,
+        "cacheRead": 25128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 6560
+        }
+      },
+      {
+        "cacheCreation": 3327,
+        "cacheRead": 31688,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3327
+        }
+      },
+      {
+        "cacheCreation": 284,
+        "cacheRead": 35015,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 6,
+        "sources": {
+          "compagnon list": 284
+        }
+      },
+      {
+        "cacheCreation": 1931,
+        "cacheRead": 35299,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 3,
+        "sources": {
+          "compagnon decision": 37,
+          "compagnon doctor": 1659,
+          "compagnon list": 55,
+          "search": 180
+        }
+      },
+      {
+        "cacheCreation": 758,
+        "cacheRead": 37230,
+        "input": 2,
+        "output": 468,
+        "toolCalls": 0,
+        "sources": {
+          "compagnon status": 544,
+          "skill": 213
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "**Compagnon** is a versioned planning tool for software projects. Every change goes through a **propose → apply → archive** cycle, and each step is recorded in `_compagnon/`. A Claude Code skill (`/compagnon-<step>`) drives each step, the `compagnon` CLI does the underlying work, and your planning lives in the repository next to the code.\n\nHere you have:\n- 1 main spec: `bookmarks`\n- 0 local decisions in effect, 0 inherited\n- 2 active changes: `add-bookmark-tags`, `import-browser-bookmarks`\n- Setup to complete:\n  - `validate` (2 errors reported): fix with `compagnon validate`\n  - `ci`: fix by adding `compagnon validate --strict` to your CI pipeline\n- 2 warnings; run `compagnon doctor` to see them\n\n**What's next**: you have two changes in progress, and neither is fully planned yet. Each has its proposal written (1 of 4 planning steps); specs, design and tasks are still to do.\n- `add-bookmark-tags`: type `/compagnon-propose add-bookmark-tags` to continue its planning.\n- `import-browser-bookmarks`: type `/compagnon-propose import-browser-bookmarks` to continue its planning.\n\nPick the one you want to work on first. Once a change's planning is complete, implement it with `/compagnon-apply <name>`."
+  ],
+  "readOnly": {
+    "finalMessage": "**Compagnon** is a versioned planning tool for software projects. Every change goes through a **propose → apply → archive** cycle, and each step is recorded in `_compagnon/`. A Claude Code skill (`/compagnon-<step>`) drives each step, the `compagnon` CLI does the underlying work, and your planning lives in the repository next to the code.\n\nHere you have:\n- 1 main spec: `bookmarks`\n- 0 local decisions in effect, 0 inherited\n- 2 active changes: `add-bookmark-tags`, `import-browser-bookmarks`\n- Setup to complete:\n  - `validate` (2 errors reported): fix with `compagnon validate`\n  - `ci`: fix by adding `compagnon validate --strict` to your CI pipeline\n- 2 warnings; run `compagnon doctor` to see them\n\n**What's next**: you have two changes in progress, and neither is fully planned yet. Each has its proposal written (1 of 4 planning steps); specs, design and tasks are still to do.\n- `add-bookmark-tags`: type `/compagnon-propose add-bookmark-tags` to continue its planning.\n- `import-browser-bookmarks`: type `/compagnon-propose import-browser-bookmarks` to continue its planning.\n\nPick the one you want to work on first. Once a change's planning is complete, implement it with `/compagnon-apply <name>`.",
+    "changesCreated": []
+  }
+}

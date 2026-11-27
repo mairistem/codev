@@ -3,7 +3,7 @@
 //! strayed — come first and are unit-tested; the shell parts below them
 //! touch the disk and start processes, and are exercised by real runs.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 
 use crate::case::{Case, Step};
 use crate::implement_run;
-use crate::observed::{Consumption, FORMAT, Observed, ReviewMode, RunInfo, Tokens};
+use crate::observed::{AddedSteps, Consumption, FORMAT, Observed, ReviewMode, RunInfo, Tokens};
 use crate::suite::{Recorded, RunState};
 
 /// The `change.yaml` the runner writes: every role in `disable` set to
@@ -155,6 +155,30 @@ pub fn prompt(case: &Case) -> String {
                  « {answer} ». {LATER}"
             )
         }
+        // The prompt names the skill, the request and the evaluation mode,
+        // and nothing of the outcome or the state: the checks measure where
+        // the skill leads the agent. Neither skill checks the version.
+        Step::IdeaExplore => {
+            let request = case
+                .read_only
+                .as_ref()
+                .and_then(|r| r.request())
+                .unwrap_or("");
+            format!(
+                "Run the `compagnon-explore` skill (read .claude/skills/compagnon-explore/SKILL.md and follow it) \
+                 on this topic:\n\
+                 \n\
+                 « {request} »\n\
+                 \n\
+                 {NO_ANSWER}"
+            )
+        }
+        Step::ProjectOnboard => format!(
+            "Run the `compagnon-onboard` skill (read .claude/skills/compagnon-onboard/SKILL.md and follow it) \
+             on this project.\n\
+             \n\
+             {NO_ANSWER}"
+        ),
         Step::PlanTrace => format!(
             "This is a compagnon role evaluation, run without a user. The change `{change}` exists and its planning \
              artifacts are written.\n\
@@ -173,6 +197,13 @@ pub fn prompt(case: &Case) -> String {
 /// The evaluation mode of a sync or archive run: no user to answer.
 const EVALUATION_MODE: &str = "This is a compagnon evaluation run, without a user: ask no question — \
      wherever the skill says to ask, make the most reasonable assumption.";
+
+/// The evaluation mode of an explore or onboard run: no user to answer,
+/// and no assumption in their place — where the skill would ask, it ends
+/// as it says, which is how `explore` reaches its outcome that information
+/// is missing.
+const NO_ANSWER: &str = "This is a compagnon evaluation run, without a user: the user cannot answer. \
+     Ask no question — wherever the skill would ask, end as the skill says.";
 
 /// The author's answer to the skills' update check.
 const LATER: &str = "If the skill asks whether to update compagnon, the author answers **Later**.";
@@ -573,7 +604,7 @@ pub fn claude_args(
 
 /// The steps `--step` accepts: `review` for the three review steps, or a
 /// step's own name.
-pub const STEP_SELECTORS: [&str; 10] = [
+pub const STEP_SELECTORS: [&str; 12] = [
     "review",
     "plan.challenge",
     "code.review",
@@ -584,6 +615,8 @@ pub const STEP_SELECTORS: [&str; 10] = [
     "change.sync",
     "change.archive",
     "configure.enrich",
+    "idea.explore",
+    "project.onboard",
 ];
 
 /// The cases of the steps named, all of them when none is; an unknown name
@@ -668,6 +701,8 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
             Step::ChangeSync => path.starts_with(SPECS_DIR),
             Step::ChangeArchive => path.starts_with(SPECS_DIR) || path.starts_with(CHANGES_DIR),
             Step::ConfigureEnrich => path == crate::case::CONFIG_PATH,
+            // Read-only skills: every file counts, the skills' own included.
+            Step::IdeaExplore | Step::ProjectOnboard => false,
             Step::PlanChallenge | Step::CodeReview => path == review,
         };
         if !allowed {
@@ -1592,9 +1627,9 @@ pub fn setup_plan(
     Ok(())
 }
 
-/// Builds a configure case's project in `dir`: `base/` in a new
-/// repository, the skills of the compagnon under test installed without
-/// changing the case's configuration, committed. A project without
+/// Builds a configure, explore or onboard case's project in `dir`: `base/`
+/// in a new repository, the skills of the compagnon under test installed
+/// without changing the case's configuration, committed. A project without
 /// `_compagnon/config.yaml` gets the skills from `compagnon init`, then loses
 /// `_compagnon/`, so that the skill meets the project a user would have.
 pub fn setup_configure(case_dir: &Path, dir: &Path, tools: &Tools) -> Result<(), String> {
@@ -1929,12 +1964,13 @@ pub fn run_case(
         implement: None,
         merge: None,
         configure: None,
+        read_only: None,
     };
     if let Err(e) = fs::create_dir_all(log) {
         observed.error = Some(format!("cannot create {}: {e}", log.display()));
         return observed;
     }
-    let built = if case.step == Step::ConfigureEnrich {
+    let built = if case.step == Step::ConfigureEnrich || case.step.is_read_only() {
         setup_configure(case_dir, work_dir, tools)
     } else if case.step.replays_history() {
         setup_plan(case, repo, work_dir, tools, extra_config_for(case, review))
@@ -1976,6 +2012,7 @@ pub fn run_case(
         }
     }
     let configure_before = fs::read_to_string(work_dir.join(crate::case::CONFIG_PATH)).ok();
+    let changes_before = change_folders(work_dir);
     let config_before = fs::read(work_dir.join(".git").join("config")).unwrap_or_default();
     let args = claude_args(&prompt(case), settings, case.step, review);
     let isolated = review.isolated_at(case.step);
@@ -2009,7 +2046,7 @@ pub fn run_case(
             // Only the check-scored steps read the agent's messages; keeping
             // them for the other steps would only make `observed.json`
             // larger.
-            if case.step == Step::PlanUpdate || case.step.is_merge_or_configure() {
+            if case.step == Step::PlanUpdate || case.step.is_check_scored() {
                 observed.messages = output.messages;
             }
         }
@@ -2067,6 +2104,15 @@ pub fn run_case(
             status_error: status_error(tools, work_dir),
         });
     }
+    if case.step.is_read_only() {
+        observed.read_only = Some(crate::observed::ReadOnlyObserved {
+            final_message: observed.messages.last().cloned(),
+            changes_created: change_folders(work_dir)
+                .difference(&changes_before)
+                .cloned()
+                .collect(),
+        });
+    }
     if case.step.records_findings() {
         match compagnon_json(
             tools,
@@ -2091,6 +2137,20 @@ pub fn run_case(
         observed.files.insert(path, content);
     }
     observed
+}
+
+/// The folders of `dir/_compagnon/changes/`, archive aside, by path from
+/// `dir`.
+pub fn change_folders(dir: &Path) -> BTreeSet<String> {
+    fs::read_dir(dir.join(CHANGES_DIR))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|e| e.path().is_dir())
+        .filter_map(|e| e.file_name().into_string().ok())
+        .filter(|name| name != "archive")
+        .map(|name| format!("{CHANGES_DIR}{name}"))
+        .collect()
 }
 
 /// An implementation run, once its fixture is built: the build prepared,
@@ -2475,15 +2535,63 @@ pub fn check_resume_review(recorded: &RunInfo, review: &ReviewSettings) -> Resul
 /// Writes `run.json` unless the output directory already has one (a
 /// resumed run keeps its date and versions).
 pub fn ensure_run_info(out: &Path, info: &RunInfo) -> std::io::Result<()> {
-    let path = out.join("run.json");
-    if path.exists() {
+    if out.join("run.json").exists() {
         return Ok(());
     }
+    write_run_info(out, info)
+}
+
+/// Writes `run.json`, replacing the one the output directory has.
+pub fn write_run_info(out: &Path, info: &RunInfo) -> std::io::Result<()> {
     fs::create_dir_all(out)?;
     fs::write(
-        path,
+        out.join("run.json"),
         serde_json::to_string_pretty(info).expect("serializes") + "\n",
     )
+}
+
+/// The `run.json` a resumed run leaves: the recorded one, its fields
+/// unchanged, with one more `added` entry when the Compagnon under test,
+/// `version`, is not the recorded one. The entry names the steps about to
+/// run, `steps` (those of the pending jobs): it is written before any case
+/// runs, so that a run resumed for a few cases or with nothing left to run
+/// names only what it runs, in the order `Step` lists them. A run the usage
+/// limit stops still has its steps named: it is resumed with the same
+/// command, which then finds this entry. A last entry naming the same steps and
+/// version is kept as it is: a run resumed again after a stop adds nothing
+/// new to say.
+pub fn record_added(
+    recorded: &RunInfo,
+    version: &str,
+    steps: impl IntoIterator<Item = Step>,
+    date: &str,
+) -> RunInfo {
+    let mut info = recorded.clone();
+    if recorded.compagnon_version.as_deref() == Some(version) {
+        return info;
+    }
+    let steps: Vec<String> = steps
+        .into_iter()
+        .collect::<BTreeSet<Step>>()
+        .into_iter()
+        .map(|step| step.as_str().to_string())
+        .collect();
+    if steps.is_empty() {
+        return info;
+    }
+    if info
+        .added
+        .last()
+        .is_some_and(|last| last.steps == steps && last.compagnon_version == version)
+    {
+        return info;
+    }
+    info.added.push(AddedSteps {
+        steps,
+        compagnon_version: version.to_string(),
+        date: date.to_string(),
+    });
+    info
 }
 
 /// Brings a tree extracted from a commit that predates the product's
@@ -2493,14 +2601,27 @@ pub fn ensure_run_info(out: &Path, info: &RunInfo) -> std::io::Result<()> {
 /// already laid out under the current names is left as it is. The cases
 /// and baselines were renamed with the repository; the history they replay
 /// is renamed when it is replayed, so that both speak the same names.
+///
+/// The tree stays as clean as the commit left it: a decision whose seal
+/// matched its body before the rename is sealed again with its renamed
+/// body, and the Rust files the rename changed are formatted again, since
+/// the longer name can push a line past rustfmt's width.
 pub fn bring_through_rename(dir: &Path) -> Result<(), String> {
+    bring_through_rename_with(dir, Path::new("rustfmt"))
+}
+
+/// [`bring_through_rename`], formatting with the rustfmt at `rustfmt`.
+pub fn bring_through_rename_with(dir: &Path, rustfmt: &Path) -> Result<(), String> {
     use compagnon_core::legacy;
     let io = |e: std::io::Error| format!("renaming the fixture: {e}");
     if !dir.join(legacy::PLANNING_DIR).exists() {
         return Ok(());
     }
+    let decisions = |root: &str| dir.join(root).join("decisions");
+    let sealed = matching_seals(&decisions(legacy::PLANNING_DIR));
     let mut files = Vec::new();
     collect_files(dir, dir, &mut files).map_err(io)?;
+    let mut rust_changed = Vec::new();
     for (relative, is_link) in files {
         let from = dir.join(&relative);
         let renamed = legacy::through_rename(&relative.to_string_lossy());
@@ -2509,6 +2630,9 @@ pub fn bring_through_rename(dir: &Path) -> Result<(), String> {
             let through = legacy::through_rename(&text);
             if through != text {
                 fs::write(&from, through).map_err(io)?;
+                if renamed.ends_with(".rs") {
+                    rust_changed.push(PathBuf::from(&renamed));
+                }
             }
         }
         if to != from {
@@ -2519,7 +2643,178 @@ pub fn bring_through_rename(dir: &Path) -> Result<(), String> {
         }
     }
     remove_empty_dirs(dir).map_err(io)?;
+    if let Some(sealed) = sealed {
+        reseal(&decisions(compagnon_core::layout::PLANNING_DIR), &sealed).map_err(io)?;
+    }
+    if dir.join("Cargo.toml").is_file() {
+        for file in rust_changed.iter().filter(|f| formatted_by_cargo(f)) {
+            rustfmt_in_place(rustfmt, dir, file)?;
+        }
+    }
     Ok(())
+}
+
+/// The id of a decision file, the digits its name starts with.
+fn decision_id(path: &Path) -> Option<String> {
+    let name = path.file_name()?.to_str()?;
+    let id: String = name.chars().take_while(char::is_ascii_digit).collect();
+    (!id.is_empty() && name.ends_with(".md")).then_some(id)
+}
+
+/// The ids of the decisions under `decisions` whose seal matches their
+/// body; `None` when there is no seal file, or one that does not parse —
+/// it is then left as the commit holds it.
+fn matching_seals(decisions: &Path) -> Option<Vec<String>> {
+    use compagnon_core::decisions::seal;
+    let source = fs::read_to_string(decisions.join("seal.yaml")).ok()?;
+    let file = seal::parse_seal_file(&source).ok()?;
+    let mut ids = Vec::new();
+    for entry in fs::read_dir(decisions).ok()?.flatten() {
+        let path = entry.path();
+        let (Some(id), Ok(text)) = (decision_id(&path), fs::read_to_string(&path)) else {
+            continue;
+        };
+        if let (Some(recorded), Ok(hash)) = (file.find(&id), seal::body_hash(&text))
+            && recorded.body_sha256 == hash
+        {
+            ids.push(id);
+        }
+    }
+    Some(ids)
+}
+
+/// Records again, after the rename, the seal of each decision of `ids`,
+/// with the hash of its renamed body; every other seal is kept as it is.
+fn reseal(decisions: &Path, ids: &[String]) -> std::io::Result<()> {
+    use compagnon_core::decisions::seal;
+    let path = decisions.join("seal.yaml");
+    let Ok(mut file) = seal::parse_seal_file(&fs::read_to_string(&path)?) else {
+        return Ok(());
+    };
+    let mut changed = false;
+    for entry in fs::read_dir(decisions)?.flatten() {
+        let path = entry.path();
+        let Some(id) = decision_id(&path).filter(|id| ids.contains(id)) else {
+            continue;
+        };
+        let Ok(hash) = seal::body_hash(&fs::read_to_string(&path)?) else {
+            continue;
+        };
+        if let Some(recorded) = file.seals.iter_mut().find(|s| s.id == id)
+            && recorded.body_sha256 != hash
+        {
+            recorded.body_sha256 = hash;
+            changed = true;
+        }
+    }
+    if changed {
+        fs::write(&path, seal::render_seal_file(&file))?;
+    }
+    Ok(())
+}
+
+/// Whether `cargo fmt --all` formats `file`, a path relative to the
+/// workspace: under a crate's `src/`, `tests/`, `benches/` or
+/// `examples/`, or a crate's `build.rs`.
+fn formatted_by_cargo(file: &Path) -> bool {
+    let parts: Vec<&str> = file.iter().filter_map(|p| p.to_str()).collect();
+    parts.last() == Some(&"build.rs")
+        || parts
+            .iter()
+            .any(|p| matches!(*p, "src" | "tests" | "benches" | "examples"))
+}
+
+/// The edition rustfmt formats with when a manifest sets none, as cargo.
+const DEFAULT_EDITION: &str = "2021";
+
+/// The `edition` a manifest's `[package]` gives.
+enum Edition {
+    /// `edition = "2024"`.
+    Set(String),
+    /// `edition.workspace = true`: the workspace's.
+    FromWorkspace,
+}
+
+/// The value of `edition` in the `section` (`[package]` or
+/// `[workspace.package]`) of a `Cargo.toml`, read line by line.
+fn edition_line(manifest: &str, section: &str) -> Option<Edition> {
+    let mut inside = false;
+    for line in manifest.lines().map(str::trim) {
+        if line.starts_with('[') {
+            inside = line == section;
+            continue;
+        }
+        let Some(rest) = line.strip_prefix("edition").filter(|_| inside) else {
+            continue;
+        };
+        let rest = rest.trim_start();
+        if rest.starts_with(".workspace") {
+            return Some(Edition::FromWorkspace);
+        }
+        if let Some(value) = rest.strip_prefix('=') {
+            let value = value.trim();
+            if value.starts_with('{') && value.contains("workspace") {
+                return Some(Edition::FromWorkspace);
+            }
+            return Some(Edition::Set(value.trim_matches('"').to_string()));
+        }
+    }
+    None
+}
+
+/// The edition of the crate holding `file`, as cargo gives it: the
+/// `edition` of the nearest `Cargo.toml` above it, the workspace's when it
+/// inherits it, [`DEFAULT_EDITION`] when it sets none.
+fn edition_of(dir: &Path, file: &Path) -> String {
+    let root = fs::read_to_string(dir.join("Cargo.toml")).unwrap_or_default();
+    let workspace = || match edition_line(&root, "[workspace.package]") {
+        Some(Edition::Set(edition)) => edition,
+        _ => DEFAULT_EDITION.to_string(),
+    };
+    let mut at = file.parent();
+    while let Some(parent) = at {
+        if let Ok(manifest) = fs::read_to_string(dir.join(parent).join("Cargo.toml")) {
+            return match edition_line(&manifest, "[package]") {
+                Some(Edition::Set(edition)) => edition,
+                Some(Edition::FromWorkspace) => workspace(),
+                None => DEFAULT_EDITION.to_string(),
+            };
+        }
+        at = parent.parent();
+    }
+    DEFAULT_EDITION.to_string()
+}
+
+/// Formats `file` (relative to `dir`) with rustfmt through standard input,
+/// which, unlike a path, does not make rustfmt format the module files it
+/// declares; run from the file's directory so that rustfmt finds the
+/// project's configuration.
+fn rustfmt_in_place(rustfmt: &Path, dir: &Path, file: &Path) -> Result<(), String> {
+    use std::io::Write;
+    let path = dir.join(file);
+    let fail = |why: String| format!("formatting {} with rustfmt: {why}", file.display());
+    let text = fs::read_to_string(&path).map_err(|e| fail(e.to_string()))?;
+    let mut child = Command::new(rustfmt)
+        .args(["--edition", &edition_of(dir, file), "--emit", "stdout"])
+        .current_dir(path.parent().unwrap_or(dir))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| fail(e.to_string()))?;
+    child
+        .stdin
+        .take()
+        .ok_or_else(|| fail("no standard input".into()))?
+        .write_all(text.as_bytes())
+        .map_err(|e| fail(e.to_string()))?;
+    let out = child.wait_with_output().map_err(|e| fail(e.to_string()))?;
+    if !out.status.success() {
+        return Err(fail(
+            String::from_utf8_lossy(&out.stderr).trim().to_string(),
+        ));
+    }
+    fs::write(&path, &out.stdout).map_err(|e| fail(e.to_string()))
 }
 
 /// The files under `dir`, relative to `root`, `.git` excluded, each with
@@ -2841,6 +3136,7 @@ mod tests {
             jobs: None,
             review_mode: None,
             fixture_config: None,
+            added: Vec::new(),
         };
         assert!(check_resume(&recorded, None, None).is_ok());
         let err = check_resume(&recorded, Some("claude-sonnet-4-5"), None).unwrap_err();
@@ -3198,10 +3494,143 @@ mod tests {
             jobs: None,
             review_mode: None,
             fixture_config: None,
+            added: Vec::new(),
         };
         assert!(check_resume(&recorded, None, Some("2.1.289 (Claude Code)")).is_ok());
         let err = check_resume(&recorded, None, Some("2.1.301 (Claude Code)")).unwrap_err();
         assert!(err.contains("2.1.289") && err.contains("2.1.301"), "{err}");
+    }
+
+    /// A `run.json` recorded with `version`, as a resumed run finds it.
+    fn recorded_with(version: &str) -> RunInfo {
+        RunInfo {
+            format: FORMAT,
+            model: None,
+            date: "2026-10-15".into(),
+            claude_version: Some("2.1.289 (Claude Code)".into()),
+            compagnon_version: Some(version.into()),
+            repeat: Some(5),
+            jobs: None,
+            review_mode: None,
+            fixture_config: None,
+            added: Vec::new(),
+        }
+    }
+
+    /// The explore and onboard cases (the read-only steps) of a resumed
+    /// run, none of their observations recorded.
+    fn read_only_cases() -> Vec<Case> {
+        [
+            ("onboard-thin-config", Step::ProjectOnboard),
+            ("explore-missing-sms-reminders", Step::IdeaExplore),
+            ("onboard-configured", Step::ProjectOnboard),
+        ]
+        .into_iter()
+        .map(|(id, step)| {
+            let mut c = a_case("product", Kind::Control, &[]);
+            c.id = id.into();
+            c.step = step;
+            c
+        })
+        .collect()
+    }
+
+    fn steps_of<'a>(jobs: &'a [Job<'a>]) -> impl Iterator<Item = Step> + 'a {
+        jobs.iter().map(|job| job.case.step)
+    }
+
+    #[test]
+    fn steps_added_with_another_compagnon() {
+        let recorded = recorded_with("compagnon 0.6.1");
+        let cases: Vec<Case> = read_only_cases()
+            .into_iter()
+            .filter(|c| c.step == Step::IdeaExplore)
+            .collect();
+        let jobs = pending(&cases, &Recorded::new(), 5, false);
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(
+            written.compagnon_version.as_deref(),
+            Some("compagnon 0.6.1")
+        );
+        assert_eq!(
+            RunInfo {
+                added: Vec::new(),
+                ..written.clone()
+            },
+            recorded
+        );
+        assert_eq!(
+            written.added,
+            vec![AddedSteps {
+                steps: vec!["idea.explore".into()],
+                compagnon_version: "compagnon 0.7.0".into(),
+                date: "2026-11-26".into(),
+            }]
+        );
+    }
+
+    #[test]
+    fn steps_added_with_another_compagnon_are_named_in_step_order() {
+        let recorded = recorded_with("compagnon 0.6.1");
+        let cases = read_only_cases();
+        let jobs = pending(&cases, &Recorded::new(), 1, false);
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written.added[0].steps, ["idea.explore", "project.onboard"]);
+    }
+
+    #[test]
+    fn resuming_with_the_same_compagnon_adds_no_entry() {
+        let recorded = recorded_with("compagnon 0.7.0");
+        let cases = read_only_cases();
+        let jobs = pending(&cases, &Recorded::new(), 5, false);
+        assert!(!jobs.is_empty());
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written, recorded);
+    }
+
+    #[test]
+    fn a_resume_with_nothing_left_to_run_adds_no_entry() {
+        let recorded = recorded_with("compagnon 0.6.1");
+        let cases = read_only_cases();
+        let observed: Recorded = cases
+            .iter()
+            .flat_map(|c| (1..=5).map(move |n| ((c.id.clone(), n), RunState::Done)))
+            .collect();
+        let jobs = pending(&cases, &observed, 5, false);
+        assert!(jobs.is_empty());
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written, recorded);
+    }
+
+    #[test]
+    fn a_resume_of_a_few_cases_names_only_their_steps() {
+        let recorded = recorded_with("compagnon 0.6.1");
+        let cases: Vec<Case> = read_only_cases()
+            .into_iter()
+            .filter(|c| c.id == "onboard-thin-config")
+            .collect();
+        let jobs = pending(&cases, &Recorded::new(), 5, false);
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written.added.len(), 1);
+        assert_eq!(written.added[0].steps, ["project.onboard"]);
+    }
+
+    #[test]
+    fn a_last_entry_with_the_same_steps_and_version_is_kept_as_it_is() {
+        let mut recorded = recorded_with("compagnon 0.6.1");
+        recorded.added.push(AddedSteps {
+            steps: vec!["idea.explore".into(), "project.onboard".into()],
+            compagnon_version: "compagnon 0.7.0".into(),
+            date: "2026-11-25".into(),
+        });
+        let cases = read_only_cases();
+        let jobs = pending(&cases, &Recorded::new(), 5, false);
+        let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
+        assert_eq!(written, recorded);
+        // Another version after it is a new entry.
+        let later = record_added(&recorded, "compagnon 0.7.1", steps_of(&jobs), "2026-11-27");
+        assert_eq!(later.added.len(), 2);
+        assert_eq!(later.added[1].compagnon_version, "compagnon 0.7.1");
     }
 
     #[test]
@@ -3546,6 +3975,7 @@ mod tests {
             jobs: Some(2),
             review_mode: None,
             fixture_config: None,
+            added: Vec::new(),
         };
         review.record(&mut info);
         info
@@ -4218,6 +4648,144 @@ mod tests {
         );
     }
 
+    fn read_only_case(id: &str, situation: crate::case::Situation) -> Case {
+        let mut case = a_case("planner", Kind::Seeded, &[]);
+        case.id = id.into();
+        case.step = match situation {
+            crate::case::Situation::Explore { .. } => Step::IdeaExplore,
+            crate::case::Situation::Onboard(_) => Step::ProjectOnboard,
+        };
+        case.change = String::new();
+        // The marks play no part in the prompt and selection tests that use
+        // these helpers; they only have to be valid.
+        case.read_only = Some(crate::case::ReadOnlyCase {
+            situation,
+            contains: vec!["a mark".into()],
+            absent: vec!["another mark".into()],
+        });
+        case
+    }
+
+    fn explore_case(request: &str) -> Case {
+        read_only_case(
+            "explore-x",
+            crate::case::Situation::Explore {
+                request: request.into(),
+                outcome: crate::case::ExploreOutcome::Missing,
+            },
+        )
+    }
+
+    fn onboard_case() -> Case {
+        read_only_case(
+            "onboard-x",
+            crate::case::Situation::Onboard(crate::case::OnboardState::PlanningComplete),
+        )
+    }
+
+    #[test]
+    fn the_prompt_of_an_explore_case() {
+        let text = prompt(&explore_case("rate limiting for the API"));
+        for needle in [
+            "`compagnon-explore`",
+            ".claude/skills/compagnon-explore/SKILL.md",
+            "« rate limiting for the API »",
+            "the user cannot answer",
+            "wherever the skill would ask, end as the skill says",
+        ] {
+            assert!(text.contains(needle), "missing {needle} in {text}");
+        }
+        let onboard = prompt(&onboard_case());
+        for needle in [
+            "`compagnon-onboard`",
+            ".claude/skills/compagnon-onboard/SKILL.md",
+            "the user cannot answer",
+        ] {
+            assert!(onboard.contains(needle), "missing {needle} in {onboard}");
+        }
+        for text in [&text, &onboard] {
+            let lower = text.to_lowercase();
+            for word in [
+                "crystal",
+                "missing",
+                "worth",
+                "outcome",
+                "propose",
+                "configure",
+                "apply",
+                "init",
+                "update",
+                "later",
+                "assum",
+            ] {
+                assert!(
+                    !lower.contains(word),
+                    "the prompt says where to end ({word}): {text}"
+                );
+            }
+        }
+        let defaults = ClaudeSettings::from_env(&|_| None).unwrap();
+        for step in [Step::IdeaExplore, Step::ProjectOnboard] {
+            assert_eq!(defaults.budget_for(step), 3.0);
+            assert_eq!(defaults.timeout_for(step), Duration::from_secs(600));
+        }
+    }
+
+    #[test]
+    fn selecting_the_explore_cases() {
+        let cases = vec![
+            explore_case("x"),
+            onboard_case(),
+            configure_case(true),
+            a_case("security", Kind::Seeded, &[]),
+        ];
+        let ids = |steps: &[&str]| -> Vec<String> {
+            select_steps(
+                &cases,
+                &steps.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
+            )
+            .unwrap()
+            .iter()
+            .map(|c| c.id.clone())
+            .collect()
+        };
+        assert_eq!(ids(&["idea.explore"]), ["explore-x"]);
+        assert_eq!(ids(&["project.onboard"]), ["onboard-x"]);
+        for other in ["review", "configure.enrich", "plan.write"] {
+            assert!(
+                ids(&[other])
+                    .iter()
+                    .all(|id| id != "explore-x" && id != "onboard-x"),
+                "{other}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_run_that_creates_a_file() {
+        let status = "?? notes.md\0";
+        assert_eq!(strayed(status, &explore_case("x")), ["notes.md"]);
+        let skill = " M .claude/skills/compagnon-onboard/SKILL.md\0 D README.md\0";
+        assert_eq!(
+            strayed(skill, &onboard_case()),
+            [".claude/skills/compagnon-onboard/SKILL.md", "README.md"]
+        );
+    }
+
+    #[test]
+    fn a_change_folder_created_by_the_run_is_found() {
+        let dir =
+            std::env::temp_dir().join(format!("compagnon-change-folders-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(dir.join("_compagnon/changes/archive/2026-01-01-old")).unwrap();
+        fs::create_dir_all(dir.join("_compagnon/changes/add-auth")).unwrap();
+        fs::write(dir.join("_compagnon/changes/.gitkeep"), "").unwrap();
+        let found: Vec<String> = change_folders(&dir).into_iter().collect();
+        assert_eq!(found, ["_compagnon/changes/add-auth"]);
+        assert!(change_folders(&dir.join("absent")).is_empty());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
     #[test]
     fn sync_archive_and_configure_cases_ignore_the_review_options() {
         let review = ReviewSettings {
@@ -4228,6 +4796,8 @@ mod tests {
             merge_case("archive-x", Step::ChangeArchive, "add-auth"),
             merge_case("sync-x", Step::ChangeSync, "add-auth"),
             configure_case(true),
+            explore_case("x"),
+            onboard_case(),
         ] {
             assert_eq!(extra_config_for(&case, &review), None, "{}", case.id);
             assert!(!review.isolated_at(case.step), "{}", case.id);

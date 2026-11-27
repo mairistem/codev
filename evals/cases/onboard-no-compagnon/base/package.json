@@ -1,0 +1,6 @@
+{
+  "name": "quotes",
+  "version": "0.2.0",
+  "bin": { "quotes": "index.js" },
+  "scripts": { "test": "node --test" }
+}

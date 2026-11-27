@@ -189,6 +189,7 @@ pub(crate) mod tests {
             implement: None,
             merge: Some(MergeObserved { changed, reference }),
             configure: None,
+            read_only: None,
         }
     }
 
