@@ -245,6 +245,9 @@ history:
   - status: fixed
     by: developer
     ref: '4b680f0 — .content .example pre code [class^="hljs-"] pinned to #e6e6e6'
+  - status: fixed
+    by: accessibility
+    note: 'Tokens render rgb(230,230,230) on #1e1e1e, 13.36:1, both schemes and editions.'
 ```
 
 #### R-accessibility-5 Inline code inside an example box is white on white in the dark theme
@@ -265,6 +268,9 @@ history:
   - status: fixed
     by: developer
     ref: '4b680f0 — .example p code is #00394d on #eef3f4 in both stylesheets'
+  - status: fixed
+    by: accessibility
+    note: 'Inline code renders #00394d on #eef3f4, 11.09:1; same rule in docs.css.'
 ```
 
 #### R-accessibility-6 Screen readers read the "+" and "−" signs as part of the "Under the hood" names
@@ -282,6 +288,9 @@ history:
   - status: fixed
     by: developer
     ref: '4b680f0 — content: "+" / "" and "\2212" / "" everywhere'
+  - status: fixed
+    by: accessibility
+    note: 'The accessibility tree names the blocks without + or −, books and home pages.'
 ```
 
 #### R-accessibility-7 Home-page eyebrow labels are below 4.5:1 in the light scheme
@@ -299,6 +308,9 @@ history:
   - status: fixed
     by: developer
     ref: '4b680f0 — --eyebrow #566c74: 5.54:1 on white, 5.18:1 on #f4f8f9'
+  - status: fixed
+    by: accessibility
+    note: '#566c74: 5.54:1 on white, 5.18:1 on #f4f8f9, both home pages.'
 ```
 
 #### R-accessibility-8 Grey text on the pale background is just below 4.5:1 on the home pages
@@ -316,6 +328,9 @@ history:
   - status: fixed
     by: developer
     ref: '4b680f0 — --muted #5a7078: 4.88:1 on #f4f8f9'
+  - status: fixed
+    by: accessibility
+    note: '#5a7078: 4.88:1 on #f4f8f9, both home pages.'
 ```
 
 #### R-accessibility-9 The dark-mode focus ring on the home pages is below 3:1 on the alternate sections
@@ -333,6 +348,9 @@ history:
   - status: fixed
     by: developer
     ref: '4b680f0 — dark scheme --focus #ffab03: 4.98:1 on #004c66'
+  - status: fixed
+    by: accessibility
+    note: 'Dark --focus #ffab03: 4.98:1 on #004c66, 6.55:1 on #00394d.'
 ```
 
 ### migration
@@ -356,6 +374,8 @@ history:
   - status: fixed
     by: developer
     ref: 'd9427ab — names_page(text, page), documented with guides/review.md vs paths/review.md'
+  - status: fixed
+    by: newcomer
 ```
 
 #### R-newcomer-2 a_long_every_day_chapter_is_caught calls no check
@@ -373,6 +393,8 @@ history:
   - status: fixed
     by: developer
     ref: 'd9427ab — chapter_cap and word_cap_problems, used by the test and by the_first_steps_stay_under_their_caps'
+  - status: fixed
+    by: newcomer
 ```
 
 #### R-newcomer-3 Bare numbers and tuple fields stand for tunnel steps
@@ -380,7 +402,7 @@ history:
 ```yaml
 severity: low
 confidence: high
-location: 'crates/compagnon-cli/src/docs_checks.rs:2530-2536'
+location: 'crates/compagnon-cli/src/docs_checks.rs:2576'
 evidence: |
   fn every_tunnel_page_draws_and_shows() {
 recommendation: 'Name the step boundaries; consider a struct for TUNNEL.'
@@ -390,6 +412,12 @@ history:
   - status: fixed
     by: developer
     ref: 'd9427ab — BEGINNER_STEPS, DIAGRAM_STEPS and beginner_chapters(); TUNNEL keeps its tuple'
+  - status: open
+    by: newcomer
+    note: 'The tuple is accepted, but the fix added a bare index: let (_, _, everyday) = TUNNEL[2]; name it (for example EVERY_DAY_STEP) or look the step up by its title.'
+  - status: fixed
+    by: developer
+    ref: '12e8f60 — TUNNEL[EVERY_DAY_STEP], with EVERY_DAY_STEP documented next to BEGINNER_STEPS'
 ```
 
 #### R-newcomer-4 skip_problems takes six parameters and uses an iterator comparison to find the title
@@ -407,6 +435,9 @@ history:
   - status: fixed
     by: developer
     ref: 'd9427ab — the title check is a direct match; the two closures stay so the unit tests can pass a tunnel of their own'
+  - status: fixed
+    by: newcomer
+    note: 'The title check is direct; keeping the two closures for the unit tests is accepted.'
 ```
 
 #### R-newcomer-5 Two copied mention scanners and copied file lists
@@ -424,6 +455,8 @@ history:
   - status: fixed
     by: developer
     ref: 'd9427ab — lines_naming and ENTRY_POINTS'
+  - status: fixed
+    by: newcomer
 ```
 
 #### R-newcomer-6 Unexplained 6 and hard-coded 5 in the tunnel script
@@ -441,4 +474,6 @@ history:
   - status: fixed
     by: developer
     ref: 'd9427ab — endsWith, STEPS.length and a label per edition'
+  - status: fixed
+    by: newcomer
 ```
