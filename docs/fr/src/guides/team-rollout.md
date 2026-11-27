@@ -14,8 +14,8 @@ commandes d'installation en une ligne pour macOS, Linux et Windows, et la
 façon d'installer une version précise (`COMPAGNON_VERSION=0.6.1`).
 
 Les personnes qui ne font que relire les plans n'installent rien : elles
-lisent et approuvent le plan dans la demande de fusion, sur GitHub ou
-GitLab — voir [Approuver un plan sur GitHub ou GitLab](approve-a-plan.md).
+lisent et approuvent le plan dans la demande de fusion, sur GitHub —
+voir [Approuver un plan sur GitHub](approve-a-plan.md).
 
 ## Une seule version pour tous
 
@@ -70,15 +70,12 @@ qu'il écrit est décrit plus bas, dans
 [Ce qu'écrit compagnon init](#ce-quécrit-compagnon-init).
 
 Une vérification en échec ne bloque la fusion qu'une fois rendue
-obligatoire, dans les réglages de votre site :
+obligatoire, dans les réglages de votre dépôt sur GitHub :
 
 - **GitHub :** une règle de protection de la branche principale (ou un
   jeu de règles) qui exige que les vérifications passent (« Require status
   checks to pass before merging »), avec la vérification
   `compagnon validate`.
-- **GitLab :** dans les réglages des demandes de fusion du projet,
-  l'option qui exige une chaîne d'intégration réussie (« Pipelines must succeed », ou sa
-  traduction si GitLab est en français).
 
 Vous pouvez aussi lancer `compagnon doctor --strict` dans l'intégration
 continue : il échoue quand une vérification de l'installation manque — une
@@ -94,7 +91,7 @@ dans votre équipe, doit être cette personne. Une règle qui fonctionne :
 
 | Quoi | Qui approuve | Où |
 |---|---|---|
-| Le plan : proposition, spécifications, conception, tâches | le responsable produit ou l'expert du domaine, avec le développeur | dans la demande de fusion, avant que Claude construise — voir [Approuver un plan sur GitHub ou GitLab](approve-a-plan.md) |
+| Le plan : proposition, spécifications, conception, tâches | le responsable produit ou l'expert du domaine, avec le développeur | dans la demande de fusion, avant que Claude construise — voir [Approuver un plan sur GitHub](approve-a-plan.md) |
 | Le code | les développeurs, comme pour toute demande de fusion | dans la demande de fusion, une fois les tâches faites |
 | Une [décision](../concepts.md#décision) | l'équipe | acceptée avec `compagnon decision accept` dans une demande de fusion que relisent ceux qu'elle engage |
 | Un risque que la relecture a laissé ouvert | la personne qui en répond | la compétence pose la question et note la réponse avec le nom de cette personne |
@@ -180,28 +177,7 @@ fichier lorsque :
 - `.github/workflows/compagnon.yml` existe et n'a pas été écrit par Compagnon (sa
   première ligne n'est pas `# compagnon:managed`).
 
-Compagnon ne modifie jamais aucun autre fichier de déroulé. Sur un dépôt GitLab
-— un fichier `.gitlab-ci.yml`, ou un remote sur GitLab —, il ne touche pas à
-`.gitlab-ci.yml` et affiche à la place un job à coller :
-
-```text
-  Repository integration
-    + CLAUDE.md                          created
-    - .gitlab-ci.yml                     skipped: compagnon never edits .gitlab-ci.yml — add the job below to run compagnon validate
-
-        compagnon:
-          image: debian:stable-slim
-          before_script:
-            - apt-get update -qq && apt-get install -y -qq curl ca-certificates
-            - curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | COMPAGNON_VERSION=0.6.1 sh
-          script:
-            - ~/.local/bin/compagnon validate --strict
-
-    - pull request template              skipped: not a GitHub repository
-```
-
-Ailleurs, l'étape est écartée avec une indication : ajoutez
-`compagnon validate --strict` à votre chaîne d'intégration continue.
+Compagnon ne modifie jamais aucun autre fichier de déroulé.
 
 ### Modèle de demande de fusion
 
@@ -333,4 +309,4 @@ identifiants et des codes stables — voir [Sortie JSON](../reference/json-outpu
 - [Rôles](../roles.md)
 - [Configuration](../reference/configuration.md)
 - [Sources héritées](inherited-sources.md)
-- [Approuver un plan sur GitHub ou GitLab](approve-a-plan.md)
+- [Approuver un plan sur GitHub](approve-a-plan.md)

@@ -5,7 +5,7 @@ et valider ce que Claude prévoit de construire : responsable produit
 (product owner), manager, expert métier. Aucun
 [terminal](../glossary.md#terminal) n'est nécessaire : un
 [plan](../glossary.md#plan) tient en quatre fichiers texte courts, que vous
-pouvez lire sur votre hébergeur de code (GitHub, GitLab), dans un éditeur,
+pouvez lire sur GitHub, dans un éditeur,
 ou en demandant à Claude de vous les montrer.
 
 <figure class="diagram">
@@ -130,7 +130,7 @@ compris, sous le même titre que la règle actuelle. Ce nouveau texte
 remplace entièrement l'actuel : ce qui n'y figure plus disparaîtra. Pour
 voir ce qui change, comparez-le à la règle actuelle, sous le même titre
 dans les spécifications du projet, dans le dossier `_compagnon/specs/` :
-sur GitHub ou GitLab, ouvrez ce dossier depuis la page du dépôt, puis le
+sur GitHub, ouvrez ce dossier depuis la page du dépôt, puis le
 fichier `spec.md` du dossier qui porte le même nom que celui du plan. Ou
 demandez au développeur, ou à Claude :
 
@@ -174,7 +174,7 @@ dise ce que vous voulez.
 Quand le plan vous convient, dites-le : « le plan me va, réalise la
 modification ».
 Claude construit alors exactement ce que dit le plan, et rien d'autre. Si
-votre équipe relit le travail sur GitHub ou GitLab, le plan arrive sous
+votre équipe relit le travail sur GitHub, le plan arrive sous
 forme de [demande de fusion](../glossary.md#demande-de-fusion) (pull
 request) : une demande pour l'ajouter au projet. Approuvez-la à cet
 endroit : votre accord y est consigné.
@@ -182,6 +182,6 @@ endroit : votre accord y est consigné.
 ## Pour aller plus loin
 
 - [Un exemple de plan commenté](example-plan.md)
-- [Approuver un plan sur GitHub ou GitLab](approve-a-plan.md)
+- [Approuver un plan sur GitHub](approve-a-plan.md)
 - [Partir d'un ticket Jira](mcp.md)
 - [Compte rendu de relecture](review-record.md)

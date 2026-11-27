@@ -1,6 +1,6 @@
 # Approving a plan on GitHub
 
-This page is for you if your team works on GitHub or GitLab and you are
+This page is for you if your team works on GitHub and you are
 asked to approve a plan, without Claude Code and without a
 [terminal](../glossary.md#terminal). Everything happens in your web
 browser, on the site your team already uses.
@@ -11,10 +11,10 @@ complete one.
 
 <figure class="diagram">
 <div class="scroll">
-<svg viewBox="0 0 760 230" role="img" aria-label="Approving on GitHub or GitLab, the request's timeline in five steps: 1, the plan is pushed in a pull request or merge request; 2, you comment on its lines, and Claude updates the plan until it suits you; 3, you approve the request; 4, Claude builds exactly what the plan says; 5, the team reviews the code.">
+<svg viewBox="0 0 760 230" role="img" aria-label="Approving on GitHub, the pull request's timeline in five steps: 1, the plan is pushed in a pull request; 2, you comment on its lines, and Claude updates the plan until it suits you; 3, you approve the request; 4, Claude builds exactly what the plan says; 5, the team reviews the code.">
 <defs><marker id="dg-approve-a-plan-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dg-line)"/></marker></defs>
 <rect x="4" y="6" width="752" height="218" rx="14" style="fill:var(--dg-box);stroke:var(--dg-line)" stroke-width="1.5"/>
-<text x="740" y="30" text-anchor="end" font-size="13" style="fill:var(--dg-muted)">Pull request (GitHub) or merge request (GitLab)</text>
+<text x="740" y="30" text-anchor="end" font-size="13" style="fill:var(--dg-muted)">Pull request on GitHub</text>
 <path d="M226,102 C222,58 80,58 77,98" style="fill:none;stroke:var(--dg-you)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#dg-approve-a-plan-arrow)"/>
 <text x="152" y="58" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">Claude updates the plan</text>
 <line x1="96" y1="120" x2="206" y2="120" style="stroke:var(--dg-line)" stroke-width="2" marker-end="url(#dg-approve-a-plan-arrow)"/>
@@ -48,17 +48,16 @@ complete one.
 <text x="684" y="201" text-anchor="middle" font-size="12" style="fill:var(--dg-muted)">the code, then merges</text>
 </svg>
 </div>
-<figcaption>Approving on GitHub or GitLab: the plan arrives as a request, you comment until it suits you, you approve, and only then does Claude build the code that the team reviews.</figcaption>
+<figcaption>Approving on GitHub: the plan arrives as a pull request, you comment until it suits you, you approve, and only then does Claude build the code that the team reviews.</figcaption>
 </figure>
 
 ## Where the plan arrives
 
 When a developer has had Claude write a plan, they send it to the team as
 a request to add it to the project: a
-[pull request](../glossary.md#pull-request) on GitHub, a merge request on
-GitLab. You usually receive a notification or an email with its link.
+[pull request](../glossary.md#pull-request) on GitHub. You usually receive a notification or an email with its link.
 
-On both sites, the plan is among the request's changed files, in one
+The plan is among the request's changed files, in one
 folder: `_compagnon/changes/<name>/`, where `<name>` is the change's short
 name, such as `add-dark-mode`. The folder holds the four parts of the plan:
 
@@ -67,7 +66,7 @@ name, such as `add-dark-mode`. The folder holds the four parts of the plan:
 - `design.md`: how;
 - `tasks.md`: the steps.
 
-On GitHub only, the request's description may also name that folder, in
+The request's description may also name that folder, in
 its "compagnon" section, on the line `- compagnon change:`, if the
 developer filled it in.
 
@@ -98,30 +97,8 @@ open, and which parts of the plan to read most closely.
 
    Then click "Submit review".
 
-## On GitLab
-
-GitLab shows its buttons in your language. The labels are given here in
-English, then in French.
-
-1. **Open the changed files.** In the merge request, click the "Changes"
-   tab ("Modifications"). Find the files under `_compagnon/changes/<name>/`.
-2. **Comment on a line.** Move the mouse over the line number, then click
-   the speech bubble that appears (without a mouse, move to the line
-   with the Tab key: a screen reader announces the same comment button;
-   or write in the "Overview" tab, naming the file and the line). Write your comment, then click
-   "Start a review" ("Commencer une revue") to gather several comments, or
-   "Add comment now" ("Ajouter un commentaire maintenant") to send this
-   one at once.
-3. **Ask for changes.** If you started a review, click "Finish review"
-   or "Submit review" ("Terminer la revue" / "Soumettre la revue"), then
-   choose "Request changes" ("Demander des modifications") where your
-   GitLab offers it. Otherwise, your comments are enough: say clearly
-   that the plan must change before you approve.
-4. **Approve.** On the request's "Overview" tab ("Vue d'ensemble"), click
-   "Approve" ("Approuver"). Your approval is recorded on the request.
-
 If you cannot find a button, look for the action rather than the word:
-both sites rename their buttons from time to time.
+GitHub renames its buttons from time to time.
 
 ## After your comments
 

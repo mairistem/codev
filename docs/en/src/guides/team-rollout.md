@@ -14,8 +14,8 @@ installers for macOS, Linux and Windows, and how to install a given
 version (`COMPAGNON_VERSION=0.6.1`).
 
 People who only review plans install nothing: they read and approve the
-plan in the pull request, on GitHub or GitLab — see
-[Approving a plan on GitHub or GitLab](approve-a-plan.md).
+plan in the pull request, on GitHub — see
+[Approving a plan on GitHub](approve-a-plan.md).
 
 ## One version for everyone
 
@@ -63,13 +63,11 @@ it writes is described in [What compagnon init writes](#what-compagnon-init-writ
 below.
 
 A failing check only blocks merging once you make it required, in your
-site's settings:
+repository's settings on GitHub:
 
 - **GitHub:** a branch protection rule (or a ruleset) on your main branch,
   with "Require status checks to pass before merging" and the check
   `compagnon validate`.
-- **GitLab:** in the project's merge request settings, "Pipelines must
-  succeed".
 
 You can also run `compagnon doctor --strict` in CI: it fails when a check of
 the setup is missing — a skill out of date, the `CLAUDE.md` section
@@ -83,7 +81,7 @@ in your team that person should be. A policy that works:
 
 | What | Who approves | Where |
 |---|---|---|
-| The plan: proposal, specs, design, tasks | the product owner or the domain expert, with the developer | in the pull request, before Claude builds — see [Approving a plan on GitHub or GitLab](approve-a-plan.md) |
+| The plan: proposal, specs, design, tasks | the product owner or the domain expert, with the developer | in the pull request, before Claude builds — see [Approving a plan on GitHub](approve-a-plan.md) |
 | The code | the developers, as for any pull request | in the pull request, once the tasks are done |
 | A [decision](../concepts.md#decision) | the team | accepted with `compagnon decision accept` in a pull request that those it binds review |
 | A risk the review left open | the person accountable for it | the skill asks, and records the answer with that person's name |
@@ -167,28 +165,7 @@ when:
 - `.github/workflows/compagnon.yml` exists and was not written by Compagnon (its first
   line is not `# compagnon:managed`).
 
-Compagnon never edits any other workflow file. On a GitLab repository — a
-`.gitlab-ci.yml` file, or a remote on GitLab — it does not touch
-`.gitlab-ci.yml` and prints a job to paste instead:
-
-```text
-  Repository integration
-    + CLAUDE.md                          created
-    - .gitlab-ci.yml                     skipped: compagnon never edits .gitlab-ci.yml — add the job below to run compagnon validate
-
-        compagnon:
-          image: debian:stable-slim
-          before_script:
-            - apt-get update -qq && apt-get install -y -qq curl ca-certificates
-            - curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | COMPAGNON_VERSION=0.6.1 sh
-          script:
-            - ~/.local/bin/compagnon validate --strict
-
-    - pull request template              skipped: not a GitHub repository
-```
-
-Elsewhere, the step is skipped with a hint: add `compagnon validate --strict` to
-your pipeline.
+Compagnon never edits any other workflow file.
 
 ### Pull request template
 
@@ -311,4 +288,4 @@ with stable check ids and codes — see [JSON output](../reference/json-output.m
 - [Roles](../roles.md)
 - [Configuration](../reference/configuration.md)
 - [Inherited sources](inherited-sources.md)
-- [Approving a plan on GitHub or GitLab](approve-a-plan.md)
+- [Approving a plan on GitHub](approve-a-plan.md)

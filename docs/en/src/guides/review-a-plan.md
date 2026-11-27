@@ -4,7 +4,7 @@ This guide is for you if you do not write code but are asked to read and
 approve what Claude plans to build: product owner, manager, domain expert.
 You need no [terminal](../glossary.md#terminal): a
 [plan](../glossary.md#plan) is four short text files, which you can read
-in your code host (GitHub, GitLab), in an editor, or by asking Claude to
+on GitHub, in an editor, or by asking Claude to
 show them to you.
 
 <figure class="diagram">
@@ -119,7 +119,7 @@ A modified rule shows its new text **in full**, scenarios included, under
 the same title as the current rule. That new text replaces the current one
 entirely: anything missing from it will be gone. To see what changes,
 compare it with the current rule, under the same title in the project's
-specs, in the folder `_compagnon/specs/`: on GitHub or GitLab, open that
+specs, in the folder `_compagnon/specs/`: on GitHub, open that
 folder from the repository's page, then the `spec.md` file of the folder
 named like the plan's. Or ask the developer, or Claude:
 
@@ -158,13 +158,13 @@ Then read the parts that changed. Repeat until the plan says what you want.
 
 When the plan suits you, say so: "the plan is good, implement it". Claude
 then builds exactly what the plan says, and nothing else. If your team
-reviews work on GitHub or GitLab, the plan comes as a
+reviews work on GitHub, the plan comes as a
 [pull request](../glossary.md#pull-request) (a request to add it to the
 project). Approve it there: your approval is recorded.
 
 ## Go further
 
 - [An annotated example plan](example-plan.md)
-- [Approving a plan on GitHub or GitLab](approve-a-plan.md)
+- [Approving a plan on GitHub](approve-a-plan.md)
 - [Start from a Jira ticket](mcp.md)
 - [Review record](review-record.md)

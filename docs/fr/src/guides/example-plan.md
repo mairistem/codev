@@ -224,5 +224,5 @@ qui prouve qu'elle est faite.
 ## Pour aller plus loin
 
 - [Relire un plan](review-a-plan.md)
-- [Approuver un plan sur GitHub ou GitLab](approve-a-plan.md)
+- [Approuver un plan sur GitHub](approve-a-plan.md)
 - [Partir d'un ticket Jira](mcp.md)

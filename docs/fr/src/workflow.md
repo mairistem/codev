@@ -43,7 +43,7 @@ Pour aller plus loin : [Un exemple de plan commenté](guides/example-plan.md).
 <details><summary>3. Vous approuvez</summary>
 
 Vous lisez le plan, demandez des corrections, puis l'approuvez. Vous
-pouvez le faire dans la conversation ou sur GitHub et GitLab.
+pouvez le faire dans la conversation ou sur GitHub.
 Pour aller plus loin : [Relire un plan](guides/review-a-plan.md).
 
 </details>

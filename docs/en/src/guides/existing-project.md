@@ -21,8 +21,7 @@ folder `_compagnon/`, the Claude Code skills, a short section in
 a [CI](../glossary.md#ci) check and a section in the
 [pull request](../glossary.md#pull-request) template.
 
-Your own text is never replaced, and Compagnon never edits
-`.gitlab-ci.yml`. Every file it writes, and the flags that skip each one,
+Your own text is never replaced. Every file it writes, and the flags that skip each one,
 are in [Deploying Compagnon for a team](team-rollout.md).
 
 If `_compagnon/config.yaml` already exists, `compagnon init` leaves it as it

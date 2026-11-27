@@ -24,8 +24,7 @@ vérification d'[intégration continue](../glossary.md#intégration-continue)
 et une section dans le modèle de
 [demande de fusion](../glossary.md#demande-de-fusion).
 
-Votre propre texte n'est jamais remplacé, et Compagnon ne modifie jamais
-`.gitlab-ci.yml`. Chaque fichier qu'il écrit, et les options qui permettent
+Votre propre texte n'est jamais remplacé. Chaque fichier qu'il écrit, et les options qui permettent
 de sauter chacun, sont dans
 [Déployer Compagnon pour une équipe](team-rollout.md).
 

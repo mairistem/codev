@@ -405,6 +405,18 @@ pub fn without_figures(md: &str) -> String {
     out
 }
 
+/// The chapters allowed to name GitLab: they describe literally what
+/// `compagnon init` prints on a GitLab repository.
+pub const GITLAB_EXCEPTIONS: [&str; 2] = ["reference/cli.md", "reference/json-output.md"];
+
+/// The lines naming GitLab, in any case: the documentation names GitHub only.
+pub fn gitlab_mentions(text: &str) -> Vec<String> {
+    text.lines()
+        .filter(|line| line.to_lowercase().contains("gitlab"))
+        .map(|line| line.trim().to_string())
+        .collect()
+}
+
 /// The lines naming codev, the product's former name, in any case: the
 /// documentation keeps no trace of it.
 pub fn codev_mentions(text: &str) -> Vec<String> {
@@ -1643,6 +1655,16 @@ mod tests {
     }
 
     #[test]
+    fn an_approval_guide_naming_gitlab_is_caught() {
+        let md = "# Approving a plan\n\nYour team works on GitHub or GitLab.\n";
+        assert_eq!(
+            gitlab_mentions(md),
+            ["Your team works on GitHub or GitLab."]
+        );
+        assert!(gitlab_mentions("# Approving a plan\n\nYour team works on GitHub.\n").is_empty());
+    }
+
+    #[test]
     fn a_chapter_naming_codev_is_caught() {
         let md = "# Origins\n\nCompagnon, formerly codev, plans first.\n";
         assert_eq!(
@@ -2085,6 +2107,38 @@ mod chapter_tests {
         ] {
             for p in removed_pages_problems(text) {
                 found.push(format!("{name}: {p}"));
+            }
+        }
+        assert!(found.is_empty(), "{found:#?}");
+    }
+
+    #[test]
+    fn the_documentation_names_github_only() {
+        let mut found = Vec::new();
+        for lang in LANGS {
+            for (path, md) in lang.chapters() {
+                if GITLAB_EXCEPTIONS.contains(path) {
+                    continue;
+                }
+                for line in gitlab_mentions(md) {
+                    found.push(format!("{}/{path}: {line}", lang.tag()));
+                }
+            }
+        }
+        for (name, text) in [
+            ("README.md", include_str!("../../../README.md")),
+            ("README.fr.md", include_str!("../../../README.fr.md")),
+            (
+                "docs/site/index.html",
+                include_str!("../../../docs/site/index.html"),
+            ),
+            (
+                "docs/site/fr.html",
+                include_str!("../../../docs/site/fr.html"),
+            ),
+        ] {
+            for line in gitlab_mentions(text) {
+                found.push(format!("{name}: {line}"));
             }
         }
         assert!(found.is_empty(), "{found:#?}");

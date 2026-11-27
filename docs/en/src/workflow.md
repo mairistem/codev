@@ -40,7 +40,7 @@ Go further: [An annotated example plan](guides/example-plan.md).
 <details><summary>3. You approve</summary>
 
 You read the plan, ask for corrections, then approve it. You can do this
-in the conversation or on GitHub and GitLab.
+in the conversation or on GitHub.
 Go further: [Reviewing a plan](guides/review-a-plan.md).
 
 </details>
