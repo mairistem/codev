@@ -181,9 +181,6 @@ history:
     ref: 'spec: new requirement "The command-line reference says how to move from codev" with its scenarios; Migration note reworded; task 2.1 moves the content before the guide is deleted'
   - status: fixed
     by: migration
-  - status: accepted-risk
-    by: human
-    note: 'The owner wants no trace of codev in the documentation: the codev steps are dropped, not moved. Projects still on codev must rely on compagnon migrate and its --help.'
 ```
 
 #### R-migration-2 The BREAKING release note did not say where each removed page went
@@ -203,4 +200,21 @@ history:
     ref: 'proposal.md Release note names the new place of each removed page'
   - status: fixed
     by: migration
+```
+
+#### R-migration-3 No trace of codev leaves codev projects without the manual steps
+
+```yaml
+severity: medium
+confidence: high
+location: 'specs/docs/spec.md#Requirement: The documentation holds no trace of codev'
+evidence: |
+  (in any case): the command-line reference has no `compagnon migrate`
+recommendation: 'Keep the steps compagnon migrate does not take in its reference section, or accept that codev projects rely on the command and its --help.'
+history:
+  - status: open
+    by: migration
+  - status: accepted-risk
+    by: human
+    note: 'The owner wants no trace of codev in the documentation; projects still on codev rely on compagnon migrate and its --help.'
 ```
