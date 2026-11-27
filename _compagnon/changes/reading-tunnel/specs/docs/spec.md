@@ -182,6 +182,78 @@ show the five steps as cards with a colored top rule.
 - **WHEN** the check runs on it
 - **THEN** it fails naming the file and the gradient
 
+### Requirement: The documentation holds no trace of codev
+
+No chapter of either edition, README or home page SHALL name codev
+(in any case): the command-line reference has no `compagnon migrate`
+section, no error code or chapter describes the former layout, and the
+introduction and the origins tell Compagnon's story without its former
+name. The CHANGELOG keeps its dated history but no note pointing readers
+to a codev migration.
+
+#### Scenario: codev is not named
+
+- **GIVEN** every chapter of both editions, both READMEs and both home
+  pages
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** none holds "codev", whatever its case
+
+#### Scenario: A chapter naming codev is caught
+
+- **GIVEN** an origins chapter saying "formerly codev"
+- **WHEN** the check runs on it
+- **THEN** it fails naming the chapter
+
+### Requirement: Beginners read a simple path, experts open the detail
+
+In the chapters of the first three steps of the tunnel, the text shown
+by default SHALL be written for a beginner: outside "Under the hood"
+blocks (`<details>`, whose summary starts "Under the hood:" / « Sous le
+capot : »), a fenced block MAY only be a shell block that installs
+Compagnon or runs `compagnon init`, or a `markdown` or `text` block
+quoting a request, an answer or an excerpt of a plan; configuration,
+options and internals live in "Under the hood" blocks or in the
+Understand and For your team steps and the appendices.
+
+#### Scenario: The first steps show only what a beginner needs
+
+- **GIVEN** the chapters of the first three steps of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** no fenced block outside "Under the hood" blocks is in another
+  language than a shell install or init, `markdown` or `text`
+
+#### Scenario: Configuration shown to a beginner is caught
+
+- **GIVEN** a Jira guide showing a `yaml` block outside any "Under the
+  hood" block
+- **WHEN** the check runs on it
+- **THEN** it fails naming the guide and the `yaml` block
+
+### Requirement: Every tunnel page shows a diagram and a concrete example
+
+Every chapter of the first four steps of the tunnel SHALL hold at least
+one diagram (a `<figure class="diagram">`), and every chapter of the first
+three steps at least one concrete example: a `<div class="example">`
+block, titled "Example" (« Exemple »), showing a real request and what
+comes of it — Claude's answer, a plan's excerpt, a pull request — with
+real names and values, never placeholders alone. The request and Claude's
+answer are written as a Claude Code session: a `text` block whose request
+line starts with `>` and whose answer lines start with `⏺`.
+
+#### Scenario: Each page draws and shows
+
+- **GIVEN** the tunnel chapters of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each chapter of the first four steps holds a diagram
+- **AND** each chapter of the first three steps holds an example block
+
+#### Scenario: A page without diagram or example is caught
+
+- **GIVEN** an Asking Claude chapter with no figure, and an installation
+  chapter with no example block
+- **WHEN** the check runs on them
+- **THEN** each fails naming the chapter and what it lacks
+
 ## MODIFIED Requirements
 
 ### Requirement: The first steps stay short and plain
@@ -503,78 +575,6 @@ French.
   inline, unescaped
 - **AND** its styles define the diagram colors for the light scheme and
   for `prefers-color-scheme: dark`
-
-### Requirement: The documentation holds no trace of codev
-
-No chapter of either edition, README or home page SHALL name codev
-(in any case): the command-line reference has no `compagnon migrate`
-section, no error code or chapter describes the former layout, and the
-introduction and the origins tell Compagnon's story without its former
-name. The CHANGELOG keeps its dated history but no note pointing readers
-to a codev migration.
-
-#### Scenario: codev is not named
-
-- **GIVEN** every chapter of both editions, both READMEs and both home
-  pages
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** none holds "codev", whatever its case
-
-#### Scenario: A chapter naming codev is caught
-
-- **GIVEN** an origins chapter saying "formerly codev"
-- **WHEN** the check runs on it
-- **THEN** it fails naming the chapter
-
-### Requirement: Beginners read a simple path, experts open the detail
-
-In the chapters of the first three steps of the tunnel, the text shown
-by default SHALL be written for a beginner: outside "Under the hood"
-blocks (`<details>`, whose summary starts "Under the hood:" / « Sous le
-capot : »), a fenced block MAY only be a shell block that installs
-Compagnon or runs `compagnon init`, or a `markdown` or `text` block
-quoting a request, an answer or an excerpt of a plan; configuration,
-options and internals live in "Under the hood" blocks or in the
-Understand and For your team steps and the appendices.
-
-#### Scenario: The first steps show only what a beginner needs
-
-- **GIVEN** the chapters of the first three steps of both editions
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** no fenced block outside "Under the hood" blocks is in another
-  language than a shell install or init, `markdown` or `text`
-
-#### Scenario: Configuration shown to a beginner is caught
-
-- **GIVEN** a Jira guide showing a `yaml` block outside any "Under the
-  hood" block
-- **WHEN** the check runs on it
-- **THEN** it fails naming the guide and the `yaml` block
-
-### Requirement: Every tunnel page shows a diagram and a concrete example
-
-Every chapter of the first four steps of the tunnel SHALL hold at least
-one diagram (a `<figure class="diagram">`), and every chapter of the first
-three steps at least one concrete example: a `<div class="example">`
-block, titled "Example" (« Exemple »), showing a real request and what
-comes of it — Claude's answer, a plan's excerpt, a pull request — with
-real names and values, never placeholders alone. The request and Claude's
-answer are written as a Claude Code session: a `text` block whose request
-line starts with `>` and whose answer lines start with `⏺`.
-
-#### Scenario: Each page draws and shows
-
-- **GIVEN** the tunnel chapters of both editions
-- **WHEN** the test suite of `compagnon-cli` runs
-- **THEN** each chapter of the first four steps holds a diagram
-- **AND** each chapter of the first three steps holds an example block
-
-#### Scenario: A page without diagram or example is caught
-
-- **GIVEN** an Asking Claude chapter with no figure, and an installation
-  chapter with no example block
-- **WHEN** the check runs on them
-- **THEN** each fails naming the chapter and what it lacks
 
 ## REMOVED Requirements
 
