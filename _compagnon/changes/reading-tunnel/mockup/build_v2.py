@@ -71,6 +71,29 @@ def progress(cur_step, cur_page):
     )
 
 
+
+def cc(title, lines, hint):
+    """A Claude Code session, drawn as the terminal shows it: the user's
+    prompt after "> ", Claude's messages and tool calls after "⏺", a tool's
+    result indented after "⎿", the input box at the bottom."""
+    out = []
+    for line in lines:
+        kind = line[0]
+        if kind == "user":
+            out.append(f'<div class="cc-user"><span class="cc-gt" aria-hidden="true">&gt;</span> {e(line[1])}</div>')
+        elif kind == "say":
+            out.append(f'<div class="cc-say"><span class="cc-dot" aria-hidden="true">⏺</span><span>{line[1]}</span></div>')
+        elif kind == "tool":
+            res = "".join(f'<div class="cc-res"><span aria-hidden="true">⎿</span> {r}</div>' for r in line[3])
+            out.append(f'<div class="cc-tool"><span class="cc-dot ok" aria-hidden="true">⏺</span><span><b>{e(line[1])}</b>({e(line[2])})</span></div>{res}')
+    body = "\n".join(out)
+    return f"""<figure class="cc" aria-label="Claude Code session: {e(title)}">
+<div class="cc-bar" aria-hidden="true"><i></i><i></i><i></i><span>claude — ~/shop-app</span></div>
+<div class="cc-body">{body}</div>
+<div class="cc-input" aria-hidden="true"><span class="cc-gt">&gt;</span> <span class="cc-hint">{e(hint)}</span></div>
+<div class="cc-foot" aria-hidden="true">? for shortcuts</div>
+</figure>"""
+
 def next_card(title, purpose, step_label, prev):
     return f"""<nav class="next" aria-label="Next step">
 <a class="next-card" href="#"><span class="kicker">Next step · {e(step_label)}</span><span class="next-title">{e(title)}</span><span class="next-purpose">{e(purpose)}</span><span class="arrow" aria-hidden="true"></span></a>
@@ -80,10 +103,12 @@ def next_card(title, purpose, step_label, prev):
 
 JIRA = f"""
 <article class="page" id="jira" data-view>
+<header class="page-hero">
 {progress(2, 1)}
 <h1>Start from a Jira ticket</h1>
 <p class="skip-step"><a href="#review">No Jira? Skip to Reviewing a plan</a></p>
 <p class="lede">Your team already writes the work down in Jira. Name the ticket in your request and Claude starts the plan from it — no copy and paste, and the plan says where it comes from.</p>
+</header>
 <ol class="three">
 <li><b>You say</b> “Prepare a plan for PROJ-123”.</li>
 <li><b>Claude reads the ticket</b> once, without changing anything in Jira.</li>
@@ -91,11 +116,13 @@ JIRA = f"""
 </ol>
 {figure("docs/en/src/guides/mcp.md")}
 <div class="example"><p class="ex-label">Example</p>
-<div class="chat"><p class="you">Prepare a plan for PROJ-123</p>
-<p class="claude">I read <b>PROJ-123 — Dark mode for the dashboard</b> (In Progress). The plan is in <code>_compagnon/changes/dark-mode/</code>: why, what changes, how, and 7 tasks. Nothing is built until you approve it.</p></div>
-<pre class="file"><span class="file-name">proposal.md</span><code># Proposal: Dark mode for the dashboard
-
-&gt; Source: ticket **PROJ-123** — "Dark mode for the dashboard" (In Progress)</code></pre></div>
+{cc("Prepare a plan for PROJ-123", [
+ ("user", "Prepare a plan for PROJ-123"),
+ ("say", "I'll start from the Jira ticket, then write the plan."),
+ ("tool", "atlassian - getJiraIssue (MCP)", 'issueIdOrKey: "PROJ-123"', ['Dark mode for the dashboard · Story · <span class="cc-y">In Progress</span>']),
+ ("tool", "Write", "_compagnon/changes/dark-mode/proposal.md", ['Wrote 41 lines to _compagnon/changes/dark-mode/proposal.md', '<span class="cc-m"># Proposal: Dark mode for the dashboard</span>', '<span class="cc-m">&gt; Source: ticket **PROJ-123** — "Dark mode for the dashboard" (In Progress)</span>']),
+ ("say", "The plan is ready in <code>_compagnon/changes/dark-mode/</code>: why, what changes, how, and 7 tasks. Nothing is built until you approve it — read <code>proposal.md</code> first."),
+], "Implement it")}</div>
 <details class="hood"><summary>Under the hood: set it up</summary><p>Compagnon needs the name of your Jira connector's ticket tool in <code>_compagnon/config.yaml</code>; <code>compagnon init</code> fills it in when it finds a Jira or Atlassian server in your Claude Code setup.</p></details>
 <details class="hood"><summary>Under the hood: what Claude may do with Jira</summary><p>One read of the first ticket named. Never a search, a comment or a status change.</p></details>
 {next_card("Reviewing a plan", "What to check in a plan before you say yes, file by file.", "page 3 of 5", "Asking Claude")}
@@ -103,21 +130,36 @@ JIRA = f"""
 
 FIRST = f"""
 <article class="page" id="first" data-view hidden>
+<header class="page-hero">
 {progress(1, 1)}
 <h1>Your first change</h1>
 <p class="skip-step"><a href="#jira">Already made a change? Skip to Asking Claude</a></p>
 <p class="lede">One whole change, in ten minutes: you ask, you read the plan, Claude builds it, and the change is filed away.</p>
+</header>
 {figure("docs/en/src/quickstart.md")}
 <div class="example"><p class="ex-label">Example</p>
-<div class="chat"><p class="you">Add a dark mode that follows the system setting</p>
-<p class="claude">The plan is ready in <code>_compagnon/changes/dark-mode/</code>. Read <code>proposal.md</code> first — it says why and what changes.</p>
-<p class="you">Implement it</p>
-<p class="claude">✓ 7 of 7 tasks done · 2 review notes, nothing to decide.</p>
-<p class="you">Archive it</p>
-<p class="claude">Filed away in <code>_compagnon/changes/archive/2026-11-27-dark-mode/</code>; the project's specs now say the app follows the system theme.</p></div></div>
+{cc("your first change, from the request to the archive", [
+ ("user", "Add a dark mode that follows the system setting"),
+ ("tool", "Bash", "compagnon new change dark-mode", ["Change `dark-mode` created"]),
+ ("say", "The plan is ready in <code>_compagnon/changes/dark-mode/</code>. Read <code>proposal.md</code> first — it says why and what changes."),
+ ("user", "Implement it"),
+ ("tool", "Update", "src/theme.ts", ["Updated src/theme.ts with 18 additions and 2 removals"]),
+ ("tool", "Bash", "npm test", ['<span class="cc-g">✓</span> 42 tests passed']),
+ ("say", "7 of 7 tasks done · 2 review notes, nothing to decide."),
+ ("user", "Archive it"),
+ ("tool", "Bash", "compagnon archive --change dark-mode", ["✓ Archived · moved to _compagnon/changes/archive/2026-11-27-dark-mode"]),
+], "Try \"Where am I?\"")}</div>
 <details class="hood"><summary>Under the hood: the commands behind each request</summary><p><code>/compagnon-propose</code>, <code>/compagnon-apply</code>, <code>/compagnon-archive</code> — the same steps, typed as commands.</p></details>
 {next_card("Asking Claude", "What to say to Claude at each step, in your own words.", "step 3 · Every day", "Installation")}
 </article>"""
+
+STEP_FIRST = ["Compagnon in two minutes", "Installation", "Asking Claude", "How it works", "Adopting Compagnon on an existing project"]
+STEP_LEAD = ["What Compagnon does and who decides.", "Install, set up, and a first change in ten minutes.", "Ask, review, approve, build — the daily loop.", "What happens behind each step, for the curious.", "Set Compagnon up for a team and its conventions."]
+HOME_CARDS = "".join(
+    f'<li class="path" style="--c:{COLORS[i]}"><p class="meta"><i></i>step {i + 1} · {len(STEPS[i][1])} page{"s" if len(STEPS[i][1]) > 1 else ""}</p>'
+    f'<h3><a href="#" data-go="{"first" if i == 1 else "jira" if i == 2 else "overview"}">{e(STEPS[i][0])}</a></h3><p>{e(STEP_LEAD[i])}</p></li>'
+    for i in range(5)
+)
 
 OVERVIEW_CARDS = "".join(
     f'<li class="ov" style="--c:{COLORS[i]}"><span class="ov-n">{i + 1}</span><h3>{e(n)}</h3><ul>'
@@ -132,6 +174,25 @@ OVERVIEW = f"""
 <ol class="ov-row">{OVERVIEW_CARDS}</ol>
 <p class="appx-row">Appendices, looked up when needed: command-line interface · configuration · file formats · JSON output · error codes · glossary · FAQ · annotated example plan</p>
 </article>"""
+
+
+def home():
+    term = cc("prepare a plan for PROJ-123", [
+        ("user", "Prepare a plan for PROJ-123"),
+        ("tool", "atlassian - getJiraIssue (MCP)", 'issueIdOrKey: "PROJ-123"', ['Dark mode for the dashboard · <span class="cc-y">In Progress</span>']),
+        ("tool", "Write", "_compagnon/changes/dark-mode/proposal.md", ["Wrote 41 lines"]),
+        ("say", "The plan is ready for your review. Nothing is built until you approve it."),
+    ], "Implement it")
+    return f"""<div class="home" id="home" data-home hidden>
+<section class="page-hero home-hero"><div class="home-grid">
+<div><p class="eyebrow-h"><i></i>Open source · for Claude Code</p>
+<h1>Plan with Claude before it codes.</h1>
+<p class="lede">Before any code is written, Claude writes down what it is about to build: a short plan you read, correct and approve. Then Claude builds exactly that, and the plan stays with your code.</p>
+<p class="actions"><a class="btn" href="#" data-go="first">Read the documentation</a></p></div>
+{term}</div></section>
+<section class="home-steps"><p class="eyebrow-s">The documentation in five steps</p><h2>Read it in order, or jump to your step</h2>
+<ol class="paths">{HOME_CARDS}</ol></section>
+</div>"""
 
 
 def dg_tokens():
@@ -177,12 +238,55 @@ code {{ font-family: var(--mono); font-size: .86em; background: var(--chip); pad
 body::before {{ content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); }}
 .top {{ position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; display: flex; align-items: center; gap: 16px; padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
   background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }}
-.top svg {{ height: 30px; width: auto; aspect-ratio: 1188/250; }}
+.top svg {{ height: 34px; width: auto; aspect-ratio: 1188/250; }}
 .search {{ margin-left: auto; display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--muted); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 14px; }}
 .search kbd {{ font: 500 11px/1 var(--mono); border: 1px solid var(--line); border-radius: 5px; padding: 3px 6px; }}
-.views {{ display: flex; gap: 6px; flex-wrap: wrap; }}
-.views button {{ font: 500 12px/1 var(--mono); color: var(--heading); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 11px; cursor: pointer; }}
-.views button[aria-pressed="true"] {{ background: var(--heading); color: var(--bg); border-color: var(--heading); }}
+.mock-bar {{ display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #1a1a1a; color: #fff; font: 500 12px/1 var(--mono);
+  padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }}
+.mock-bar span {{ margin-right: auto; opacity: .75; }}
+.mock-bar button {{ font: inherit; color: #fff; background: #333; border: 1px solid #555; border-radius: 6px; padding: 6px 9px; cursor: pointer; }}
+.mock-bar button[aria-pressed="true"] {{ background: #ffab03; color: #1a1a1a; border-color: #ffab03; }}
+.brand {{ display: inline-flex; line-height: 0; }}
+.site-nav {{ display: flex; gap: 18px; font-weight: 500; }}
+.site-nav a {{ color: var(--heading); text-decoration: none; }}
+.page-hero {{ position: relative; overflow: hidden; border-radius: 20px; padding: 28px 28px 30px; color: #d9e7ec; display: grid; gap: 14px;
+  background: radial-gradient(900px 400px at 90% -20%, #0b5d7a 0%, transparent 60%), linear-gradient(160deg, #00263a 0%, #003a4f 55%, #004c66 100%); }}
+.page-hero::before {{ content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 32px 32px; mask-image: linear-gradient(180deg, #000 30%, transparent 100%); }}
+.page-hero > * {{ position: relative; }}
+.page-hero h1 {{ color: #ffffff; }}
+.page-hero .lede {{ color: #d9e7ec; }}
+.page-hero .seg {{ background: rgba(255,255,255,.16); }}
+.page-hero .seg.now {{ background: linear-gradient(90deg, var(--c) 40%, rgba(255,255,255,.16) 40%); }}
+.page-hero .progress p, .page-hero .progress b {{ color: #9fd9e9; }}
+.page-hero .dots i {{ background: rgba(255,255,255,.25); }}
+.page-hero .dots i.on {{ background: #ffffff; }}
+.page-hero .skip-step a {{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.3); color: #ffffff; }}
+.page-hero .skip-step a::after {{ border-color: #ffd27a; }}
+.page-hero .skip-step a:hover {{ border-color: #ffffff; }}
+.page-hero code {{ background: rgba(255,255,255,.12); color: #ffffff; }}
+.home-hero {{ border-radius: 0; padding: 56px max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px)); }}
+.home-grid {{ max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 40px; align-items: center; }}
+.home-hero h1 {{ font-size: clamp(2.1rem, 4.4vw, 3.3rem); }}
+.home-hero .lede {{ margin-top: 18px; }}
+.eyebrow-h {{ margin: 0 0 14px; font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #9fd9e9; display: flex; gap: 10px; align-items: center; }}
+.eyebrow-h i {{ width: 8px; height: 8px; border-radius: 50%; background: #00c39b; }}
+.actions {{ margin: 22px 0 0; }}
+.btn {{ display: inline-flex; padding: 12px 18px; border-radius: 10px; font-weight: 600; text-decoration: none; background: #ff5331; color: #1a0a05; }}
+.home-steps {{ max-width: 1120px; margin: 0 auto; padding: 56px max(16px, env(safe-area-inset-right, 0px)) 72px max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 10px; }}
+.eyebrow-s {{ margin: 0; font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }}
+.home-steps h2 {{ margin: 0 0 18px; color: var(--heading); font-size: clamp(1.6rem, 3vw, 2.1rem); }}
+.paths {{ list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }}
+.path {{ position: relative; border: 1px solid var(--line); border-radius: 14px; padding: 20px 18px; background: var(--bg); display: grid; gap: 8px; align-content: start; }}
+.path::before {{ content: ""; position: absolute; left: 16px; right: 16px; top: -1px; height: 3px; border-radius: 0 0 3px 3px; background: var(--c); }}
+.path h3 {{ margin: 0; font-size: 1.05rem; }}
+.path h3 a {{ color: var(--heading); text-decoration: none; }}
+.path h3 a::after {{ content: ""; position: absolute; inset: 0; border-radius: 14px; }}
+.path p {{ margin: 0; color: var(--muted); font-size: 14px; }}
+.path .meta {{ font: 500 11.5px/1 var(--mono); display: flex; gap: 8px; align-items: center; }}
+.path .meta i {{ width: 8px; height: 8px; border-radius: 50%; background: var(--c); }}
+.path:hover {{ border-color: var(--c); }}
+@media (max-width: 1000px) {{ .paths {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} .home-grid {{ grid-template-columns: minmax(0, 1fr); }} }}
+@media (max-width: 560px) {{ .paths {{ grid-template-columns: minmax(0, 1fr); }} .site-nav {{ display: none; }} }}
 .shell {{ display: grid; grid-template-columns: 280px minmax(0, 1fr); max-width: 1240px; margin: 0 auto; }}
 aside {{ border-right: 1px solid var(--line); padding: 28px 20px; position: sticky; top: 56px; align-self: start; height: calc(100vh - 56px); overflow: auto; }}
 .stepper {{ list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; position: relative; }}
@@ -230,6 +334,26 @@ figure.diagram .mono {{ font-family: var(--mono); }}
 .example {{ border-radius: 16px; background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; display: grid; gap: 12px; }}
 .ex-label {{ margin: 0; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; gap: 8px; align-items: center; }}
 .ex-label::before {{ content: ""; width: 8px; height: 8px; border-radius: 50%; background: #00c39b; }}
+.cc {{ margin: 0; border-radius: 12px; overflow: hidden; background: #1e1e1e; border: 1px solid #2f2f2f; box-shadow: 0 18px 40px -24px rgba(0,0,0,.6);
+  font: 13px/1.6 var(--mono); color: #e6e6e6; }}
+.cc-bar {{ display: flex; gap: 7px; align-items: center; padding: 9px 12px; background: #2a2a2a; color: #9a9a9a; font-size: 12px; }}
+.cc-bar i {{ width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; display: inline-block; }}
+.cc-bar i:nth-child(2) {{ background: #febc2e; }} .cc-bar i:nth-child(3) {{ background: #28c840; }}
+.cc-bar span {{ margin-left: 8px; }}
+.cc-body {{ padding: 14px 16px 6px; display: grid; gap: 8px; overflow-x: auto; }}
+.cc-user {{ color: #9a9a9a; background: #2b2b2b; border-radius: 6px; padding: 4px 8px; }}
+.cc-user .cc-gt {{ color: #9a9a9a; }}
+.cc-say, .cc-tool {{ display: grid; grid-template-columns: 16px 1fr; gap: 6px; }}
+.cc-dot {{ color: #e6e6e6; }}
+.cc-dot.ok {{ color: #4eba65; }}
+.cc-tool b {{ font-weight: 700; color: #ffffff; }}
+.cc-res {{ padding-left: 22px; color: #9a9a9a; }}
+.cc-res span[aria-hidden] {{ color: #6b6b6b; }}
+.cc code {{ background: none; padding: 0; color: #b1b9f9; font-size: 1em; }}
+.cc-y {{ color: #e5c07b; }} .cc-g {{ color: #4eba65; }} .cc-m {{ color: #8c8c8c; }}
+.cc-input {{ margin: 10px 12px 4px; border: 1px solid #5a5a5a; border-radius: 8px; padding: 7px 10px; color: #6b6b6b; }}
+.cc-input .cc-gt {{ color: #e6e6e6; }}
+.cc-foot {{ padding: 0 14px 10px; color: #6b6b6b; font-size: 11.5px; }}
 .chat {{ display: grid; gap: 8px; }}
 .chat p {{ margin: 0; padding: 10px 14px; border-radius: 14px; max-width: 88%; }}
 .chat .you {{ justify-self: end; background: var(--you); color: var(--you-fg); border-bottom-right-radius: 4px; font-weight: 500; }}
@@ -270,10 +394,13 @@ SCRIPT = """
 (function () {
   var root = document.documentElement;
   function show(v) {
+    document.querySelector('[data-home]').hidden = v !== 'home';
+    document.querySelector('[data-shell]').hidden = v === 'home';
     document.querySelectorAll('[data-view]').forEach(function (p) { p.hidden = p.id !== v; });
     document.querySelectorAll('[data-show]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.show === v)); });
   }
   document.querySelectorAll('[data-show]').forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.show); window.scrollTo(0, 0); }); });
+  document.querySelectorAll('[data-go]').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); show(a.dataset.go); window.scrollTo(0, 0); }); });
   document.querySelectorAll('.skip-step a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); show(a.getAttribute('href') === '#review' ? 'overview' : 'jira'); }); });
   document.querySelectorAll('[data-theme-set]').forEach(function (b) { b.addEventListener('click', function () { root.setAttribute('data-theme', b.dataset.themeSet); }); });
 })();
@@ -287,18 +414,21 @@ def page():
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>{CSS}</style>
 {LOGO}
-<header class="top">
-<svg viewBox="0 0 1188 250" role="img" aria-label="Compagnon by Mairistem"><use href="#cp-logo"></use></svg>
-<div class="views" role="group" aria-label="Mockup views">
+<div class="mock-bar" role="group" aria-label="Mockup views"><span>Mockup — not the live site</span>
+<button type="button" id="v-home" data-show="home" aria-pressed="false">Home page</button>
 <button type="button" id="v-jira" data-show="jira" aria-pressed="true">A page: Jira</button>
 <button type="button" id="v-first" data-show="first" aria-pressed="false">A page: first change</button>
 <button type="button" id="v-ov" data-show="overview" aria-pressed="false">The whole tunnel</button>
 <button type="button" id="t-l" data-theme-set="light">Light</button>
 <button type="button" id="t-d" data-theme-set="dark">Dark</button>
 </div>
+<header class="top">
+<a class="brand" href="#" data-go="home" aria-label="Compagnon, by Mairistem — home"><svg viewBox="0 0 1188 250" aria-hidden="true"><use href="#cp-logo"></use></svg></a>
 <div class="search" aria-hidden="true"><span>Search the docs</span><kbd>/</kbd></div>
+<nav class="site-nav" aria-label="Main"><a href="#" data-go="first">Documentation</a><a href="#" lang="fr">Français</a><a href="#">GitHub</a></nav>
 </header>
-<div class="shell">
+{home()}
+<div class="shell" data-shell>
 <aside aria-label="The five steps">{sidebar(2, 1)}</aside>
 <main>
 {JIRA}

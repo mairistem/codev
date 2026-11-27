@@ -24,3 +24,11 @@ sidebar (done steps ticked), the skip button as a pill, the example as a
 conversation with Claude, "Under the hood" as closed accordions, and a
 "Next step" card. Checked with Playwright at 360 px and 1280 px, light
 and dark: no horizontal scroll, no script error.
+
+### Version 2, revised
+
+At the owner's request: examples look like a real Claude Code session
+(prompt, tool calls, results, input box), and the pages share the home
+page's identity — same header, the home hero's dark band on each page,
+the same colored-rule cards, one Claude Code terminal everywhere. A
+"Home page" view shows the five step cards replacing the profiles.
