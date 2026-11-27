@@ -26,4 +26,4 @@
 
 ## 5. Final check
 
-- [ ] 5.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `mdbook build docs/en`, `mdbook build docs/fr`, `compagnon validate --strict`; walk the tunnel with mdBook's "next" button from the introduction to the command-line reference in both editions and check each page's "Next step" agrees; verified by all commands passing and the walk reaching the reference
+- [x] 5.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `mdbook build docs/en`, `mdbook build docs/fr`, `compagnon validate --strict`; walk the tunnel with mdBook's "next" button from the introduction to the command-line reference in both editions and check each page's "Next step" agrees; verified by all commands passing and the walk reaching the reference
