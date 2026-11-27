@@ -27,9 +27,13 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - The documentation is rewritten for every profile: shorter everyday pages that end with "Go further", each topic explained once, thirteen diagrams of how Compagnon works, a new look and the "Compagnon by Mairistem" logo.
 - The Jira integration is put forward — from the home page, the README and the first pages, you learn that "Prepare a plan for PROJ-123" makes Claude read the ticket and cite it in the plan.
 - `compagnon docs --print` leaves out the diagrams' drawings and keeps their captions, so a terminal or an AI reads the caption instead of SVG markup.
+- The documentation reads as one guided path in five steps — discover, get started, every day, understand, for your team — each page ending with the next step and, where some readers can skip it, a button saying where to go; the reference, the glossary and the FAQ move to appendices.
+- The documentation names GitHub only.
+- The documentation and its home page follow the Mairistem design system: each page shows its step and progress, its examples look like a Claude Code session.
 
 ### Removed
 
+- **BREAKING** Seven pages and their addresses, with no redirect: "Choose your path" and the four profile pages (the home page now shows the five steps), "Starting from nothing" (now a section of Installation), "Repository integration" (now in Deploying Compagnon for a team) and "Moving from codev" (the documentation no longer covers moving from codev); How it works' Apply, Sync and Archive sections move to the new "Building and filing away".
 - The "Discovering AI agents" profile; links to the former profile sections of Choose your path (`#i-am-discovering-ai-agents`…) now open the page at its top.
 <!-- compagnon:end -->
 
