@@ -58,10 +58,25 @@ and the section on other MCP servers follow.
 
 ### Requirement: The documentation's diagrams are accessible in every rendering
 
-The documentation SHALL hold three diagrams, in both editions: the
-workflow (ask, plan, approve, build, file away) in `introduction.md` and
-`workflow.md`; "From a Jira ticket to a plan" in `guides/mcp.md` and on
-both home pages; the four paths in `choose-your-path.md`. Each diagram, in
+The documentation SHALL hold these thirteen diagrams, in both editions:
+
+| Diagram | Where |
+|---|---|
+| The workflow (ask, plan, approve, build, file away) | `introduction.md`, `workflow.md`, home pages |
+| From a Jira ticket to a plan | `guides/mcp.md`, home pages |
+| The four paths | `choose-your-path.md` |
+| Inside a plan (proposal, specs, design, tasks) | `guides/review-a-plan.md`, home pages |
+| A change's folder, from start to archive | `quickstart.md` |
+| How a plan is built (the steps of `/compagnon-propose`) | `workflow.md` |
+| The project's records (specs, decisions, changes) and a delta merging | `concepts.md` |
+| The life of a decision | `guides/decisions.md` |
+| The life of a review finding | `guides/review-record.md` |
+| Who reviews when (steps and roles) | `roles.md` |
+| Approving a plan on GitHub or GitLab | `guides/approve-a-plan.md` |
+| Inherited sources | `guides/inherited-sources.md` |
+| The crate graph | `architecture.md` |
+
+Each diagram, in
 a chapter or on a home page, MUST be an inline `<svg>` inside a
 `<figure>` with `role="img"` and an `aria-label` in the page's language
 naming every step or node in reading order (for example "Five steps: you
@@ -136,6 +151,94 @@ the start.
 - **GIVEN** a restyled home page that scrolls horizontally at 320 px
 - **WHEN** it is checked before the restyle is committed
 - **THEN** the restyle is not committed until the layout is fixed
+
+### Requirement: The table of contents follows the refactored order
+
+Below the Start here part, which keeps its chapters and order, each
+`SUMMARY.md` SHALL list, in this order:
+
+- Everyday use: `quickstart.md`, `guides/start-from-nothing.md`,
+  `installation.md`, `workflow.md` ("How it works" / « Comment ça
+  marche »), `skills.md` ("Asking Claude" / « Parler à Claude »),
+  `guides/mcp.md`, `guides/review-a-plan.md`, `guides/example-plan.md`,
+  `guides/approve-a-plan.md`, `concepts.md`, `faq.md`;
+- Going further: `guides/decisions.md`, `guides/review-record.md`,
+  `roles.md`, `guides/existing-project.md`, `guides/team-rollout.md`,
+  `guides/repository-integration.md`, `guides/release-notes.md`,
+  `guides/inherited-sources.md`, `guides/artifact-language.md`,
+  `guides/custom-schemas.md`, `guides/moving-from-codev.md`;
+- Reference: `reference/cli.md`, `reference/configuration.md`,
+  `reference/file-formats.md`, `reference/json-output.md`,
+  `reference/errors.md`;
+- Contributing: `origins.md`, `contributing.md`, `architecture.md`,
+  `reliability.md`.
+
+No chapter file listed before this change is renamed or removed. Each
+chapter's `# ` heading equals its `SUMMARY.md` entry.
+
+#### Scenario: Both editions follow the refactored order
+
+- **GIVEN** both editions of `SUMMARY.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each part lists exactly the files above, in that order
+- **AND** each chapter's `# ` heading equals its entry's title
+
+#### Scenario: A chapter out of its part is caught
+
+- **GIVEN** a `SUMMARY.md` listing `roles.md` under Everyday use
+- **WHEN** the check runs on it
+- **THEN** it fails naming `roles.md`
+
+### Requirement: Everyday chapters are short and end with Go further
+
+Each chapter of the Everyday use part, `guides/example-plan.md` excepted
+(its body is the example), SHALL hold at most 1 200 words in English and
+1 500 in French, not counting fenced code blocks, "Under the hood" blocks
+(`<details>`) and figures. Its last `## ` section SHALL be titled "Go
+further" (« Pour aller plus loin ») and link at least one chapter, each
+link's text being that chapter's title.
+
+#### Scenario: Every everyday chapter stays under its cap and ends with Go further
+
+- **GIVEN** the Everyday use chapters of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** each, example plan excepted, is under its cap
+- **AND** each ends with a "Go further" / « Pour aller plus loin »
+  section linking at least one chapter by its title
+
+#### Scenario: A long chapter or a chapter without Go further is caught
+
+- **GIVEN** a 1 300-word English FAQ, and a concepts chapter whose last
+  section is "Seal"
+- **WHEN** the check runs on them
+- **THEN** each fails naming its chapter
+
+### Requirement: Error codes and decisions have their own chapters
+
+`reference/errors.md` ("Error codes and fixes" / « Codes d'erreur et
+solutions ») SHALL hold one `### ` section per error or warning code the
+FAQ explained before this change, each headed by the code in inline code
+and saying what it means and how to fix it; `faq.md` SHALL hold no such
+section and link this chapter. `guides/decisions.md` ("Decisions" /
+« Décisions ») SHALL explain the life of an architecture decision —
+proposed, accepted and sealed, superseded, deviated from, promoted —
+with its diagram; `concepts.md` keeps a short `## Decision` section
+linking it.
+
+#### Scenario: Error codes moved out of the FAQ
+
+- **GIVEN** both editions of `faq.md` and `reference/errors.md`
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** every code the FAQ held before this change is a `### `
+  heading of `reference/errors.md`
+- **AND** `faq.md` holds no heading made of a code, and links
+  `reference/errors.md`
+
+#### Scenario: A code left in the FAQ is caught
+
+- **GIVEN** a FAQ with a section headed `` `decision_seal_mismatch` ``
+- **WHEN** the check runs on it
+- **THEN** it fails naming the code
 
 ## MODIFIED Requirements
 
