@@ -510,8 +510,9 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
     }
     let recorded = suite::recorded(&out);
     let pending = runner::pending(&selected, &recorded, repeat, args.rerun);
-    // A resume with another Compagnon says which steps it ran with it; the
-    // fields the first run recorded stay as they are.
+    // A resume with another Compagnon records, before running them, the
+    // steps it is about to run with it; the fields the first run recorded
+    // stay as they are.
     if let (Some(resumed), Some(version)) = (&resumed, info.compagnon_version.as_deref()) {
         let written = runner::record_added(
             resumed,

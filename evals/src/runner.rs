@@ -2552,10 +2552,12 @@ pub fn write_run_info(out: &Path, info: &RunInfo) -> std::io::Result<()> {
 
 /// The `run.json` a resumed run leaves: the recorded one, its fields
 /// unchanged, with one more `added` entry when the Compagnon under test,
-/// `version`, is not the recorded one. The entry names the steps of the
-/// runs actually made, `steps` (those of the pending jobs), in the order
-/// `Step` lists them, so that a run resumed for a few cases or with nothing
-/// left to run names only what ran. A last entry naming the same steps and
+/// `version`, is not the recorded one. The entry names the steps about to
+/// run, `steps` (those of the pending jobs): it is written before any case
+/// runs, so that a run resumed for a few cases or with nothing left to run
+/// names only what it runs, in the order `Step` lists them. A run the usage
+/// limit stops still has its steps named: it is resumed with the same
+/// command, which then finds this entry. A last entry naming the same steps and
 /// version is kept as it is: a run resumed again after a stop adds nothing
 /// new to say.
 pub fn record_added(
@@ -3499,8 +3501,7 @@ mod tests {
         assert!(err.contains("2.1.289") && err.contains("2.1.301"), "{err}");
     }
 
-    /// A `run.json` recorded with `version`, and the explore and onboard
-    /// cases of a resumed run, with none of their observations recorded.
+    /// A `run.json` recorded with `version`, as a resumed run finds it.
     fn recorded_with(version: &str) -> RunInfo {
         RunInfo {
             format: FORMAT,
@@ -3516,6 +3517,8 @@ mod tests {
         }
     }
 
+    /// The explore and onboard cases (the read-only steps) of a resumed
+    /// run, none of their observations recorded.
     fn read_only_cases() -> Vec<Case> {
         [
             ("onboard-thin-config", Step::ProjectOnboard),

@@ -83,3 +83,66 @@ history:
   - status: fixed
     by: skeptic
 ```
+
+## code.review
+
+Mode: isolated.
+
+### newcomer
+
+#### R-newcomer-1 The comments said the entry names the steps that ran, before anything runs
+
+```yaml
+severity: medium
+confidence: high
+location: "evals/src/runner.rs:2563"
+evidence: |
+  pub fn record_added(
+recommendation: 'Say the entry names the steps about to run, written before any case runs, and why an interrupted run still has them named.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/runner.rs record_added doc; evals/src/main.rs comment"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 Two functions built the same line in two formats without saying why
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/report.rs:88"
+evidence: |
+  fn compagnon_versions(run: &RunInfo) -> String {
+recommendation: 'Share one formatter, or say this is the raw-text variant of the chapter line and why.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/report.rs doc comment naming reliability::compagnon_versions and the difference"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 A test helper's doc described another helper
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/runner.rs:3543"
+evidence: |
+  fn steps_added_with_another_compagnon() {
+recommendation: 'Give each helper its own doc, say what read only means, and name the test after the behaviour.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/runner.rs: recorded_with and read_only_cases docs; the test keeps the scenario name tasks.md 1.2 gives it"
+  - status: fixed
+    by: newcomer
+```

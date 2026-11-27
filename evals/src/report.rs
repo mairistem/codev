@@ -81,7 +81,10 @@ fn checked_noun(step: crate::case::Step) -> &'static str {
 
 /// The run's Compagnon version as `run.json` records it, then, in
 /// parentheses, that of each set of steps a resumed run added with another
-/// Compagnon, with its date.
+/// Compagnon, with its date. The English, raw-text variant of the line the
+/// reliability chapter writes (`reliability::compagnon_versions`): the
+/// report prints every version as recorded, the chapter trims and localizes
+/// them.
 fn compagnon_versions(run: &RunInfo) -> String {
     let mut line = run
         .compagnon_version
