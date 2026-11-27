@@ -667,6 +667,20 @@ regular CI and is not part of the `compagnon` binary.
 how they are measured, the thresholds each role meets or fails and the
 limits of the measure.
 
+<details>
+<summary>Under the hood: the baseline and judging a change to a role</summary>
+
+The reference scores are the committed baseline,
+[`evals/baseline/report.md`](https://github.com/mairistem/compagnon/blob/main/evals/baseline/report.md):
+five runs of every case, on Claude Code's default model at the date it
+names, each score the median of the five runs. A model does not answer the
+same way twice, so a change to a role file is judged with
+`compagnon-evals compare --quality-only` against the baseline, on the same
+model: each role's median must stay within the range the baseline's runs
+spanned.
+
+</details>
+
 ## Where you decide
 
 The agent stops and hands over at these points:

@@ -34,4 +34,4 @@
 
 ## 6. Final check
 
-- [ ] 6.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `mdbook build docs/en`, `mdbook build docs/fr`, `compagnon validate --strict`, compare the word counts with `inventory.md`, and send the user before/after screenshots of the home page and two chapters; verified by all commands passing
+- [x] 6.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `mdbook build docs/en`, `mdbook build docs/fr`, `compagnon validate --strict`, compare the word counts with `inventory.md`, and send the user before/after screenshots of the home page and two chapters; verified by all commands passing

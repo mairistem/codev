@@ -696,6 +696,20 @@ l'intégration continue habituelle et ne fait pas partie du binaire
 par rôle, la façon de les mesurer, les seuils que chaque rôle respecte ou
 dépasse et les limites de la mesure.
 
+<details>
+<summary>Sous le capot : la ligne de base et le jugement d'une modification de rôle</summary>
+
+Les scores de référence sont la ligne de base versionnée,
+[`evals/baseline/report.md`](https://github.com/mairistem/compagnon/blob/main/evals/baseline/report.md) :
+cinq exécutions de chaque cas, avec le modèle par défaut de Claude Code à
+la date qu'elle indique, chaque score étant la médiane des cinq. Un modèle
+ne répond pas deux fois de la même façon : une modification d'un fichier
+de rôle se juge donc avec `compagnon-evals compare --quality-only` face à la
+ligne de base, avec le même modèle ; la médiane de chaque rôle doit rester
+dans l'écart couvert par les exécutions de la ligne de base.
+
+</details>
+
 ## Là où vous décidez
 
 L'agent s'arrête et vous passe la main à ces moments :
