@@ -12,9 +12,7 @@ use std::time::{Duration, Instant};
 
 use crate::case::{Case, Step};
 use crate::implement_run;
-use crate::observed::{
-    AddedSteps, Consumption, FORMAT, Observed, ReviewMode, RunInfo, Tokens,
-};
+use crate::observed::{AddedSteps, Consumption, FORMAT, Observed, ReviewMode, RunInfo, Tokens};
 use crate::suite::{Recorded, RunState};
 
 /// The `change.yaml` the runner writes: every role in `disable` set to
@@ -3547,7 +3545,10 @@ mod tests {
             .collect();
         let jobs = pending(&cases, &Recorded::new(), 5, false);
         let written = record_added(&recorded, "compagnon 0.7.0", steps_of(&jobs), "2026-11-26");
-        assert_eq!(written.compagnon_version.as_deref(), Some("compagnon 0.6.1"));
+        assert_eq!(
+            written.compagnon_version.as_deref(),
+            Some("compagnon 0.6.1")
+        );
         assert_eq!(
             RunInfo {
                 added: Vec::new(),
